@@ -1,6 +1,60 @@
 
 == Custom Game Options ==
 
+When you start a new playthrough, you should be able to configure a wide variety of Custom Game options. 
+You'll initially be presented with three presets:
+
+ - Enhanced
+    = All optional QOL changes are enabled.
+
+ - Vanilla
+    = All optional QOL changes are disabled.
+
+ - Nuzlocke
+    = All optional QOL changes are enabled, except for any that may make the game easier (e.g. faster 
+      overworld running speed, which could help you dodge spinners). The following Nuzlocke settings 
+      are also activated:
+      
+       - Nuzlocke: Enabled
+       - Slain Pokemon Behavior: Graveyard
+       - Encounter Limit: Enabled
+          - Gift Pokemon: Counts as Encounter
+          - Shiny Exception: Always Allow
+          - Dupes Clause: Enabled
+             - Shiny Exception: Always Allow
+
+ - Custom Game
+    = Brings you to the full Custom Game options menu, with all options set to their "Enhanced" values; 
+      there, you can configure absolutely anything before starting your playthrough.
+
+
+I want to offer a ton of options, which means a ton of values to store in flash memory. Some basic 
+principles:
+
+ - **Data should be bitpacked.** If we don't need a whole byte, then don't use a whole byte. We can read 
+   data in and out of RAM and convert between CPU-efficient and storage-efficient formats as needed.
+   
+ - **Avoid the use of presence bits.** My experience with bitpacked data comes from Halo: Reach, which 
+   used "presence bits" for pieces of data that could be conditionally omitted from UGC. However, in our 
+   case, we're packing data into a small storage space, and it needs to be possible to store every data 
+   field and every combination of data values. As such, we gain nothing from presence bits, and using 
+   them will only expose us to potential mistakes wherein we test smaller combinations of data and miss 
+   when larger combinations of data can't fit in the allotted space.
+   
+ - **Data should be versioned.** Data should be prefixed with a 32-bit version number (non-semver). If 
+   at all possible, however, I'd like to avoid having an upgrade procedure in the ROM itself, as that'll 
+   lead to more and more seldom-used code going forward. Instead, I want to look into the possibility of 
+   save data transplantation. Can I write a C++ program that can transplant one savestate's flash memory 
+   into a title-screen savestate, and if so, would that even work? If so, then the upgrade procedure 
+   becomes "make an in-game save; savestate afterwards; then make a second savestate at the title screen; 
+   then run the tool."
+   
+   Or maybe emulators today have something equivalent enough to render that kind of jank unnecessary? For 
+   now, the goal is just to get Custom Games working at all, but I may as well tack a version number onto 
+   the data just to prep for *whatever we end up doing* to allow forward-compatibility for savedata after 
+   we launch.
+
+
 === Value types and storage formats ===
 
  - Species ID: 11 bits; range [0, 2047]
@@ -52,6 +106,9 @@
        - Damage dealt
  
  = Various
+    - Allow editing options after starting the playthrough
+       = Disabled by default. Intended for Let's Players and other content creators who may 
+         need to adjust things on the fly.
     - Swap trade evolutions for stone or level evolutions
        - Cost: 2-bit enum
           = Disabled
@@ -61,6 +118,7 @@
        - Enables alternate encounter tables to avoid version-exclusive species
        - Enables additional events for any exclusive legendaries
        - Enables additional events to allow all fossils and starters
+          = Needs to ensure all three vanilla starters are catchable if you override starter species
     - Cap player party size
        - Cost: 3-bit value (party cap; 0 = no cap)
     - Cap player party levels
@@ -106,6 +164,7 @@
        - Graveyard boxes (set count)
        - Delete forever
     - Encounter limit options
+      // "Control when you're allowed to catch Pokemon."
        - Encounter Limit              // 2-bit enum
           - Disabled
           - One per Location
@@ -116,8 +175,9 @@
           - Counts as Encounter
           - Disable All Gifts
        - Shiny Exception              // 1 bit
-          - Always Allow
+          - No Exception
           - Replace Prior from Same Route
+          - Always Allow
        - Dupes Clause                 // 1 bit
           - Disabled
           - Enabled
@@ -125,3 +185,12 @@
           - No Exception
           - Replace Prior of Same Species
           - Always Allow
+    - Deactivation Condition
+       - Never Deactivate
+          = ...unless the user left "edit CG options after starting" enabled, in which case they can 
+            still switch Nuzlocking off by hand.
+       - After Champion
+       - After Rayquaza
+          = IIRC Rayquaza is post-game, or at least can be.
+       - After All Legendaries
+          = After you've caught or defeated every legendary at least once.

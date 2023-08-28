@@ -1,5 +1,8 @@
 #include "global.h"
 
+// Use the appropriate "prep" function given where and what text you're going to display.
+
+// window 0, FONT_NORMAL
 void lu_PrepStringWrap_Normal(void);
 
 // Call after configuring your printer and expanding string placeholders. It will scan 

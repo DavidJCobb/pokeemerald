@@ -1291,7 +1291,7 @@ static void Task_NewGameBirchSpeech_Init(u8 taskId)
     gTasks[taskId].func = Task_NewGameBirchSpeech_WaitToShowBirch;
     gTasks[taskId].tPlayerSpriteId = SPRITE_NONE;
     gTasks[taskId].data[3] = 0xFF;
-    gTasks[taskId].tTimer = 0xD8;
+    gTasks[taskId].tTimer = 0xA2; // delay in frames (60FPS) before fading Birch in and whatnot // changed from vanilla 0xD8
     PlayBGM(MUS_ROUTE122);
     ShowBg(0);
     ShowBg(1);
@@ -1312,9 +1312,9 @@ static void Task_NewGameBirchSpeech_WaitToShowBirch(u8 taskId)
         gSprites[spriteId].y = 60;
         gSprites[spriteId].invisible = FALSE;
         gSprites[spriteId].oam.objMode = ST_OAM_OBJ_BLEND;
-        NewGameBirchSpeech_StartFadeInTarget1OutTarget2(taskId, 10);
-        NewGameBirchSpeech_StartFadePlatformOut(taskId, 20);
-        gTasks[taskId].tTimer = 80;
+        NewGameBirchSpeech_StartFadeInTarget1OutTarget2(taskId, 3); // changed from vanilla 10
+        NewGameBirchSpeech_StartFadePlatformOut(taskId, 5); // changed from vanilla 20
+        gTasks[taskId].tTimer = 40; // delay in frames after everything fades in // changed from vanilla 80
         gTasks[taskId].func = Task_NewGameBirchSpeech_WaitForSpriteFadeInWelcome;
     }
 }
@@ -1949,6 +1949,9 @@ static void Task_NewGameBirchSpeech_FadeOutTarget1InTarget2(u8 taskId)
     }
 }
 
+// delay: the number of frames that pass between alpha changes; any given alpha value is shown for `delay + 1` frames
+//        the fade-in happens in one-sixteenth increments, so the minimum fade time is 16f (0.26...s) and the fade 
+//        time is calculable as ((16 * (delay + 1)) / 60) seconds.
 static void NewGameBirchSpeech_StartFadeOutTarget1InTarget2(u8 taskId, u8 delay)
 {
     u8 taskId2;
@@ -1988,6 +1991,9 @@ static void Task_NewGameBirchSpeech_FadeInTarget1OutTarget2(u8 taskId)
     }
 }
 
+// delay: the number of frames that pass between alpha changes; any given alpha value is shown for `delay + 1` frames
+//        the fade-in happens in one-sixteenth increments, so the minimum fade time is 16f (0.26...s) and the fade 
+//        time is calculable as ((16 * (delay + 1)) / 60) seconds.
 static void NewGameBirchSpeech_StartFadeInTarget1OutTarget2(u8 taskId, u8 delay)
 {
     u8 taskId2;

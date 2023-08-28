@@ -38,6 +38,8 @@
 #include "window.h"
 #include "mystery_gift_menu.h"
 
+            #include "lu/string_wrap.h"
+
 /*
  * Main menu state machine
  * -----------------------
@@ -1358,6 +1360,8 @@ static void Task_NewGameBirchSpeech_MainSpeech(u8 taskId)
     if (!RunTextPrintersAndIsPrinter0Active())
     {
         StringExpandPlaceholders(gStringVar4, gText_Birch_MainSpeech);
+lu_PrepStringWrap_Normal();
+lu_StringWrap(gStringVar4);
         AddTextPrinterForMessage(TRUE);
         gTasks[taskId].func = Task_NewGameBirchSpeech_AndYouAre;
     }

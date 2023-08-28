@@ -1,0 +1,562 @@
+
+Goals:
+
+ - Automatic word-wrapping of dialogue and battle messages.
+ 
+    - Instead of having to manually write newlines and paragraph continuations, it should be possible 
+      to write a long run of dialogue and have newlines (including press-A-to-scroll markers) added 
+      automatically at display time.
+      
+       - We could potentially automate hyphenation in at least simple cases: the following suffixes 
+         can be checked for when a word exceeds the available width, and could trigger word breakage 
+         with a hyphen (list sorted in descending priority):
+         
+          - /.\1ing$/      // e.g. "grabbing" -> "grab-bing"
+          - ing            // e.g. "evolving" -> "evolv-ing"
+          - /.{5,}ution/   // i.e. only if preceded by 5+ chars: "revo-lution" but not "so-lution"
+          - ion
+          
+         And of course, if the word isn't 6+ characters long, we can skip these checks and never 
+         break-and-hyphenate it at all.
+      
+    - We need this for our goal of coalescing battle messages, below.
+ 
+ - Coalescing battle messages.
+ 
+    - This depends on the above change. We'll end up with longer runs of text, and manual newline 
+      placement is impossible given that Pokemon names can be up to ten glyphs long (twelve once I 
+      make some other changes I want).
+    
+    - Battles are agonizingly slow because information is drip-fed to you, and often, text and 
+      animations are shown sequentially rather than concurrently. This sucks: it makes the game 
+      unbearable to play unless you play it with speed-up, and emulator speed-up itself damages 
+      the experience (e.g. by mangling audio).
+      
+      The reason the game *has* to do this is because there are lots of variably-length strings in 
+      battle messages that can potentially be rather long. The developers needed to be conservative 
+      with line lengths in order to avoid any possibility of overflow. If we implement automatic 
+      string wrapping, then we can coalesce battle messages and count on our wrapping to ensure 
+      that nothing overflows the visible bounds of the textbox.
+      
+    - Strings that require additional research in order to coalesce:
+    
+       - Failures to put an enemy to sleep due to `jumpifcantmakeasleep`. This is generally due 
+         to Uproar, but a string table is used so there may be other causes.
+         
+          - Bulbapedia says the Insomnia and Vital Spirit abilities can cause... well, insomnia. 
+            It also says that Uproar is nullified by Soundproof.
+   
+    - Battle text placeholders we also want (so we can stop calling every Pokemon "it"):
+    
+       - pronoun, subject     (he/she/they)
+       - pronoun, object      (him/her/them)
+       - pronoun, possessive  (his/hers/their)
+       - pronoun, reflexive   (himself/herself/themself)
+       - pronoun, subject is  (he's/she's/they're)
+      
+    - Strings to coalesce:
+    
+       - ATTACKER used MOVE, but it failed!
+       - ATTACKER used MOVE, but the attack missed!
+       - ATTACKER used MOVE, but it doesn't affect TARGET...
+       - ATTACKER used MOVE. It's not very effective...
+       - ATTACKER used MOVE. It's super effective!
+       - ATTACKER used MOVE... and TARGET endured the hit!
+          = Complication: you can endure multi-hit moves.
+       - ATTACKER used MOVE, but TARGET protected TARGET_PRONOUN_REFLEXIVE!
+       - ATTACKER used MOVE, but TARGET's Substitute took the hit for TARGET_PRONOUN!
+       
+       - ATTACKER used MOVE, but only hit TARGET one time.
+       - ATTACKER used MOVE, and hit TARGET NUMBER times!
+       
+       - ATTACKER used MOVE, and STATUSed TARGET!
+       - ATTACKER used MOVE. It's super effective, and it STATUSed TARGET!
+       - ATTACKER used MOVE. It's not very effective, but it STATUSed TARGET!
+          = e.g. Gardevoir used Confusion. It's super effective, and it confused Beedrill!
+       
+       - Self-healing moves
+          - ATTACKER used MOVE, and restored PRONOUN_POSSESSIVE health.
+          - ATTACKER used MOVE, but it failed: PRONOUN_POSSESSIVE HP is already full!
+             = The separate "NAME's HP is full!" error text in vanilla is STRINGID_PKMNHPFULL, 
+               displayed by two battle scripts:
+                - BattleScript_AlreadyAtFullHp
+                   - Caller: BattleScript_EffectRestoreHp (generic handler for HP-restoring moves)
+                   - Caller: BattleScript_EffectRest
+                   - Caller: Three identical "recover based on sunlight" moves that use the same 
+                     script in the same location:
+                      - BattleScript_EffectMorningSun
+                      - BattleScript_EffectSynthesis
+                      - BattleScript_EffectMoonlight
+                   - Caller: BattleScript_EffectSoftboiled
+                - BattleScript_WishButFullHp   (branch in the Wish move handler, if the wish comes true)
+          - ATTACKER used MOVE, and cured PRONOUN_REFLEXIVE of STATUS.
+       
+       - ATTACKER used MOVE, but hurt PRONOUN_REFLEXIVE in PRONOUN_POSSESSIVE confusion!
+       
+       - ATTACKER's STAT and OTHER_STAT sharply rose!
+       - ATTACKER's STAT, OTHER_STAT, and THIRD_STAT rose!
+       - All of ATTACKER's stats rose!
+       
+       - COMBATANT gained NUMBER XP, and grew to Lv. NUMBER!
+       
+       - COMBATANT ate PRONOUN_POSSESSIVE ITEM and restored NUMBER HP.
+       - COMBATANT ate PRONOUN_POSSESSIVE ITEM and cured PRONOUN_POSSESSIVE STATUS.
+       
+       - COMBATANT and Foe COMBATANT took damage from the WEATHER.
+          = "Gardevoir and Foe Misdreavus are buffeted by the sandstorm."
+          = "Gardevoir and Foe Misdreavus are pelted by hail."
+       
+       - Double battles:
+         - ENEMY_TRAINER sent out COMBATANT and COMBATANT!
+       
+         - ATTACKER used MOVE. It's super effective against NAME!
+            = Multi-target move; super-effective on one target; normal on another.
+         - ATTACKER used MOVE. It's not very effective against NAME...
+            = Multi-target move; not-very-effective on one target; normal on another.
+         - TARGET and TARGET fainted!
+         - TARGET and TARGET took damage from the WEATHER.
+         - COMBATANT and COMBATANT gained NUMBER XP.
+      
+       - Persistent changes to a battler:
+          - NAME forgot MOVE, and learned REPLACEMENT.
+       
+       - Other strings we could potentially add, looking at some battle scripts:
+          - ATTACKER used MOVE, but TARGET's Substitute protected TARGET_PRONOUN.
+             = Currently handled by several battle scripts as a manual check for Substitute and 
+               a jump to the "but it failed" message; see BattleScript_EffectSleep on Line 284 
+               of battle_scripts_1.s for an example.
+          - ATTACKER used MOVE, but it failed: TARGET is already STATUSed.
+             = See BattleScript_EffectSleep, branch BattleScript_AlreadyAsleep, and more generally 
+               the "but it failed" branch for when the target has another status that isn't sleep.
+         
+          - Coalescing for specific moves:
+             - Destiny Bond
+                - ATTACKER used Destiny Bond. PRONOUN_SUBJECT_IS trying to take PRONOUN_POSSESSIVE foe down with PRONOUN!
+                   = "Tangela used Destiny Bond. He's trying to take his foe down with him!"
+             - Perish Song
+                - COMBATANT and COMBATANT's Perish count fell to NUMBER!
+                   = If both combatants are affected and have the same count, i.e. no one switched out.
+             - Rest
+                - ATTACKER used Rest, but it failed: PRONOUN_SUBJECT_IS already asleep.
+                   - Can occur if Rest is used via Sleep Talk.
+                - ATTACKER used Rest, but it failed: <Uproar error message>
+                - ATTACKER used Rest and fell asleep, but PRONOUN_POSSESSIVE HP is already full.
+                   = Actually, would the user still fall asleep? We need to RE the `trysetrest` 
+                     script opcode.
+             - Spit Up
+                - ATTACKER used SPIT UP, but failed to SPIT UP a thing!
+             - Swallow
+                - ATTACKER used SWALLOW, but failed to SWALLOW a thing!
+               
+          - If we want to be more informative about move failures...
+             = The `printstring` opcode could be useful here.
+             - ATTACKER used Dream Eater, but it failed: TARGET is still awake.
+      
+    - Other changes to make:
+    
+       - In vanilla, stat changes trigger a text message, a pause, and a stat change animation. 
+         We should make the text and animations display concurrently.
+    
+       - Health bar changes should animate in proportion with the damage done. When a Lv.100 
+         Mewtwo annihilates some bug in Viridian Forest, the health bar should drain rapidly 
+         both to emphasize the sheer power of the hit and to avoid keeping players waiting 
+         as they swat trivial foes out of their way.
+    
+       - How difficult would it be to have weather animations play continuously, possibly even 
+         alongside move animations?
+         
+       - Certainly, we should get rid of there being distinct modals for weather. Instead of 
+         playing a rain animation with "It is raining." as a pause, we should play the weather 
+         animations constantly during move selection, and have weather info display at the 
+         top-level action menu (i.e. before you've chosen Fight/Bag/Switch/Run). This would 
+         improve flow when weather is active.
+
+
+Conclusions:
+
+ - Overworld dialogue boxes are handled via the APIs in field_message_box.h.
+ - These APIs in turn rely on StringExpandPlaceholders in gflib/string_util.h, pairing the resulting 
+   expanded string with a text printer initialized via AddTextPrinterForMessage.
+    = The expansion destination is gStringVar4, which is used in several files and seems to indicate 
+      the "main dialogue" to print on-screen. It's declared in `gflib/string_util.h` and is 1000 chars 
+      long. This buffer is not *exclusively* used for dialogue, however; known uses include:
+       - Dialogue
+          - including at least some hardcoded item use messages
+       - Pokedex Diploma
+       - Mystery Event script command: giveribbon
+       - Viewing link battle records
+       - The Battle Tower apprentices' dialogue (src/apprentice.c).
+ - Other callers of AddTextPrinterForMessage include...
+    - src/apprentice.c
+    - src/main_menu.c
+       - Task_NewGameBirchSpeech_WaitForSpriteFadeInWelcome
+       - Task_NewGameBirchSpeech_MainSpeech
+       - Task_NewGameBirchSpeech_AndYouAre
+       - Task_NewGameBirchSpeech_BoyOrGirl
+       - Task_NewGameBirchSpeech_WhatsYourName
+       - Task_NewGameBirchSpeech_SoItsPlayerName
+       - Task_NewGameBirchSpeech_ReshowBirchLotad
+       - Task_NewGameBirchSpeech_AreYouReady
+ - Other callers of StringExpandPlaceholders include...
+    - src/coins.c
+    - src/mystery_event_script.c
+    - src/fldeff_softboiled.c
+    - src/diploma.c
+    - src/money.c
+    - src/battle_records.c
+    - gflib/string_util.c
+       = Recursion.
+    - src/shop.c
+
+ = So where is battle text handled?
+    - battle_message.h and battle_message.c
+       - The system here is entirely unique, relying on a BattleStringExpandPlaceholders function 
+         that handles bespoke placeholder codes and text buffers.
+    - There's also an entire script engine for battles and moves, with scripts stored in two files: 
+      battle_scripts_1.s and battle_scripts_2.s. There are moves that directly run accuracy checks 
+      and potentially print "move missed" messages, including...
+       - BattleScript_EffectDreamEater
+          - Jumps to a "no effect" branch if the target has a Substitute.
+          - Falls through to the "no effect" branch if the target is not asleep.
+          - If the target is asleep, invokes `accuracycheck` with BattleScript_PrintMoveMissed as 
+            the failure callback.
+       - BattleScript_PrintMoveMissed
+          - Line 273 of battle_scripts_1.s. Unclear how it decides what string to show.
+          
+             - Look at BattleScript_MakeMoveMissed just above it. There are script opcodes to set 
+               result flags for the move, and then opcodes like `resultmessage`. Even things like 
+               PP reduction are handled via script opcodes like `ppreduce`.
+               
+               Looks like `attackstring` prints the text for the attacker using a move, and then 
+               `resultmessage` prints a separate message for the results. Could it really be so 
+               simple? Could we not add a new opcode that prints the two combined when possible?
+               
+                - But we'd have to look at every possible result that `resultmessage` can display, 
+                  to see if it *would* be possible.
+                  
+                - Move results are defined in `battle.h`; search for MOVE_RESULT_MISSED.
+                
+                - In some cases, a move indicates side-effects not using a result code, but rather 
+                  by using a "HITMARKER" flag. Bide is one example, using HITMARKER_CHARGING and 
+                  the `setbide` script opcode.
+
+       - Several moves invoke a `printstring` opcode directly, passing string IDs. The standard 
+         BattleScript_EffectRestoreHp script for HP-restoring moves uses this (along with handling 
+         edge-cases like the user already having full HP).
+
+ - If we want to add automatic word-wrapping to overworld and scripted dialogue...
+    - Define an alternate version of StringExpandPlaceholders that also measures text and writes line 
+      breaks into the output.
+       - It would also need to accept text printing parameters. The field message box APIs take the 
+         expanded string and use AddTextPrinterForMessage (src/menu.c) to set up text printing for 
+         it; we'd want to define macros for "message" text printing so we don't have to duplicate the 
+         font parameters across multiple places.
+          = Ideally: we create our text printer first, and then just pass that entire thing to our 
+            custom string expansion. It can pull not only the font, but also the available width for 
+            text display, from the text printer struct.
+    - Have the field message box APIs rely on that.
+
+ - If we want to add automatic word-wrapping to in-battle text (and if we want to coalesce battle 
+   messages in general)...
+    - We'll have to study the battle message API (battle_message.h).
+    - We'll have to study the battle engine as a whole.
+ 
+    - If we want to coalesce battle messages (e.g. "Gardevoir used Psychic, but the attack missed!")...
+    
+       - We'll likely have to rewrite a very substantial portion of the battle/move scripts. We'd need 
+         to make it possible for move scripts to signal success and failure modes to the "outside world" 
+         so that we can combine "NAME used MOVE" with the result text when possible and when appropriate.
+         
+          - Some of the changes we want to make may be trivial. For example, stat reduction is handled 
+            via a collection of scripts for each stat which ultimately jump to the same script for showing 
+            messages and animations: BattleScript_EffectStatDown. We want to make text and animations 
+            display concurrently rather than consecutively... It *may* be as simple as removing the single 
+            `waitanimation` opcode from this one script (along with a change in BattleScript_EffectStatUp).
+
+
+
+Vanilla code related to text:
+
+ - src/field_specials.c
+    - void Task_ShowScrollableMultichoice(u8 taskId)
+       = Integrates with the game's task queue system (gTasks).
+       - Pulls gSpecialVar_0x8004 and uses that to get a list of multiple-choice items to display. 
+         There are hardcoded lists for the flute craftsman's flutes, the Pokemon Fan Club rater, 
+         Game Corner prizes, SS Tidal destinations, and so on.
+       - Uses DisplayTextAndGetWidth for each list item, and uses that to know the correct window 
+         width to use for the choice menu popup.
+          = Two things to note. One: This function doesn't actually display any text. Two: It allocates 
+            a 64-byte buffer, expands placeholders in the input string, and measures the on-screen 
+            width of the string assuming FONT_NORMAL. It's only suitable for very short runs of text, 
+            then.
+       - Uses several functions including ListMenuInit to set up the list menu.
+          - The list menu system is defined in `list_menu.h` and `list_menu.c`.
+             - List menus ultimately end up using AddTextPrinterParameterized4 to print each list item. 
+               This function is defined in `menu.h`/`menu.c` and wraps AddTextPrinter, described below.
+               
+ - src/scrcmd.c
+    = Defines all script commands.
+    - ScrCmd_message
+       - Calls ScriptReadWord to get a pointer to the string to display.
+       - Calls ShowFieldMessage with that pointer.
+    - ScrCmd_pokenavcall
+       - Identical to ScrCmd_message, except that it calls ShowPokenavFieldMessage.
+    - ScrCmd_messageautoscroll
+       - Identical to ScrCmd_message, except that it sets global text flags to force medium text speed 
+         and enable automatic text scrolling; then it calls ShowFieldAutoScrollMessage.
+    - ScrCmd_messageinstant
+       = Prints all text at once, and skips waiting for player input. Only used by link contests.
+       - Calls DrawDialogueFrame.
+       - Calls AddTextPrinterParameterized.
+
+ - include/field_message_box.h
+    = Defines APIs used for "field message boxes," which basically includes all overworld dialogue.
+    - bool8 ShowFieldMessage(const u8* message);
+       - If a field message is already showing, aborts and returns false.
+       - ExpandStringAndStartDrawFieldMesage(message, TRUE);
+          - StringExpandPlaceholders(gStringVar4, message);
+          - AddTextPrinterForMessage(allowSkippingDelayWithButtonPress); // i.e. the bool arg
+          - CreateTask_DrawFieldMessage();
+       - Sets the "field message mode" to FIELD_MESSAGE_BOX_NORMAL to indicate a message is showing.
+       - Returns true.
+    - bool8 ShowPokenavFieldMessage(const u8* message);
+    - bool8 ShowFieldMessageFromBuffer(void);
+    - bool8 ShowFieldAutoScrollMessage(const u8* message);
+       - Identical to ShowFieldMessage, but it uses FIELD_MESSAGE_BOX_AUTO_SCROLL and passes FALSE 
+         when calling ExpandStringAndStartDrawFieldMessage.
+    - void HideFieldMessageBox(void);
+    = ...and similar functions...
+
+ - gflib/text.h
+    - struct TextPrinter
+       - struct TextPrinterTemplate printerTemplate;
+          - const u8* currentChar;
+          - u8 windowId;
+          - u8 fontId;
+          - u8 x;
+             = X-coordinate of the lefthand edge of the print area.
+          - u8 y;
+             = Y-coordinate of the top edge of the print area.
+          - u8 currentX;
+             = State variable: current X-position to print to.
+          - u8 currentY;
+             = State variable: current Y-position to print to.
+          - u8 letterSpacing;
+          - u8 lineSpacing;
+          - u8 unk;
+          - u8 fgColor;
+             = Configuration: text color.
+          - u8 bgColor;
+             = Configuration: print area background color.
+          - u8 shadowColor;
+             = Configuration: text shadow color.
+       - function pointer `callback`, type is `void(TextPrinterTemplate*, u16)`.
+       - struct TextPrinterSubStruct; // as an array of seven bytes, casted
+          - u8 fontId;
+          - bool8 hasPrintBeenSpedUp;
+             = State variable: if the player is allowed to speed up text printing by pressing and 
+               holding the A or B buttons, then this is set to true during per-character handling 
+               if the player presses A or B on one character and then holds it down through the 
+               next character. The bool is set on the first character and checked on the second.
+          - u8 unk;
+          - u8 downArrowDelay;
+          - u8 downArrowYPosIdx;
+          - bool8 hasFontIdBeenSet;
+          - u8 autoScrollDelay;
+       - u8 active;
+       - u8 state;
+       - u8 textSpeed;
+          = Used as the default value for the `delayCounter` after each glyph.
+       - u8 delayCounter;
+          = State variable used to manage time delays between glyphs.
+       - u8 scrollDistance;
+          = State variable: remaining distance to vertically scroll the text.
+       - u8 minLetterSpacing;
+          = Configuration used to enforce monospacing; sets the character/cell width.
+       - u8 japanese;
+          = Bool indicating whether Japanese printing is enabled.
+    - u16 AddTextPrinterParameterized(...);
+       = Used by a variety of game scripts (src/script_menu.c).
+          - CreatePCMultichoice
+             = The menu for the PC. Conditional display of the Hall of Fame, and of Lanette's name, 
+               are hardcoded.
+          - CreateLilycoveSSTidalMultichoice
+             = The menu for the SS Tidal at Lilycove City, used for fast travel and for event islands. 
+               All contents and logic are hardcoded.
+          - CreateStartMenuForPokenavTutorial
+             = The Start Menu -- apparently a variant shown specifically when you're being shown how 
+               to use the PokeNav.
+       = Notably, there is a separate InitMultichoiceNoWrap function used to handle multiple choice 
+         dialogs. It runs through a task queue stored in `gTasks`.
+    - bool16 AddTextPrinter(TextPrinterTemplate*, u8 speed, callback);
+    - void RunTextPrinters(void);
+
+ - gflib/text.c
+    - FontFunc_Small(struct TextPrinter*);
+       = Variants exist for all fonts, it looks like.
+       - Creates a TextPrinterSubStruct.
+       - Calls RenderText, passing your text printer.
+    - GetGlyphWidth_Small(u16, bool32);
+       - Variants exist for all fonts, it looks like.
+    - RenderText(struct TextPrinter*);
+       = Internal, called by the "FontFunc_WhicheverFont" functions; see above.
+          = Note: FontFunc_Braille doesn't call RenderText; it duplicates large swaths of the 
+            functionality.
+       = Text printing is a state machine. Render states are:
+          - Handle char
+             - If the A or B buttons are held and subStruct->hasPrintBeenSpedUp, then forces the 
+               textPrinter->delayCounter to zero.
+             - If the delayCounter is non-zero and the text speed is non-zero, then decrements the 
+               delay counter and aborts; I guess this controls how quickly we print each character, 
+               handling the delay between characters.
+             = If we reach this point, we're intent on printing the next character.
+             - If we're watching a battle replay, forces the delay counter to 3; else, forces it to 
+               the textPrinter->textSpeed.
+                = This sets up the delay before the character after the one we're about to print.
+             - Pull the current character from the textPrinter->printerTemplate, and then advance 
+               that pointer to the next character.
+             - Switch on the current character.
+                - Newline:
+                   - Reset the current X-position.
+                   - Advance the current Y-position by the line height plus the line spacing.
+                   - Return RENDER_REPEAT.
+                - PLACEHOLDER_BEGIN:
+                   - Advance to the next character.
+                   - Return RENDER_REPEAT.
+                - EXT_CTRL_CODE_BEGIN:
+                   - Pull the next character.
+                   - Switch on that character:
+                      - EXT_CTRL_CODE_COLOR:
+                         - Consume the next character; treat it as the color to use.
+                         - Override the text color.
+                         - GenerateFontHalfRowLookupTable(...)
+                         - Return RENDER_REPEAT.
+                      - EXT_CTRL_CODE_HIGHLIGHT:
+                         - Consume the next character; treat it as the color to use.
+                         - Override the background color.
+                         - GenerateFontHalfRowLookupTable(...)
+                         - Return RENDER_REPEAT.
+                      - EXT_CTRL_CODE_SHADOW:
+                         - Consume the next character; treat it as the color to use.
+                         - Override the text shadow color.
+                         - GenerateFontHalfRowLookupTable(...)
+                         - Return RENDER_REPEAT.
+                      - EXT_CTRL_CODE_COLOR_HIGHLIGHT_SHADOW:
+                         - Consume the next three characters; treat them as the text, background, and 
+                           text shadow colors to use.
+                         - Override those three colors.
+                         - GenerateFontHalfRowLookupTable(...)
+                         - Return RENDER_REPEAT.
+                      - EXT_CTRL_CODE_PALETTE:
+                         = This seems like a no-op. Is this constant used anywhere else?
+                         - Consume the next character.
+                         - Return RENDER_REPEAT.
+                      - EXT_CTRL_CODE_RESET_FONT:
+                         = This seems like a no-op. Why does this reset anything?
+                         - Return RENDER_REPEAT.
+                      - EXT_CTRL_CODE_PAUSE:
+                         - Consume the next character. Assign it to textPrinter->delayCounter.
+                         - Advance to the RENDER_STATE_PAUSE.
+                         - Return RENDER_REPEAT.
+                      - EXT_CTRL_CODE_PAUSE_UNTIL_PRESS:
+                         = ...
+                      - EXT_CTRL_CODE_WAIT_SE:
+                         - Advance to the "wait sound effect" state.
+                         - Return RENDER_UPDATE.
+                      - EXT_CTRL_CODE_PLAY_BGM:
+                         - Consume two more characters. Treat them as a 16-bit value to be passed 
+                           to PlayBGM directly.
+                         - Return RENDER_REPEAT.
+                      - EXT_CTRL_CODE_ESCAPE:
+                         - Consume the next character.
+                         - Break.
+                      - EXT_CTRL_CODE_PLAY_SE:
+                         - Consume two more characters. Treat them as a 16-bit value to be passed 
+                           to PlaySE directly.
+                      - EXT_CTRL_CODE_SHIFT_RIGHT:
+                         - Consume the next character. Move the current X-position by that offset.
+                         - Return RENDER_REPEAT.
+                      - EXT_CTRL_CODE_SHIFT_DOWN:
+                         - Consume the next character. Move the current Y-position by that offset.
+                         - Return RENDER_REPEAT.
+                      - EXT_CTRL_CODE_FILL_WINDOW:
+                         - Fill the entire print area with the background color, and reset the current 
+                           X- and Y-positions.
+                         - Return RENDER_REPEAT.
+                      - EXT_CTRL_CODE_PAUSE_MUSIC:
+                         = Pause the music.
+                      - EXT_CTRL_CODE_RESUME_MUSIC:
+                         = Resume the music.
+                      - EXT_CTRL_CODE_CLEAR:
+                         - Consume the next byte. Treat it as a pixel width.
+                         - If the pixel width is positive, pass it and textPrinter to ClearTextSpan, 
+                           and advance the current X-position by the width. Return RENDER_PRINT.
+                         - Else, return RENDER_REPEAT.
+                      - EXT_CTRL_CODE_SKIP:
+                         - Consume the next character. Treat it as a pixel width.
+                         - Advance the current X-position by that width.
+                         - Return RENDER_REPEAT.
+                      - EXT_CTRL_CODE_CLEAR_TO:
+                         = ...
+                      - EXT_CTRL_CODE_MIN_LETTER_SPACING:
+                         - Consume the next character. Overwrite the minimum letter spacing with it.
+                      - EXT_CTRL_CODE_JPN:
+                         - Enable Japanese printing.
+                      - EXT_CTRL_CODE_ENG:
+                         - Disable Japanese printing.
+                   - Break.
+                - CHAR_PROMPT_CLEAR:
+                   = Waits for button press; then clears dialog. This is a manually-placed "paragraph 
+                     continuation" of sorts.
+                   - Set the state to "clear" state.
+                   - Call TextPrinterInitDownArrowCounters.
+                   - Return RENDER_UPDATE.
+                - CHAR_PROMPT_SCROLL:
+                   = Waits for button press; then scrolls dialog. This is a manually-placed "paragraph 
+                     separator" of sorts.
+                   - Advance to the "scroll start" state.
+                   - Call TextPrinterInitDownArrowCounters.
+                   - Return RENDER_UPDATE.
+                - CHAR_EXTRA_SYMBOL:
+                   - Consume the next character, and OR it with 0x0100. This is `currChar`, the glyph 
+                     we wish to print.
+                   - Break.
+                - CHAR_KEYPAD_ICON:
+                   - Consume the next charater.
+                   - Pass it as an argument to DrawKeypadIcon, and advance the current X-position by 
+                     the return value.
+                   - Return RENDER_PRINT.
+                - EOS: // 0xFF, end-of-string
+                   - Return RENDER_FINISH.
+             = If we reach this point, then we fell through from one of the above cases and are going 
+               to print an ordinary character.
+             - Switch on the current font ID and call the appropriate "DecompressGlyph_WhicheverFont" 
+               function, passing the character ID to print and the bool indicating whether Japanese 
+               printing is enabled.
+             - Call CopyGlyphToWindow passing the text printer.
+             - If minimum letter spacing is set, advance by the printed glyph width plus the spacing; 
+               clear part of the print area if necessary. Else, just advance by the glyph width and 
+               "printer template" letter spacing.
+                - It seems that "minimum letter spacing" would more accurately be understood as a way 
+                  to force monospacing.
+             - Return RENDER_PRINT.
+          - Wait
+             = When internal function TextPrinterWait returns true, advances to "handle char" state.
+          - Clear
+             = If internal function TextPrinterWaitWithDownArrow returns true, clears the text print 
+               area with the background color, resets the print position, and advances to the "handle 
+               char" state.
+          - Scroll start
+             = If internal function TextPrinterWaitWithDownArrow returns true, clears the down arrow, 
+               queues a scroll (distance equal to one line plus line spacing), and advances to state 
+               "scroll."
+          - Scroll
+             = If any textPrinter->scrollDistance remains, then gets the scrollSpeed, which is based 
+               on the player's chosen text speed. Scrolls the text by the given speed. Once no scroll 
+               distance remains, advances to the "handle char" state.
+          - Wait Sound Effect
+             = If a sound effect is not currently playing, advances to the "handle char" state.
+          - Pause
+             = Decrements textPrinter->delayCounter, a counter for the number of ticks to wait. Checks 
+               for a zero counter before decrementing; if seen, advances to the "handle char" state.
+    - RenderFont(struct TextPrinter*);

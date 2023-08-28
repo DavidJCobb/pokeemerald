@@ -1,0 +1,127 @@
+
+== Custom Game Options ==
+
+=== Value types and storage formats ===
+
+ - Species ID: 11 bits; range [0, 2047]
+ - Percentage scale, unsigned, wide:
+    - [0, 5000] with  1% granularity would be 13 bits
+    - [0, 5000] with 10% granularity would be  9 bits
+
+=== Desired ===
+
+ = Union: starting species
+    - Override all three starter Pokemon
+       - Cost: 3 uint16_ts
+    - Single-species challenge
+       - Cost:
+          - uint16_t: player species
+          - uint16_t: rival base species (we evolve it for later battles)
+          - 2-bit enum:
+             - Only allow catching target species
+             - Polymorph all caught Pokemon into target species
+             - Grant instance of target species after each Gym Badge, up to 6
+          = Total: 34 bits
+
+ = Scaling
+    - Battle values for both player and enemy
+       - Accuracy
+       - Damage dealt
+       - Move side-effect odds
+    - Wild encounter rates
+    - Catch rates
+    - Egg lay time
+    - Egg hatch time
+    - Mirage Island odds
+       = Mirage Island works by testing whether the low 16 bits of any party Pokemon's personality 
+         value match the current Mirage Island random value. This means we can scale Mirage Island 
+         "odds" in 15 increments at the most granular, not including "never" and "always" options.
+    - Money loss on defeat
+       - Percentage modifier
+       - Clamp to minimum
+       - Clamp to maximum
+    - Money gain on victory
+       - Percentage modifier
+       - Clamp to minimum
+       - Clamp to maximum
+    - Shop prices, buy
+    - Shop prices, sell
+    - Sprinting speed
+    - Overworld poison damage rates
+       - Steps taken
+       - Damage dealt
+ 
+ = Various
+    - Swap trade evolutions for stone or level evolutions
+       - Cost: 2-bit enum
+          = Disabled
+          = Stones
+          = Level Ups
+    - Enable/disable full Pokedex access
+       - Enables alternate encounter tables to avoid version-exclusive species
+       - Enables additional events for any exclusive legendaries
+       - Enables additional events to allow all fossils and starters
+    - Cap player party size
+       - Cost: 3-bit value (party cap; 0 = no cap)
+    - Cap player party levels
+       - ...to furthest-visited route's max wild level
+       - ...to highest level in next Gym Leader's party
+          = Uses Rival and Champion once all Leaders are defeated
+       - ...to constant
+    - Limit catches by type(s)
+       - Bitfield for types
+    - Override player or enemy types
+       = i.e. we always act as if your Pokemon are, say, Fire-type
+    - Double Battles
+       - 4 options; 2 bits.
+       - Normal
+          = Acts as "Permissive" if you cap your party size at 1. Needed to 
+            avoid getting softlocked at Tate & Liza.
+       - Permissive
+          = You can enter Double Battles even if you only have one Pokemon.
+       - Forced
+          = All battles are Double Battles.
+       - Disabled
+          = All battles are Single Battles.
+    - Enable/disable player item use during battles
+    - Allow HM use without teaching moves
+       - Make Fly configurable separately from the others
+       - Allow Fly (i.e. fast travel) from game start
+    - Enable/disable limited events (e.g. Eon Ticket)
+    - Enable/disable reusable TMs
+    - Enable/disable rebattling fainted/fled legendaries
+       = Set fallback locations for Lati@s? Or just make it so it never stops roaming until caught?
+    - Enable/disable step counter instead of real-time clock for events (e.g. berries, dailies, etc.)
+    - Enable/disable infinite Rare Candies
+    - Enable/disable infinite stat vitamins
+
+ = Randomizer
+    = Different randomizations should be "volatile" or "static." The former means that they're always 
+      re-rolled during play: save-scumming produces different results with every reload.
+ 
+ = Nuzlocke
+    - Enable/disable
+    = Options below are greyed out if the above is Disabled.
+    - Slain Pokemon behavior
+       - Graveyard boxes (set count)
+       - Delete forever
+    - Encounter limit options
+       - Encounter Limit              // 2-bit enum
+          - Disabled
+          - One per Location
+          - First Encounter or Bust
+       = Options below are greyed out if the above is Disabled.
+       - Gift Pokemon Behavior        // 2-bit enum
+          - Free; Doesn't Count
+          - Counts as Encounter
+          - Disable All Gifts
+       - Shiny Exception              // 1 bit
+          - Always Allow
+          - Replace Prior from Same Route
+       - Dupes Clause                 // 1 bit
+          - Disabled
+          - Enabled
+       - Dupes Clause Shiny Exception // 2 bits
+          - No Exception
+          - Replace Prior of Same Species
+          - Always Allow

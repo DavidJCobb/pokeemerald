@@ -1,0 +1,153 @@
+
+== Goals ==
+
+ - Allow the player to carry every item type in their bag simultaneously, a la the DS games, 
+   and remove the PC item storage.
+   
+    = VIABLE if we use bitpacked storage.
+    
+       - There is, however, one problem. The inventory isn't just written to SaveBlock1 for 
+         serialization; item-related functions access the same fields, so that's where the 
+         inventory lives even during play. We'd have to separate it out: we'd have to have 
+         routines specifically for converting between a bitpacked format when saving and 
+         loading, which will greatly complicate saving and loading, I worry.
+ 
+ - Expand Pokemon names from 10 characters to 12 characters.
+ 
+    = VIABLE. There is enough spare space in the savedata sectors reserved for the Pokemon 
+      Storage System, which is our largest concern. We should be able to make this change 
+      with minimal effort.
+ 
+ - Expand the player name to 12 characters.
+ 
+    = VIABLE.
+
+
+== Save data ==
+
+The game divides save data into 4KB "sectors" with 3968 (0xF80) bytes of data and a 128-byte footer. There are 32 sectors in total, 
+for a total save data size of 128KB. That's the maximum size of Flash ROM, the non-battery-backed cartridge RAM: there is no way to add more sectors.
+
+Sector mappings are listed in `save.c` and are as follows:
+
+     0 - 13 | Save Slot A   (14 sectors long)
+    14 - 27 | Save Slot B   (14 sectors long)
+    28 - 29 | Hall of Fame  ( 2 sectors long)
+    30      | Trainer Hill
+    31      | Recorded Battle
+
+The game alternates between slots A and B as a failsafe, so that if a save file is corrupted, the previous one can be loaded. Sectors are also written in different orders with every safe, which the decomp team suspects was done to reduce wear on the flash memory.
+
+Save data is split into two "save blocks," the former of which is nearly four sectors large -- and is split across four sectors; the save system can cope with a struct being too large to fit in a single sector. Additionally, the Pokemon Storage System takes 9 sectors.
+
+   SaveBlock1     |  4
+   SaveBlock2     |  1
+   PokemonStorage |  9
+   ---------------+----
+   Total          | 14
+
+The following structs, then, are of interest:
+
+ - SaveBlock1 (global.h, line 970)
+    = Size is 0x3D88, leaving 0x78 bytes to spare.
+    = Members include, but are not limited to:
+       - Overworld position
+       - Overworld music, weather, etc. state
+       - Current party
+       - Money
+       - Inventories
+          = An item slot is a 16-bit item type and a 16-bit quantity.
+          = There exist 377 item types in Pokemon Emerald.
+          - PC
+             - 50 slots, unsorted, though Key Items can't be deposited per game logic
+          - Player bag 
+             - 30 general item slots
+             - 16 Poke Ball slots
+             - 30 Key Item slots
+             - 64 TMs and HM slots
+             - 46 Berry slots
+             = 186 total item slots
+          
+          = Current bag storage is 32 bits * 186 slots = 5952 bits.
+          
+            If we switched to bitpacked storage, we'd need 9-bit item IDs and a 7-bit quantity (max 99).
+            This totals to 16 bits per item, doubling the number of items we can store in the same space: 
+            372 slots, total. Still not even half of what we'd need for a DS-style unlimited bag.
+            
+             = Additionally, this would cap the max possible item ID to 511.
+             
+             = But wait. The savedata sorts items by category... If we treat "items must be in the right 
+               bag pocket" as an invariant, then we can compress the data further...
+               
+                = There are 58 TMs and HMs, total. For the sake of argument, let's say we don't add any 
+                  more. That means we need six bits to store a "pocket-relative" ID. (Plus, if we were 
+                  to implement infinite-use TMs and HMs, then we could just use a presence bitmask for 
+                  the whole bag pocket.)
+                  
+                = There are 46 berries, I believe, including unused IDs. We could encode "pocket-relative" 
+                  berry IDs using 6 bits.
+                  
+                = There are 12 Poke Ball types. If we never add more, then we can store "pocket-relative" 
+                  ball IDs using 4 bits.
+                  
+                = There are 58 key items in Emerald including FR/LG exclusives. These can be stored as a 
+                  five-bit ID with no quantity.
+                  
+                = That leaves 203 general items, requiring an 8-bit item ID.
+                  
+                = Optimized bitcounts using just the above would be...
+                     (6 + 7) *  58 // TMs
+                     (6 + 7) *  46 // berries
+                     (4 + 7) *  12 // balls
+                          5  *  58 // key items
+                     (8 + 7) * 203 // general
+                   = 4819 total bits for an infinite bag
+                  
+                  This would leave us with 1133 bits to spare over vanilla. Additionally, these bitcounts 
+                  allow for the following, assuming we need a "None" item ID for each:
+                  
+                   -  63 TM/HM definitions     // room for  5 new items
+                   -  63 berry definitions     // room for 17 new items
+                   -  15 Poke Ball definitions // room for  3 new items
+                   -  31 Key Item types        // room for  5 new items
+                   - 255 general item types    // room for 52 new items
+          
+       - Pokedex flags
+       - Trainer rematch info
+       - All script flags, variables, and game stats
+       - Berry trees
+       - Secret bases
+       - Owned decorations
+       - TV Shows
+       - Outbreak state
+       - Easy Chat wordpicker unlocks?
+       - Roaming Pokemon
+       - Enigma Berry definition
+       - Mystery Gift savedata
+ - SaveBlock2 (global.h, line 494)
+    = Size is 0xF2C, leaving 0x54 bytes to spare.
+    = Members include, but are not limited to:
+       - Player name and gender
+       - Play time
+       - Options
+       - struct Pokedex pokedex
+       - Time-related flags
+       - 32-bit GCN link flags, used by Colosseum and XD
+       - Battle Tower apprentices
+       - Record mixing stuff
+       - Battle Frontier information (sizeof == 0x8E0)
+          - Current challenge state
+          - Trainers active
+          - Records, win streaks, etc., set by player
+ - PokemonStorage
+    = Size is 0x83D0, consuming 9 sectors with 0x7B0 bytes to spare.
+    = 14 boxes, with max name lengths of 8 not including terminator bytes. 30 Pokemon per box; total 420.
+    - Current box
+    - Boxed Pokemon
+       = Total size is 0x8343 bytes.
+       = Increasing Pokemon name length from 10 to 12 would potentially enlarge this data by 0x348 bytes.
+          = We would then have 0x468 bytes to spare in the Pokemon Storage System's 9 sectors.
+    - Box names
+       = Total size is 0x7E bytes.
+    - Box wallpapers
+       = Total size is 14 bytes.

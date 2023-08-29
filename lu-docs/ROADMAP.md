@@ -7,6 +7,19 @@
 *** ⬜ `main_menu.c` (Birch intro cutscene)
 *** ⬜ `apprentice.c` (Battle Frontier apprentices)
 *** ⬜ `field_message_box.c` (overworld messages, incl. dialogue, scripting, etc.)
+* ⬜ Options Menu redesign
+** ✅ Vertical scrolling
+** ⬜ Display UI indicating that vertical scrolling is possible
+** ⬜ Visual redesign
+*** ⬜ No window frames; mimic UI of FR/LG help menus, for more space
+*** ⬜ Action bar at the bottom (e.g. "[A] Cycle [D-Pad H] Change [D-Pad V] Scroll [B] Exit")
+*** ⬜ Description bar at bottom, showing behavior of currently highlighted option and/or currently selected value
+* ⬜ Option to press B to toggle running, instead of having to hold it
+** ✅ Options Menu item
+** ✅ Savedata field (in save block 2)
+** ✅ Overworld behavior
+** ⬜ HUD, of some kind, on the overworld when running is toggled on
+*** *// field moves display effects overtop the screen. can we co-opt however that's done?*
 * ⬜ Battle flow improvements
 ** ⬜ Coalesce multiple messages together
 *** ✅ Depends on: automatic word-wrapping

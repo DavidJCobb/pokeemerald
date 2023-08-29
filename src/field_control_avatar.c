@@ -35,6 +35,8 @@
 #include "constants/songs.h"
 #include "constants/trainer_hill.h"
 
+#include "lu/running_prefs.h"
+
 static EWRAM_DATA u8 sWildEncounterImmunitySteps = 0;
 static EWRAM_DATA u16 sPrevMetatileBehavior = 0;
 
@@ -71,18 +73,19 @@ static bool8 UpdatePoisonStepCounter(void);
 
 void FieldClearPlayerInput(struct FieldInput *input)
 {
-    input->pressedAButton = FALSE;
+    input->fieldButtonInteract = FALSE;
     input->checkStandardWildEncounter = FALSE;
     input->pressedStartButton = FALSE;
     input->pressedSelectButton = FALSE;
     input->heldDirection = FALSE;
     input->heldDirection2 = FALSE;
     input->tookStep = FALSE;
-    input->pressedBButton = FALSE;
+    input->fieldButtonResurface = FALSE;
     input->input_field_1_0 = FALSE;
     input->input_field_1_1 = FALSE;
     input->input_field_1_2 = FALSE;
     input->input_field_1_3 = FALSE;
+    input->fieldButtonToggleRun = FALSE;
     input->dpadDirection = 0;
 }
 
@@ -101,9 +104,9 @@ void FieldGetPlayerInput(struct FieldInput *input, u16 newKeys, u16 heldKeys)
             if (newKeys & SELECT_BUTTON)
                 input->pressedSelectButton = TRUE;
             if (newKeys & A_BUTTON)
-                input->pressedAButton = TRUE;
+                input->fieldButtonInteract = TRUE;
             if (newKeys & B_BUTTON)
-                input->pressedBButton = TRUE;
+                input->fieldButtonResurface = TRUE;
         }
 
         if (heldKeys & (DPAD_UP | DPAD_DOWN | DPAD_LEFT | DPAD_RIGHT))
@@ -119,6 +122,12 @@ void FieldGetPlayerInput(struct FieldInput *input, u16 newKeys, u16 heldKeys)
             input->tookStep = TRUE;
         if (forcedMove == FALSE && tileTransitionState == T_TILE_CENTER)
             input->checkStandardWildEncounter = TRUE;
+        
+        // TODO: This is not robust. It activates on the first frame the B-button goes down, which 
+        // means that pressing AND HOLDING the button will also toggle running. I'd prefer that 
+        // the toggle activate on-key-up, and only if the key was down for a short length of time.
+        if (newKeys & B_BUTTON)
+            input->fieldButtonToggleRun = TRUE;
     }
 
     if (heldKeys & DPAD_UP)
@@ -150,8 +159,14 @@ int ProcessPlayerFieldInput(struct FieldInput *input)
     if (TryRunOnFrameMapScript() == TRUE)
         return TRUE;
 
-    if (input->pressedBButton && TrySetupDiveEmergeScript() == TRUE)
+    if (input->fieldButtonResurface && TrySetupDiveEmergeScript() == TRUE)
         return TRUE;
+        
+    // This should be checked after the "Dive emerge" check, since they're mapped to the same 
+    // button and we want "Dive emerge" to take priority.
+    if (input->fieldButtonToggleRun && lu_CanFlipOverworldRunToggle() == TRUE)
+        lu_FlipOverworldRunToggle();
+     
     if (input->tookStep)
     {
         IncrementGameStat(GAME_STAT_STEPS);
@@ -169,7 +184,7 @@ int ProcessPlayerFieldInput(struct FieldInput *input)
 
     GetInFrontOfPlayerPosition(&position);
     metatileBehavior = MapGridGetMetatileBehaviorAt(position.x, position.y);
-    if (input->pressedAButton && TryStartInteractionScript(&position, metatileBehavior, playerDirection) == TRUE)
+    if (input->fieldButtonInteract && TryStartInteractionScript(&position, metatileBehavior, playerDirection) == TRUE)
         return TRUE;
 
     if (input->heldDirection2 && input->dpadDirection == playerDirection)
@@ -177,7 +192,7 @@ int ProcessPlayerFieldInput(struct FieldInput *input)
         if (TryDoorWarp(&position, metatileBehavior, playerDirection) == TRUE)
             return TRUE;
     }
-    if (input->pressedAButton && TrySetupDiveDownScript() == TRUE)
+    if (input->fieldButtonInteract && TrySetupDiveDownScript() == TRUE)
         return TRUE;
     if (input->pressedStartButton)
     {

@@ -26,6 +26,7 @@
 #define tWindowFrameType data[7]
 
 #include "lu/strings.h"
+#include "lu/running_prefs.h"
 #define SELECTED_OPTION_VALUE_FROM_TASK(task, n) (task).data[(n) + 2]
 #define ON_SCREEN_OPTION_ROW_TO_Y_PIXELS(r) ((r) * 16)
 
@@ -282,7 +283,7 @@ void CB2_InitOptionMenu(void)
         gTasks[taskId].tSound = gSaveBlock2Ptr->optionsSound;
         gTasks[taskId].tButtonMode = gSaveBlock2Ptr->optionsButtonMode;
         gTasks[taskId].tWindowFrameType = gSaveBlock2Ptr->optionsWindowFrameType;
-        SELECTED_OPTION_VALUE_FROM_TASK(gTasks[taskId], 6) = 0; // TODO: Load the value for our new "running" option
+        SELECTED_OPTION_VALUE_FROM_TASK(gTasks[taskId], 6) = gSaveBlock2Ptr->optionsRunningToggle;
 
         {  // draw choices for the options that are initially scrolled into view
            u8 i;
@@ -453,7 +454,9 @@ static void Task_OptionMenuSave(u8 taskId)
     gSaveBlock2Ptr->optionsSound = gTasks[taskId].tSound;
     gSaveBlock2Ptr->optionsButtonMode = gTasks[taskId].tButtonMode;
     gSaveBlock2Ptr->optionsWindowFrameType = gTasks[taskId].tWindowFrameType;
-    // TODO: Commit the value for our new "running" option
+    lu_SetOverworldRunOption(
+       SELECTED_OPTION_VALUE_FROM_TASK(gTasks[taskId], 6)
+    );
 
     BeginNormalPaletteFade(PALETTES_ALL, 0, 0, 16, RGB_BLACK);
     gTasks[taskId].func = Task_OptionMenuFadeOut;

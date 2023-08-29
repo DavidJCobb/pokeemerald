@@ -18,6 +18,8 @@
 #include "save.h"
 #include "mystery_gift_menu.h"
 
+#include "lu/string_util.h"
+
 enum {
     RFUSTATE_INIT,
     RFUSTATE_INIT_END,
@@ -2048,7 +2050,11 @@ bool32 RfuMain2(void)
 
 static void SetHostRfuUsername(void)
 {
-    StringCopy(gHostRfuUsername, gSaveBlock2Ptr->playerName);
+    #if RFU_USER_NAME_LENGTH < (PLAYER_NAME_LENGTH + 1)
+        lu_CopyStringWithCutoff(gHostRfuUsername, gSaveBlock2Ptr->playerName, RFU_USER_NAME_LENGTH);
+    #else
+        StringCopy(gHostRfuUsername, gSaveBlock2Ptr->playerName);
+    #endif
 }
 
 void ResetHostRfuGameData(void)

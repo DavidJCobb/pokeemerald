@@ -40,6 +40,7 @@
 ** ⬜ Depends on: savedata format optimizations: player inventory
 * ⬜ Increase Pokemon name length to 12 characters
 * ⬜ Increase player name length to 12 characters
+** ⬜ Depends on: savedata format optimizations (each byte of length increase adds 126 bytes to total savedata size)
 * ⬜ Character customization
 ** ⬜ Separate player pronouns from body, and add a neutral pronoun option
 *** *// actually, i can't find any cases in the vanilla game where the player is referred to by pronoun, aside from Japanese honorifics*

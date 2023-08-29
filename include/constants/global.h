@@ -93,7 +93,7 @@
 #define ITEM_NAME_LENGTH 14
 #define POKEMON_NAME_LENGTH 10
 #define POKEMON_NAME_BUFFER_SIZE max(20, POKEMON_NAME_LENGTH + 1) // Frequently used buffer size. Larger than necessary
-#define PLAYER_NAME_LENGTH 7
+#define PLAYER_NAME_LENGTH 7 // value does not include the string terminator byte
 #define MAIL_WORDS_COUNT 9
 #define EASY_CHAT_BATTLE_WORDS_COUNT 6
 #define MOVE_NAME_LENGTH 12

@@ -18,13 +18,78 @@
       Storage System, which is our largest concern. We should be able to make this change 
       with minimal effort.
  
- - Expand the player name to 12 characters.
+ - Expand the player name from 7 to 12 characters (not counting the terminator):
  
-    = VIABLE.
+    = NOT VIABLE WITHOUT FURTHER CHANGES.
+    
+       - The player's name is stored in the following places, each of which needs a terminator 
+         byte:
+       
+          - SaveBlock2::playerName
+             = This is the current player's name.
+          - Apprentice::playerName
+             = For past apprentices only, including those received via mixing records.
+             = APPRENTICE_COUNT instances.
+          - BattleFrontier::opponentNames[FRONTIER_LVL_MODE_COUNT]
+          - BattleTowerEReaderTrainer::name
+             = One instance, in BattleFrontier.
+          - BattleTowerInterview::opponentName
+             = One instance, in BattleFrontier.
+          - ContestWinner::trainerName
+             = NUM_CONTEST_WINNERS instances in SaveBlock1.
+          - DaycareMail::otName
+             - ...inside of DaycareMon.
+                = DAYCARE_MON_COUNT instances.
+          - EmeraldBattleTowerRecord::name
+             = (BATTLE_TOWER_RECORD_COUNT + 1) instances.
+          - The Lilycove Lady stores one instance of the player name. There is a union of the 
+            following three structs, stored in SaveBlock1.
+             - LilycoveLadyContest
+             - LilycoveLadyFavor
+             - LilycoveLadyQuiz
+          - LinkBattleRecord::name
+             = LINK_B_RECORDS_COUNT instances, stored in SaveBlock1 by way of LinkBattleRecords.
+          - Mail::playerName
+             = MAIL_COUNT instances in SaveBlock1.
+          - The Mauville Old Man stores a union of the following structs of interest, and as 
+            such stores up to NUM_STORYTELLER_TALES many instances of the player's name (and 
+            always reserves room for that many).
+             - MauvilleManBard::playerName
+             - MauvilleManStoryteller::trainerNames[NUM_STORYTELLER_TALES]
+          - RankingHall1P::name
+             = In SaveBlock2.
+             = Total count is HALL_FACILITIES_COUNT * FRONTIER_LVL_MODE_COUNT instances.
+          - RankingHall2P
+             - Two fields: name1 and name2.
+             = In SaveBlock2.
+             = Total count is HALL_RECORDS_COUNT * FRONTIER_LVL_MODE_COUNT instances.
+          - SecretBase::trainerName
+             = SECRET_BASES_COUNT instances in SaveBlock1.
+          - TrainerNameRecord::trainerName // aligned to a two-byte boundary
+             = 20 instances in SaveBlock1. These represent the last 20 trainers the player has met 
+               via record mixing or link features, and the list is maintanied in `link_rfu_3.c`.
+    
+       - The number of occurrences of the player's name is:
+       
+            4 + APPRENTICE_COUNT + FRONTIER_LVL_MODE_COUNT + NUM_CONTEST_WINNERS + DAYCARE_MON_COUNT
+              + (BATTLE_TOWER_RECORD_COUNT + 1)
+              + LINK_B_RECORDS_COUNT + MAIL_COUNT + NUM_STORYTELLER_TALES
+              + (FRONTIER_LVL_MODE_COUNT * HALL_FACILITIES_COUNT)
+              + (FRONTIER_LVL_MODE_COUNT * HALL_RECORDS_COUNT * 2)
+              + SECRET_BASES_COUNT
+              + 20
+         
+         or 4 + 4 + 2 + 13 + 2 + (5 + 1) + 5 + (10 + 6) + 4 + (2 * 9) + (2 * 3 * 2) + 20 + 20, for a 
+         total of 126. This means that every byte we add to the player's name adds 126 bytes to the 
+         entire savegame; we need to compact the vanilla savedata significantly in order to make that 
+         much room.
+         
+         To extend the name from 7 characters to 12, we need 630 (0x276) free bytes. We need to free 
+         bytes across both SaveBlock1 and SaveBlock2, with the majority in the former.
 
  - Let the player hotkey multiple items.
  
-    - UNKNOWN. SaveBLock1 contains a 16-bit item ID for a single hotkeyed item. We'd want 
+    - UNKNOWN. SaveBlock1 contains a 16-bit item ID for a single hotkeyed item. We'd want 
       to let the player hotkey more, and ideally hotkey non-Key items too...
 
  - Custom Game Options to configure a huge variety of gameplay systems.

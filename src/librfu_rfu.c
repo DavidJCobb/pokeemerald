@@ -6,7 +6,15 @@
 // saveblock to any Rfu-related fields (e.g. in SetHostRfuUsername).
 // If wireless link functionality is not desired ignore or delete this warning.
 #if RFU_USER_NAME_LENGTH < (PLAYER_NAME_LENGTH + 1)
-#warning "The Wireless Adapter hardware expects a username of no more than 8 bytes."
+   #warning "The Wireless Adapter hardware expects a username of no more than 8 bytes. Player names will be truncated when sent as usernames."
+   //
+   // SetHostRfuUsername has been modified to ensure that we don't overrun the buffer 
+   // for the wireless username length. This unfortunately means that the player's 
+   // name will be truncated to form a valid username. It'd be nice if we could let 
+   // the player set their username separately, or give them a "nickname" entry screen 
+   // for places where their name should be shortened. ROM hacks could use the latter 
+   // for certain characters' dialogue, too.
+   //
 #endif
 
 struct LLSFStruct

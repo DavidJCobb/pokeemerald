@@ -77,6 +77,15 @@ static const u8 sEqualSignGfx[] = INCBIN_U8("graphics/interface/option_menu_equa
 #define MENUITEM_COUNT 8
 #define MENUITEM_CANCEL (MENUITEM_COUNT - 1)
 
+//
+// This array stores definitions for each menu item, including "Cancel." Be aware that 
+// at present, we store the current state of each menu item in the menu's task data, 
+// which has 16 fields -- two of which are currently used by the menu itself. This 
+// means that we can define up to 14 menu items, including "Cancel," before we need 
+// to either start storing that data somewhere else, or start storing it more cleverly 
+// (e.g. the fields are u16s but the options hold u8s, so we could double storage with 
+// some bitshifting shenanigans).
+//
 static const struct OptionMenuItem {
    // Option name
    const u8* name;

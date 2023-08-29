@@ -13,6 +13,7 @@
 ** ⬜ Display UI indicating that vertical scrolling is possible
 ** ⬜ Visual redesign
 *** ⬜ No window frames; mimic UI of FR/LG help menus, for more space
+**** *// the trouble with this is, how do we display a preview for the currently selected frame option?*
 *** ⬜ Action bar at the bottom (e.g. "[A] Cycle [D-Pad H] Change [D-Pad V] Scroll [B] Exit")
 *** ⬜ Description bar at bottom, showing behavior of currently highlighted option and/or currently selected value
 * ⬜ Option to press B to toggle running, instead of having to hold it

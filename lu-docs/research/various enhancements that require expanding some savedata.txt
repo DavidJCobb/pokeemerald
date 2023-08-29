@@ -86,7 +86,7 @@
               + (420 + 6 + 2)
          
          or 4 + 4 + 2 + 13 + 2 + (5 + 1) + 5 + (10 + 6) + 4 + (2 * 9) + (2 * 3 * 2) + 20 + 20 + 428, 
-         for a total of 554. This means that every byte we add to the player's name adds 554  bytes to 
+         for a total of 554. This means that every byte we add to the player's name adds 554 bytes to 
          the entire savegame; we need to compact the vanilla savedata significantly in order to make that 
          much room.
          

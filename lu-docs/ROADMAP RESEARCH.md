@@ -1,7 +1,7 @@
 
 # Overworld pacing improvements
 
-## Coalesce overworld and sysetm messages
+## Coalesce overworld and system messages
 
 The scripts to handle picking up items on the overworld are in `data/scripts/obtain_item.inc`. The strings are at `data/text/obtain_item.inc`.
 
@@ -14,7 +14,7 @@ In theory, to show gendered dialogue, you'd use the `checkplayergender` script c
 
 I can't find any cases where the player is directly referred to as "she" or "he," or via gendered terms like "lad" or "girl," though code for Japanese honorifics (*-kun* and *-chan*) exists (see below) and is tied to the player's sprite. Still, an engine-level pronoun option could be useful for story hacks, and we could just use a preprocessor macro to control whether the player is ever actually shown the option.
 
-It's possible to build a proper pronoun system. It'd require leveraging and expanding the string placeholder system, and then rewriting every string that addresses the player or rival by pronoun.
+It's possible to build a proper pronoun system. It'd require leveraging and expanding the string placeholder system, and then rewriting every string that addresses the player or rival by pronoun (which, as established above, is none of them).
 
 `StringExpandPlaceholders` in `gflib/string_util.c` takes a source buffer and destination buffer, and copies a string from the former to the latter. When it encounters a `PLACEHOLDER_BEGIN` character, it reads the next byte and passes that to `GetExpandedPlaceholder`; the expanded placeholder is then written into the destination buffer.
 

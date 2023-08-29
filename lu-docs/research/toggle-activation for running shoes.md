@@ -1,4 +1,6 @@
 
+**This feature has been implemented. Some differences exist between the implementation and the plans described below, as real-world testing uncovered edge-cases that needed fixing.**
+
 # Overworld
 
 Call stack for player movement on the overworld:

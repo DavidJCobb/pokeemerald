@@ -9,6 +9,7 @@
 *** ⬜ `field_message_box.c` (overworld messages, incl. dialogue, scripting, etc.)
 * ⬜ Options Menu redesign
 ** ✅ Vertical scrolling
+*** ⬜ There is a slight blink and frame hitch when scrolling, as text needs to be redrawn. Can we improve this? How does the game handle scrolling?
 ** ⬜ Display UI indicating that vertical scrolling is possible
 ** ⬜ Visual redesign
 *** ⬜ No window frames; mimic UI of FR/LG help menus, for more space
@@ -18,7 +19,7 @@
 ** ✅ Options Menu item
 ** ✅ Savedata field (in save block 2)
 ** ✅ Overworld behavior
-** ⬜ HUD, of some kind, on the overworld when running is toggled on
+** ⬜ HUD of some kind, shown on the overworld when running is toggled on
 *** *// field moves display effects overtop the screen. can we co-opt however that's done?*
 * ⬜ Battle flow improvements
 ** ⬜ Coalesce multiple messages together

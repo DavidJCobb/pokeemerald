@@ -68,6 +68,11 @@
           - TrainerNameRecord::trainerName // aligned to a two-byte boundary
              = 20 instances in SaveBlock1. These represent the last 20 trainers the player has met 
                via record mixing or link features, and the list is maintanied in `link_rfu_3.c`.
+         
+          - Every Pokemon stores its original trainer name.
+             - 420 Pokemon in PC
+             -   6 Pokemon in party
+             -   2 Pokemon in daycare
     
        - The number of occurrences of the player's name is:
        
@@ -78,14 +83,16 @@
               + (FRONTIER_LVL_MODE_COUNT * HALL_RECORDS_COUNT * 2)
               + SECRET_BASES_COUNT
               + 20
+              + (420 + 6 + 2)
          
-         or 4 + 4 + 2 + 13 + 2 + (5 + 1) + 5 + (10 + 6) + 4 + (2 * 9) + (2 * 3 * 2) + 20 + 20, for a 
-         total of 126. This means that every byte we add to the player's name adds 126 bytes to the 
-         entire savegame; we need to compact the vanilla savedata significantly in order to make that 
+         or 4 + 4 + 2 + 13 + 2 + (5 + 1) + 5 + (10 + 6) + 4 + (2 * 9) + (2 * 3 * 2) + 20 + 20 + 428, 
+         for a total of 554. This means that every byte we add to the player's name adds 554  bytes to 
+         the entire savegame; we need to compact the vanilla savedata significantly in order to make that 
          much room.
          
-         To extend the name from 7 characters to 12, we need 630 (0x276) free bytes. We need to free 
-         bytes across both SaveBlock1 and SaveBlock2, with the majority in the former.
+         To extend the name from 7 characters to 12, we need 2770 (0xAD2) free bytes. We need to free 
+         bytes across both SaveBlock1 and SaveBlock2, with the majority in the former. That's a massive 
+         amount of memory to free without deleting the majority of link records.
 
  - Let the player hotkey multiple items.
  

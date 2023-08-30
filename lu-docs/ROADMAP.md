@@ -31,14 +31,26 @@
 ** ⬜ Coalesce overworld system messages
 *** *// e.g. "PLAYER found an ITEM, and put it in the DOODAD POCKET." instead of two textboxes. the automatic word-wrapping code will help with this!*
 * ⬜ Savedata format optimizations
-** ⬜ Player inventory
-** ⬜ Can we write serialization/parse functions to store SaveBlock1 in a bitpacked format?
-*** *// i mean, we* can*, but can we do so efficiently and safely?*
-** ⬜ Compile-time flags to control presence/absence of certain savedata (and game features generally)
-*** ⬜ Enigma berry data
-*** ⬜ Mystery Gift data
+** ⬜ Baseline implementation
+*** ⬜ Rebuild save internals so that save sectors are mapped to read/write functors rather than to RAM locations and sizes
+**** ⬜ SaveBlock2 functors
+**** ⬜ SaveBlock1 functors
+**** ⬜ PokemonStorage functors
+*** ⬜ Bitpack SaveBlock2 without major format changes, for now
+**** ⬜ Store a serialization version number for the whole save file at the start of SaveBlock2
+***** *// goal is to write an external C++ tool that can take a \*.sav file and "upgrade" it as we revise the hack further in the future*
+*** ⬜ Bitpack SaveBlock1 without major format changes, for now
+*** ⬜ Append CustomGameOptions to either of save blocks 2 or 1
+** ⬜ Format changes
+*** ⬜ Player inventory
+**** ⬜ Use a u16 for all items (9-bit ID; 7-bit quantity capped to 99 on saving and loading)
+**** ⬜ Investigate tighter bitfields for categorized bag items (i.e. fewer bits for item ID)
+** ⬜ Compile-time control
+*** ⬜ Preprocessor macros to control the presence/absence of certain savedata (and game features generally)
+**** ⬜ Enigma Berry data
+**** ⬜ Mystery Gift data
 * ⬜ Unlimited player inventory + no PC item storage
-** ⬜ Depends on: savedata format optimizations: player inventory
+** ⬜ Depends on: savedata format optimizations: player inventory: tighter ID bitfields
 * ⬜ Increase Pokemon name length to 12 characters
 * ⬜ Increase player name length to 12 characters
 ** ⬜ Depends on: savedata format optimizations (each byte of length increase adds 126 bytes to total savedata size)
@@ -90,9 +102,12 @@
 *** *// CG custom data will be bitpacked and versioned*
 ** ⬜ Savedata
 *** *// Prior to savedata optimization, we can just... write this wherever, pretty much. We can jam it at the end of either save block, though we lose forward-compatibility (which is fine for internal testing/development). We already have a singleton struct in memory to hold these prefs, though it's not ASLR'd, so we should modify the save routines to write it after the saveblocks rather than appending it to the saveblock structs themselves.*
+*** *// Never mind, lol. The save code in `save.h` and `save.c` is designed around only storing one struct per sector (though a struct can also be spread across multiple sectors) and we'd have to rewrite half or more of it to change that. This means we'd have to integrate the custom game option data into one of the two saveblocks... which in turn means that in order to store *any* data bitpacked, we'll need to store *all* of it bitpacked.*
 ** ⬜ Apply ASLR to the in-memory CustomGameOptions struct, just like the game does for the two saveblocks.
 ** ⬜ Custom Game Options menu
 *** ✅ Basic implementation (NOTE: untested)
+*** ⬜ Show scroll indicators
+**** *// just copy the code we added to the standard Options Menu*
 *** ⬜ Show it after selecting "New Game"
 *** ⬜ Functionality for nested menus
 ** ⬜ Toggle editing these options after starting the playthrough

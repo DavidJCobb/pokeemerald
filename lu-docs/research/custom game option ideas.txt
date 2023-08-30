@@ -109,6 +109,7 @@ principles:
     - Allow editing options after starting the playthrough
        = Disabled by default. Intended for Let's Players and other content creators who may 
          need to adjust things on the fly.
+    - Start game with Running Shoes
     - Swap trade evolutions for stone or level evolutions
        - Cost: 2-bit enum
           = Disabled
@@ -142,11 +143,23 @@ principles:
        - Disabled
           = All battles are Single Battles.
     - Enable/disable player item use during battles
+       - Enabled
+       - No Backfield
+          = You can only use items on the Pokemon you currently have on the battlefield.
+       - Disabled
     - Allow HM use without teaching moves
        - Make Fly configurable separately from the others
        - Allow Fly (i.e. fast travel) from game start
     - Enable/disable limited events (e.g. Eon Ticket)
     - Enable/disable reusable TMs
+       = Requires hiding TM quantity in the Bag.
+       = Requires disabling the deposit of TMs into the PC.
+       = Requires disabling giving TMs to a Pokemon as a held item.
+          = What if you receive one in a trade?
+       = Requires capping item pickups so you can't get more than one of a TM.
+          = What do we replace the item with? Money matching the amount of the TM?
+       = What happens if the player changes this option during play?
+          = Maybe we grey it out in that case.
     - Enable/disable rebattling fainted/fled legendaries
        = Set fallback locations for Lati@s? Or just make it so it never stops roaming until caught?
     - Enable/disable step counter instead of real-time clock for events (e.g. berries, dailies, etc.)

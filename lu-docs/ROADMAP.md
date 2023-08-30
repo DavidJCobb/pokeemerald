@@ -71,6 +71,13 @@
 *** ⬜ Item name
 *** ⬜ Move name
 ** ⬜ Investigate adding support for italicized text
+* ⬜ Trainer sprites for NPCs expanded on in the remakes
+** ⬜ Courtney (Magma Admin)
+*** *// iirc, Courtney is not fought in vanilla Emerald. having a sprite on hand could still be useful.*
+** ⬜ Matt (Aqua Admin)
+** ⬜ Shelley (Aqua Admin)
+** ⬜ Tabitha (Magma Admin)
+*** *// although rare, Tabitha can be used as a guy's name. this is one of those cases*
 * ⬜ The same large-scale major changes tons of people have already made
 ** *// don't know if or when I want to incorporate other code changes or feature branches, or collab with other authors. worth saving these kinds of modernization updates 'til later -- 'til i have any progress of my own worth caring about.*
 ** ⬜ Fairy type

@@ -18,26 +18,28 @@
 
 #define tMenuSelection data[0]
 #define tMenuScrollOffset data[1]
-#define tTextSpeed data[2]
-#define tBattleSceneOff data[3]
-#define tBattleStyle data[4]
-#define tSound data[5]
-#define tButtonMode data[6]
-#define tWindowFrameType data[7]
+#define tScrollArrowTaskId data[2]
+#define tTextSpeed data[3]
+#define tBattleSceneOff data[4]
+#define tBattleStyle data[5]
+#define tSound data[6]
+#define tButtonMode data[7]
+#define tWindowFrameType data[8]
+
+#define tArrowTaskIsScrolled data[15]   // For scroll indicator arrow task
 
 #include "lu/strings.h"
 #include "lu/running_prefs.h"
-#define SELECTED_OPTION_VALUE_FROM_TASK(task, n) (task).data[(n) + 2]
+#define SELECTED_OPTION_VALUE_FROM_TASK(task, n) (task).data[(n) + 3]
 #define ON_SCREEN_OPTION_ROW_TO_Y_PIXELS(r) ((r) * 16)
 
 #define MAX_MENU_ITEMS_VISIBLE_AT_ONCE 7
 
 #define MENU_ITEM_HALFWAY_ROW (MAX_MENU_ITEMS_VISIBLE_AT_ONCE / 2)
 
-enum
-{
-    WIN_HEADER,
-    WIN_OPTIONS
+enum {
+   WIN_HEADER,
+   WIN_OPTIONS
 };
 
 static void Task_OptionMenuFadeIn(u8 taskId);
@@ -62,7 +64,7 @@ static void ButtonMode_DrawChoices(u8 yOffsetPx, u8 selection);
 static u8 lu_Running_ProcessInput(u8 selection);
 static void lu_Running_DrawChoices(u8 yOffsetPx, u8 selection);
 static void DrawHeaderText(void); // draw menu title
-static void DrawOptionMenuTexts(u8 rowOffset); // draw option names, including "Cancel"; argument is number of rows by which we're scrolled down
+static void DrawOptionMenuTexts(u8 rowOffset, bool8 updateVram); // draw option names, including "Cancel"; argument is number of rows by which we're scrolled down
 static void DrawBgWindowFrames(void);
 
 // Options' "process inputs" functions should set this to TRUE if the option's value 
@@ -76,6 +78,15 @@ static const u8 sEqualSignGfx[] = INCBIN_U8("graphics/interface/option_menu_equa
 
 #define MENUITEM_COUNT 8
 #define MENUITEM_CANCEL (MENUITEM_COUNT - 1)
+
+#define MENU_IS_SCROLLABLE 0
+#if MENUITEM_COUNT > MAX_MENU_ITEMS_VISIBLE_AT_ONCE
+   #undef MENU_IS_SCROLLABLE
+   #define MENU_IS_SCROLLABLE 1
+#endif
+
+#define OPTION_VALUES_LEFT_EDGE  104
+#define OPTION_VALUES_RIGHT_EDGE 198
 
 //
 // This array stores definitions for each menu item, including "Cancel." Be aware that 
@@ -188,6 +199,20 @@ static const struct BgTemplate sOptionMenuBgTemplates[] =
     }
 };
 
+static const struct ScrollArrowsTemplate sScrollArrowsTemplate_OptionsMenu = {
+   .firstArrowType = SCROLL_ARROW_UP,
+   .firstX = 120, // screen center
+   .firstY = 40,
+   .secondArrowType = SCROLL_ARROW_DOWN,
+   .secondX = 120, // screen center
+   .secondY = 0x98,
+   .fullyUpThreshold = 0,
+   .fullyDownThreshold = 0,
+   .tileTag = 1,
+   .palTag = 1,
+   .palNum = 0
+};
+
 static const u16 sOptionMenuBg_Pal[] = {RGB(17, 18, 31)};
 
 static void MainCB2(void)
@@ -233,8 +258,9 @@ void CB2_InitOptionMenu(void)
         DeactivateAllTextPrinters();
         SetGpuReg(REG_OFFSET_WIN0H, 0);
         SetGpuReg(REG_OFFSET_WIN0V, 0);
-        SetGpuReg(REG_OFFSET_WININ, WININ_WIN0_BG0);
-        SetGpuReg(REG_OFFSET_WINOUT, WINOUT_WIN01_BG0 | WINOUT_WIN01_BG1 | WINOUT_WIN01_CLR);
+        // WININ_WIN0_OBJ needed in next two calls in order for scroll indicators to be visible
+        SetGpuReg(REG_OFFSET_WININ, WININ_WIN0_BG0 | WININ_WIN0_OBJ);
+        SetGpuReg(REG_OFFSET_WINOUT, WINOUT_WIN01_BG0 | WINOUT_WIN01_BG1 | WINOUT_WIN01_CLR | WININ_WIN0_OBJ);
         SetGpuReg(REG_OFFSET_BLDCNT, BLDCNT_TGT1_BG0 | BLDCNT_EFFECT_DARKEN);
         SetGpuReg(REG_OFFSET_BLDALPHA, 0);
         SetGpuReg(REG_OFFSET_BLDY, 4);
@@ -273,7 +299,7 @@ void CB2_InitOptionMenu(void)
         break;
     case 8:
         PutWindowTilemap(WIN_OPTIONS);
-        DrawOptionMenuTexts(0);
+        DrawOptionMenuTexts(0, TRUE);
         gMain.state++;
     case 9:
         DrawBgWindowFrames();
@@ -297,11 +323,12 @@ void CB2_InitOptionMenu(void)
         {  // draw choices for the options that are initially scrolled into view
            u8 i;
            
-           #if MENUITEM_COUNT <= MAX_MENU_ITEMS_VISIBLE_AT_ONCE
-           for(i = 0; i < MENUITEM_COUNT; ++i) {
+           #if MENU_IS_SCROLLABLE
+           for(i = 0; i < MAX_MENU_ITEMS_VISIBLE_AT_ONCE; ++i)
            #else
-           for(i = 0; i < MAX_MENU_ITEMS_VISIBLE_AT_ONCE; ++i) {
+           for(i = 0; i < MENUITEM_COUNT; ++i)
            #endif
+           {
               if (sOptions[i].draw_choices) {
                  sOptions[i].draw_choices(
                     ON_SCREEN_OPTION_ROW_TO_Y_PIXELS(i),
@@ -312,6 +339,18 @@ void CB2_InitOptionMenu(void)
         }
         
         HighlightOptionMenuItem(gTasks[taskId].tMenuSelection - gTasks[taskId].tMenuScrollOffset);
+        
+        #if MENU_IS_SCROLLABLE
+        {
+            struct ScrollArrowsTemplate tmpl = sScrollArrowsTemplate_OptionsMenu;
+            tmpl.fullyDownThreshold = MENUITEM_COUNT - MAX_MENU_ITEMS_VISIBLE_AT_ONCE;
+            //
+            gTasks[taskId].tScrollArrowTaskId = AddScrollIndicatorArrowPair(
+                &tmpl,
+                &gTasks[taskId].tMenuScrollOffset
+            );
+        }
+        #endif
 
         CopyWindowToVram(WIN_OPTIONS, COPYWIN_FULL);
         gMain.state++;
@@ -332,7 +371,7 @@ static void Task_OptionMenuFadeIn(u8 taskId)
 }
 
 static void ScrollOptionMenuTo(u8 taskId, u8 to) {
-   #if MENUITEM_COUNT > MAX_MENU_ITEMS_VISIBLE_AT_ONCE
+   #if MENU_IS_SCROLLABLE
       if (to > MENUITEM_COUNT - MAX_MENU_ITEMS_VISIBLE_AT_ONCE)
          to = MENUITEM_COUNT - MAX_MENU_ITEMS_VISIBLE_AT_ONCE;
    #else
@@ -344,11 +383,15 @@ static void ScrollOptionMenuTo(u8 taskId, u8 to) {
       
    gTasks[taskId].tMenuScrollOffset = to;
    
+   #if MENU_IS_SCROLLABLE
+      gTasks[gTasks[taskId].tScrollArrowTaskId].tArrowTaskIsScrolled = (to != 0);
+   #endif
+   
    FillWindowPixelBuffer(WIN_OPTIONS, PIXEL_FILL(1));
-   DrawOptionMenuTexts(gTasks[taskId].tMenuScrollOffset);
+   DrawOptionMenuTexts(gTasks[taskId].tMenuScrollOffset, FALSE);
    {
       u8 i;
-      #if MENUITEM_COUNT > MAX_MENU_ITEMS_VISIBLE_AT_ONCE
+      #if MENU_IS_SCROLLABLE
       for(i = 0; i < MAX_MENU_ITEMS_VISIBLE_AT_ONCE; ++i) {
       #else
       for(i = 0; i < MENUITEM_COUNT; ++i) {
@@ -475,6 +518,9 @@ static void Task_OptionMenuFadeOut(u8 taskId)
 {
     if (!gPaletteFade.active)
     {
+        #if MENU_IS_SCROLLABLE
+            RemoveScrollIndicatorArrowPair(gTasks[taskId].tScrollArrowTaskId);
+        #endif
         DestroyTask(taskId);
         FreeAllWindowBuffers();
         SetMainCallback2(gMain.savedCallback);
@@ -541,17 +587,17 @@ static void TextSpeed_DrawChoices(u8 yOffsetPx, u8 selection)
     styles[2] = 0;
     styles[selection] = 1;
 
-    DrawOptionMenuChoice(gText_TextSpeedSlow, 104, yOffsetPx, styles[0]);
+    DrawOptionMenuChoice(gText_TextSpeedSlow, OPTION_VALUES_LEFT_EDGE, yOffsetPx, styles[0]);
 
     widthSlow = GetStringWidth(FONT_NORMAL, gText_TextSpeedSlow, 0);
     widthMid = GetStringWidth(FONT_NORMAL, gText_TextSpeedMid, 0);
     widthFast = GetStringWidth(FONT_NORMAL, gText_TextSpeedFast, 0);
 
     widthMid -= 94;
-    xMid = (widthSlow - widthMid - widthFast) / 2 + 104;
+    xMid = (widthSlow - widthMid - widthFast) / 2 + OPTION_VALUES_LEFT_EDGE;
     DrawOptionMenuChoice(gText_TextSpeedMid, xMid, yOffsetPx, styles[1]);
 
-    DrawOptionMenuChoice(gText_TextSpeedFast, GetStringRightAlignXOffset(FONT_NORMAL, gText_TextSpeedFast, 198), yOffsetPx, styles[2]);
+    DrawOptionMenuChoice(gText_TextSpeedFast, GetStringRightAlignXOffset(FONT_NORMAL, gText_TextSpeedFast, OPTION_VALUES_RIGHT_EDGE), yOffsetPx, styles[2]);
 }
 
 static u8 BattleScene_ProcessInput(u8 selection)
@@ -573,8 +619,8 @@ static void BattleScene_DrawChoices(u8 yOffsetPx, u8 selection)
     styles[1] = 0;
     styles[selection] = 1;
 
-    DrawOptionMenuChoice(gText_BattleSceneOn, 104, yOffsetPx, styles[0]);
-    DrawOptionMenuChoice(gText_BattleSceneOff, GetStringRightAlignXOffset(FONT_NORMAL, gText_BattleSceneOff, 198), yOffsetPx, styles[1]);
+    DrawOptionMenuChoice(gText_BattleSceneOn, OPTION_VALUES_LEFT_EDGE, yOffsetPx, styles[0]);
+    DrawOptionMenuChoice(gText_BattleSceneOff, GetStringRightAlignXOffset(FONT_NORMAL, gText_BattleSceneOff, OPTION_VALUES_RIGHT_EDGE), yOffsetPx, styles[1]);
 }
 
 static u8 BattleStyle_ProcessInput(u8 selection)
@@ -596,8 +642,8 @@ static void BattleStyle_DrawChoices(u8 yOffsetPx, u8 selection)
     styles[1] = 0;
     styles[selection] = 1;
 
-    DrawOptionMenuChoice(gText_BattleStyleShift, 104, yOffsetPx, styles[0]);
-    DrawOptionMenuChoice(gText_BattleStyleSet, GetStringRightAlignXOffset(FONT_NORMAL, gText_BattleStyleSet, 198), yOffsetPx, styles[1]);
+    DrawOptionMenuChoice(gText_BattleStyleShift, OPTION_VALUES_LEFT_EDGE, yOffsetPx, styles[0]);
+    DrawOptionMenuChoice(gText_BattleStyleSet, GetStringRightAlignXOffset(FONT_NORMAL, gText_BattleStyleSet, OPTION_VALUES_RIGHT_EDGE), yOffsetPx, styles[1]);
 }
 
 static u8 Sound_ProcessInput(u8 selection)
@@ -620,8 +666,8 @@ static void Sound_DrawChoices(u8 yOffsetPx, u8 selection)
     styles[1] = 0;
     styles[selection] = 1;
 
-    DrawOptionMenuChoice(gText_SoundMono, 104, yOffsetPx, styles[0]);
-    DrawOptionMenuChoice(gText_SoundStereo, GetStringRightAlignXOffset(FONT_NORMAL, gText_SoundStereo, 198), yOffsetPx, styles[1]);
+    DrawOptionMenuChoice(gText_SoundMono, OPTION_VALUES_LEFT_EDGE, yOffsetPx, styles[0]);
+    DrawOptionMenuChoice(gText_SoundStereo, GetStringRightAlignXOffset(FONT_NORMAL, gText_SoundStereo, OPTION_VALUES_RIGHT_EDGE), yOffsetPx, styles[1]);
 }
 
 static u8 FrameType_ProcessInput(u8 selection)
@@ -678,7 +724,7 @@ static void FrameType_DrawChoices(u8 yOffsetPx, u8 selection)
 
     text[i] = EOS;
 
-    DrawOptionMenuChoice(gText_FrameType, 104, yOffsetPx, 0);
+    DrawOptionMenuChoice(gText_FrameType, OPTION_VALUES_LEFT_EDGE, yOffsetPx, 0);
     DrawOptionMenuChoice(text, 128, yOffsetPx, 1);
 }
 
@@ -715,17 +761,17 @@ static void ButtonMode_DrawChoices(u8 yOffsetPx, u8 selection)
     styles[2] = 0;
     styles[selection] = 1;
 
-    DrawOptionMenuChoice(gText_ButtonTypeNormal, 104, yOffsetPx, styles[0]);
+    DrawOptionMenuChoice(gText_ButtonTypeNormal, OPTION_VALUES_LEFT_EDGE, yOffsetPx, styles[0]);
 
     widthNormal = GetStringWidth(FONT_NORMAL, gText_ButtonTypeNormal, 0);
     widthLR = GetStringWidth(FONT_NORMAL, gText_ButtonTypeLR, 0);
     widthLA = GetStringWidth(FONT_NORMAL, gText_ButtonTypeLEqualsA, 0);
 
     widthLR -= 94;
-    xLR = (widthNormal - widthLR - widthLA) / 2 + 104;
+    xLR = (widthNormal - widthLR - widthLA) / 2 + OPTION_VALUES_LEFT_EDGE;
     DrawOptionMenuChoice(gText_ButtonTypeLR, xLR, yOffsetPx, styles[1]);
 
-    DrawOptionMenuChoice(gText_ButtonTypeLEqualsA, GetStringRightAlignXOffset(FONT_NORMAL, gText_ButtonTypeLEqualsA, 198), yOffsetPx, styles[2]);
+    DrawOptionMenuChoice(gText_ButtonTypeLEqualsA, GetStringRightAlignXOffset(FONT_NORMAL, gText_ButtonTypeLEqualsA, OPTION_VALUES_RIGHT_EDGE), yOffsetPx, styles[2]);
 }
 
 static u8 lu_Running_ProcessInput(u8 selection) {
@@ -745,8 +791,8 @@ static void lu_Running_DrawChoices(u8 yOffsetPx, u8 selection) {
     styles[1] = 0;
     styles[selection] = 1;
 
-    DrawOptionMenuChoice(gText_lu_option_running_vanilla, 104, yOffsetPx, styles[0]);
-    DrawOptionMenuChoice(gText_lu_option_running_toggle, GetStringRightAlignXOffset(FONT_NORMAL, gText_lu_option_running_toggle, 198), yOffsetPx, styles[1]);
+    DrawOptionMenuChoice(gText_lu_option_running_vanilla, OPTION_VALUES_LEFT_EDGE, yOffsetPx, styles[0]);
+    DrawOptionMenuChoice(gText_lu_option_running_toggle, GetStringRightAlignXOffset(FONT_NORMAL, gText_lu_option_running_toggle, OPTION_VALUES_RIGHT_EDGE), yOffsetPx, styles[1]);
 }
 
 static void DrawHeaderText(void)
@@ -756,8 +802,7 @@ static void DrawHeaderText(void)
     CopyWindowToVram(WIN_HEADER, COPYWIN_FULL);
 }
 
-static void DrawOptionMenuTexts(u8 rowOffset)
-{
+static void DrawOptionMenuTexts(u8 rowOffset, bool8 updateVram) {
     u8 i;
 
     FillWindowPixelBuffer(WIN_OPTIONS, PIXEL_FILL(1));
@@ -769,7 +814,8 @@ static void DrawOptionMenuTexts(u8 rowOffset)
         // without having to worry about too many text printers being active.
         AddTextPrinterParameterized(WIN_OPTIONS, FONT_NORMAL, sOptions[option_id].name, 8, (i * 16) + 1, TEXT_SKIP_DRAW, NULL);
     }
-    CopyWindowToVram(WIN_OPTIONS, COPYWIN_FULL);
+    if (updateVram)
+      CopyWindowToVram(WIN_OPTIONS, COPYWIN_FULL);
 }
 
 #define TILE_TOP_CORNER_L 0x1A2

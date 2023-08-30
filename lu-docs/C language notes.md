@@ -1,5 +1,5 @@
 
-* We are compiling in C89, so variables must be declared before any statements in their containing block.
+* We are compiling in some weird dialect in between C89 and C99, so variables must be declared before any statements in their containing block. We can still use `//` comments, though.
 
 * As of this writing, the version of GCC installed is 11. I don't know if this is controlled by the WSL installation process or the pokeemerald project configuration and at this point I'm not willing to risk upgrading it
 

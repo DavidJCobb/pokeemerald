@@ -12,3 +12,22 @@ const u8 gText_lu_option_running[] = _("RUNNING");
 // a maximum text length of 11 or so.
 const u8 gText_lu_option_running_vanilla[] = _("{COLOR GREEN}{SHADOW LIGHT_GREEN}HOLD");
 const u8 gText_lu_option_running_toggle[]  = _("{COLOR GREEN}{SHADOW LIGHT_GREEN}TOGGLE");
+
+//
+// NEW GAME SUB-OPTIONS
+//
+
+const u8 gText_lu_NewGame_Vanilla[] = _("Vanilla Options");
+const u8 gText_lu_NewGame_Enhanced[] = _("Enhanced Options");
+const u8 gText_lu_NewGame_CustomGame[] = _("Custom Game");
+
+//
+// CUSTOM GAME OPTIONS MENU
+//
+
+const u8 gText_lu_CGO_menuTitle[] = _("CUSTOM GAME OPTIONS");
+
+const u8 gText_lu_CGOption_startWithRunningShoes[] = _("Start w/ Running");
+
+const u8 gText_lu_CGOptionValues_common_Disabled[] = _("Enabled");
+const u8 gText_lu_CGOptionValues_common_Enabled[]  = _("Disabled");

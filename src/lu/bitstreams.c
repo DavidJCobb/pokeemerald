@@ -39,7 +39,7 @@ static u8 _consume_byte_for_read(struct lu_BitstreamState* state, u8 bitcount, u
    return raw;
 }
 
-u8 lu_BitstreamRead_bool(struct lu_BitstreamState* state, u8 bitcount) {
+u8 lu_BitstreamRead_bool(struct lu_BitstreamState* state) {
    u8 consumed;
    return _consume_byte_for_read(state, 1, &consumed) & 1;
 }
@@ -108,11 +108,13 @@ void lu_BitstreamWrite_bool(struct lu_BitstreamState* state, bool8 value) {
       ++state->shift;
       return;
    }
-   u8 mask = 1 << (8 - state->shift - 1);
-   if (value) {
-      *state->target |= mask;
-   } else {
-      *state->target &= ~mask;
+   {
+      u8 mask = 1 << (8 - state->shift - 1);
+      if (value) {
+         *state->target |= mask;
+      } else {
+         *state->target &= ~mask;
+      }
    }
    ++state->shift;
    if (state->shift == 8) {
@@ -126,6 +128,8 @@ void lu_BitstreamWrite_u8(struct lu_BitstreamState* state, u8 value, u8 bitcount
    }
    
    while (bitcount > 0) {
+      u8 extra;
+      
       if (state->shift == 0) {
          if (bitcount < 8) {
             *state->target = value << (8 - bitcount);
@@ -138,7 +142,7 @@ void lu_BitstreamWrite_u8(struct lu_BitstreamState* state, u8 value, u8 bitcount
          continue;
       }
       
-      u8 extra = 8 - state->shift;
+      extra = 8 - state->shift;
       if (bitcount <= extra) {
          // Value can fit entirely within the current byte.
          *state->target |= value << (extra - bitcount);
@@ -159,6 +163,8 @@ void lu_BitstreamWrite_u16(struct lu_BitstreamState* state, u16 value, u8 bitcou
    }
    
    while (bitcount > 0) {
+      u8 extra;
+      
       if (state->shift == 0) {
          /*//
          if (bitcount < 8) {
@@ -173,7 +179,7 @@ void lu_BitstreamWrite_u16(struct lu_BitstreamState* state, u16 value, u8 bitcou
          continue;
       }
       
-      u8 extra = 8 - state->shift;
+      extra = 8 - state->shift;
       if (bitcount <= extra) {
          // Value can fit entirely within the current byte.
          *state->target |= value << (extra - bitcount);

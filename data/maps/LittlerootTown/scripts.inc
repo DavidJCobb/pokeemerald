@@ -913,12 +913,22 @@ LittlerootTown_EventScript_GiveRunningShoes::
    @       set FLAG_SYS_B_DASH at game start, and we could then check that here. Then, 
    @       we won't need a new script command just yet.
    @
+   goto_if_set FLAG_SYS_B_DASH, LittlerootTown_EventScript_GiveRunningShoes_AlreadyHaveRunningShoes
+   
 	msgbox LittlerootTown_Text_WearTheseRunningShoes, MSGBOX_DEFAULT
 	playfanfare MUS_OBTAIN_ITEM
 	message LittlerootTown_Text_SwitchShoesWithRunningShoes
 	waitfanfare
 	setflag FLAG_RECEIVED_RUNNING_SHOES
 	msgbox LittlerootTown_Text_ExplainRunningShoes, MSGBOX_DEFAULT
+	msgbox LittlerootTown_Text_ComeHomeIfAnythingHappens, MSGBOX_DEFAULT
+	closemessage
+	delay 30
+	return
+
+LittlerootTown_EventScript_GiveRunningShoes_AlreadyHaveRunningShoes::
+   msgbox LittlerootTown_Text_WearTheseRunningShoes_AlreadyHaveRunningShoes, MSGBOX_DEFAULT
+	setflag FLAG_RECEIVED_RUNNING_SHOES
 	msgbox LittlerootTown_Text_ComeHomeIfAnythingHappens, MSGBOX_DEFAULT
 	closemessage
 	delay 30
@@ -949,6 +959,14 @@ LittlerootTown_Text_WearTheseRunningShoes:
 	.string "Here, honey! If you're going out on an\n"
 	.string "adventure, wear these RUNNING SHOES.\p"
 	.string "They'll put a zip in your step!$"
+
+LittlerootTown_Text_WearTheseRunningShoes_AlreadyHaveRunningShoes:
+	.string "MOM: {PLAYER}! {PLAYER}! Did you\n"
+	.string "introduce yourself to PROF. BIRCH?\p"
+	.string "Oh! What an adorable POKéMON!\n"
+	.string "You got it from PROF. BIRCH. How nice!\p"
+	.string "You're your father's child, all right.\n"
+	.string "You look good together with POKéMON!$"
 
 LittlerootTown_Text_SwitchShoesWithRunningShoes:
 	.string "{PLAYER} switched shoes with the\n"

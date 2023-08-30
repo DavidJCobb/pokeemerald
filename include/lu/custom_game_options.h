@@ -1,5 +1,6 @@
 #ifndef GUARD_LU_CUSTOM_GAME_OPTIONS
 #define GUARD_LU_CUSTOM_GAME_OPTIONS
+#include "lu/bitstreams.h"
 
 enum {
    CustomGame_SingleSpeciesRun_CatchMode_OnlyCatchTargetSpecies,
@@ -20,7 +21,7 @@ enum {
    CustomGame_DoubleBattles_Disabled,
 };
 
-struct CustomGameOptions {
+extern struct CustomGameOptions {
    // not yet implemented
    bool8 allow_changing_these_during_play;
    
@@ -39,7 +40,7 @@ struct CustomGameOptions {
          u8    catch_mode; // Only Catch Target Species / Polymorph Caught Pokemon into Target Species
          bool8 give_new_mon_after_gyms; // up to the 6th gym
       } single_species;
-   };
+   } starter_data;
    
    // not yet implemented
    u8 double_battles;
@@ -59,9 +60,9 @@ struct CustomGameOptions {
    } nuzlocke;
 } gCustomGameOptions;
 
-void ResetCustomGameOptions(void);
+extern void ResetCustomGameOptions(void);
 
-void BitWriteCustomGameOptions(CustomGameOptions*, lu_BitstreamState*);
-void BitReadCustomGameOptions(CustomGameOptions*, lu_BitstreamState*);
+extern void BitWriteCustomGameOptions(struct CustomGameOptions*, struct lu_BitstreamState*);
+extern void BitReadCustomGameOptions(struct CustomGameOptions*, struct lu_BitstreamState*);
 
 #endif

@@ -88,6 +88,13 @@
 * ⬜ Custom Game Options
 ** ⬜ Depends on: savedata format optimizations
 *** *// CG custom data will be bitpacked and versioned*
+** ⬜ Savedata
+*** *// Prior to savedata optimization, we can just... write this wherever, pretty much. We can jam it at the end of either save block, though we lose forward-compatibility (which is fine for internal testing/development). We already have a singleton struct in memory to hold these prefs, though it's not ASLR'd, so we should modify the save routines to write it after the saveblocks rather than appending it to the saveblock structs themselves.*
+** ⬜ Apply ASLR to the in-memory CustomGameOptions struct, just like the game does for the two saveblocks.
+** ⬜ Custom Game Options menu
+*** ✅ Basic implementation (NOTE: untested)
+*** ⬜ Show it after selecting "New Game"
+*** ⬜ Functionality for nested menus
 ** ⬜ Toggle editing these options after starting the playthrough
 ** ⬜ Pokemon availability options
 *** ⬜ Override starters
@@ -101,6 +108,10 @@
 *** ⬜ Double Battles (enable/disable/force/allow-2v1)
 *** ⬜ Toggle item use during battles
 ** ⬜ QOL options
+*** ⬜ Start the game with Running Shoes already unlocked
+**** ✅ Menu item
+**** ⬜ Set FLAG_SYS_B_DASH when starting a new game
+**** ✅ Littleroot Town dialogue/script changes
 *** ⬜ Scale running speed on the overworld
 *** ⬜ Toggle HM use without teaching moves
 *** ⬜ Toggle reusable TMs

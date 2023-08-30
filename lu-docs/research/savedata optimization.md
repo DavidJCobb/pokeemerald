@@ -376,4 +376,255 @@ The problem with this whole idea is that some fields in SaveBlock1, SaveBlock2, 
 
 We'll need to examine the fully expanded struct definitions for SaveBlock1 and SaveBlock2, and figure out some way to cope with substructures and arrays. We could use codegen (or copying and pasting @_@) to "flatten" the entire struct definitions, arrays included, into a single flat list of bitfields; but that feels ridiculously messy.
 
-Possibly, we could just... make the above lists nestable and subscriptable. Like, have a list of bitfields for, say, `DaycareMon`, and then be able to have the daycare data's bitfield list say, "DaycareMon bitfield list x 5." Each list would have to have a pointer to its parent list, and if we need to interrupt serialization at a sector boundary, we'd just store as state: a pointer to the current bitfield list; a pointer to the current item in that list; and a fixed-length array of indices representing how far down we are (e.g. `foo[3].bar[5].baz[1]` -> `3, 5, 1`).
+Possibly, we could just... make the above lists nestable and subscriptable. Like, have a list of bitfields for, say, `DaycareMon`, and then be able to have the daycare data's bitfield list say, "DaycareMon bitfield list x 5." If we need to interrupt serialization at a sector boundary, we'd just store as state: a pointer to the current bitfield list; a pointer to the current item in that list; and a fixed-length array of indices representing how far down we are (e.g. `foo[3].bar[5].baz[1]` -> `3, 5, 1`).
+
+This is the model we'd want to use, then:
+
+```c
+enum {
+   BITFIELD_TYPE_BOOL,
+   BITFIELD_TYPE_U8,
+   BITFIELD_TYPE_U16,
+   BITFIELD_TYPE_U32,
+   BITFIELD_TYPE_BUFFER,
+   BITFIELD_TYPE_STRING,
+};
+
+struct Bitfield {
+   #if _DEBUG // or whatever the GCC equivalent is
+      const u8* name;
+   #endif
+   
+   // Offset within the RAM-side struct.
+   u16 offset;
+   struct {
+      //
+      // These fields handle the case of a Bitfield being, well, a bitfield 
+      // even in RAM.
+      //
+      u8 bit_count  = 0; // 0 == not a bitfield in RAM
+      u8 bit_offset = 0;
+   } src_bitfield_info;
+   
+   // Type enum; used to inform how we serialize certain values.
+   u8 type;
+   union {
+      //
+      // Neither of these values are used when the type is BITFIELD_TYPE_BOOL.
+      //
+      u8 bits;  // for everything except bools, buffers, and strings
+      u8 chars; // for buffers and strings
+   } size;
+   //
+   // For strings, we encode the number of chars as a prefix rather than 
+   // encoding an EOS string terminator. However, if the string uses fewer 
+   // than the chars available, we still encode all chars, with unused chars 
+   // as EOS. This is because the savedata must always be able to hold the 
+   // largest possible data; variable-length data is a liability here, not 
+   // an asset.
+   //
+   // So for example, given a 7-character player name, we only need 3 bits 
+   // to store the name length:
+   //
+   //    "Lucy"    -> 0b100 'L' 'u' 'c' 'y' EOS EOS EOS
+   //    "Annabel" -> 0b111 'A' 'n' 'n' 'a' 'b' 'e' 'l'
+   //
+   // This is cheaper, in terms of bitcount, than encoding an EOS terminator 
+   // without a length prefix. (In fact, we want to expand name lengths to 
+   // 12 characters if possible, right? Well, this scheme saves us 4 bits for 
+   // every player name in the save data -- a total of 277 bytes!)
+   //
+   // TODO: For BoxPokemon, do they pad shorter player names with EOS or with 
+   // 0x00? We'll need to get that consistent to ensure checksums don't break 
+   // after save/load (I assume). We'll probably want to double-check any 
+   // savegame strings that get checksummed (directly or indirectly), actually.
+   //
+   // For that matter: we plan on forcing values back into range when saving, 
+   // e.g. an item quantity of 100 gets forced to 99, just because that's the 
+   // only real way to account for truncation. We may want to force values into 
+   // range first; then recalc any checksums on the savedata; then save... or 
+   // just not serialize checksums at all except for on Pokemon, apply one big 
+   // checksum to the whole serialized stream, and then recalc checksums on load.
+};
+
+struct BitfieldListItem {
+   struct BitfieldList* parent;
+   union {
+      struct Bitfield      field;
+      struct BitfieldList* list;
+   } data;
+   bool8 is_nested_list : 1;
+   u8    array_count    : 7;
+};
+
+struct BitfieldList {
+   #if _DEBUG // or whatever the GCC equivalent is
+      const u8* name;
+   #endif
+   u16 field_count;
+   struct BitfieldListItem fields[];
+};
+
+struct PausedSerializationState {
+   struct BitfieldList*     top_level_list;
+   struct BitfieldListItem* next;
+   u8 array_indices[8];
+};
+// We need a top-level list pointer because when we're traversing up out of a 
+// BitfieldListItem, the top-level list has no "parent" pointer; we can't just 
+// do `if (parent == NULL)`. Instead, when we want to back out to a parent, we 
+// have to check if the list we're backing out of -- the list we've finished 
+// serializing -- is the top-level list, and if so, then we're done serializing.
+```
+
+And a quick-and-dirty example of some bitfield definitions:
+
+```c
+void _set_list_item_parent_pointers(struct BitfieldList*);
+
+#if _DEBUG // or whatever the GCC equivalent is
+   #define BITFIELD_NAME(a_name) .name = #a_name,
+#else
+   #define BITFIELD_NAME(a_name)
+#endif
+
+#define BITFIELD_INFO(s, a_name) BITFIELD_NAME(a_name) .offset = offsetof(s, a_name)
+#define BITFIELD_INFO_SRCBITS(s, a_name, a_cnt) BITFIELD_NAME(a_name) .offset = offsetof(s, a_name), .src_bitfield = a_cnt
+#define BITCOUNT(n) .size = { .bits = n }
+#define CHARCOUNT(n) .size = { .chars = n }
+
+#define BITFIELD_LIST_NAME(struct_name) fields_##struct_name
+
+#define _BITFIELD(struct_name, field_name, field_type, dst_bitcount) \
+   { \
+      .parent = &BITFIELD_LIST_NAME(struct_name), \
+      .data = { \
+         .field = { \
+            BITFIELD_INFO(struct_name, field_name), \
+            .type = field_type, \
+            BITCOUNT(dst_bitcount), \
+         } \
+      }, \
+      .is_nested_list = FALSE, \
+      .array_count    = 0, \
+   },
+#define _BITSTRING(struct_name, field_name, charcount) \
+   { \
+      .parent = &BITFIELD_LIST_NAME(struct_name), \
+      .data = { \
+         .field = { \
+            BITFIELD_INFO(struct_name, field_name), \
+            .type = BITFIELD_TYPE_STRING, \
+            CHARCOUNT(charcount), \
+         } \
+      }, \
+      .is_nested_list = FALSE, \
+      .array_count    = 0, \
+   },
+#define _BITBUFFER(struct_name, field_name, src_bytecount) \
+   { \
+      .parent = &BITFIELD_LIST_NAME(struct_name), \
+      .data = { \
+         .field = { \
+            BITFIELD_INFO(struct_name, field_name), \
+            .type = BITFIELD_TYPE_BUFFER, \
+            CHARCOUNT(src_bytecount), \
+         } \
+      }, \
+      .is_nested_list = FALSE, \
+      .array_count    = 0, \
+   },
+   
+#define BITFIELD_U8(struct_name, field_name, dst_bitcount) _BITFIELD(struct_name, field_name, BITFIELD_TYPE_U8, dst_bitcount)
+#define BITFIELD_U16(struct_name, field_name, dst_bitcount) _BITFIELD(struct_name, field_name, BITFIELD_TYPE_U16, dst_bitcount)
+#define BITFIELD_U32(struct_name, field_name, dst_bitcount) _BITFIELD(struct_name, field_name, BITFIELD_TYPE_U32, dst_bitcount)
+#define BITFIELD_BUFFER(struct_name, field_name, src_bytecount) _BITBUFFER(struct_name, field_name, src_bytecount)
+#define BITFIELD_STRING(struct_name, field_name, charcount) _BITSTRING(struct_name, field_name, charcount)
+
+#define BITFIELD_TO_BITFIELD(struct_name, field_name, surrogate_struct_name, surrogate_field_name, surrogate_field_type, src_bitcount, src_bit_offset, dst_bitcount) \
+   { \
+      .parent = &BITFIELD_LIST_NAME(struct_name), \
+      .data = { \
+         .field = { \
+            BITFIELD_NAME(field_name), \
+            .type = surrogate_field_type, \
+            .src_bitfield_info = { \
+               .bit_count  = src_bitcount, \
+               .bit_offset = src_bit_offset, \
+            }, \
+            BITCOUNT(dst_bitcount), \
+         } \
+      }, \
+      .is_nested_list = FALSE, \
+      .array_count    = 0, \
+   },
+
+// bitfields are not addressable, so we'll need pointer casts
+struct _BoxPokemon_Surrogate {
+   u32 personality;
+   u32 otId;
+   u8 nickname[POKEMON_NAME_LENGTH];
+   u8 language;
+   u8 bitfields_a;
+      // isBadEgg   : 1
+      // hasSpecies : 1
+      // isEgg      : 1
+      // unused     : 5
+   u8 otName[PLAYER_NAME_LENGTH];
+   u8 markings;
+   u16 checksum;
+   u16 unknown;
+   union {
+      u32 raw[(NUM_SUBSTRUCT_BYTES * 4) / 4]; // *4 because there are 4 substructs, /4 because it's u32, not u8
+        union PokemonSubstruct substructs[4];
+   } secure;
+};
+
+extern struct BitfieldList BITFIELD_LIST_NAME(BoxPokemon);
+extern struct BitfieldList BITFIELD_LIST_NAME(BoxPokemon) = {
+   BITFIELD_NAME("BoxPokemon")
+   .field_count = 16,
+   .fields = {
+      BITFIELD_U32(BoxPokemon, personality, 32),
+      BITFIELD_U32(BoxPokemon, otId, 32),
+      BITFIELD_STRING(BoxPokemon, nickname, POKEMON_NAME_LENGTH),
+      BITFIELD_U8(BoxPokemon, language, 8),
+      BITFIELD_TO_BITFIELD(
+         BoxPokemon,            isBadEgg,
+         _BoxPokemon_Surrogate, bitfields_a,
+         BITFIELD_TYPE_U8,
+         1, // src bitfield bitcount
+         0, // src bitfield offset
+         1  // dst bitfield bitcount
+      ),
+      BITFIELD_TO_BITFIELD(
+         BoxPokemon,            hasSpecies,
+         _BoxPokemon_Surrogate, bitfields_a,
+         BITFIELD_TYPE_U8,
+         1, // src bitfield bitcount
+         1, // src bitfield offset
+         1  // dst bitfield bitcount
+      ),
+      BITFIELD_TO_BITFIELD(
+         BoxPokemon,            isEgg,
+         _BoxPokemon_Surrogate, bitfields_a,
+         BITFIELD_TYPE_U8,
+         1, // src bitfield bitcount
+         2, // src bitfield offset
+         1  // dst bitfield bitcount
+      ),
+      BITFIELD_TO_BITFIELD(
+         BoxPokemon,            unused,     // Can we skip serializing this, or will that break the checksum?
+         _BoxPokemon_Surrogate, bitfields_a,
+         BITFIELD_TYPE_U8,
+         5, // src bitfield bitcount
+         3, // src bitfield offset
+         5  // dst bitfield bitcount
+      ),
+      BITFIELD_STRING(BoxPokemon, otName, PLAYER_NAME_LENGTH),
+      BITFIELD_U8(BoxPokemon, markings, 8),
+      BITFIELD_U16(BoxPokemon, checksum, 16),
+      BITFIELD_BUFFER(BoxPokemon, secure.raw, NUM_SUBSTRUCT_BYTES * 4),
+   }
+};
+```

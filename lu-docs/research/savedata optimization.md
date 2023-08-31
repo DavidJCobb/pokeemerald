@@ -357,7 +357,7 @@ However, that's a complete waste of RAM. A *more robust but more effortful solut
 
 ### Bitpacking data
 
-The most maintainable way to handle bitpacking and serializing would be to define an array of structs, each consisting of:
+If we're working in pure C, then the most maintainable way to handle bitpacking and serializing would be to define an array of structs, each consisting of:
 
 * A pointer-to-member in SaveBlock1 or SaveBlock2
 ** (Actually, C doesn't have those; we'd use `offsetof`.)
@@ -628,3 +628,16 @@ extern struct BitfieldList BITFIELD_LIST_NAME(BoxPokemon) = {
    }
 };
 ```
+
+No, no, no, this isn't viable.
+
+
+#### The problems with doing bitpack code entirely in the game
+
+The above isn't maintainable. It's basically metaprogramming but with macros, and hand-rolling the things that a language with reflection would give us. We'd only be able to test it in-game, since the entire system is intrinsically linked to savedata, and we'd need a huge variety of end-game and Battle Frontier savestates to test it with -- savestates that we'd have to create ourselves, while making no other revisions to the game that might change memory layouts. That isn't even remotely viable.
+
+So let's do code generation instead.
+
+Suppose we build something that can scan C headers and pull out all struct definitions. C has a vastly simpler syntax than C++, so this is mostly viable. We pull the struct definitions and generate bitfield listings for them -- same as above, but in an actual OO language -- and then we start at SaveBlock1 and SaveBlock2, and generate serialization code. We get all the benefits of perfectly hand-rolled code, where we pause serialization at a sector boundary and then, for the next sector, resume from exactly the place we left off at; but we get these benefits automatically, without having to manually track offsets and sizes. We don't need run-time verification, and we don't need the overhead of run-time state-keeping; the game can serialize "blindly."
+
+Better still: this is something we could test "in a lab." We could throw test structs at this program, vary the sector sizes used for tests, and more. I'd probably prototype it in JavaScript first but if we eventually move it to C++, then we can invoke it via the command line (maybe integrate it into the existing build system if we're feeling adventurous?) and statically assert that it produces correct results under a variety of conditions.

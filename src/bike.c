@@ -10,6 +10,8 @@
 #include "constants/map_types.h"
 #include "constants/songs.h"
 
+#include "lu/constants.h"
+
 // this file's functions
 static void MovePlayerOnMachBike(u8, u16, u16);
 static u8 GetMachBikeTransition(u8 *);
@@ -888,6 +890,7 @@ static u8 GetBikeCollisionAt(struct ObjectEvent *objectEvent, s16 x, s16 y, u8 d
     return collision;
 }
 
+// Ruby/Sapphire logic, possibly included in the decomp just as a reference? Not called by Emerald.
 bool8 RS_IsRunningDisallowed(u8 tile)
 {
     if (IsRunningDisallowedByMetatile(tile) != FALSE || gMapHeader.mapType == MAP_TYPE_INDOOR)
@@ -1051,10 +1054,20 @@ void Bike_HandleBumpySlopeJump(void)
     }
 }
 
-bool32 IsRunningDisallowed(u8 metatile)
-{
-    if (!gMapHeader.allowRunning || IsRunningDisallowedByMetatile(metatile) == TRUE)
-        return TRUE;
-    else
-        return FALSE;
+bool32 IsRunningDisallowed(u8 metatile) {
+   if (!gMapHeader.allowRunning) {
+      #if LU_ALLOW_RUNNING_INDOORS
+         if (gMapHeader.mapType != MAP_TYPE_INDOOR)
+            return TRUE;
+         // else, if indoor, fall through to other checks.
+         
+         // to make a similar change for biking indoors, edit Overworld_IsBikingAllowed in overworld.c.
+      #else
+         return TRUE;
+      #endif
+   }
+   if (IsRunningDisallowedByMetatile(metatile) == TRUE)
+      return TRUE;
+   
+   return FALSE;
 }

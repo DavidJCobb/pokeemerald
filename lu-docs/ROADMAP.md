@@ -147,3 +147,5 @@
 **** ⬜ Dupes Clause (Enable/Disable)
 ***** ⬜ Dupes Clause Shiny Exception (None/Replace Prior/Always Allow)
 *** ⬜ Deactivation Condition (Never/After Champion/After Rayquaza/After All Legendaries)
+* ⬜ Minor stability improvements
+** ⬜ `PokeballGlowEffect_PlaceBalls`: Check for the "0 Pokemon remaining" case first, to fix the underflow and 256-ball animation that occurs if you use the Pokemon Center with an empty party.

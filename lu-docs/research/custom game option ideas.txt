@@ -44,15 +44,8 @@ principles:
  - **Data should be versioned.** Data should be prefixed with a 32-bit version number (non-semver). If 
    at all possible, however, I'd like to avoid having an upgrade procedure in the ROM itself, as that'll 
    lead to more and more seldom-used code going forward. Instead, I want to look into the possibility of 
-   save data transplantation. Can I write a C++ program that can transplant one savestate's flash memory 
-   into a title-screen savestate, and if so, would that even work? If so, then the upgrade procedure 
-   becomes "make an in-game save; savestate afterwards; then make a second savestate at the title screen; 
-   then run the tool."
-   
-   Or maybe emulators today have something equivalent enough to render that kind of jank unnecessary? For 
-   now, the goal is just to get Custom Games working at all, but I may as well tack a version number onto 
-   the data just to prep for *whatever we end up doing* to allow forward-compatibility for savedata after 
-   we launch.
+   save data transplantation: most emulators, including MyBoy! on Android, will let you export just the 
+   128KB flash memory as a *.sav file, so we can theoretically load that and do some surgery on it.
 
 
 === Value types and storage formats ===

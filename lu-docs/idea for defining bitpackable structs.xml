@@ -1,0 +1,231 @@
+<data>
+<!--
+   This file defines C structs in an XML format. We'll use it to generate two things:
+   
+    - Code representing the "body" of the struct.
+    - Code to serialize the struct in a bitpacked format.
+   
+   An example of the former:
+   
+   ```c++
+   // normal_c_code.h
+   
+   struct MyStruct {
+#include "lu-generated/MyStruct.body.inl"
+   };
+   ```
+   
+   ```c++
+   // MyStruct.body.inl
+   
+   #if SOME_CONSTANT != 5
+      #error Value of SOME_CONSTANT is inconsistent between C headers and XML-side definitions!
+   #endif
+   u8  someField;
+   u16 someOtherField;
+   ```
+   
+   This means that we can automatically generate serialization code, including *interruptible* 
+   serialization code for save blocks, without having to write an entire GCC-compatible parser 
+   for C headers.
+-->
+   <constants>
+      <!--
+         When constants are referenced by a type definition, you must define them both in the 
+         original C files and in here. We don't parse headers; we can't look up the constants 
+         for you.
+      -->
+      <constant
+         name="POKEMON_NAME_LENGTH"
+         header="constants/global.h"
+         value="10"
+      />
+      
+      <!--
+         You can also group things by header:
+      -->
+      <header path="constants/global.h">
+         <constant name="PLAYER_NAME_LENGTH" value="7" />
+         <constant name="MAIL_WORDS_COUNT"   value="9" />
+         <constant name="TRAINER_ID_LENGTH"  value="4" />
+      </header>
+   </constants>
+   <common-type-params>
+      <!--
+         Here, you can define minimums, maximums, and other parameters that recur across 
+         members in various structs.
+      -->
+      <type
+         name="$global_item_id"
+      />
+      <type
+         name="$pokemon_species_id"
+         min="0"
+         max="512"
+      />
+      
+      <type
+         name="$player-name"
+         type="string"
+         length="PLAYER_NAME_LENGTH"
+         char-type="u8"
+      />
+      <!--
+         Now we can specify player names through three means:
+         
+            <field name="playerName" type="string" length="PLAYER_NAME_LENGTH" char-type="u8" />
+            <string name="playerName" length="PLAYER_NAME_LENGTH" char-type="u8" />
+         
+         or, now,
+         
+            <field name="playerName" inherit="$player-name" />
+      -->
+      
+      <type
+         name="$pokemon-nickname"
+         type="string"
+         length="POKEMON_NAME_LENGTH"
+         char-type="u8"
+      />
+   </common-type-params>
+   <types>
+      <struct name="BoxPokemon">
+         <source-info>
+            <header path="pokemon.h" />
+         </source-info>
+         <fields>
+            <u32 name="personality" />
+            <u32 name="otId" />
+            <field name="nickname" inherit="$pokemon-nickname" />
+            <u8 name="language" />
+            <bitfield
+               name="isBadEgg"
+               bits="1"
+               semantic-type="bool"
+               c-type="u8"
+            />
+            <bitfield
+               name="hasSpecies"
+               bits="1"
+               semantic-type="bool"
+               c-type="u8"
+            />
+            <bitfield
+               name="isEgg"
+               bits="1"
+               semantic-type="bool"
+               c-type="u8"
+            />
+            <bitfield
+               name="unused"
+               bits="5"
+               c-type="u8"
+            />
+            <field name="otName" inherit="$player-name" />
+            <u8 name="markings" />
+            <checksum
+               name="checksum"
+               c-type="u16"
+            />
+            <u16 name="unknown" />
+            <union name="secure">
+               <array
+                  name="raw"
+                  length="(NUM_SUBSTRUCT_BYTES * 4) / 4"
+               />
+               <array
+                  name="substructs"
+                  c-type="PokemonSubstruct"
+                  c-type-decl="union"
+                  length="4"
+               />
+            </union>
+         </fields>
+      </struct>
+      <struct name="Pokemon">
+         <source-info>
+            <header path="pokemon.h" />
+         </source-info>
+         <fields>
+            <field name="box" c-type="BoxPokemon" c-type-decl="struct" />
+            <u32 name="status" />
+            <field
+               name="level"
+               c-type="u8"
+               semantic-type="integer"
+               min="0"
+               max="100"
+            />
+            <u8 name="mail" />
+            <u16 name="hp" />
+            <u16 name="maxHP" />
+            <u16 name="attack" />
+            <u16 name="defense" />
+            <u16 name="speed" />
+            <u16 name="spAttack" />
+            <u16 name="spDefense" />
+         </fields>
+      </struct>
+      
+      <struct name="Mail">
+         <source-info>
+            <header path="global.h" />
+         </source-info>
+         <fields>
+            <array
+               name="words"
+               c-type="u16"
+               length="MAIL_WORDS_COUNT"
+            />
+            <field name="playerName" inherit="$player-name" />
+            <array
+               name="trainerId"
+               c-type="u8"
+               length="TRAINER_ID_LENGTH"
+            />
+            <u16 name="species" common-type="$pokemon_species_id" />
+            <u16 name="itemId" common-type="$global_item_id" />
+         </fields>
+      </struct>
+      <struct name="DaycareMail">
+         <source-info>
+            <header path="global.h" />
+         </source-info>
+         <fields>
+            <field name="message" c-type="Mail" c-type-decl="struct" />
+            <field name="otName" inherit="$player-name" />
+            <field name="monName" inherit="$pokemon-nickname" />
+            <bitfield
+               name="gameLanguage"
+               bits="4"
+               c-type="u8"
+            />
+            <bitfield
+               name="monLanguage"
+               bits="4"
+               c-type="u8"
+            />
+         </fields>
+      </struct>
+      <struct name="DaycareMon">
+         <source-info>
+            <header path="global.h" />
+         </source-info>
+         <fields>
+            <field name="mon" c-type="BoxPokemon" c-type-decl="struct" />
+            <field name="mail" c-type="DaycareMail" c-type-decl="struct" />
+            <u32 name="steps" />
+         </fields>
+      </struct>
+      
+      <struct name="TrainerNameRecord">
+         <source-info>
+            <header path="global.h" />
+         </source-info>
+         <fields>
+            <u32 name="trainerId" />
+            <field name="trainerName" inherit="$player-name" c-align="2" />
+         </fields>
+      </struct>
+   </types>
+</data>

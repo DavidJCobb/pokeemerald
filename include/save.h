@@ -14,13 +14,75 @@
 
 #define SPECIAL_SECTOR_SENTINEL 0xB39D
 
+//
+// We need to distinguish between the different ways of identifying parts of a save file.
+//
+// Sector
+//    A 4KiB slice of the 128KiB flash memory. There are 32 of these.
+//
+// Slot
+//    The character, world, and Pokemon storage (PC) state for a save file. There are two 
+//    slots, with one used as a backup save.
+//
+// Sector index
+//    Sector indices span from 0 to 31 and describe a sector by its location.
+//
+// Sector ID
+//    Sector IDs span from 0 to 31 and describe a sector by its purpose. Sectors within a 
+//    slot have consistent IDs but are serialized to different locations, and so sector 
+//    IDs don't always map 1:1 with sector indices. For example, sector ID 1 is part of 
+//    the world state for a slot, but may be serialized to sector index 5.
+//
+//    Complicating matters is that slots 1 and 2 both use the same IDs for their sectors, 
+//    but non-slot sectors may not even use meaningful IDs at all. A typical example (this 
+//    one coming from a real save file) might look like this:
+//
+//          Index | ID | Note
+//          ------+----+-------------------------
+//          0     | 10 | Start of slot 1.
+//          1     | 11 | 
+//          2     | 12 | 
+//          3     | 13 | 
+//          4     | 0  | 
+//          5     | 1  | 
+//          6     | 2  | 
+//          7     | 3  | 
+//          8     | 4  | 
+//          9     | 5  | 
+//          10    | 6  | 
+//          11    | 7  | 
+//          12    | 8  | 
+//          13    | 9  | 
+//          14    | 11 | Start of slot 2.
+//          15    | 12 | 
+//          16    | 13 | 
+//          17    | 0  | 
+//          18    | 1  | 
+//          19    | 2  | 
+//          20    | 3  | 
+//          21    | 4  | 
+//          22    | 5  | 
+//          23    | 6  | 
+//          24    | 7  | 
+//          25    | 8  | 
+//          26    | 9  | 
+//          27    | 10 | 
+//          28    | -- | Non-slot sector: Hall of Fame (1)
+//          29    | -- | Non-slot sector: Hall of Fame (2)
+//          30    | -- | Non-slot sector: Trainer Hill
+//          31    | -- | Non-slot sector: Recorded Battle
+//
+
 #define SECTOR_ID_SAVEBLOCK2          0
 #define SECTOR_ID_SAVEBLOCK1_START    1
 #define SECTOR_ID_SAVEBLOCK1_END      4
 #define SECTOR_ID_PKMN_STORAGE_START  5
 #define SECTOR_ID_PKMN_STORAGE_END   13
 #define NUM_SECTORS_PER_SLOT         14
-// Save Slot 1: 0-13;  Save Slot 2: 14-27
+//
+// Note: Both save slots' sectors use IDs 0 through 13 in their sector footers. The 
+//       second save slot doesn't encode IDs as 14 through 27.
+//
 #define SECTOR_ID_HOF_1              28
 #define SECTOR_ID_HOF_2              29
 #define SECTOR_ID_TRAINER_HILL       30

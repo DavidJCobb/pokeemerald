@@ -17,9 +17,9 @@
 #include "lu/generated/sector-serialize/WorldData.h"
 
 struct SaveblockLayoutItem {
-   u8 offsetSectorId;
-   bool8(*func_read)(u8 offsetSectorId, const u8* src);
-   bool8(*func_write)(u8 offsetSectorId, u8* dst);
+   u8 sliceNum;
+   bool8(*func_read)(u8 sliceNum, const u8* src);
+   bool8(*func_write)(u8 sliceNum, u8* dst);
 };
 
 static u16 CalculateChecksum(void*, u16);
@@ -208,10 +208,10 @@ u16 GetSaveBlocksPointersBaseOffset(void) {
 
 
 #define READ_SECTOR_CODE_FOR_UNPACKED_STRUCT(typename, ptr)     \
-   u32 offset;                                                  \
-   u32 size;                                                    \
+   u16 offset;                                                  \
+   u16 size;                                                    \
                                                                 \
-   offset = sectorNumWithinGroup * SECTOR_DATA_SIZE;            \
+   offset = sliceNum * SECTOR_DATA_SIZE;            \
    size   = min(sizeof(struct typename ) - offset, SECTOR_DATA_SIZE); \
    {                                                            \
       u16 j;                                                    \
@@ -221,10 +221,10 @@ u16 GetSaveBlocksPointersBaseOffset(void) {
    return TRUE;
    
 #define WRITE_SECTOR_CODE_FOR_UNPACKED_STRUCT(typename, ptr)    \
-   u32 offset;                                                  \
-   u32 size;                                                    \
+   u16 offset;                                                  \
+   u16 size;                                                    \
                                                                 \
-   offset = sectorNumWithinGroup * SECTOR_DATA_SIZE;            \
+   offset = sliceNum * SECTOR_DATA_SIZE;            \
    size   = min(sizeof(struct typename ) - offset, SECTOR_DATA_SIZE); \
    {                                                            \
       u16 j;                                                    \
@@ -234,54 +234,54 @@ u16 GetSaveBlocksPointersBaseOffset(void) {
    return TRUE;
 
 
-static bool8 ReadSector_WorldData(u8 sectorNumWithinGroup, const u8* src) {
+static bool8 ReadSector_WorldData(u8 sliceNum, const u8* src) {
    READ_SECTOR_CODE_FOR_UNPACKED_STRUCT(SaveBlock1, gSaveBlock1Ptr); // DEBUGGING
    
-   if (sectorNumWithinGroup == 0) {
+   if (sliceNum == 0) {
       lu_ReadSaveSector_WorldData00(src, gSaveBlock1Ptr);
-   } else if (sectorNumWithinGroup == 1) {
+   } else if (sliceNum == 1) {
       lu_ReadSaveSector_WorldData01(src, gSaveBlock1Ptr);
-   } else if (sectorNumWithinGroup == 2) {
+   } else if (sliceNum == 2) {
       lu_ReadSaveSector_WorldData02(src, gSaveBlock1Ptr);
-   } else if (sectorNumWithinGroup == 3) {
+   } else if (sliceNum == 3) {
       lu_ReadSaveSector_WorldData03(src, gSaveBlock1Ptr);
    }
    return TRUE;
 }
-static bool8 ReadSector_CharacterData(u8 sectorNumWithinGroup, const u8* src) {
+static bool8 ReadSector_CharacterData(u8 sliceNum, const u8* src) {
    READ_SECTOR_CODE_FOR_UNPACKED_STRUCT(SaveBlock2, gSaveBlock2Ptr); // DEBUGGING
    
-   if (sectorNumWithinGroup == 0) {
+   if (sliceNum == 0) {
       lu_ReadSaveSector_CharacterData00(src, gSaveBlock2Ptr);
    }
    return TRUE;
 }
-static bool8 ReadSector_PokemonStorage(u8 sectorNumWithinGroup, const u8* src) {
+static bool8 ReadSector_PokemonStorage(u8 sliceNum, const u8* src) {
    READ_SECTOR_CODE_FOR_UNPACKED_STRUCT(PokemonStorage, gPokemonStoragePtr);
 }
-static bool8 WriteSector_WorldData(u8 sectorNumWithinGroup, u8* dst) {
+static bool8 WriteSector_WorldData(u8 sliceNum, u8* dst) {
    WRITE_SECTOR_CODE_FOR_UNPACKED_STRUCT(SaveBlock1, gSaveBlock1Ptr); // DEBUGGING
    
-   if (sectorNumWithinGroup == 0) {
+   if (sliceNum == 0) {
       lu_WriteSaveSector_WorldData00(dst, gSaveBlock1Ptr);
-   } else if (sectorNumWithinGroup == 1) {
+   } else if (sliceNum == 1) {
       lu_WriteSaveSector_WorldData01(dst, gSaveBlock1Ptr);
-   } else if (sectorNumWithinGroup == 2) {
+   } else if (sliceNum == 2) {
       lu_WriteSaveSector_WorldData02(dst, gSaveBlock1Ptr);
-   } else if (sectorNumWithinGroup == 3) {
+   } else if (sliceNum == 3) {
       lu_WriteSaveSector_WorldData03(dst, gSaveBlock1Ptr);
    }
    return TRUE;
 }
-static bool8 WriteSector_CharacterData(u8 sectorNumWithinGroup, u8* dst) {
+static bool8 WriteSector_CharacterData(u8 sliceNum, u8* dst) {
    WRITE_SECTOR_CODE_FOR_UNPACKED_STRUCT(SaveBlock2, gSaveBlock2Ptr); // DEBUGGING
    
-   if (sectorNumWithinGroup == 0) {
+   if (sliceNum == 0) {
       lu_WriteSaveSector_CharacterData00(dst, gSaveBlock2Ptr);
    }
    return TRUE;
 }
-static bool8 WriteSector_PokemonStorage(u8 sectorNumWithinGroup, u8* dst) {
+static bool8 WriteSector_PokemonStorage(u8 sliceNum, u8* dst) {
    WRITE_SECTOR_CODE_FOR_UNPACKED_STRUCT(PokemonStorage, gPokemonStoragePtr);
 }
 
@@ -426,7 +426,7 @@ static u8 CopySaveSlotData(const struct SaveblockLayoutItem* layout) {
 
       // Only copy data for sectors whose signature and checksum fields are correct
       if (gReadWriteSector->signature == SECTOR_SIGNATURE && gReadWriteSector->checksum == checksum) {
-         (layout[id].func_read)(layout[id].offsetSectorId, gReadWriteSector->data);
+         (layout[id].func_read)(layout[id].sliceNum, gReadWriteSector->data);
       }
    }
 
@@ -503,22 +503,24 @@ static u8 OnFailedFullSlotSave() {
 }
 
 static u8 SerializeToSlotOwnedSector(u8 sectorId, bool8 eraseFlashFirst) {
-   u16 i;
-   u16 sector;
+   u16 sectorIndex;
    u8  status;
    //
    const struct SaveblockLayoutItem* sector_definition;
    
-   sector_definition = &sSaveSlotLayout[i];
+   sector_definition = &sSaveSlotLayout[sectorId];
 
    // Adjust sector id for current save slot
-   sector = sectorId + gLastWrittenSector;
-   sector %= NUM_SECTORS_PER_SLOT;
-   sector += NUM_SECTORS_PER_SLOT * (gSaveCounter % NUM_SAVE_SLOTS);
+   sectorIndex = sectorId + gLastWrittenSector;
+   sectorIndex %= NUM_SECTORS_PER_SLOT;
+   sectorIndex += NUM_SECTORS_PER_SLOT * (gSaveCounter % NUM_SAVE_SLOTS);
 
    // Clear temp save sector
-   for (i = 0; i < SECTOR_SIZE; i++)
-      ((u8*)gReadWriteSector)[i] = 0;
+   {
+      u16 i;
+      for (i = 0; i < SECTOR_SIZE; i++)
+         ((u8*)gReadWriteSector)[i] = 0;
+   }
 
    // Set footer data
    gReadWriteSector->id        = sectorId;
@@ -526,7 +528,7 @@ static u8 SerializeToSlotOwnedSector(u8 sectorId, bool8 eraseFlashFirst) {
    gReadWriteSector->counter   = gSaveCounter;
 
    // Write current data to temp buffer for writing
-   (sector_definition->func_write)(sector_definition->offsetSectorId, gReadWriteSector->data);
+   (sector_definition->func_write)(sector_definition->sliceNum, gReadWriteSector->data);
 
    gReadWriteSector->checksum = CalculateChecksum(gReadWriteSector->data, SECTOR_DATA_SIZE); // TODO: Could optimize by using only the bytespan of the serialized/bitpacked data.
    
@@ -534,13 +536,13 @@ static u8 SerializeToSlotOwnedSector(u8 sectorId, bool8 eraseFlashFirst) {
    // Commit the data to flash memory.
    //
    if (eraseFlashFirst) {
-      EraseFlashSector(sector);
+      EraseFlashSector(sectorIndex);
    }
-   status = TryWriteSector(sector, gReadWriteSector->data);
+   status = TryWriteSector(sectorIndex, gReadWriteSector->data);
    if (status == SAVE_STATUS_ERROR) {
       return status;
    }
-   return TryWriteSectorFooter(sector, gReadWriteSector);
+   return TryWriteSectorFooter(sectorIndex, gReadWriteSector);
 }
 
 
@@ -583,10 +585,7 @@ static u8 WriteSlot(bool8 cycleSectors, bool8 savePokemonStorage, bool8 eraseFla
    
    return status;
 }
-static u8 WriteSectorWithSize(u8 sectorId, u8* src, u16 size) {
-   // TODO
-   //  - Would be used for HoF, Trainer Hill, Battle Record
-   //  - Should be wrapped by dedicated functions for each
+static u8 WriteSectorWithSize(u8 sectorIndex, u8* src, u16 size) { // should only be used for non-slot sectors
    u16 i;
    u8  status;
    struct SaveSector* sector = &gSaveDataBuffer;
@@ -604,11 +603,11 @@ static u8 WriteSectorWithSize(u8 sectorId, u8* src, u16 size) {
    // though this appears to be incorrect, it might be some sector checksum instead of a whole save checksum and only appears to be relevent to HOF data, if used.
    sector->id = CalculateChecksum(src, size);
    
-   status = TryWriteSector(sectorId, sector->data);
+   status = TryWriteSector(sectorIndex, sector->data);
    if (status == SAVE_STATUS_ERROR) {
       return status;
    }
-   return TryWriteSectorFooter(sectorId, sector);
+   return TryWriteSectorFooter(sectorIndex, sector);
 }
 static void WriteHallOfFame() {
    u8* tempAddr = gDecompressionBuffer;

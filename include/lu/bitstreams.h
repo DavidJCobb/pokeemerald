@@ -1,6 +1,8 @@
 #ifndef GUARD_LU_BITSTREAMS
 #define GUARD_LU_BITSTREAMS
 
+#include "global.h"
+
 struct lu_BitstreamState {
    u8* target;
    u8  shift; // offset within target byte
@@ -53,8 +55,12 @@ extern void lu_BitstreamWrite_u16(struct lu_BitstreamState*, u16 value, u8 bitco
 // if that assumption is not true.
 extern void lu_BitstreamWrite_u32(struct lu_BitstreamState*, u32 value, u8 bitcount);
 
-extern void lu_BitstreamWrite_string(struct lu_BitstreamState*, u8* value, u16 max_length, u8 length_bitcount);
-extern void lu_BitstreamWrite_string_optional_terminator(struct lu_BitstreamState*, u8* value, u16 max_length);
+extern s8 lu_BitstreamWrite_s8(struct lu_BitstreamState*, s8 value, u8 bitcount);
+extern s16 lu_BitstreamWrite_s16(struct lu_BitstreamState*, s16 value, u8 bitcount);
+extern s32 lu_BitstreamWrite_s32(struct lu_BitstreamState*, s32 value, u8 bitcount);
+
+extern void lu_BitstreamWrite_string(struct lu_BitstreamState*, const u8* value, u16 max_length, u8 length_bitcount);
+extern void lu_BitstreamWrite_string_optional_terminator(struct lu_BitstreamState*, const u8* value, u16 max_length);
 
 extern void lu_BitstreamWrite_buffer(struct lu_BitstreamState*, const void* value, u16 bytecount);
 

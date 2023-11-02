@@ -48,14 +48,30 @@ enum
 };
 
 // Do save types
-enum
-{
-    SAVE_NORMAL,
-    SAVE_LINK, // Link / Battle Frontier
-    SAVE_EREADER, // deprecated in Emerald
-    SAVE_HALL_OF_FAME,
-    SAVE_OVERWRITE_DIFFERENT_FILE,
-    SAVE_HALL_OF_FAME_ERASE_BEFORE // unused
+enum {
+   SAVE_NORMAL,
+    
+   SAVE_LINK, // Link / Battle Frontier
+   
+   // Unused. Now a duplicate of SAVE_LINK.
+   SAVE_EREADER,
+    
+   // Save: Used when replacing a pre-existing playthrough with a new one. Clears 
+   // all non-slot sectors, and then overwrites the slot sectors.
+   //
+   // Load: pulls Hall of Fame data into `gDecompressionBuffer`, where the caller 
+   // then reads it as needed. This includes loading the data, adding a new team, 
+   // and then saving the modified data with a save call. 
+   SAVE_HALL_OF_FAME,
+    
+   // Save: Used when replacing a pre-existing playthrough with a new one. Clears 
+   // all non-slot sectors, and then overwrites the slot sectors.
+   //
+   // Load: Invalid. Not checked for.
+   SAVE_OVERWRITE_DIFFERENT_FILE,
+   
+   // Unused. Code for it removed, to make savegame code easier to review.
+   SAVE_HALL_OF_FAME_ERASE_BEFORE,
 };
 
 // A save sector location holds a pointer to the data for a particular sector
@@ -72,7 +88,7 @@ struct SaveSector
     u8 unused[SECTOR_FOOTER_SIZE - 12]; // Unused portion of the footer
     u16 id;
     u16 checksum;
-    u32 signature;
+    u32 signature; // must be SECTOR_SIGNATURE
     u32 counter;
 }; // size is SECTOR_SIZE (0x1000)
 

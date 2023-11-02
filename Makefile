@@ -1,6 +1,21 @@
 TOOLCHAIN := $(DEVKITARM)
 COMPARE ?= 0
 
+# =================================================================================
+#
+# Addition: C/C++ fragment files used for macros should not be flagged as 
+# "unrecognized extension"
+#
+# I've never worked with makefiles before. I really hope I'm not breaking 
+# anything by doing this
+#
+%.inl: ;
+#
+# Other changes made: adjusted references to C_SUBDIR to traverse into 
+# deeper folder hierarchies.
+#
+# =================================================================================
+
 ifeq (compare,$(MAKECMDGOALS))
   COMPARE := 1
 endif
@@ -179,14 +194,14 @@ else
 endif
 
 ifeq ($(SCAN_DEPS),1)
-C_SRCS_IN := $(wildcard $(C_SUBDIR)/*.c $(C_SUBDIR)/*/*.c $(C_SUBDIR)/*/*/*.c)
+C_SRCS_IN := $(wildcard $(C_SUBDIR)/*.c $(C_SUBDIR)/*/*.c $(C_SUBDIR)/*/*/*.c $(C_SUBDIR)/*/*/*/*.c $(C_SUBDIR)/*/*/*/*/*.c)
 C_SRCS := $(foreach src,$(C_SRCS_IN),$(if $(findstring .inc.c,$(src)),,$(src)))
 C_OBJS := $(patsubst $(C_SUBDIR)/%.c,$(C_BUILDDIR)/%.o,$(C_SRCS))
 
 GFLIB_SRCS := $(wildcard $(GFLIB_SUBDIR)/*.c)
 GFLIB_OBJS := $(patsubst $(GFLIB_SUBDIR)/%.c,$(GFLIB_BUILDDIR)/%.o,$(GFLIB_SRCS))
 
-C_ASM_SRCS += $(wildcard $(C_SUBDIR)/*.s $(C_SUBDIR)/*/*.s $(C_SUBDIR)/*/*/*.s)
+C_ASM_SRCS += $(wildcard $(C_SUBDIR)/*.s $(C_SUBDIR)/*/*.s $(C_SUBDIR)/*/*/*.s $(C_SUBDIR)/*/*/*/*.s $(C_SUBDIR)/*/*/*/*/*.s)
 C_ASM_OBJS := $(patsubst $(C_SUBDIR)/%.s,$(C_BUILDDIR)/%.o,$(C_ASM_SRCS))
 
 ASM_SRCS := $(wildcard $(ASM_SUBDIR)/*.s)
@@ -280,7 +295,6 @@ include songs.mk
 %.rl: % ; $(GFX) $< $@
 $(CRY_SUBDIR)/%.bin: $(CRY_SUBDIR)/%.aif ; $(AIF) $< $@ --compress
 sound/%.bin: sound/%.aif ; $(AIF) $< $@
-
 
 ifeq ($(MODERN),0)
 $(C_BUILDDIR)/libc.o: CC1 := tools/agbcc/bin/old_agbcc$(EXE)

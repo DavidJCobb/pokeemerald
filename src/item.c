@@ -48,8 +48,16 @@ void ApplyNewEncryptionKeyToBagItems(u32 newKey)
     u32 pocket, item;
     for (pocket = 0; pocket < POCKETS_COUNT; pocket++)
     {
-        for (item = 0; item < gBagPockets[pocket].capacity; item++)
-            ApplyNewEncryptionKeyToHword(&(gBagPockets[pocket].itemSlots[item].quantity), newKey);
+        for (item = 0; item < gBagPockets[pocket].capacity; item++) {
+            u16* hword = &(gBagPockets[pocket].itemSlots[item].quantity);
+            ApplyNewEncryptionKeyToHword(hword, newKey);
+            //
+            // We only serialize 7 bits (since the quantity is capped at 99) to savedata. 
+            // We need to make sure that after loading, no bits above that get set to 1 
+            // by the encryption.
+            //
+            *hword &= 0x7F;
+        }
     }
 }
 

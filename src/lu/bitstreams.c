@@ -282,10 +282,20 @@ void lu_BitstreamWrite_u32(struct lu_BitstreamState* state, u32 value, u8 bitcou
    }
 }
 
-void lu_BitstreamWrite_string(struct lu_BitstreamState* state, u8* value, u16 max_length, u8 length_bitcount) {
-   u8  length_bitcount;
-   u16 len = StringLength(value);
+void lu_BitstreamWrite_s8(struct lu_BitstreamState* state, s8 value, u8 bitcount) {
+   lu_BitstreamWrite_u8(state, (u8)value, bitcount);
+}
+void lu_BitstreamWrite_s16(struct lu_BitstreamState* state, s16 value, u8 bitcount) {
+   lu_BitstreamWrite_u16(state, (u16)value, bitcount);
+}
+void lu_BitstreamWrite_s32(struct lu_BitstreamState* state, s32 value, u8 bitcount) {
+   lu_BitstreamWrite_u32(state, (u32)value, bitcount);
+}
+
+
+void lu_BitstreamWrite_string(struct lu_BitstreamState* state, const u8* value, u16 max_length, u8 length_bitcount) {
    u16 i;
+   u16 len = StringLength(value);
    
    if (length_bitcount <= 8) {
       lu_BitstreamWrite_u8(state, len, length_bitcount);
@@ -300,14 +310,14 @@ void lu_BitstreamWrite_string(struct lu_BitstreamState* state, u8* value, u16 ma
       lu_BitstreamWrite_u8(state, 0xFF, 8); // EOS
    }
 }
-void lu_BitstreamWrite_string_optional_terminator(struct lu_BitstreamState* state, u8* value, u16 max_length) {
+void lu_BitstreamWrite_string_optional_terminator(struct lu_BitstreamState* state, const u8* value, u16 max_length) {
    u16 i;
    for(i = 0; i < max_length; ++i)
       lu_BitstreamWrite_u8(state, value[i], 8);
 }
 
-void lu_BitstreamWrite_buffer(struct lu_BitstreamState* state, void* value, u16 bytecount) {
+void lu_BitstreamWrite_buffer(struct lu_BitstreamState* state, const void* value, u16 bytecount) {
    u16 i;
    for(i = 0; i < bytecount; ++i)
-      lu_BitstreamWrite_u8(state, *((u8*)value + i), 8);
+      lu_BitstreamWrite_u8(state, *((const u8*)value + i), 8);
 }

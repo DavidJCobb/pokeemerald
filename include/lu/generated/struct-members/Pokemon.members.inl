@@ -1,0 +1,11 @@
+   struct BoxPokemon box;
+   u32 status;
+   u8 level;
+   u8 mail;
+   u16 hp;
+   u16 maxHP;
+   u16 attack;
+   u16 defense;
+   u16 speed;
+   u16 spAttack;
+   u16 spDefense;

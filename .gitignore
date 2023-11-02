@@ -39,3 +39,6 @@ prefabs.json
 *.diff
 *.sym
 *.js
+
+
+*.sav

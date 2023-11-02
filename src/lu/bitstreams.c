@@ -217,13 +217,11 @@ void lu_BitstreamWrite_u16(struct lu_BitstreamState* state, u16 value, u8 bitcou
       u8 extra;
       
       if (state->shift == 0) {
-         /*//
          if (bitcount < 8) {
-            *state->target = value << (8 - bitcount);
+            *state->target = (u8)value << (8 - bitcount);
             _advance_position_by_bits(state, bitcount);
             return;
          }
-         //*/
          *state->target = value >> (bitcount - 8);
          _advance_position_by_bytes(state, 1);
          bitcount -= 8;
@@ -254,13 +252,11 @@ void lu_BitstreamWrite_u32(struct lu_BitstreamState* state, u32 value, u8 bitcou
       u8 extra;
       
       if (state->shift == 0) {
-         /*//
          if (bitcount < 8) {
-            *state->target = value << (8 - bitcount);
+            *state->target = (u8)value << (8 - bitcount);
             _advance_position_by_bits(state, bitcount);
             return;
          }
-         //*/
          *state->target = value >> (bitcount - 8);
          _advance_position_by_bytes(state, 1);
          bitcount -= 8;

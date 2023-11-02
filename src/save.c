@@ -234,9 +234,14 @@ u16 GetSaveBlocksPointersBaseOffset(void) {
    return TRUE;
 
 
+#define ENABLE_BITPACKING 1
+
+
 static bool8 ReadSector_WorldData(u8 sliceNum, const u8* src) {
-   READ_SECTOR_CODE_FOR_UNPACKED_STRUCT(SaveBlock1, gSaveBlock1Ptr); // DEBUGGING
-   
+   #if !ENABLE_BITPACKING
+      READ_SECTOR_CODE_FOR_UNPACKED_STRUCT(SaveBlock1, gSaveBlock1Ptr);
+   #endif
+   //
    if (sliceNum == 0) {
       lu_ReadSaveSector_WorldData00(src, gSaveBlock1Ptr);
    } else if (sliceNum == 1) {
@@ -249,8 +254,10 @@ static bool8 ReadSector_WorldData(u8 sliceNum, const u8* src) {
    return TRUE;
 }
 static bool8 ReadSector_CharacterData(u8 sliceNum, const u8* src) {
-   READ_SECTOR_CODE_FOR_UNPACKED_STRUCT(SaveBlock2, gSaveBlock2Ptr); // DEBUGGING
-   
+   #if !ENABLE_BITPACKING
+      READ_SECTOR_CODE_FOR_UNPACKED_STRUCT(SaveBlock2, gSaveBlock2Ptr);
+   #endif
+   //
    if (sliceNum == 0) {
       lu_ReadSaveSector_CharacterData00(src, gSaveBlock2Ptr);
    }
@@ -260,8 +267,10 @@ static bool8 ReadSector_PokemonStorage(u8 sliceNum, const u8* src) {
    READ_SECTOR_CODE_FOR_UNPACKED_STRUCT(PokemonStorage, gPokemonStoragePtr);
 }
 static bool8 WriteSector_WorldData(u8 sliceNum, u8* dst) {
-   WRITE_SECTOR_CODE_FOR_UNPACKED_STRUCT(SaveBlock1, gSaveBlock1Ptr); // DEBUGGING
-   
+   #if !ENABLE_BITPACKING
+      WRITE_SECTOR_CODE_FOR_UNPACKED_STRUCT(SaveBlock1, gSaveBlock1Ptr);
+   #endif
+   //
    if (sliceNum == 0) {
       lu_WriteSaveSector_WorldData00(dst, gSaveBlock1Ptr);
    } else if (sliceNum == 1) {
@@ -274,8 +283,10 @@ static bool8 WriteSector_WorldData(u8 sliceNum, u8* dst) {
    return TRUE;
 }
 static bool8 WriteSector_CharacterData(u8 sliceNum, u8* dst) {
-   WRITE_SECTOR_CODE_FOR_UNPACKED_STRUCT(SaveBlock2, gSaveBlock2Ptr); // DEBUGGING
-   
+   #if !ENABLE_BITPACKING
+      WRITE_SECTOR_CODE_FOR_UNPACKED_STRUCT(SaveBlock2, gSaveBlock2Ptr);
+   #endif
+   //
    if (sliceNum == 0) {
       lu_WriteSaveSector_CharacterData00(dst, gSaveBlock2Ptr);
    }

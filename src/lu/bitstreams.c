@@ -5,11 +5,11 @@
 static void _advance_position_by_bits(struct lu_BitstreamState* state, u8 bits) {
    state->shift += bits;
    while (state->shift >= 8) {
-      state->shift -= 8;
-      ++state->target;
+      state->target += state->shift / 8;
       #ifndef NDEBUG
-         ++state->size;
+         state->size += state->shift / 8;
       #endif
+      state->shift %= 8;
    }
 }
 static void _advance_position_by_bytes(struct lu_BitstreamState* state, u8 bytes) {
@@ -249,7 +249,7 @@ void lu_BitstreamWrite_u8(struct lu_BitstreamState* state, u8 value, u8 bitcount
       if (bitcount <= extra) {
          // Value can fit entirely within the current byte.
          *state->target |= value << (extra - bitcount);
-         state->shift += bitcount;
+         _advance_position_by_bits(state, bitcount);
          #ifdef INVOKE_POST_WRITE_HANDLERS
             _post_write_integral(state, original_bitcount, value);
          #endif
@@ -297,7 +297,7 @@ void lu_BitstreamWrite_u16(struct lu_BitstreamState* state, u16 value, u8 bitcou
       if (bitcount <= extra) {
          // Value can fit entirely within the current byte.
          *state->target |= value << (extra - bitcount);
-         state->shift += bitcount;
+         _advance_position_by_bits(state, bitcount);
          #ifdef INVOKE_POST_WRITE_HANDLERS
             _post_write_integral(state, original_bitcount, value);
          #endif
@@ -345,7 +345,7 @@ void lu_BitstreamWrite_u32(struct lu_BitstreamState* state, u32 value, u8 bitcou
       if (bitcount <= extra) {
          // Value can fit entirely within the current byte.
          *state->target |= value << (extra - bitcount);
-         state->shift += bitcount;
+         _advance_position_by_bits(state, bitcount);
          #ifdef INVOKE_POST_WRITE_HANDLERS
             _post_write_integral(state, original_bitcount, value);
          #endif

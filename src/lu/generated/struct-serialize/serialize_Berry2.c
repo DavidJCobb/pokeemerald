@@ -13,7 +13,7 @@
 #endif
 
 void lu_BitstreamRead_Berry2(struct lu_BitstreamState* state, struct Berry2* v) {
-   lu_BitstreamRead_string(state, v->name, BERRY_NAME_LENGTH, 3);
+   lu_BitstreamRead_string(state, v->name, BERRY_NAME_LENGTH);
    v->firmness = lu_BitstreamRead_u8(state, 8);
    v->size = lu_BitstreamRead_u16(state, 16);
    v->maxYield = lu_BitstreamRead_u8(state, 8);
@@ -30,7 +30,7 @@ void lu_BitstreamRead_Berry2(struct lu_BitstreamState* state, struct Berry2* v) 
 }
 
 void lu_BitstreamWrite_Berry2(struct lu_BitstreamState* state, const struct Berry2* v) {
-   lu_BitstreamWrite_string(state, v->name, BERRY_NAME_LENGTH, 3);
+   lu_BitstreamWrite_string(state, v->name, BERRY_NAME_LENGTH);
    lu_BitstreamWrite_u8(state, v->firmness, 8);
    lu_BitstreamWrite_u16(state, v->size, 16);
    lu_BitstreamWrite_u8(state, v->maxYield, 8);

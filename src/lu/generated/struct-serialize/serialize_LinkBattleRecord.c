@@ -12,7 +12,7 @@
 #endif
 
 void lu_BitstreamRead_LinkBattleRecord(struct lu_BitstreamState* state, struct LinkBattleRecord* v) {
-   lu_BitstreamRead_string(state, v->name, PLAYER_NAME_LENGTH, 3);
+   lu_BitstreamRead_string(state, v->name, PLAYER_NAME_LENGTH);
    v->trainerId = lu_BitstreamRead_u16(state, 16);
    v->wins = lu_BitstreamRead_u16(state, 16);
    v->losses = lu_BitstreamRead_u16(state, 16);
@@ -20,7 +20,7 @@ void lu_BitstreamRead_LinkBattleRecord(struct lu_BitstreamState* state, struct L
 }
 
 void lu_BitstreamWrite_LinkBattleRecord(struct lu_BitstreamState* state, const struct LinkBattleRecord* v) {
-   lu_BitstreamWrite_string(state, v->name, PLAYER_NAME_LENGTH, 3);
+   lu_BitstreamWrite_string(state, v->name, PLAYER_NAME_LENGTH);
    lu_BitstreamWrite_u16(state, v->trainerId, 16);
    lu_BitstreamWrite_u16(state, v->wins, 16);
    lu_BitstreamWrite_u16(state, v->losses, 16);

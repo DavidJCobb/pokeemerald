@@ -6,14 +6,12 @@
 #include "lu/bitstreams.h"
 
 void lu_BitstreamRead_GabbyAndTyData(struct lu_BitstreamState* state, struct GabbyAndTyData* v) {
-   v->mon1 = lu_BitstreamRead_u16(state, 11) + 0;
-   v->mon2 = lu_BitstreamRead_u16(state, 11) + 0;
-   v->lastMove = lu_BitstreamRead_u16(state, 16) + 0;
-   {
-      u16 i;
-      for (i = 0; i < 1; ++i) { 
-         v->quote[i] = lu_BitstreamRead_u16(state, 16);
-      }
+   u8 i;
+   v->mon1 = lu_BitstreamRead_u16(state, 11);
+   v->mon2 = lu_BitstreamRead_u16(state, 11);
+   v->lastMove = lu_BitstreamRead_u16(state, 16);
+   for (i = 0; i < 1; ++i) {
+      v->quote[i] = lu_BitstreamRead_u16(state, 16);
    }
    v->mapnum = lu_BitstreamRead_u8(state, 8);
    v->battleNum = lu_BitstreamRead_u8(state, 8);
@@ -31,14 +29,12 @@ void lu_BitstreamRead_GabbyAndTyData(struct lu_BitstreamState* state, struct Gab
 }
 
 void lu_BitstreamWrite_GabbyAndTyData(struct lu_BitstreamState* state, const struct GabbyAndTyData* v) {
+   u8 i;
    lu_BitstreamWrite_u16(state, v->mon1, 11);
    lu_BitstreamWrite_u16(state, v->mon2, 11);
    lu_BitstreamWrite_u16(state, v->lastMove, 16);
-   {
-      u16 i;
-      for (i = 0; i < 1; ++i) { 
-         lu_BitstreamWrite_u16(state, v->quote[i], 16);
-      }
+   for (i = 0; i < 1; ++i) {
+      lu_BitstreamWrite_u16(state, v->quote[i], 16);
    }
    lu_BitstreamWrite_u8(state, v->mapnum, 8);
    lu_BitstreamWrite_u8(state, v->battleNum, 8);

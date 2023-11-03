@@ -15,15 +15,13 @@
 #endif
 
 void lu_BitstreamRead_BattleTowerPokemon(struct lu_BitstreamState* state, struct BattleTowerPokemon* v) {
-   v->species = lu_BitstreamRead_u16(state, 11) + 0;
+   u8 i;
+   v->species = lu_BitstreamRead_u16(state, 11);
    v->heldItem = lu_BitstreamRead_u16(state, 9);
-   {
-      u16 i;
-      for (i = 0; i < MAX_MON_MOVES; ++i) { 
-         v->moves[i] = lu_BitstreamRead_u16(state, 16) + 0;
-      }
+   for (i = 0; i < MAX_MON_MOVES; ++i) {
+      v->moves[i] = lu_BitstreamRead_u16(state, 16);
    }
-   v->level = lu_BitstreamRead_u8(state, 7) + 0;
+   v->level = lu_BitstreamRead_u8(state, 7);
    v->ppBonuses = lu_BitstreamRead_u8(state, 8);
    v->hpEV = lu_BitstreamRead_u8(state, 8);
    v->attackEV = lu_BitstreamRead_u8(state, 8);
@@ -40,18 +38,16 @@ void lu_BitstreamRead_BattleTowerPokemon(struct lu_BitstreamState* state, struct
    v->spDefenseIV = lu_BitstreamRead_u8(state, 5);
    v->abilityNum = lu_BitstreamRead_bool(state);
    v->personality = lu_BitstreamRead_u32(state, 32);
-   lu_BitstreamRead_string(state, v->nickname, POKEMON_NAME_LENGTH, 4);
+   lu_BitstreamRead_string(state, v->nickname, POKEMON_NAME_LENGTH);
    v->friendship = lu_BitstreamRead_u8(state, 8);
 }
 
 void lu_BitstreamWrite_BattleTowerPokemon(struct lu_BitstreamState* state, const struct BattleTowerPokemon* v) {
+   u8 i;
    lu_BitstreamWrite_u16(state, v->species, 11);
    lu_BitstreamWrite_u16(state, v->heldItem, 9);
-   {
-      u16 i;
-      for (i = 0; i < MAX_MON_MOVES; ++i) { 
-         lu_BitstreamWrite_u16(state, v->moves[i], 16);
-      }
+   for (i = 0; i < MAX_MON_MOVES; ++i) {
+      lu_BitstreamWrite_u16(state, v->moves[i], 16);
    }
    lu_BitstreamWrite_u8(state, v->level, 7);
    lu_BitstreamWrite_u8(state, v->ppBonuses, 8);
@@ -70,6 +66,6 @@ void lu_BitstreamWrite_BattleTowerPokemon(struct lu_BitstreamState* state, const
    lu_BitstreamWrite_u8(state, v->spDefenseIV, 5);
    lu_BitstreamWrite_bool(state, v->abilityNum);
    lu_BitstreamWrite_u32(state, v->personality, 32);
-   lu_BitstreamWrite_string(state, v->nickname, POKEMON_NAME_LENGTH, 4);
+   lu_BitstreamWrite_string(state, v->nickname, POKEMON_NAME_LENGTH);
    lu_BitstreamWrite_u8(state, v->friendship, 8);
 }

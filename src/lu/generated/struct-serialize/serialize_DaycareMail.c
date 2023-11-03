@@ -19,16 +19,16 @@
 
 void lu_BitstreamRead_DaycareMail(struct lu_BitstreamState* state, struct DaycareMail* v) {
    lu_BitstreamRead_Mail(state, &v->message);
-   lu_BitstreamRead_string(state, v->otName, PLAYER_NAME_LENGTH, 3);
-   lu_BitstreamRead_string(state, v->monName, POKEMON_NAME_LENGTH, 4);
-   v->gameLanguage = lu_BitstreamRead_u8(state, 3) + 0;
-   v->monLanguage = lu_BitstreamRead_u8(state, 3) + 0;
+   lu_BitstreamRead_string(state, v->otName, PLAYER_NAME_LENGTH);
+   lu_BitstreamRead_string(state, v->monName, POKEMON_NAME_LENGTH);
+   v->gameLanguage = lu_BitstreamRead_u8(state, 3);
+   v->monLanguage = lu_BitstreamRead_u8(state, 3);
 }
 
 void lu_BitstreamWrite_DaycareMail(struct lu_BitstreamState* state, const struct DaycareMail* v) {
    lu_BitstreamWrite_Mail(state, &v->message);
-   lu_BitstreamWrite_string(state, v->otName, PLAYER_NAME_LENGTH, 3);
-   lu_BitstreamWrite_string(state, v->monName, POKEMON_NAME_LENGTH, 4);
+   lu_BitstreamWrite_string(state, v->otName, PLAYER_NAME_LENGTH);
+   lu_BitstreamWrite_string(state, v->monName, POKEMON_NAME_LENGTH);
    lu_BitstreamWrite_u8(state, v->gameLanguage, 3);
    lu_BitstreamWrite_u8(state, v->monLanguage, 3);
 }

@@ -29,7 +29,7 @@ extern s8  lu_BitstreamRead_s8( struct lu_BitstreamState*, u8 bitcount);
 extern s16 lu_BitstreamRead_s16(struct lu_BitstreamState*, u8 bitcount);
 extern s32 lu_BitstreamRead_s32(struct lu_BitstreamState*, u8 bitcount);
 
-extern void lu_BitstreamRead_string(struct lu_BitstreamState*, u8* value, u16 max_length, u8 length_bitcount);
+extern void lu_BitstreamRead_string(struct lu_BitstreamState*, u8* value, u16 max_length);
 extern void lu_BitstreamRead_string_optional_terminator(struct lu_BitstreamState*, u8* value, u16 max_length);
 
 extern void lu_BitstreamRead_buffer(struct lu_BitstreamState*, void* value, u16 bytecount);
@@ -52,7 +52,7 @@ extern void lu_BitstreamWrite_s8( struct lu_BitstreamState*, s8  value, u8 bitco
 extern void lu_BitstreamWrite_s16(struct lu_BitstreamState*, s16 value, u8 bitcount);
 extern void lu_BitstreamWrite_s32(struct lu_BitstreamState*, s32 value, u8 bitcount);
 
-extern void lu_BitstreamWrite_string(struct lu_BitstreamState*, const u8* value, u16 max_length, u8 length_bitcount);
+extern void lu_BitstreamWrite_string(struct lu_BitstreamState*, const u8* value, u16 max_length);
 extern void lu_BitstreamWrite_string_optional_terminator(struct lu_BitstreamState*, const u8* value, u16 max_length);
 
 extern void lu_BitstreamWrite_buffer(struct lu_BitstreamState*, const void* value, u16 bytecount);

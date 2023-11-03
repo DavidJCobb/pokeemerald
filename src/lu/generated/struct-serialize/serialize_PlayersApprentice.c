@@ -16,43 +16,33 @@
 #endif
 
 void lu_BitstreamRead_PlayersApprentice(struct lu_BitstreamState* state, struct PlayersApprentice* v) {
+   u8 i;
    v->id = lu_BitstreamRead_u8(state, 8);
    v->lvlMode = lu_BitstreamRead_u8(state, 2);
    v->questionsAnswered = lu_BitstreamRead_u8(state, 4);
    v->leadMonId = lu_BitstreamRead_u8(state, 2);
    v->party = lu_BitstreamRead_u8(state, 3);
    v->saveId = lu_BitstreamRead_u8(state, 2);
-   {
-      u16 i;
-      for (i = 0; i < MULTI_PARTY_SIZE; ++i) { 
-         v->speciesIds[i] = lu_BitstreamRead_u8(state, 8);
-      }
+   for (i = 0; i < MULTI_PARTY_SIZE; ++i) {
+      v->speciesIds[i] = lu_BitstreamRead_u8(state, 8);
    }
-   {
-      u16 i;
-      for (i = 0; i < APPRENTICE_MAX_QUESTIONS; ++i) { 
-         lu_BitstreamRead_ApprenticeQuestion(state, &v->questions[i]);
-      }
+   for (i = 0; i < APPRENTICE_MAX_QUESTIONS; ++i) {
+      lu_BitstreamRead_ApprenticeQuestion(state, &v->questions[i]);
    }
 }
 
 void lu_BitstreamWrite_PlayersApprentice(struct lu_BitstreamState* state, const struct PlayersApprentice* v) {
+   u8 i;
    lu_BitstreamWrite_u8(state, v->id, 8);
    lu_BitstreamWrite_u8(state, v->lvlMode, 2);
    lu_BitstreamWrite_u8(state, v->questionsAnswered, 4);
    lu_BitstreamWrite_u8(state, v->leadMonId, 2);
    lu_BitstreamWrite_u8(state, v->party, 3);
    lu_BitstreamWrite_u8(state, v->saveId, 2);
-   {
-      u16 i;
-      for (i = 0; i < MULTI_PARTY_SIZE; ++i) { 
-         lu_BitstreamWrite_u8(state, v->speciesIds[i], 8);
-      }
+   for (i = 0; i < MULTI_PARTY_SIZE; ++i) {
+      lu_BitstreamWrite_u8(state, v->speciesIds[i], 8);
    }
-   {
-      u16 i;
-      for (i = 0; i < APPRENTICE_MAX_QUESTIONS; ++i) { 
-         lu_BitstreamWrite_ApprenticeQuestion(state, &v->questions[i]);
-      }
+   for (i = 0; i < APPRENTICE_MAX_QUESTIONS; ++i) {
+      lu_BitstreamWrite_ApprenticeQuestion(state, &v->questions[i]);
    }
 }

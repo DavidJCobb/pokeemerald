@@ -19,39 +19,29 @@
 #endif
 
 void lu_BitstreamRead_PyramidBag(struct lu_BitstreamState* state, struct PyramidBag* v) {
-   {
-      u16 i, j;
-      for (i = 0; i < FRONTIER_LVL_MODE_COUNT; ++i) { 
-         for (j = 0; j < PYRAMID_BAG_ITEMS_COUNT; ++j) { 
-            v->itemId[i][j] = lu_BitstreamRead_u16(state, 9);
-         }
+   u8 i, j;
+   for (i = 0; i < FRONTIER_LVL_MODE_COUNT; ++i) {
+      for (j = 0; j < PYRAMID_BAG_ITEMS_COUNT; ++j) {
+         v->itemId[i][j] = lu_BitstreamRead_u16(state, 9);
       }
    }
-   {
-      u16 i, j;
-      for (i = 0; i < FRONTIER_LVL_MODE_COUNT; ++i) { 
-         for (j = 0; j < PYRAMID_BAG_ITEMS_COUNT; ++j) { 
-            v->quantity[i][j] = lu_BitstreamRead_u8(state, 7) + 0;
-         }
+   for (i = 0; i < FRONTIER_LVL_MODE_COUNT; ++i) {
+      for (j = 0; j < PYRAMID_BAG_ITEMS_COUNT; ++j) {
+         v->quantity[i][j] = lu_BitstreamRead_u8(state, 7);
       }
    }
 }
 
 void lu_BitstreamWrite_PyramidBag(struct lu_BitstreamState* state, const struct PyramidBag* v) {
-   {
-      u16 i, j;
-      for (i = 0; i < FRONTIER_LVL_MODE_COUNT; ++i) { 
-         for (j = 0; j < PYRAMID_BAG_ITEMS_COUNT; ++j) { 
-            lu_BitstreamWrite_u16(state, v->itemId[i][j], 9);
-         }
+   u8 i, j;
+   for (i = 0; i < FRONTIER_LVL_MODE_COUNT; ++i) {
+      for (j = 0; j < PYRAMID_BAG_ITEMS_COUNT; ++j) {
+         lu_BitstreamWrite_u16(state, v->itemId[i][j], 9);
       }
    }
-   {
-      u16 i, j;
-      for (i = 0; i < FRONTIER_LVL_MODE_COUNT; ++i) { 
-         for (j = 0; j < PYRAMID_BAG_ITEMS_COUNT; ++j) { 
-            lu_BitstreamWrite_u8(state, v->quantity[i][j], 7);
-         }
+   for (i = 0; i < FRONTIER_LVL_MODE_COUNT; ++i) {
+      for (j = 0; j < PYRAMID_BAG_ITEMS_COUNT; ++j) {
+         lu_BitstreamWrite_u8(state, v->quantity[i][j], 7);
       }
    }
 }

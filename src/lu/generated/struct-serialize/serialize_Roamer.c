@@ -7,9 +7,9 @@
 void lu_BitstreamRead_Roamer(struct lu_BitstreamState* state, struct Roamer* v) {
    v->ivs = lu_BitstreamRead_u32(state, 32);
    v->personality = lu_BitstreamRead_u32(state, 32);
-   v->species = lu_BitstreamRead_u16(state, 11) + 0;
+   v->species = lu_BitstreamRead_u16(state, 11);
    v->hp = lu_BitstreamRead_u16(state, 16);
-   v->level = lu_BitstreamRead_u8(state, 7) + 0;
+   v->level = lu_BitstreamRead_u8(state, 7);
    v->status = lu_BitstreamRead_u8(state, 8);
    v->cool = lu_BitstreamRead_u8(state, 8);
    v->beauty = lu_BitstreamRead_u8(state, 8);

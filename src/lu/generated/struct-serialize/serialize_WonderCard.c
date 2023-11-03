@@ -18,8 +18,9 @@
 #endif
 
 void lu_BitstreamRead_WonderCard(struct lu_BitstreamState* state, struct WonderCard* v) {
+   u8 i;
    v->flagId = lu_BitstreamRead_u16(state, 16);
-   v->iconSpecies = lu_BitstreamRead_u16(state, 11) + 0;
+   v->iconSpecies = lu_BitstreamRead_u16(state, 11);
    v->idNumber = lu_BitstreamRead_u32(state, 32);
    v->type = lu_BitstreamRead_u8(state, 2);
    v->bgType = lu_BitstreamRead_u8(state, 4);
@@ -27,17 +28,15 @@ void lu_BitstreamRead_WonderCard(struct lu_BitstreamState* state, struct WonderC
    v->maxStamps = lu_BitstreamRead_u8(state, 8);
    lu_BitstreamRead_string_optional_terminator(state, v->titleText, WONDER_CARD_TEXT_LENGTH);
    lu_BitstreamRead_string_optional_terminator(state, v->subtitleText, WONDER_CARD_TEXT_LENGTH);
-   {
-      u16 i;
-      for (i = 0; i < WONDER_CARD_BODY_TEXT_LINES; ++i) { 
-         lu_BitstreamRead_string_optional_terminator(state, v->bodyText[i], WONDER_CARD_TEXT_LENGTH);
-      }
+   for (i = 0; i < WONDER_CARD_BODY_TEXT_LINES; ++i) {
+      lu_BitstreamRead_string_optional_terminator(state, v->bodyText[i], WONDER_CARD_TEXT_LENGTH);
    }
    lu_BitstreamRead_string_optional_terminator(state, v->footerLine1Text, WONDER_CARD_TEXT_LENGTH);
    lu_BitstreamRead_string_optional_terminator(state, v->footerLine2Text, WONDER_CARD_TEXT_LENGTH);
 }
 
 void lu_BitstreamWrite_WonderCard(struct lu_BitstreamState* state, const struct WonderCard* v) {
+   u8 i;
    lu_BitstreamWrite_u16(state, v->flagId, 16);
    lu_BitstreamWrite_u16(state, v->iconSpecies, 11);
    lu_BitstreamWrite_u32(state, v->idNumber, 32);
@@ -47,11 +46,8 @@ void lu_BitstreamWrite_WonderCard(struct lu_BitstreamState* state, const struct 
    lu_BitstreamWrite_u8(state, v->maxStamps, 8);
    lu_BitstreamWrite_string_optional_terminator(state, v->titleText, WONDER_CARD_TEXT_LENGTH);
    lu_BitstreamWrite_string_optional_terminator(state, v->subtitleText, WONDER_CARD_TEXT_LENGTH);
-   {
-      u16 i;
-      for (i = 0; i < WONDER_CARD_BODY_TEXT_LINES; ++i) { 
-         lu_BitstreamWrite_string_optional_terminator(state, v->bodyText[i], WONDER_CARD_TEXT_LENGTH);
-      }
+   for (i = 0; i < WONDER_CARD_BODY_TEXT_LINES; ++i) {
+      lu_BitstreamWrite_string_optional_terminator(state, v->bodyText[i], WONDER_CARD_TEXT_LENGTH);
    }
    lu_BitstreamWrite_string_optional_terminator(state, v->footerLine1Text, WONDER_CARD_TEXT_LENGTH);
    lu_BitstreamWrite_string_optional_terminator(state, v->footerLine2Text, WONDER_CARD_TEXT_LENGTH);

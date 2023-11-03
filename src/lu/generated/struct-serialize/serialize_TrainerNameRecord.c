@@ -13,10 +13,10 @@
 
 void lu_BitstreamRead_TrainerNameRecord(struct lu_BitstreamState* state, struct TrainerNameRecord* v) {
    v->trainerId = lu_BitstreamRead_u32(state, 32);
-   lu_BitstreamRead_string(state, v->trainerName, PLAYER_NAME_LENGTH, 3);
+   lu_BitstreamRead_string(state, v->trainerName, PLAYER_NAME_LENGTH);
 }
 
 void lu_BitstreamWrite_TrainerNameRecord(struct lu_BitstreamState* state, const struct TrainerNameRecord* v) {
    lu_BitstreamWrite_u32(state, v->trainerId, 32);
-   lu_BitstreamWrite_string(state, v->trainerName, PLAYER_NAME_LENGTH, 3);
+   lu_BitstreamWrite_string(state, v->trainerName, PLAYER_NAME_LENGTH);
 }

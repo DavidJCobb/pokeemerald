@@ -14,12 +14,10 @@
 #endif
 
 void lu_BitstreamRead_EnigmaBerry(struct lu_BitstreamState* state, struct EnigmaBerry* v) {
+   u8 i;
    lu_BitstreamRead_Berry2(state, &v->berry);
-   {
-      u16 i;
-      for (i = 0; i < BERRY_ITEM_EFFECT_COUNT; ++i) { 
-         v->itemEffect[i] = lu_BitstreamRead_u8(state, 8);
-      }
+   for (i = 0; i < BERRY_ITEM_EFFECT_COUNT; ++i) {
+      v->itemEffect[i] = lu_BitstreamRead_u8(state, 8);
    }
    v->holdEffect = lu_BitstreamRead_u8(state, 8);
    v->holdEffectParam = lu_BitstreamRead_u8(state, 8);
@@ -27,12 +25,10 @@ void lu_BitstreamRead_EnigmaBerry(struct lu_BitstreamState* state, struct Enigma
 }
 
 void lu_BitstreamWrite_EnigmaBerry(struct lu_BitstreamState* state, const struct EnigmaBerry* v) {
+   u8 i;
    lu_BitstreamWrite_Berry2(state, &v->berry);
-   {
-      u16 i;
-      for (i = 0; i < BERRY_ITEM_EFFECT_COUNT; ++i) { 
-         lu_BitstreamWrite_u8(state, v->itemEffect[i], 8);
-      }
+   for (i = 0; i < BERRY_ITEM_EFFECT_COUNT; ++i) {
+      lu_BitstreamWrite_u8(state, v->itemEffect[i], 8);
    }
    lu_BitstreamWrite_u8(state, v->holdEffect, 8);
    lu_BitstreamWrite_u8(state, v->holdEffectParam, 8);

@@ -21,65 +21,49 @@
 #endif
 
 void lu_BitstreamRead_SecretBase(struct lu_BitstreamState* state, struct SecretBase* v) {
+   u8 i;
    v->secretBaseId = lu_BitstreamRead_u8(state, 8);
    v->toRegister = lu_BitstreamRead_u8(state, 4);
    v->gender = lu_BitstreamRead_bool(state);
    v->battledOwnerToday = lu_BitstreamRead_bool(state);
    v->registryStatus = lu_BitstreamRead_u8(state, 2);
    lu_BitstreamRead_string_optional_terminator(state, v->trainerName, PLAYER_NAME_LENGTH);
-   {
-      u16 i;
-      for (i = 0; i < TRAINER_ID_LENGTH; ++i) { 
-         v->trainerId[i] = lu_BitstreamRead_u8(state, 8);
-      }
+   for (i = 0; i < TRAINER_ID_LENGTH; ++i) {
+      v->trainerId[i] = lu_BitstreamRead_u8(state, 8);
    }
-   v->language = lu_BitstreamRead_u8(state, 3) + 0;
+   v->language = lu_BitstreamRead_u8(state, 3);
    v->numSecretBasesReceived = lu_BitstreamRead_u16(state, 16);
    v->numTimesEntered = lu_BitstreamRead_u8(state, 8);
    v->unused = lu_BitstreamRead_u8(state, 8);
-   {
-      u16 i;
-      for (i = 0; i < DECOR_MAX_SECRET_BASE; ++i) { 
-         v->decorations[i] = lu_BitstreamRead_u8(state, 8);
-      }
+   for (i = 0; i < DECOR_MAX_SECRET_BASE; ++i) {
+      v->decorations[i] = lu_BitstreamRead_u8(state, 8);
    }
-   {
-      u16 i;
-      for (i = 0; i < DECOR_MAX_SECRET_BASE; ++i) { 
-         v->decorationPositions[i] = lu_BitstreamRead_u8(state, 8);
-      }
+   for (i = 0; i < DECOR_MAX_SECRET_BASE; ++i) {
+      v->decorationPositions[i] = lu_BitstreamRead_u8(state, 8);
    }
    lu_BitstreamRead_SecretBaseParty(state, &v->party);
 }
 
 void lu_BitstreamWrite_SecretBase(struct lu_BitstreamState* state, const struct SecretBase* v) {
+   u8 i;
    lu_BitstreamWrite_u8(state, v->secretBaseId, 8);
    lu_BitstreamWrite_u8(state, v->toRegister, 4);
    lu_BitstreamWrite_bool(state, v->gender);
    lu_BitstreamWrite_bool(state, v->battledOwnerToday);
    lu_BitstreamWrite_u8(state, v->registryStatus, 2);
    lu_BitstreamWrite_string_optional_terminator(state, v->trainerName, PLAYER_NAME_LENGTH);
-   {
-      u16 i;
-      for (i = 0; i < TRAINER_ID_LENGTH; ++i) { 
-         lu_BitstreamWrite_u8(state, v->trainerId[i], 8);
-      }
+   for (i = 0; i < TRAINER_ID_LENGTH; ++i) {
+      lu_BitstreamWrite_u8(state, v->trainerId[i], 8);
    }
    lu_BitstreamWrite_u8(state, v->language, 3);
    lu_BitstreamWrite_u16(state, v->numSecretBasesReceived, 16);
    lu_BitstreamWrite_u8(state, v->numTimesEntered, 8);
    lu_BitstreamWrite_u8(state, v->unused, 8);
-   {
-      u16 i;
-      for (i = 0; i < DECOR_MAX_SECRET_BASE; ++i) { 
-         lu_BitstreamWrite_u8(state, v->decorations[i], 8);
-      }
+   for (i = 0; i < DECOR_MAX_SECRET_BASE; ++i) {
+      lu_BitstreamWrite_u8(state, v->decorations[i], 8);
    }
-   {
-      u16 i;
-      for (i = 0; i < DECOR_MAX_SECRET_BASE; ++i) { 
-         lu_BitstreamWrite_u8(state, v->decorationPositions[i], 8);
-      }
+   for (i = 0; i < DECOR_MAX_SECRET_BASE; ++i) {
+      lu_BitstreamWrite_u8(state, v->decorationPositions[i], 8);
    }
    lu_BitstreamWrite_SecretBaseParty(state, &v->party);
 }

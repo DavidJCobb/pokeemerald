@@ -11,7 +11,7 @@
 void lu_BitstreamRead_Pokemon(struct lu_BitstreamState* state, struct Pokemon* v) {
    lu_BitstreamRead_BoxPokemon(state, &v->box);
    v->status = lu_BitstreamRead_u32(state, 32);
-   v->level = lu_BitstreamRead_u8(state, 7) + 0;
+   v->level = lu_BitstreamRead_u8(state, 7);
    v->mail = lu_BitstreamRead_u8(state, 8);
    v->hp = lu_BitstreamRead_u16(state, 16);
    v->maxHP = lu_BitstreamRead_u16(state, 16);

@@ -24,55 +24,39 @@
 #endif
 
 void lu_BitstreamRead_Apprentice(struct lu_BitstreamState* state, struct Apprentice* v) {
+   u8 i;
    v->id = lu_BitstreamRead_u8(state, 5);
    v->lvlMode = lu_BitstreamRead_u8(state, 2);
    v->numQuestions = lu_BitstreamRead_u8(state, 8);
    v->number = lu_BitstreamRead_u8(state, 8);
-   {
-      u16 i;
-      for (i = 0; i < MULTI_PARTY_SIZE; ++i) { 
-         lu_BitstreamRead_ApprenticeMon(state, &v->party[i]);
-      }
+   for (i = 0; i < MULTI_PARTY_SIZE; ++i) {
+      lu_BitstreamRead_ApprenticeMon(state, &v->party[i]);
    }
-   {
-      u16 i;
-      for (i = 0; i < EASY_CHAT_BATTLE_WORDS_COUNT; ++i) { 
-         v->speechWon[i] = lu_BitstreamRead_u16(state, 16);
-      }
+   for (i = 0; i < EASY_CHAT_BATTLE_WORDS_COUNT; ++i) {
+      v->speechWon[i] = lu_BitstreamRead_u16(state, 16);
    }
-   {
-      u16 i;
-      for (i = 0; i < TRAINER_ID_LENGTH; ++i) { 
-         v->playerId[i] = lu_BitstreamRead_u8(state, 8);
-      }
+   for (i = 0; i < TRAINER_ID_LENGTH; ++i) {
+      v->playerId[i] = lu_BitstreamRead_u8(state, 8);
    }
    lu_BitstreamRead_string_optional_terminator(state, v->playerName, PLAYER_NAME_LENGTH);
-   v->language = lu_BitstreamRead_u8(state, 3) + 0;
+   v->language = lu_BitstreamRead_u8(state, 3);
    v->checksum = lu_BitstreamRead_u32(state, 32);
 }
 
 void lu_BitstreamWrite_Apprentice(struct lu_BitstreamState* state, const struct Apprentice* v) {
+   u8 i;
    lu_BitstreamWrite_u8(state, v->id, 5);
    lu_BitstreamWrite_u8(state, v->lvlMode, 2);
    lu_BitstreamWrite_u8(state, v->numQuestions, 8);
    lu_BitstreamWrite_u8(state, v->number, 8);
-   {
-      u16 i;
-      for (i = 0; i < MULTI_PARTY_SIZE; ++i) { 
-         lu_BitstreamWrite_ApprenticeMon(state, &v->party[i]);
-      }
+   for (i = 0; i < MULTI_PARTY_SIZE; ++i) {
+      lu_BitstreamWrite_ApprenticeMon(state, &v->party[i]);
    }
-   {
-      u16 i;
-      for (i = 0; i < EASY_CHAT_BATTLE_WORDS_COUNT; ++i) { 
-         lu_BitstreamWrite_u16(state, v->speechWon[i], 16);
-      }
+   for (i = 0; i < EASY_CHAT_BATTLE_WORDS_COUNT; ++i) {
+      lu_BitstreamWrite_u16(state, v->speechWon[i], 16);
    }
-   {
-      u16 i;
-      for (i = 0; i < TRAINER_ID_LENGTH; ++i) { 
-         lu_BitstreamWrite_u8(state, v->playerId[i], 8);
-      }
+   for (i = 0; i < TRAINER_ID_LENGTH; ++i) {
+      lu_BitstreamWrite_u8(state, v->playerId[i], 8);
    }
    lu_BitstreamWrite_string_optional_terminator(state, v->playerName, PLAYER_NAME_LENGTH);
    lu_BitstreamWrite_u8(state, v->language, 3);

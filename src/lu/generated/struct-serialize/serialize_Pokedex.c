@@ -10,6 +10,7 @@
 #endif
 
 void lu_BitstreamRead_Pokedex(struct lu_BitstreamState* state, struct Pokedex* v) {
+   u8 i;
    v->order = lu_BitstreamRead_u8(state, 8);
    v->mode = lu_BitstreamRead_u8(state, 8);
    v->nationalMagic = lu_BitstreamRead_u8(state, 8);
@@ -17,21 +18,16 @@ void lu_BitstreamRead_Pokedex(struct lu_BitstreamState* state, struct Pokedex* v
    v->unownPersonality = lu_BitstreamRead_u32(state, 32);
    v->spindaPersonality = lu_BitstreamRead_u32(state, 32);
    v->unknown3 = lu_BitstreamRead_u32(state, 32);
-   {
-      u16 i;
-      for (i = 0; i < NUM_DEX_FLAG_BYTES; ++i) { 
-         v->owned[i] = lu_BitstreamRead_u8(state, 8);
-      }
+   for (i = 0; i < NUM_DEX_FLAG_BYTES; ++i) {
+      v->owned[i] = lu_BitstreamRead_u8(state, 8);
    }
-   {
-      u16 i;
-      for (i = 0; i < NUM_DEX_FLAG_BYTES; ++i) { 
-         v->seen[i] = lu_BitstreamRead_u8(state, 8);
-      }
+   for (i = 0; i < NUM_DEX_FLAG_BYTES; ++i) {
+      v->seen[i] = lu_BitstreamRead_u8(state, 8);
    }
 }
 
 void lu_BitstreamWrite_Pokedex(struct lu_BitstreamState* state, const struct Pokedex* v) {
+   u8 i;
    lu_BitstreamWrite_u8(state, v->order, 8);
    lu_BitstreamWrite_u8(state, v->mode, 8);
    lu_BitstreamWrite_u8(state, v->nationalMagic, 8);
@@ -39,16 +35,10 @@ void lu_BitstreamWrite_Pokedex(struct lu_BitstreamState* state, const struct Pok
    lu_BitstreamWrite_u32(state, v->unownPersonality, 32);
    lu_BitstreamWrite_u32(state, v->spindaPersonality, 32);
    lu_BitstreamWrite_u32(state, v->unknown3, 32);
-   {
-      u16 i;
-      for (i = 0; i < NUM_DEX_FLAG_BYTES; ++i) { 
-         lu_BitstreamWrite_u8(state, v->owned[i], 8);
-      }
+   for (i = 0; i < NUM_DEX_FLAG_BYTES; ++i) {
+      lu_BitstreamWrite_u8(state, v->owned[i], 8);
    }
-   {
-      u16 i;
-      for (i = 0; i < NUM_DEX_FLAG_BYTES; ++i) { 
-         lu_BitstreamWrite_u8(state, v->seen[i], 8);
-      }
+   for (i = 0; i < NUM_DEX_FLAG_BYTES; ++i) {
+      lu_BitstreamWrite_u8(state, v->seen[i], 8);
    }
 }

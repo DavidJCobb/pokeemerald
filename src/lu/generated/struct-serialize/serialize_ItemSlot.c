@@ -6,7 +6,7 @@
 
 void lu_BitstreamRead_ItemSlot(struct lu_BitstreamState* state, struct ItemSlot* v) {
    v->itemId = lu_BitstreamRead_u16(state, 9);
-   v->quantity = lu_BitstreamRead_u8(state, 7) + 0;
+   v->quantity = lu_BitstreamRead_u8(state, 7);
 }
 
 void lu_BitstreamWrite_ItemSlot(struct lu_BitstreamState* state, const struct ItemSlot* v) {

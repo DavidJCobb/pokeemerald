@@ -162,19 +162,21 @@ s32 lu_BitstreamRead_s32(struct lu_BitstreamState* state, u8 bitcount) {
    return result;
 }
 
-void lu_BitstreamRead_string(struct lu_BitstreamState* state, u8* dst, u16 max_length, u8 length_bitcount) {
-   u16 i;
+void lu_BitstreamRead_string(struct lu_BitstreamState* state, u8* dst, u16 max_length) {
+   u16   i;
+   bool8 seen_end;
    u16 len;
    
-   len = lu_BitstreamRead_u16(state, length_bitcount);
-   for(i = 0; i < len; ++i) {
+   seen_end = FALSE;
+   for(i = 0; i < max_length; ++i) {
       dst[i] = lu_BitstreamRead_u8(state, 8);
+      if (dst[i] == EOS) {
+         seen_end = TRUE;
+      } else if (seen_end) {
+         dst[i] = EOS; // TODO: Does Game Freak prefer EOS or 0? Do they ever checksum a string?
+      }
    }
-   for(; i < max_length; ++i) {
-      lu_BitstreamRead_u8(state, 8); // skip byte
-      dst[i] = EOS;
-   }
-   dst[max_length] = EOS; // TODO: Does Game Freak prefer EOS or 0? Do they ever checksum a string?
+   dst[max_length] = EOS; // if `seen_end` is true and Game Freak prefers 0 after EOS, then this should be 0
 }
 void lu_BitstreamRead_string_optional_terminator(struct lu_BitstreamState* state, u8* dst, u16 max_length) {
    u16 i;
@@ -373,7 +375,7 @@ void lu_BitstreamWrite_s32(struct lu_BitstreamState* state, s32 value, u8 bitcou
 }
 
 
-void lu_BitstreamWrite_string(struct lu_BitstreamState* state, const u8* value, u16 max_length, u8 length_bitcount) {
+void lu_BitstreamWrite_string(struct lu_BitstreamState* state, const u8* value, u16 max_length) {
    u16 i;
    u16 len;
    
@@ -386,8 +388,6 @@ void lu_BitstreamWrite_string(struct lu_BitstreamState* state, const u8* value, 
          break;
       }
    }
-   
-   lu_BitstreamWrite_u16(state, len, length_bitcount);
    
    for(i = 0; i < len; ++i) {
       lu_BitstreamWrite_u8(state, value[i], 8);

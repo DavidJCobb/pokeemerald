@@ -5,7 +5,7 @@
 #include "lu/bitstreams.h"
 
 void lu_BitstreamRead_RentalMon(struct lu_BitstreamState* state, struct RentalMon* v) {
-   v->monId = lu_BitstreamRead_u16(state, 11) + 0;
+   v->monId = lu_BitstreamRead_u16(state, 11);
    v->personality = lu_BitstreamRead_u32(state, 32);
    v->ivs = lu_BitstreamRead_u8(state, 8);
    v->abilityNum = lu_BitstreamRead_u8(state, 8);

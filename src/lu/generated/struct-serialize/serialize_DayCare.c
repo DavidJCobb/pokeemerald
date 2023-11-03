@@ -13,22 +13,18 @@
 #endif
 
 void lu_BitstreamRead_DayCare(struct lu_BitstreamState* state, struct DayCare* v) {
-   {
-      u16 i;
-      for (i = 0; i < DAYCARE_MON_COUNT; ++i) { 
-         lu_BitstreamRead_DaycareMon(state, &v->mons[i]);
-      }
+   u8 i;
+   for (i = 0; i < DAYCARE_MON_COUNT; ++i) {
+      lu_BitstreamRead_DaycareMon(state, &v->mons[i]);
    }
    v->offspringPersonality = lu_BitstreamRead_u32(state, 32);
    v->stepCounter = lu_BitstreamRead_u8(state, 8);
 }
 
 void lu_BitstreamWrite_DayCare(struct lu_BitstreamState* state, const struct DayCare* v) {
-   {
-      u16 i;
-      for (i = 0; i < DAYCARE_MON_COUNT; ++i) { 
-         lu_BitstreamWrite_DaycareMon(state, &v->mons[i]);
-      }
+   u8 i;
+   for (i = 0; i < DAYCARE_MON_COUNT; ++i) {
+      lu_BitstreamWrite_DaycareMon(state, &v->mons[i]);
    }
    lu_BitstreamWrite_u32(state, v->offspringPersonality, 32);
    lu_BitstreamWrite_u8(state, v->stepCounter, 8);

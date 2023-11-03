@@ -8,12 +8,6 @@
 // Ruby's actual debug build does not use the AGBPrint features.
 #define NDEBUG
 
-
-//#undef NDEBUG
-//#define LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
-
-
-
 // To enable printf debugging, comment out "#define NDEBUG". This allows
 // the various AGBPrint functions to be used. (See include/gba/isagbprint.h).
 // See below for enabling different pretty printing versions.

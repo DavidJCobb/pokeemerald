@@ -103,7 +103,7 @@ void lu_ReadSaveSector_WorldData01(const u8* src, struct SaveBlock1* p_SaveBlock
    struct lu_BitstreamState state;
    lu_BitstreamInitialize(&state, (u8*)src); // need to cast away constness to store it here
 
-   for (i = 0; i < 300; ++i) {
+   for (i = 62; i < 300; ++i) {
       p_SaveBlock1->flags[i] = lu_BitstreamRead_u8(&state, 8);
    }
    for (i = 0; i < VARS_COUNT; ++i) {
@@ -153,7 +153,7 @@ void lu_ReadSaveSector_WorldData02(const u8* src, struct SaveBlock1* p_SaveBlock
    struct lu_BitstreamState state;
    lu_BitstreamInitialize(&state, (u8*)src); // need to cast away constness to store it here
 
-   for (i = 0; i < 6; ++i) {
+   for (i = 3; i < 6; ++i) {
       p_SaveBlock1->secretBases[14].party.species[i] = lu_BitstreamRead_u16(&state, 11);
    }
    for (i = 0; i < PARTY_SIZE; ++i) {
@@ -165,7 +165,7 @@ void lu_ReadSaveSector_WorldData02(const u8* src, struct SaveBlock1* p_SaveBlock
    for (i = 0; i < PARTY_SIZE; ++i) {
       p_SaveBlock1->secretBases[14].party.EVs[i] = lu_BitstreamRead_u8(&state, 8);
    }
-   for (i = 0; i < 20; ++i) {
+   for (i = 15; i < 20; ++i) {
       lu_BitstreamRead_SecretBase(&state, &p_SaveBlock1->secretBases[i]);
    }
    for (i = 0; i < DECOR_MAX_PLAYERS_HOUSE; ++i) {
@@ -476,7 +476,7 @@ void lu_WriteSaveSector_WorldData01(u8* dst, const struct SaveBlock1* p_SaveBloc
    #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
       DebugPrintf("Writing field: p_SaveBlock1->flags", 0);
    #endif
-   for (i = 0; i < 300; ++i) {
+   for (i = 62; i < 300; ++i) {
       lu_BitstreamWrite_u8(&state, p_SaveBlock1->flags[i], 8);
    }
    #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
@@ -589,7 +589,7 @@ void lu_WriteSaveSector_WorldData02(u8* dst, const struct SaveBlock1* p_SaveBloc
    #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
       DebugPrintf("Writing field: p_SaveBlock1->secretBases[14].party.species", 0);
    #endif
-   for (i = 0; i < 6; ++i) {
+   for (i = 3; i < 6; ++i) {
       lu_BitstreamWrite_u16(&state, p_SaveBlock1->secretBases[14].party.species[i], 11);
    }
    #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
@@ -613,7 +613,7 @@ void lu_WriteSaveSector_WorldData02(u8* dst, const struct SaveBlock1* p_SaveBloc
    #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
       DebugPrintf("Writing field: p_SaveBlock1->secretBases", 0);
    #endif
-   for (i = 0; i < 20; ++i) {
+   for (i = 15; i < 20; ++i) {
       lu_BitstreamWrite_SecretBase(&state, &p_SaveBlock1->secretBases[i]);
    }
    #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE

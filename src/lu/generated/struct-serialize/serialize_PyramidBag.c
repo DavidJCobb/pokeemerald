@@ -50,7 +50,7 @@ void lu_BitstreamWrite_PyramidBag(struct lu_BitstreamState* state, const struct 
       u16 i, j;
       for (i = 0; i < FRONTIER_LVL_MODE_COUNT; ++i) { 
          for (j = 0; j < PYRAMID_BAG_ITEMS_COUNT; ++j) { 
-            lu_BitstreamWrite_u8(state, v->quantity[i][j] - 0, 7);
+            lu_BitstreamWrite_u8(state, v->quantity[i][j], 7);
          }
       }
    }

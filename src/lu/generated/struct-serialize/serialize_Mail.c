@@ -49,6 +49,6 @@ void lu_BitstreamWrite_Mail(struct lu_BitstreamState* state, const struct Mail* 
          lu_BitstreamWrite_u8(state, v->trainerId[i], 8);
       }
    }
-   lu_BitstreamWrite_u16(state, v->species - 0, 11);
+   lu_BitstreamWrite_u16(state, v->species, 11);
    lu_BitstreamWrite_u16(state, v->itemId, 9);
 }

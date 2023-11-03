@@ -75,6 +75,6 @@ void lu_BitstreamWrite_Apprentice(struct lu_BitstreamState* state, const struct 
       }
    }
    lu_BitstreamWrite_string_optional_terminator(state, v->playerName, PLAYER_NAME_LENGTH);
-   lu_BitstreamWrite_u8(state, v->language - 0, 3);
+   lu_BitstreamWrite_u8(state, v->language, 3);
    lu_BitstreamWrite_u32(state, v->checksum, 32);
 }

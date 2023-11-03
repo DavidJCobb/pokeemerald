@@ -65,7 +65,7 @@ void lu_BitstreamWrite_SecretBase(struct lu_BitstreamState* state, const struct 
          lu_BitstreamWrite_u8(state, v->trainerId[i], 8);
       }
    }
-   lu_BitstreamWrite_u8(state, v->language - 0, 3);
+   lu_BitstreamWrite_u8(state, v->language, 3);
    lu_BitstreamWrite_u16(state, v->numSecretBasesReceived, 16);
    lu_BitstreamWrite_u8(state, v->numTimesEntered, 8);
    lu_BitstreamWrite_u8(state, v->unused, 8);

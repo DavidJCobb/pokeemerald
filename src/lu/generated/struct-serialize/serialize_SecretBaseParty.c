@@ -58,13 +58,13 @@ void lu_BitstreamWrite_SecretBaseParty(struct lu_BitstreamState* state, const st
    {
       u16 i;
       for (i = 0; i < PARTY_SIZE * MAX_MON_MOVES; ++i) { 
-         lu_BitstreamWrite_u16(state, v->moves[i] - 0, 16);
+         lu_BitstreamWrite_u16(state, v->moves[i], 16);
       }
    }
    {
       u16 i;
       for (i = 0; i < PARTY_SIZE; ++i) { 
-         lu_BitstreamWrite_u16(state, v->species[i] - 0, 11);
+         lu_BitstreamWrite_u16(state, v->species[i], 11);
       }
    }
    {
@@ -76,7 +76,7 @@ void lu_BitstreamWrite_SecretBaseParty(struct lu_BitstreamState* state, const st
    {
       u16 i;
       for (i = 0; i < PARTY_SIZE; ++i) { 
-         lu_BitstreamWrite_u8(state, v->levels[i] - 0, 7);
+         lu_BitstreamWrite_u8(state, v->levels[i], 7);
       }
    }
    {

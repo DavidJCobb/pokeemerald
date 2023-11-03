@@ -32,7 +32,7 @@ void lu_BitstreamWrite_DomeMonData(struct lu_BitstreamState* state, const struct
    {
       u16 i;
       for (i = 0; i < MAX_MON_MOVES; ++i) { 
-         lu_BitstreamWrite_u16(state, v->moves[i] - 0, 16);
+         lu_BitstreamWrite_u16(state, v->moves[i], 16);
       }
    }
    {

@@ -25,7 +25,7 @@ void lu_BitstreamRead_Pokemon(struct lu_BitstreamState* state, struct Pokemon* v
 void lu_BitstreamWrite_Pokemon(struct lu_BitstreamState* state, const struct Pokemon* v) {
    lu_BitstreamWrite_BoxPokemon(state, &v->box);
    lu_BitstreamWrite_u32(state, v->status, 32);
-   lu_BitstreamWrite_u8(state, v->level - 0, 7);
+   lu_BitstreamWrite_u8(state, v->level, 7);
    lu_BitstreamWrite_u8(state, v->mail, 8);
    lu_BitstreamWrite_u16(state, v->hp, 16);
    lu_BitstreamWrite_u16(state, v->maxHP, 16);

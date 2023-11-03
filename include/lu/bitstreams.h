@@ -6,6 +6,10 @@
 struct lu_BitstreamState {
    u8* target;
    u8  shift; // offset within target byte
+   
+   #ifndef NDEBUG
+   u16 size; // size written
+   #endif
 };
 
 extern void lu_BitstreamInitialize(struct lu_BitstreamState*, u8* target);

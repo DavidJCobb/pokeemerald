@@ -465,7 +465,7 @@ void lu_BitstreamWrite_SaveBlock1(struct lu_BitstreamState* state, const struct 
          lu_BitstreamWrite_u16(state, v->mapView[i], 16);
       }
    }
-   lu_BitstreamWrite_u8(state, v->playerPartyCount - 0, 3);
+   lu_BitstreamWrite_u8(state, v->playerPartyCount, 3);
    {
       u16 i;
       for (i = 0; i < PARTY_SIZE; ++i) { 
@@ -650,16 +650,16 @@ void lu_BitstreamWrite_SaveBlock1(struct lu_BitstreamState* state, const struct 
          lu_BitstreamWrite_PokeNews(state, &v->pokeNews[i]);
       }
    }
-   lu_BitstreamWrite_u16(state, v->outbreakPokemonSpecies - 0, 11);
+   lu_BitstreamWrite_u16(state, v->outbreakPokemonSpecies, 11);
    lu_BitstreamWrite_u8(state, v->outbreakLocationMapNum, 8);
    lu_BitstreamWrite_u8(state, v->outbreakLocationMapGroup, 8);
-   lu_BitstreamWrite_u8(state, v->outbreakPokemonLevel - 0, 7);
+   lu_BitstreamWrite_u8(state, v->outbreakPokemonLevel, 7);
    lu_BitstreamWrite_u8(state, v->outbreakUnused1, 8);
    lu_BitstreamWrite_u8(state, v->outbreakUnused2, 8);
    {
       u16 i;
       for (i = 0; i < MAX_MON_MOVES; ++i) { 
-         lu_BitstreamWrite_u16(state, v->outbreakPokemonMoves[i] - 0, 16);
+         lu_BitstreamWrite_u16(state, v->outbreakPokemonMoves[i], 16);
       }
    }
    lu_BitstreamWrite_u8(state, v->outbreakUnused3, 8);

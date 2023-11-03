@@ -5,15 +5,16 @@
 
 void lu_ReadSaveSector_CharacterData00(const u8* src, struct SaveBlock2* p_SaveBlock2) {
    struct lu_BitstreamState state;
-   state.target = (u8*)src;
-   state.shift  = 0;
+   lu_BitstreamInitialize(&state, (u8*)src); // need to cast away constness to store it here
    lu_BitstreamRead_SaveBlock2(&state, p_SaveBlock2);
 };
 
 void lu_WriteSaveSector_CharacterData00(u8* dst, const struct SaveBlock2* p_SaveBlock2) {
    struct lu_BitstreamState state;
-   state.target = dst;
-   state.shift  = 0;
+   lu_BitstreamInitialize(&state, dst);
+   #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
+      DebugPrintf("Writing field: p_SaveBlock2", 0);
+   #endif
    lu_BitstreamWrite_SaveBlock2(&state, p_SaveBlock2);
 };
 

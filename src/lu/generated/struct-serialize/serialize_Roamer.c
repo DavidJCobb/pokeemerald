@@ -22,9 +22,9 @@ void lu_BitstreamRead_Roamer(struct lu_BitstreamState* state, struct Roamer* v) 
 void lu_BitstreamWrite_Roamer(struct lu_BitstreamState* state, const struct Roamer* v) {
    lu_BitstreamWrite_u32(state, v->ivs, 32);
    lu_BitstreamWrite_u32(state, v->personality, 32);
-   lu_BitstreamWrite_u16(state, v->species - 0, 11);
+   lu_BitstreamWrite_u16(state, v->species, 11);
    lu_BitstreamWrite_u16(state, v->hp, 16);
-   lu_BitstreamWrite_u8(state, v->level - 0, 7);
+   lu_BitstreamWrite_u8(state, v->level, 7);
    lu_BitstreamWrite_u8(state, v->status, 8);
    lu_BitstreamWrite_u8(state, v->cool, 8);
    lu_BitstreamWrite_u8(state, v->beauty, 8);

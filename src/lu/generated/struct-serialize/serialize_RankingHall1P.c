@@ -35,5 +35,5 @@ void lu_BitstreamWrite_RankingHall1P(struct lu_BitstreamState* state, const stru
    }
    lu_BitstreamWrite_u16(state, v->winStreak, 16);
    lu_BitstreamWrite_string(state, v->name, PLAYER_NAME_LENGTH, 3);
-   lu_BitstreamWrite_u8(state, v->language - 0, 3);
+   lu_BitstreamWrite_u8(state, v->language, 3);
 }

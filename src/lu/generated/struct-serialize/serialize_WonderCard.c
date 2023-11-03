@@ -39,7 +39,7 @@ void lu_BitstreamRead_WonderCard(struct lu_BitstreamState* state, struct WonderC
 
 void lu_BitstreamWrite_WonderCard(struct lu_BitstreamState* state, const struct WonderCard* v) {
    lu_BitstreamWrite_u16(state, v->flagId, 16);
-   lu_BitstreamWrite_u16(state, v->iconSpecies - 0, 11);
+   lu_BitstreamWrite_u16(state, v->iconSpecies, 11);
    lu_BitstreamWrite_u32(state, v->idNumber, 32);
    lu_BitstreamWrite_u8(state, v->type, 2);
    lu_BitstreamWrite_u8(state, v->bgType, 4);

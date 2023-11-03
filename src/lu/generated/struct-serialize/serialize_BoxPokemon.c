@@ -40,7 +40,7 @@ void lu_BitstreamWrite_BoxPokemon(struct lu_BitstreamState* state, const struct 
    lu_BitstreamWrite_u32(state, v->personality, 32);
    lu_BitstreamWrite_u32(state, v->otId, 32);
    lu_BitstreamWrite_string_optional_terminator(state, v->nickname, POKEMON_NAME_LENGTH);
-   lu_BitstreamWrite_u8(state, v->language - 0, 3);
+   lu_BitstreamWrite_u8(state, v->language, 3);
    lu_BitstreamWrite_bool(state, v->isBadEgg);
    lu_BitstreamWrite_bool(state, v->hasSpecies);
    lu_BitstreamWrite_bool(state, v->isEgg);

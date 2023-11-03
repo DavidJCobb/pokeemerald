@@ -23,9 +23,9 @@ void lu_BitstreamRead_BattleTowerInterview(struct lu_BitstreamState* state, stru
 }
 
 void lu_BitstreamWrite_BattleTowerInterview(struct lu_BitstreamState* state, const struct BattleTowerInterview* v) {
-   lu_BitstreamWrite_u16(state, v->playerSpecies - 0, 11);
-   lu_BitstreamWrite_u16(state, v->opponentSpecies - 0, 11);
+   lu_BitstreamWrite_u16(state, v->playerSpecies, 11);
+   lu_BitstreamWrite_u16(state, v->opponentSpecies, 11);
    lu_BitstreamWrite_string(state, v->opponentName, PLAYER_NAME_LENGTH, 3);
    lu_BitstreamWrite_string(state, v->opponentMonNickname, POKEMON_NAME_LENGTH, 4);
-   lu_BitstreamWrite_u8(state, v->opponentLanguage - 0, 3);
+   lu_BitstreamWrite_u8(state, v->opponentLanguage, 3);
 }

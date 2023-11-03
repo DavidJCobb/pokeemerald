@@ -97,6 +97,6 @@ void lu_BitstreamWrite_EmeraldBattleTowerRecord(struct lu_BitstreamState* state,
          lu_BitstreamWrite_BattleTowerPokemon(state, &v->party[i]);
       }
    }
-   lu_BitstreamWrite_u8(state, v->language - 0, 3);
+   lu_BitstreamWrite_u8(state, v->language, 3);
    lu_BitstreamWrite_u32(state, v->checksum, 32);
 }

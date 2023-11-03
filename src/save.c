@@ -389,6 +389,7 @@ u8 LoadGameSave(u8 saveType) {
    u8 status;
 
    if (gFlashMemoryPresent != TRUE) {
+      DebugPrintf("Requested savegame load, but there's no flash memory!", 0);
       gSaveFileStatus = SAVE_STATUS_NO_FLASH;
       return SAVE_STATUS_ERROR;
    }
@@ -396,10 +397,12 @@ u8 LoadGameSave(u8 saveType) {
    switch (saveType) {
       case SAVE_NORMAL:
       default:
+         DebugPrintf("Performing full savegame load...", 0);
          status = TryLoadSaveSlot(sSaveSlotLayout);
          CopyPartyAndObjectsFromSave();
          gSaveFileStatus = status;
          gGameContinueCallback = 0;
+         DebugPrintf("Performed full savegame load.", 0);
          break;
       case SAVE_HALL_OF_FAME:
          status = ReadSectorWithSize(SECTOR_ID_HOF_1, gDecompressionBuffer, SECTOR_DATA_SIZE);
@@ -561,6 +564,8 @@ static u8 WriteSlot(bool8 cycleSectors, bool8 savePokemonStorage, bool8 eraseFla
    u8  i;
    u32 status;
    
+   DebugPrintf("Performing full save...", 0);
+   
    if (cycleSectors) {
       OnBeginFullSlotSave(FALSE);
    }
@@ -585,6 +590,8 @@ static u8 WriteSlot(bool8 cycleSectors, bool8 savePokemonStorage, bool8 eraseFla
       for (i = SECTOR_ID_SAVEBLOCK1_START; i <= SECTOR_ID_SAVEBLOCK1_END; i++)
          SerializeToSlotOwnedSector(i, eraseFlashFirst);
    }
+   
+   DebugPrintf("Full save done (success or failure).", 0);
    
    if (gDamagedSaveSectors) {
       if (cycleSectors) {
@@ -628,6 +635,7 @@ static void WriteHallOfFame() {
 
 
 u8 TrySavingData(u8 saveType) {
+   DebugPrintf("Received request to save... Type is %d.", saveType);
    if (gFlashMemoryPresent != TRUE) {
       gSaveAttemptStatus = SAVE_STATUS_ERROR;
       return SAVE_STATUS_ERROR;
@@ -635,9 +643,11 @@ u8 TrySavingData(u8 saveType) {
 
    HandleSavingData(saveType);
    if (!gDamagedSaveSectors) {
+      DebugPrintf("Request to save was successful (hopefully)!", 0);
       gSaveAttemptStatus = SAVE_STATUS_OK;
       return SAVE_STATUS_OK;
    } else {
+      DebugPrintf("Request to save failed!", 0);
       DoSaveFailedScreen(saveType);
       gSaveAttemptStatus = SAVE_STATUS_ERROR;
       return SAVE_STATUS_ERROR;

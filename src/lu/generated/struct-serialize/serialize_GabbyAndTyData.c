@@ -31,9 +31,9 @@ void lu_BitstreamRead_GabbyAndTyData(struct lu_BitstreamState* state, struct Gab
 }
 
 void lu_BitstreamWrite_GabbyAndTyData(struct lu_BitstreamState* state, const struct GabbyAndTyData* v) {
-   lu_BitstreamWrite_u16(state, v->mon1 - 0, 11);
-   lu_BitstreamWrite_u16(state, v->mon2 - 0, 11);
-   lu_BitstreamWrite_u16(state, v->lastMove - 0, 16);
+   lu_BitstreamWrite_u16(state, v->mon1, 11);
+   lu_BitstreamWrite_u16(state, v->mon2, 11);
+   lu_BitstreamWrite_u16(state, v->lastMove, 16);
    {
       u16 i;
       for (i = 0; i < 1; ++i) { 

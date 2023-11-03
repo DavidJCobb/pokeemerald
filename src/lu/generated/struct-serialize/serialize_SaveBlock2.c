@@ -128,10 +128,10 @@ void lu_BitstreamWrite_SaveBlock2(struct lu_BitstreamState* state, const struct 
       }
    }
    lu_BitstreamWrite_u16(state, v->playTimeHours, 16);
-   lu_BitstreamWrite_u8(state, v->playTimeMinutes - 0, 6);
-   lu_BitstreamWrite_u8(state, v->playTimeSeconds - 0, 6);
+   lu_BitstreamWrite_u8(state, v->playTimeMinutes, 6);
+   lu_BitstreamWrite_u8(state, v->playTimeSeconds, 6);
    lu_BitstreamWrite_u8(state, v->playTimeVBlanks, 8);
-   lu_BitstreamWrite_u8(state, v->optionsButtonMode - 0, 2);
+   lu_BitstreamWrite_u8(state, v->optionsButtonMode, 2);
    lu_BitstreamWrite_u8(state, v->optionsTextSpeed, 3);
    lu_BitstreamWrite_u8(state, v->optionsWindowFrameType, 5);
    lu_BitstreamWrite_bool(state, v->optionsSound);

@@ -27,7 +27,7 @@ void lu_BitstreamRead_ContestWinner(struct lu_BitstreamState* state, struct Cont
 void lu_BitstreamWrite_ContestWinner(struct lu_BitstreamState* state, const struct ContestWinner* v) {
    lu_BitstreamWrite_u32(state, v->personality, 32);
    lu_BitstreamWrite_u32(state, v->trainerId, 32);
-   lu_BitstreamWrite_u16(state, v->species - 0, 11);
+   lu_BitstreamWrite_u16(state, v->species, 11);
    lu_BitstreamWrite_u8(state, v->contestCategory, 8);
    lu_BitstreamWrite_string(state, v->monName, POKEMON_NAME_LENGTH, 4);
    lu_BitstreamWrite_string(state, v->trainerName, PLAYER_NAME_LENGTH, 3);

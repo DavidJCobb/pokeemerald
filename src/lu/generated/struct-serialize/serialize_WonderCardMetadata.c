@@ -28,7 +28,7 @@ void lu_BitstreamWrite_WonderCardMetadata(struct lu_BitstreamState* state, const
    lu_BitstreamWrite_u16(state, v->battlesWon, 16);
    lu_BitstreamWrite_u16(state, v->battlesLost, 16);
    lu_BitstreamWrite_u16(state, v->numTrades, 16);
-   lu_BitstreamWrite_u16(state, v->iconSpecies - 0, 11);
+   lu_BitstreamWrite_u16(state, v->iconSpecies, 11);
    {
       u16 i, j;
       for (i = 0; i < 2; ++i) { 

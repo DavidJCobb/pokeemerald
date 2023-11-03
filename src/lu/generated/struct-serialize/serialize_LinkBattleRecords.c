@@ -37,7 +37,7 @@ void lu_BitstreamWrite_LinkBattleRecords(struct lu_BitstreamState* state, const 
    {
       u16 i;
       for (i = 0; i < LINK_B_RECORDS_COUNT; ++i) { 
-         lu_BitstreamWrite_u8(state, v->languages[i] - 0, 3);
+         lu_BitstreamWrite_u8(state, v->languages[i], 3);
       }
    }
 }

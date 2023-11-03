@@ -12,7 +12,7 @@ void lu_BitstreamRead_RentalMon(struct lu_BitstreamState* state, struct RentalMo
 }
 
 void lu_BitstreamWrite_RentalMon(struct lu_BitstreamState* state, const struct RentalMon* v) {
-   lu_BitstreamWrite_u16(state, v->monId - 0, 11);
+   lu_BitstreamWrite_u16(state, v->monId, 11);
    lu_BitstreamWrite_u32(state, v->personality, 32);
    lu_BitstreamWrite_u8(state, v->ivs, 8);
    lu_BitstreamWrite_u8(state, v->abilityNum, 8);

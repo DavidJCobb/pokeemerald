@@ -7,10 +7,42 @@ static void _advance_position_by_bits(struct lu_BitstreamState* state, u8 bits) 
    while (state->shift >= 8) {
       state->shift -= 8;
       ++state->target;
+      #ifndef NDEBUG
+         ++state->size;
+      #endif
    }
 }
 static void _advance_position_by_bytes(struct lu_BitstreamState* state, u8 bytes) {
    state->target += bytes;
+   #ifndef NDEBUG
+      state->size += bytes;
+   #endif
+}
+
+#ifndef NDEBUG
+   #define INVOKE_POST_WRITE_HANDLERS 1
+#endif
+
+static void _post_write_integral(struct lu_BitstreamState* state, u8 bits_written, u32 value_written) {
+   #ifndef NDEBUG
+      if (state->size < 3968)
+         return;
+   #endif
+   DebugPrintfLevel(MGBA_LOG_WARN, "bitstream: current written size is %d bytes. just wrote value %d with bitcount %d.", state->size, value_written, bits_written);
+}
+static void _post_write_buffer(struct lu_BitstreamState* state, u8 string_length) {
+   #ifndef NDEBUG
+      if (state->size < 3968)
+         return;
+   #endif
+   DebugPrintfLevel(MGBA_LOG_WARN, "bitstream: current written size is %d bytes. just wrote buffer with size %d.", state->size, string_length);
+}
+static void _post_write_string(struct lu_BitstreamState* state, u8 string_length) {
+   #ifndef NDEBUG
+      if (state->size < 3968)
+         return;
+   #endif
+   DebugPrintfLevel(MGBA_LOG_WARN, "bitstream: current written size is %d bytes. just wrote string with maxlength %d.", state->size, string_length);
 }
 
 //
@@ -20,6 +52,11 @@ static void _advance_position_by_bytes(struct lu_BitstreamState* state, u8 bytes
 void lu_BitstreamInitialize(struct lu_BitstreamState* state, u8* target) {
    state->target = target;
    state->shift  = 0;
+   #ifndef NDEBUG
+      state->size = 0;
+      
+      DebugPrintfLevel(MGBA_LOG_INFO, "bitstream: initialized...");
+   #endif
 }
 
 //
@@ -157,6 +194,9 @@ void lu_BitstreamWrite_bool(struct lu_BitstreamState* state, bool8 value) {
    if (state->shift == 0) {
       *state->target = value ? 0x80 : 0x00;
       ++state->shift;
+      #ifdef INVOKE_POST_WRITE_HANDLERS
+         _post_write_integral(state, 1, value);
+      #endif
       return;
    }
    {
@@ -172,8 +212,15 @@ void lu_BitstreamWrite_bool(struct lu_BitstreamState* state, bool8 value) {
       state->shift = 0;
       ++state->target;
    }
+   #ifdef INVOKE_POST_WRITE_HANDLERS
+      _post_write_integral(state, 1, value);
+   #endif
 }
 void lu_BitstreamWrite_u8(struct lu_BitstreamState* state, u8 value, u8 bitcount) {
+   #ifdef INVOKE_POST_WRITE_HANDLERS
+      u8 original_bitcount = bitcount;
+   #endif
+   
    if (bitcount < 8) {
       value &= ((u8)1 << bitcount) - 1;
    }
@@ -185,6 +232,9 @@ void lu_BitstreamWrite_u8(struct lu_BitstreamState* state, u8 value, u8 bitcount
          if (bitcount < 8) {
             *state->target = value << (8 - bitcount);
             _advance_position_by_bits(state, bitcount);
+            #ifdef INVOKE_POST_WRITE_HANDLERS
+               _post_write_integral(state, original_bitcount, value);
+            #endif
             return;
          }
          *state->target = value >> (bitcount - 8);
@@ -198,6 +248,9 @@ void lu_BitstreamWrite_u8(struct lu_BitstreamState* state, u8 value, u8 bitcount
          // Value can fit entirely within the current byte.
          *state->target |= value << (extra - bitcount);
          state->shift += bitcount;
+         #ifdef INVOKE_POST_WRITE_HANDLERS
+            _post_write_integral(state, original_bitcount, value);
+         #endif
          return;
       }
       
@@ -206,9 +259,16 @@ void lu_BitstreamWrite_u8(struct lu_BitstreamState* state, u8 value, u8 bitcount
       _advance_position_by_bits(state, extra);
       bitcount -= extra;
    }
+   #ifdef INVOKE_POST_WRITE_HANDLERS
+      _post_write_integral(state, original_bitcount, value);
+   #endif
 }
 
 void lu_BitstreamWrite_u16(struct lu_BitstreamState* state, u16 value, u8 bitcount) {
+   #ifdef INVOKE_POST_WRITE_HANDLERS
+      u8 original_bitcount = bitcount;
+   #endif
+   
    if (bitcount < 16) {
       value &= ((u16)1 << bitcount) - 1;
    }
@@ -220,6 +280,9 @@ void lu_BitstreamWrite_u16(struct lu_BitstreamState* state, u16 value, u8 bitcou
          if (bitcount < 8) {
             *state->target = (u8)value << (8 - bitcount);
             _advance_position_by_bits(state, bitcount);
+            #ifdef INVOKE_POST_WRITE_HANDLERS
+               _post_write_integral(state, original_bitcount, value);
+            #endif
             return;
          }
          *state->target = value >> (bitcount - 8);
@@ -233,6 +296,9 @@ void lu_BitstreamWrite_u16(struct lu_BitstreamState* state, u16 value, u8 bitcou
          // Value can fit entirely within the current byte.
          *state->target |= value << (extra - bitcount);
          state->shift += bitcount;
+         #ifdef INVOKE_POST_WRITE_HANDLERS
+            _post_write_integral(state, original_bitcount, value);
+         #endif
          return;
       }
       
@@ -241,9 +307,16 @@ void lu_BitstreamWrite_u16(struct lu_BitstreamState* state, u16 value, u8 bitcou
       _advance_position_by_bits(state, extra);
       bitcount -= extra;
    }
+   #ifdef INVOKE_POST_WRITE_HANDLERS
+      _post_write_integral(state, original_bitcount, value);
+   #endif
 }
 
 void lu_BitstreamWrite_u32(struct lu_BitstreamState* state, u32 value, u8 bitcount) {
+   #ifdef INVOKE_POST_WRITE_HANDLERS
+      u8 original_bitcount = bitcount;
+   #endif
+   
    if (bitcount < 32) {
       value &= ((u32)1 << bitcount) - 1;
    }
@@ -255,6 +328,9 @@ void lu_BitstreamWrite_u32(struct lu_BitstreamState* state, u32 value, u8 bitcou
          if (bitcount < 8) {
             *state->target = (u8)value << (8 - bitcount);
             _advance_position_by_bits(state, bitcount);
+            #ifdef INVOKE_POST_WRITE_HANDLERS
+               _post_write_integral(state, original_bitcount, value);
+            #endif
             return;
          }
          *state->target = value >> (bitcount - 8);
@@ -268,6 +344,9 @@ void lu_BitstreamWrite_u32(struct lu_BitstreamState* state, u32 value, u8 bitcou
          // Value can fit entirely within the current byte.
          *state->target |= value << (extra - bitcount);
          state->shift += bitcount;
+         #ifdef INVOKE_POST_WRITE_HANDLERS
+            _post_write_integral(state, original_bitcount, value);
+         #endif
          return;
       }
       
@@ -276,6 +355,9 @@ void lu_BitstreamWrite_u32(struct lu_BitstreamState* state, u32 value, u8 bitcou
       _advance_position_by_bits(state, extra);
       bitcount -= extra;
    }
+   #ifdef INVOKE_POST_WRITE_HANDLERS
+      _post_write_integral(state, original_bitcount, value);
+   #endif
 }
 
 void lu_BitstreamWrite_s8(struct lu_BitstreamState* state, s8 value, u8 bitcount) {
@@ -291,13 +373,19 @@ void lu_BitstreamWrite_s32(struct lu_BitstreamState* state, s32 value, u8 bitcou
 
 void lu_BitstreamWrite_string(struct lu_BitstreamState* state, const u8* value, u16 max_length, u8 length_bitcount) {
    u16 i;
-   u16 len = StringLength(value);
+   u16 len;
    
-   if (length_bitcount <= 8) {
-      lu_BitstreamWrite_u8(state, len, length_bitcount);
-   } else {
-      lu_BitstreamWrite_u16(state, len, length_bitcount);
+   // Fun fact: Game Freak doesn't always initialize terminated strings when the surrounding data 
+   // is unused. Using their `StringLength` function will break. Fun fun fun!!!!!
+   len = max_length;
+   for(i = 0; i < max_length; ++i) {
+      if (value[i] == 0xFF) {
+         len = i;
+         break;
+      }
    }
+   
+   lu_BitstreamWrite_u16(state, len, length_bitcount);
    
    for(i = 0; i < len; ++i) {
       lu_BitstreamWrite_u8(state, value[i], 8);
@@ -305,15 +393,26 @@ void lu_BitstreamWrite_string(struct lu_BitstreamState* state, const u8* value, 
    for(; i < max_length; ++i) {
       lu_BitstreamWrite_u8(state, 0xFF, 8); // EOS
    }
+   #ifdef INVOKE_POST_WRITE_HANDLERS
+      _post_write_string(state, max_length);
+   #endif
 }
 void lu_BitstreamWrite_string_optional_terminator(struct lu_BitstreamState* state, const u8* value, u16 max_length) {
    u16 i;
    for(i = 0; i < max_length; ++i)
       lu_BitstreamWrite_u8(state, value[i], 8);
+   //
+   #ifdef INVOKE_POST_WRITE_HANDLERS
+      _post_write_string(state, max_length);
+   #endif
 }
 
 void lu_BitstreamWrite_buffer(struct lu_BitstreamState* state, const void* value, u16 bytecount) {
    u16 i;
    for(i = 0; i < bytecount; ++i)
       lu_BitstreamWrite_u8(state, *((const u8*)value + i), 8);
+   //
+   #ifdef INVOKE_POST_WRITE_HANDLERS
+      _post_write_buffer(state, bytecount);
+   #endif
 }

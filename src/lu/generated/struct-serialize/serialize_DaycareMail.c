@@ -29,6 +29,6 @@ void lu_BitstreamWrite_DaycareMail(struct lu_BitstreamState* state, const struct
    lu_BitstreamWrite_Mail(state, &v->message);
    lu_BitstreamWrite_string(state, v->otName, PLAYER_NAME_LENGTH, 3);
    lu_BitstreamWrite_string(state, v->monName, POKEMON_NAME_LENGTH, 4);
-   lu_BitstreamWrite_u8(state, v->gameLanguage - 0, 3);
-   lu_BitstreamWrite_u8(state, v->monLanguage - 0, 3);
+   lu_BitstreamWrite_u8(state, v->gameLanguage, 3);
+   lu_BitstreamWrite_u8(state, v->monLanguage, 3);
 }

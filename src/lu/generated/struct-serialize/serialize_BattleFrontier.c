@@ -344,7 +344,7 @@ void lu_BitstreamWrite_BattleFrontier(struct lu_BitstreamState* state, const str
    {
       u16 i;
       for (i = 0; i < MAX_FRONTIER_PARTY_SIZE; ++i) { 
-         lu_BitstreamWrite_u16(state, v->selectedPartyMons[i] - 0, 11);
+         lu_BitstreamWrite_u16(state, v->selectedPartyMons[i], 11);
       }
    }
    lu_BitstreamWrite_u16(state, v->curChallengeBattleNum, 16);
@@ -421,7 +421,7 @@ void lu_BitstreamWrite_BattleFrontier(struct lu_BitstreamState* state, const str
       u16 i, j;
       for (i = 0; i < DOME_TOURNAMENT_TRAINERS_COUNT; ++i) { 
          for (j = 0; j < FRONTIER_PARTY_SIZE; ++j) { 
-            lu_BitstreamWrite_u16(state, v->domeMonIds[i][j] - 0, 11);
+            lu_BitstreamWrite_u16(state, v->domeMonIds[i][j], 11);
          }
       }
    }

@@ -166,12 +166,14 @@ void lu_BitstreamRead_string(struct lu_BitstreamState* state, u8* dst, u16 max_l
    u16 i;
    u16 len;
    
-   for(i = 0; i < max_length; ++i)
-      dst[i] = 0xFF; // EOS (TODO: Does Game Freak prefer EOS or 0? Do they ever checksum a string?)
-   
    len = lu_BitstreamRead_u16(state, length_bitcount);
-   for(i = 0; i < len; ++i)
+   for(i = 0; i < len; ++i) {
       dst[i] = lu_BitstreamRead_u8(state, 8);
+   }
+   for(; i < max_length; ++i) {
+      lu_BitstreamRead_u8(state, 8); // skip byte
+      dst[i] = 0xFF;
+   }
    dst[max_length] = 0xFF; // EOS (TODO: Does Game Freak prefer EOS or 0? Do they ever checksum a string?)
 }
 void lu_BitstreamRead_string_optional_terminator(struct lu_BitstreamState* state, u8* dst, u16 max_length) {

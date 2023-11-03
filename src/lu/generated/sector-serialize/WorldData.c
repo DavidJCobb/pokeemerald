@@ -21,10 +21,7 @@
 #include "lu/generated/struct-serialize/serialize_ExternalEventFlags.h"
 #include "lu/generated/struct-serialize/serialize_Roamer.h"
 #include "lu/generated/struct-serialize/serialize_EnigmaBerry.h"
-#include "lu/generated/struct-serialize/serialize_WonderNews.h"
-#include "lu/generated/struct-serialize/serialize_WonderCard.h"
-#include "lu/generated/struct-serialize/serialize_WonderCardMetadata.h"
-#include "lu/generated/struct-serialize/serialize_WonderNewsMetadata.h"
+#include "lu/generated/struct-serialize/serialize_MysteryGiftSave.h"
 #include "lu/generated/struct-serialize/serialize_RamScript.h"
 #include "lu/generated/struct-serialize/serialize_RecordMixingGift.h"
 #include "lu/generated/struct-serialize/serialize_TrainerNameRecord.h"
@@ -96,7 +93,7 @@ void lu_ReadSaveSector_WorldData00(const u8* src, struct SaveBlock1* p_SaveBlock
    for (i = 0; i < NUM_FLAG_BYTES; ++i) {
       p_SaveBlock1->flags[i] = lu_BitstreamRead_u8(&state, 8);
    }
-   for (i = 0; i < 10; ++i) {
+   for (i = 0; i < 13; ++i) {
       p_SaveBlock1->vars[i] = lu_BitstreamRead_u16(&state, 16);
    }
 };
@@ -105,7 +102,7 @@ void lu_ReadSaveSector_WorldData01(const u8* src, struct SaveBlock1* p_SaveBlock
    u16 i;
    struct lu_BitstreamState state;
    lu_BitstreamInitialize(&state, (u8*)src); // need to cast away constness to store it here
-   for (i = 10; i < 256; ++i) {
+   for (i = 13; i < 256; ++i) {
       p_SaveBlock1->vars[i] = lu_BitstreamRead_u16(&state, 16);
    }
    for (i = 0; i < NUM_GAME_STATS; ++i) {
@@ -139,16 +136,16 @@ void lu_ReadSaveSector_WorldData01(const u8* src, struct SaveBlock1* p_SaveBlock
    for (i = 0; i < PARTY_SIZE; ++i) {
       p_SaveBlock1->secretBases[16].party.personality[i] = lu_BitstreamRead_u32(&state, 32);
    }
-   for (i = 0; i < 4; ++i) {
+   for (i = 0; i < 10; ++i) {
       p_SaveBlock1->secretBases[16].party.moves[i] = lu_BitstreamRead_u16(&state, 16) + 0;
    }
 };
 
 void lu_ReadSaveSector_WorldData02(const u8* src, struct SaveBlock1* p_SaveBlock1) {
-   u8 i, j;
+   u8 i;
    struct lu_BitstreamState state;
    lu_BitstreamInitialize(&state, (u8*)src); // need to cast away constness to store it here
-   for (i = 4; i < 24; ++i) {
+   for (i = 10; i < 24; ++i) {
       p_SaveBlock1->secretBases[16].party.moves[i] = lu_BitstreamRead_u16(&state, 16) + 0;
    }
    for (i = 0; i < PARTY_SIZE; ++i) {
@@ -249,32 +246,14 @@ void lu_ReadSaveSector_WorldData02(const u8* src, struct SaveBlock1* p_SaveBlock
    lu_BitstreamRead_ExternalEventFlags(&state, &p_SaveBlock1->externalEventFlags);
    lu_BitstreamRead_Roamer(&state, &p_SaveBlock1->roamer);
    lu_BitstreamRead_EnigmaBerry(&state, &p_SaveBlock1->enigmaBerry);
-   p_SaveBlock1->mysteryGift.newsCrc = lu_BitstreamRead_u32(&state, 32);
-   lu_BitstreamRead_WonderNews(&state, &p_SaveBlock1->mysteryGift.news);
-   p_SaveBlock1->mysteryGift.cardCrc = lu_BitstreamRead_u32(&state, 32);
-   lu_BitstreamRead_WonderCard(&state, &p_SaveBlock1->mysteryGift.card);
-   p_SaveBlock1->mysteryGift.cardMetadataCrc = lu_BitstreamRead_u32(&state, 32);
-   lu_BitstreamRead_WonderCardMetadata(&state, &p_SaveBlock1->mysteryGift.cardMetadata);
-   for (i = 0; i < NUM_QUESTIONNAIRE_WORDS; ++i) {
-      p_SaveBlock1->mysteryGift.questionnaireWords[i] = lu_BitstreamRead_u16(&state, 16);
-   }
-   lu_BitstreamRead_WonderNewsMetadata(&state, &p_SaveBlock1->mysteryGift.newsMetadata);
-   for (j = 0; j < 5; ++j) {
-      p_SaveBlock1->mysteryGift.trainerIds[0][j] = lu_BitstreamRead_u32(&state, 32);
-   }
-   for (j = 0; j < 3; ++j) {
-      p_SaveBlock1->mysteryGift.trainerIds[1][j] = lu_BitstreamRead_u32(&state, 32);
-   }
+   lu_BitstreamRead_MysteryGiftSave(&state, &p_SaveBlock1->mysteryGift);
 };
 
 void lu_ReadSaveSector_WorldData03(const u8* src, struct SaveBlock1* p_SaveBlock1) {
    u8 i, j;
    struct lu_BitstreamState state;
    lu_BitstreamInitialize(&state, (u8*)src); // need to cast away constness to store it here
-   for (j = 3; j < 5; ++j) {
-      p_SaveBlock1->mysteryGift.trainerIds[1][j] = lu_BitstreamRead_u32(&state, 32);
-   }
-   for (i = 0; i < NUM_TRAINER_HILL_MODES; ++i) {
+   for (i = 0; i < 4; ++i) {
       p_SaveBlock1->trainerHillTimes[i] = lu_BitstreamRead_u32(&state, 32);
    }
    lu_BitstreamRead_RamScript(&state, &p_SaveBlock1->ramScript);
@@ -456,7 +435,7 @@ void lu_WriteSaveSector_WorldData00(u8* dst, const struct SaveBlock1* p_SaveBloc
    #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
       DebugPrintf("Writing field: p_SaveBlock1->vars", 0);
    #endif
-   for (i = 0; i < 10; ++i) {
+   for (i = 0; i < 13; ++i) {
       lu_BitstreamWrite_u16(&state, p_SaveBlock1->vars[i], 16);
    }
 };
@@ -468,7 +447,7 @@ void lu_WriteSaveSector_WorldData01(u8* dst, const struct SaveBlock1* p_SaveBloc
    #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
       DebugPrintf("Writing field: p_SaveBlock1->vars", 0);
    #endif
-   for (i = 10; i < 256; ++i) {
+   for (i = 13; i < 256; ++i) {
       lu_BitstreamWrite_u16(&state, p_SaveBlock1->vars[i], 16);
    }
    #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
@@ -556,19 +535,19 @@ void lu_WriteSaveSector_WorldData01(u8* dst, const struct SaveBlock1* p_SaveBloc
    #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
       DebugPrintf("Writing field: p_SaveBlock1->secretBases[16].party.moves", 0);
    #endif
-   for (i = 0; i < 4; ++i) {
+   for (i = 0; i < 10; ++i) {
       lu_BitstreamWrite_u16(&state, p_SaveBlock1->secretBases[16].party.moves[i], 16);
    }
 };
 
 void lu_WriteSaveSector_WorldData02(u8* dst, const struct SaveBlock1* p_SaveBlock1) {
-   u8 i, j;
+   u8 i;
    struct lu_BitstreamState state;
    lu_BitstreamInitialize(&state, dst);
    #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
       DebugPrintf("Writing field: p_SaveBlock1->secretBases[16].party.moves", 0);
    #endif
-   for (i = 4; i < 24; ++i) {
+   for (i = 10; i < 24; ++i) {
       lu_BitstreamWrite_u16(&state, p_SaveBlock1->secretBases[16].party.moves[i], 16);
    }
    #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
@@ -802,51 +781,9 @@ void lu_WriteSaveSector_WorldData02(u8* dst, const struct SaveBlock1* p_SaveBloc
    #endif
    lu_BitstreamWrite_EnigmaBerry(&state, &p_SaveBlock1->enigmaBerry);
    #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
-      DebugPrintf("Writing field: p_SaveBlock1->mysteryGift.newsCrc", 0);
+      DebugPrintf("Writing field: p_SaveBlock1->mysteryGift", 0);
    #endif
-   lu_BitstreamWrite_u32(&state, p_SaveBlock1->mysteryGift.newsCrc, 32);
-   #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
-      DebugPrintf("Writing field: p_SaveBlock1->mysteryGift.news", 0);
-   #endif
-   lu_BitstreamWrite_WonderNews(&state, &p_SaveBlock1->mysteryGift.news);
-   #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
-      DebugPrintf("Writing field: p_SaveBlock1->mysteryGift.cardCrc", 0);
-   #endif
-   lu_BitstreamWrite_u32(&state, p_SaveBlock1->mysteryGift.cardCrc, 32);
-   #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
-      DebugPrintf("Writing field: p_SaveBlock1->mysteryGift.card", 0);
-   #endif
-   lu_BitstreamWrite_WonderCard(&state, &p_SaveBlock1->mysteryGift.card);
-   #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
-      DebugPrintf("Writing field: p_SaveBlock1->mysteryGift.cardMetadataCrc", 0);
-   #endif
-   lu_BitstreamWrite_u32(&state, p_SaveBlock1->mysteryGift.cardMetadataCrc, 32);
-   #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
-      DebugPrintf("Writing field: p_SaveBlock1->mysteryGift.cardMetadata", 0);
-   #endif
-   lu_BitstreamWrite_WonderCardMetadata(&state, &p_SaveBlock1->mysteryGift.cardMetadata);
-   #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
-      DebugPrintf("Writing field: p_SaveBlock1->mysteryGift.questionnaireWords", 0);
-   #endif
-   for (i = 0; i < NUM_QUESTIONNAIRE_WORDS; ++i) {
-      lu_BitstreamWrite_u16(&state, p_SaveBlock1->mysteryGift.questionnaireWords[i], 16);
-   }
-   #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
-      DebugPrintf("Writing field: p_SaveBlock1->mysteryGift.newsMetadata", 0);
-   #endif
-   lu_BitstreamWrite_WonderNewsMetadata(&state, &p_SaveBlock1->mysteryGift.newsMetadata);
-   #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
-      DebugPrintf("Writing field: p_SaveBlock1->mysteryGift.trainerIds", 0);
-   #endif
-   for (j = 0; j < 5; ++j) {
-      lu_BitstreamWrite_u32(&state, p_SaveBlock1->mysteryGift.trainerIds[0][j], 32);
-   }
-   #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
-      DebugPrintf("Writing field: p_SaveBlock1->mysteryGift.trainerIds", 0);
-   #endif
-   for (j = 0; j < 3; ++j) {
-      lu_BitstreamWrite_u32(&state, p_SaveBlock1->mysteryGift.trainerIds[1][j], 32);
-   }
+   lu_BitstreamWrite_MysteryGiftSave(&state, &p_SaveBlock1->mysteryGift);
 };
 
 void lu_WriteSaveSector_WorldData03(u8* dst, const struct SaveBlock1* p_SaveBlock1) {
@@ -854,15 +791,9 @@ void lu_WriteSaveSector_WorldData03(u8* dst, const struct SaveBlock1* p_SaveBloc
    struct lu_BitstreamState state;
    lu_BitstreamInitialize(&state, dst);
    #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
-      DebugPrintf("Writing field: p_SaveBlock1->mysteryGift.trainerIds", 0);
-   #endif
-   for (j = 3; j < 5; ++j) {
-      lu_BitstreamWrite_u32(&state, p_SaveBlock1->mysteryGift.trainerIds[1][j], 32);
-   }
-   #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
       DebugPrintf("Writing field: p_SaveBlock1->trainerHillTimes", 0);
    #endif
-   for (i = 0; i < NUM_TRAINER_HILL_MODES; ++i) {
+   for (i = 0; i < 4; ++i) {
       lu_BitstreamWrite_u32(&state, p_SaveBlock1->trainerHillTimes[i], 32);
    }
    #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE

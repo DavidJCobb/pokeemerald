@@ -21,7 +21,9 @@
 #include "lu/generated/struct-serialize/serialize_ExternalEventFlags.h"
 #include "lu/generated/struct-serialize/serialize_Roamer.h"
 #include "lu/generated/struct-serialize/serialize_EnigmaBerry.h"
-#include "lu/generated/struct-serialize/serialize_MysteryGiftSave.h"
+#include "lu/generated/struct-serialize/serialize_WonderNews.h"
+#include "lu/generated/struct-serialize/serialize_WonderCardMetadata.h"
+#include "lu/generated/struct-serialize/serialize_WonderNewsMetadata.h"
 #include "lu/generated/struct-serialize/serialize_RamScript.h"
 #include "lu/generated/struct-serialize/serialize_RecordMixingGift.h"
 #include "lu/generated/struct-serialize/serialize_TrainerNameRecord.h"
@@ -90,11 +92,8 @@ void lu_ReadSaveSector_WorldData00(const u8* src, struct SaveBlock1* p_SaveBlock
    for (i = 0; i < OBJECT_EVENT_TEMPLATES_COUNT; ++i) {
       lu_BitstreamRead_ObjectEventTemplate(&state, &p_SaveBlock1->objectEventTemplates[i]);
    }
-   for (i = 0; i < NUM_FLAG_BYTES; ++i) {
+   for (i = 0; i < 62; ++i) {
       p_SaveBlock1->flags[i] = lu_BitstreamRead_u8(&state, 8);
-   }
-   for (i = 0; i < 13; ++i) {
-      p_SaveBlock1->vars[i] = lu_BitstreamRead_u16(&state, 16);
    }
 };
 
@@ -102,7 +101,10 @@ void lu_ReadSaveSector_WorldData01(const u8* src, struct SaveBlock1* p_SaveBlock
    u16 i;
    struct lu_BitstreamState state;
    lu_BitstreamInitialize(&state, (u8*)src); // need to cast away constness to store it here
-   for (i = 13; i < 256; ++i) {
+   for (i = 62; i < 300; ++i) {
+      p_SaveBlock1->flags[i] = lu_BitstreamRead_u8(&state, 8);
+   }
+   for (i = 0; i < VARS_COUNT; ++i) {
       p_SaveBlock1->vars[i] = lu_BitstreamRead_u16(&state, 16);
    }
    for (i = 0; i < NUM_GAME_STATS; ++i) {
@@ -111,33 +113,36 @@ void lu_ReadSaveSector_WorldData01(const u8* src, struct SaveBlock1* p_SaveBlock
    for (i = 0; i < BERRY_TREES_COUNT; ++i) {
       lu_BitstreamRead_BerryTree(&state, &p_SaveBlock1->berryTrees[i]);
    }
-   for (i = 0; i < 16; ++i) {
+   for (i = 0; i < 14; ++i) {
       lu_BitstreamRead_SecretBase(&state, &p_SaveBlock1->secretBases[i]);
    }
-   p_SaveBlock1->secretBases[16].secretBaseId = lu_BitstreamRead_u8(&state, 8);
-   p_SaveBlock1->secretBases[16].toRegister = lu_BitstreamRead_u8(&state, 4);
-   p_SaveBlock1->secretBases[16].gender = lu_BitstreamRead_bool(&state);
-   p_SaveBlock1->secretBases[16].battledOwnerToday = lu_BitstreamRead_bool(&state);
-   p_SaveBlock1->secretBases[16].registryStatus = lu_BitstreamRead_u8(&state, 2);
-   lu_BitstreamRead_string_optional_terminator(&state, p_SaveBlock1->secretBases[16].trainerName, PLAYER_NAME_LENGTH);
+   p_SaveBlock1->secretBases[14].secretBaseId = lu_BitstreamRead_u8(&state, 8);
+   p_SaveBlock1->secretBases[14].toRegister = lu_BitstreamRead_u8(&state, 4);
+   p_SaveBlock1->secretBases[14].gender = lu_BitstreamRead_bool(&state);
+   p_SaveBlock1->secretBases[14].battledOwnerToday = lu_BitstreamRead_bool(&state);
+   p_SaveBlock1->secretBases[14].registryStatus = lu_BitstreamRead_u8(&state, 2);
+   lu_BitstreamRead_string_optional_terminator(&state, p_SaveBlock1->secretBases[14].trainerName, PLAYER_NAME_LENGTH);
    for (i = 0; i < TRAINER_ID_LENGTH; ++i) {
-      p_SaveBlock1->secretBases[16].trainerId[i] = lu_BitstreamRead_u8(&state, 8);
+      p_SaveBlock1->secretBases[14].trainerId[i] = lu_BitstreamRead_u8(&state, 8);
    }
-   p_SaveBlock1->secretBases[16].language = lu_BitstreamRead_u8(&state, 3) + 0;
-   p_SaveBlock1->secretBases[16].numSecretBasesReceived = lu_BitstreamRead_u16(&state, 16);
-   p_SaveBlock1->secretBases[16].numTimesEntered = lu_BitstreamRead_u8(&state, 8);
-   p_SaveBlock1->secretBases[16].unused = lu_BitstreamRead_u8(&state, 8);
+   p_SaveBlock1->secretBases[14].language = lu_BitstreamRead_u8(&state, 3) + 0;
+   p_SaveBlock1->secretBases[14].numSecretBasesReceived = lu_BitstreamRead_u16(&state, 16);
+   p_SaveBlock1->secretBases[14].numTimesEntered = lu_BitstreamRead_u8(&state, 8);
+   p_SaveBlock1->secretBases[14].unused = lu_BitstreamRead_u8(&state, 8);
    for (i = 0; i < DECOR_MAX_SECRET_BASE; ++i) {
-      p_SaveBlock1->secretBases[16].decorations[i] = lu_BitstreamRead_u8(&state, 8);
+      p_SaveBlock1->secretBases[14].decorations[i] = lu_BitstreamRead_u8(&state, 8);
    }
    for (i = 0; i < DECOR_MAX_SECRET_BASE; ++i) {
-      p_SaveBlock1->secretBases[16].decorationPositions[i] = lu_BitstreamRead_u8(&state, 8);
+      p_SaveBlock1->secretBases[14].decorationPositions[i] = lu_BitstreamRead_u8(&state, 8);
    }
    for (i = 0; i < PARTY_SIZE; ++i) {
-      p_SaveBlock1->secretBases[16].party.personality[i] = lu_BitstreamRead_u32(&state, 32);
+      p_SaveBlock1->secretBases[14].party.personality[i] = lu_BitstreamRead_u32(&state, 32);
    }
-   for (i = 0; i < 10; ++i) {
-      p_SaveBlock1->secretBases[16].party.moves[i] = lu_BitstreamRead_u16(&state, 16) + 0;
+   for (i = 0; i < PARTY_SIZE * MAX_MON_MOVES; ++i) {
+      p_SaveBlock1->secretBases[14].party.moves[i] = lu_BitstreamRead_u16(&state, 16) + 0;
+   }
+   for (i = 0; i < 3; ++i) {
+      p_SaveBlock1->secretBases[14].party.species[i] = lu_BitstreamRead_u16(&state, 11) + 0;
    }
 };
 
@@ -145,22 +150,19 @@ void lu_ReadSaveSector_WorldData02(const u8* src, struct SaveBlock1* p_SaveBlock
    u8 i;
    struct lu_BitstreamState state;
    lu_BitstreamInitialize(&state, (u8*)src); // need to cast away constness to store it here
-   for (i = 10; i < 24; ++i) {
-      p_SaveBlock1->secretBases[16].party.moves[i] = lu_BitstreamRead_u16(&state, 16) + 0;
+   for (i = 3; i < 6; ++i) {
+      p_SaveBlock1->secretBases[14].party.species[i] = lu_BitstreamRead_u16(&state, 11) + 0;
    }
    for (i = 0; i < PARTY_SIZE; ++i) {
-      p_SaveBlock1->secretBases[16].party.species[i] = lu_BitstreamRead_u16(&state, 11) + 0;
+      p_SaveBlock1->secretBases[14].party.heldItems[i] = lu_BitstreamRead_u16(&state, 9);
    }
    for (i = 0; i < PARTY_SIZE; ++i) {
-      p_SaveBlock1->secretBases[16].party.heldItems[i] = lu_BitstreamRead_u16(&state, 9);
+      p_SaveBlock1->secretBases[14].party.levels[i] = lu_BitstreamRead_u8(&state, 7) + 0;
    }
    for (i = 0; i < PARTY_SIZE; ++i) {
-      p_SaveBlock1->secretBases[16].party.levels[i] = lu_BitstreamRead_u8(&state, 7) + 0;
+      p_SaveBlock1->secretBases[14].party.EVs[i] = lu_BitstreamRead_u8(&state, 8);
    }
-   for (i = 0; i < PARTY_SIZE; ++i) {
-      p_SaveBlock1->secretBases[16].party.EVs[i] = lu_BitstreamRead_u8(&state, 8);
-   }
-   for (i = 17; i < 20; ++i) {
+   for (i = 15; i < 20; ++i) {
       lu_BitstreamRead_SecretBase(&state, &p_SaveBlock1->secretBases[i]);
    }
    for (i = 0; i < DECOR_MAX_PLAYERS_HOUSE; ++i) {
@@ -246,14 +248,41 @@ void lu_ReadSaveSector_WorldData02(const u8* src, struct SaveBlock1* p_SaveBlock
    lu_BitstreamRead_ExternalEventFlags(&state, &p_SaveBlock1->externalEventFlags);
    lu_BitstreamRead_Roamer(&state, &p_SaveBlock1->roamer);
    lu_BitstreamRead_EnigmaBerry(&state, &p_SaveBlock1->enigmaBerry);
-   lu_BitstreamRead_MysteryGiftSave(&state, &p_SaveBlock1->mysteryGift);
+   p_SaveBlock1->mysteryGift.newsCrc = lu_BitstreamRead_u32(&state, 32);
+   lu_BitstreamRead_WonderNews(&state, &p_SaveBlock1->mysteryGift.news);
+   p_SaveBlock1->mysteryGift.cardCrc = lu_BitstreamRead_u32(&state, 32);
+   p_SaveBlock1->mysteryGift.card.flagId = lu_BitstreamRead_u16(&state, 16);
+   p_SaveBlock1->mysteryGift.card.iconSpecies = lu_BitstreamRead_u16(&state, 11) + 0;
+   p_SaveBlock1->mysteryGift.card.idNumber = lu_BitstreamRead_u32(&state, 32);
+   p_SaveBlock1->mysteryGift.card.type = lu_BitstreamRead_u8(&state, 2);
+   p_SaveBlock1->mysteryGift.card.bgType = lu_BitstreamRead_u8(&state, 4);
+   p_SaveBlock1->mysteryGift.card.sendType = lu_BitstreamRead_u8(&state, 2);
+   p_SaveBlock1->mysteryGift.card.maxStamps = lu_BitstreamRead_u8(&state, 8);
+   lu_BitstreamRead_string_optional_terminator(&state, p_SaveBlock1->mysteryGift.card.titleText, WONDER_CARD_TEXT_LENGTH);
 };
 
 void lu_ReadSaveSector_WorldData03(const u8* src, struct SaveBlock1* p_SaveBlock1) {
    u8 i, j;
    struct lu_BitstreamState state;
    lu_BitstreamInitialize(&state, (u8*)src); // need to cast away constness to store it here
-   for (i = 0; i < 4; ++i) {
+   lu_BitstreamRead_string_optional_terminator(&state, p_SaveBlock1->mysteryGift.card.subtitleText, WONDER_CARD_TEXT_LENGTH);
+   for (i = 0; i < WONDER_CARD_BODY_TEXT_LINES; ++i) {
+      lu_BitstreamRead_string_optional_terminator(&state, p_SaveBlock1->mysteryGift.card.bodyText[i], WONDER_CARD_TEXT_LENGTH);
+   }
+   lu_BitstreamRead_string_optional_terminator(&state, p_SaveBlock1->mysteryGift.card.footerLine1Text, WONDER_CARD_TEXT_LENGTH);
+   lu_BitstreamRead_string_optional_terminator(&state, p_SaveBlock1->mysteryGift.card.footerLine2Text, WONDER_CARD_TEXT_LENGTH);
+   p_SaveBlock1->mysteryGift.cardMetadataCrc = lu_BitstreamRead_u32(&state, 32);
+   lu_BitstreamRead_WonderCardMetadata(&state, &p_SaveBlock1->mysteryGift.cardMetadata);
+   for (i = 0; i < NUM_QUESTIONNAIRE_WORDS; ++i) {
+      p_SaveBlock1->mysteryGift.questionnaireWords[i] = lu_BitstreamRead_u16(&state, 16);
+   }
+   lu_BitstreamRead_WonderNewsMetadata(&state, &p_SaveBlock1->mysteryGift.newsMetadata);
+   for (i = 0; i < 2; ++i) {
+      for (j = 0; j < 5; ++j) {
+         p_SaveBlock1->mysteryGift.trainerIds[i][j] = lu_BitstreamRead_u32(&state, 32);
+      }
+   }
+   for (i = 0; i < NUM_TRAINER_HILL_MODES; ++i) {
       p_SaveBlock1->trainerHillTimes[i] = lu_BitstreamRead_u32(&state, 32);
    }
    lu_BitstreamRead_RamScript(&state, &p_SaveBlock1->ramScript);
@@ -429,14 +458,8 @@ void lu_WriteSaveSector_WorldData00(u8* dst, const struct SaveBlock1* p_SaveBloc
    #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
       DebugPrintf("Writing field: p_SaveBlock1->flags", 0);
    #endif
-   for (i = 0; i < NUM_FLAG_BYTES; ++i) {
+   for (i = 0; i < 62; ++i) {
       lu_BitstreamWrite_u8(&state, p_SaveBlock1->flags[i], 8);
-   }
-   #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
-      DebugPrintf("Writing field: p_SaveBlock1->vars", 0);
-   #endif
-   for (i = 0; i < 13; ++i) {
-      lu_BitstreamWrite_u16(&state, p_SaveBlock1->vars[i], 16);
    }
 };
 
@@ -445,9 +468,15 @@ void lu_WriteSaveSector_WorldData01(u8* dst, const struct SaveBlock1* p_SaveBloc
    struct lu_BitstreamState state;
    lu_BitstreamInitialize(&state, dst);
    #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
+      DebugPrintf("Writing field: p_SaveBlock1->flags", 0);
+   #endif
+   for (i = 62; i < 300; ++i) {
+      lu_BitstreamWrite_u8(&state, p_SaveBlock1->flags[i], 8);
+   }
+   #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
       DebugPrintf("Writing field: p_SaveBlock1->vars", 0);
    #endif
-   for (i = 13; i < 256; ++i) {
+   for (i = 0; i < VARS_COUNT; ++i) {
       lu_BitstreamWrite_u16(&state, p_SaveBlock1->vars[i], 16);
    }
    #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
@@ -465,78 +494,84 @@ void lu_WriteSaveSector_WorldData01(u8* dst, const struct SaveBlock1* p_SaveBloc
    #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
       DebugPrintf("Writing field: p_SaveBlock1->secretBases", 0);
    #endif
-   for (i = 0; i < 16; ++i) {
+   for (i = 0; i < 14; ++i) {
       lu_BitstreamWrite_SecretBase(&state, &p_SaveBlock1->secretBases[i]);
    }
    #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
-      DebugPrintf("Writing field: p_SaveBlock1->secretBases[16].secretBaseId", 0);
+      DebugPrintf("Writing field: p_SaveBlock1->secretBases[14].secretBaseId", 0);
    #endif
-   lu_BitstreamWrite_u8(&state, p_SaveBlock1->secretBases[16].secretBaseId, 8);
+   lu_BitstreamWrite_u8(&state, p_SaveBlock1->secretBases[14].secretBaseId, 8);
    #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
-      DebugPrintf("Writing field: p_SaveBlock1->secretBases[16].toRegister", 0);
+      DebugPrintf("Writing field: p_SaveBlock1->secretBases[14].toRegister", 0);
    #endif
-   lu_BitstreamWrite_u8(&state, p_SaveBlock1->secretBases[16].toRegister, 4);
+   lu_BitstreamWrite_u8(&state, p_SaveBlock1->secretBases[14].toRegister, 4);
    #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
-      DebugPrintf("Writing field: p_SaveBlock1->secretBases[16].gender", 0);
+      DebugPrintf("Writing field: p_SaveBlock1->secretBases[14].gender", 0);
    #endif
-   lu_BitstreamWrite_bool(&state, p_SaveBlock1->secretBases[16].gender);
+   lu_BitstreamWrite_bool(&state, p_SaveBlock1->secretBases[14].gender);
    #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
-      DebugPrintf("Writing field: p_SaveBlock1->secretBases[16].battledOwnerToday", 0);
+      DebugPrintf("Writing field: p_SaveBlock1->secretBases[14].battledOwnerToday", 0);
    #endif
-   lu_BitstreamWrite_bool(&state, p_SaveBlock1->secretBases[16].battledOwnerToday);
+   lu_BitstreamWrite_bool(&state, p_SaveBlock1->secretBases[14].battledOwnerToday);
    #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
-      DebugPrintf("Writing field: p_SaveBlock1->secretBases[16].registryStatus", 0);
+      DebugPrintf("Writing field: p_SaveBlock1->secretBases[14].registryStatus", 0);
    #endif
-   lu_BitstreamWrite_u8(&state, p_SaveBlock1->secretBases[16].registryStatus, 2);
+   lu_BitstreamWrite_u8(&state, p_SaveBlock1->secretBases[14].registryStatus, 2);
    #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
-      DebugPrintf("Writing field: p_SaveBlock1->secretBases[16].trainerName", 0);
+      DebugPrintf("Writing field: p_SaveBlock1->secretBases[14].trainerName", 0);
    #endif
-   lu_BitstreamWrite_string_optional_terminator(&state, p_SaveBlock1->secretBases[16].trainerName, PLAYER_NAME_LENGTH);
+   lu_BitstreamWrite_string_optional_terminator(&state, p_SaveBlock1->secretBases[14].trainerName, PLAYER_NAME_LENGTH);
    #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
-      DebugPrintf("Writing field: p_SaveBlock1->secretBases[16].trainerId", 0);
+      DebugPrintf("Writing field: p_SaveBlock1->secretBases[14].trainerId", 0);
    #endif
    for (i = 0; i < TRAINER_ID_LENGTH; ++i) {
-      lu_BitstreamWrite_u8(&state, p_SaveBlock1->secretBases[16].trainerId[i], 8);
+      lu_BitstreamWrite_u8(&state, p_SaveBlock1->secretBases[14].trainerId[i], 8);
    }
    #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
-      DebugPrintf("Writing field: p_SaveBlock1->secretBases[16].language", 0);
+      DebugPrintf("Writing field: p_SaveBlock1->secretBases[14].language", 0);
    #endif
-   lu_BitstreamWrite_u8(&state, p_SaveBlock1->secretBases[16].language, 3);
+   lu_BitstreamWrite_u8(&state, p_SaveBlock1->secretBases[14].language, 3);
    #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
-      DebugPrintf("Writing field: p_SaveBlock1->secretBases[16].numSecretBasesReceived", 0);
+      DebugPrintf("Writing field: p_SaveBlock1->secretBases[14].numSecretBasesReceived", 0);
    #endif
-   lu_BitstreamWrite_u16(&state, p_SaveBlock1->secretBases[16].numSecretBasesReceived, 16);
+   lu_BitstreamWrite_u16(&state, p_SaveBlock1->secretBases[14].numSecretBasesReceived, 16);
    #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
-      DebugPrintf("Writing field: p_SaveBlock1->secretBases[16].numTimesEntered", 0);
+      DebugPrintf("Writing field: p_SaveBlock1->secretBases[14].numTimesEntered", 0);
    #endif
-   lu_BitstreamWrite_u8(&state, p_SaveBlock1->secretBases[16].numTimesEntered, 8);
+   lu_BitstreamWrite_u8(&state, p_SaveBlock1->secretBases[14].numTimesEntered, 8);
    #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
-      DebugPrintf("Writing field: p_SaveBlock1->secretBases[16].unused", 0);
+      DebugPrintf("Writing field: p_SaveBlock1->secretBases[14].unused", 0);
    #endif
-   lu_BitstreamWrite_u8(&state, p_SaveBlock1->secretBases[16].unused, 8);
+   lu_BitstreamWrite_u8(&state, p_SaveBlock1->secretBases[14].unused, 8);
    #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
-      DebugPrintf("Writing field: p_SaveBlock1->secretBases[16].decorations", 0);
+      DebugPrintf("Writing field: p_SaveBlock1->secretBases[14].decorations", 0);
    #endif
    for (i = 0; i < DECOR_MAX_SECRET_BASE; ++i) {
-      lu_BitstreamWrite_u8(&state, p_SaveBlock1->secretBases[16].decorations[i], 8);
+      lu_BitstreamWrite_u8(&state, p_SaveBlock1->secretBases[14].decorations[i], 8);
    }
    #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
-      DebugPrintf("Writing field: p_SaveBlock1->secretBases[16].decorationPositions", 0);
+      DebugPrintf("Writing field: p_SaveBlock1->secretBases[14].decorationPositions", 0);
    #endif
    for (i = 0; i < DECOR_MAX_SECRET_BASE; ++i) {
-      lu_BitstreamWrite_u8(&state, p_SaveBlock1->secretBases[16].decorationPositions[i], 8);
+      lu_BitstreamWrite_u8(&state, p_SaveBlock1->secretBases[14].decorationPositions[i], 8);
    }
    #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
-      DebugPrintf("Writing field: p_SaveBlock1->secretBases[16].party.personality", 0);
+      DebugPrintf("Writing field: p_SaveBlock1->secretBases[14].party.personality", 0);
    #endif
    for (i = 0; i < PARTY_SIZE; ++i) {
-      lu_BitstreamWrite_u32(&state, p_SaveBlock1->secretBases[16].party.personality[i], 32);
+      lu_BitstreamWrite_u32(&state, p_SaveBlock1->secretBases[14].party.personality[i], 32);
    }
    #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
-      DebugPrintf("Writing field: p_SaveBlock1->secretBases[16].party.moves", 0);
+      DebugPrintf("Writing field: p_SaveBlock1->secretBases[14].party.moves", 0);
    #endif
-   for (i = 0; i < 10; ++i) {
-      lu_BitstreamWrite_u16(&state, p_SaveBlock1->secretBases[16].party.moves[i], 16);
+   for (i = 0; i < PARTY_SIZE * MAX_MON_MOVES; ++i) {
+      lu_BitstreamWrite_u16(&state, p_SaveBlock1->secretBases[14].party.moves[i], 16);
+   }
+   #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
+      DebugPrintf("Writing field: p_SaveBlock1->secretBases[14].party.species", 0);
+   #endif
+   for (i = 0; i < 3; ++i) {
+      lu_BitstreamWrite_u16(&state, p_SaveBlock1->secretBases[14].party.species[i], 11);
    }
 };
 
@@ -545,39 +580,33 @@ void lu_WriteSaveSector_WorldData02(u8* dst, const struct SaveBlock1* p_SaveBloc
    struct lu_BitstreamState state;
    lu_BitstreamInitialize(&state, dst);
    #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
-      DebugPrintf("Writing field: p_SaveBlock1->secretBases[16].party.moves", 0);
+      DebugPrintf("Writing field: p_SaveBlock1->secretBases[14].party.species", 0);
    #endif
-   for (i = 10; i < 24; ++i) {
-      lu_BitstreamWrite_u16(&state, p_SaveBlock1->secretBases[16].party.moves[i], 16);
+   for (i = 3; i < 6; ++i) {
+      lu_BitstreamWrite_u16(&state, p_SaveBlock1->secretBases[14].party.species[i], 11);
    }
    #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
-      DebugPrintf("Writing field: p_SaveBlock1->secretBases[16].party.species", 0);
+      DebugPrintf("Writing field: p_SaveBlock1->secretBases[14].party.heldItems", 0);
    #endif
    for (i = 0; i < PARTY_SIZE; ++i) {
-      lu_BitstreamWrite_u16(&state, p_SaveBlock1->secretBases[16].party.species[i], 11);
+      lu_BitstreamWrite_u16(&state, p_SaveBlock1->secretBases[14].party.heldItems[i], 9);
    }
    #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
-      DebugPrintf("Writing field: p_SaveBlock1->secretBases[16].party.heldItems", 0);
+      DebugPrintf("Writing field: p_SaveBlock1->secretBases[14].party.levels", 0);
    #endif
    for (i = 0; i < PARTY_SIZE; ++i) {
-      lu_BitstreamWrite_u16(&state, p_SaveBlock1->secretBases[16].party.heldItems[i], 9);
+      lu_BitstreamWrite_u8(&state, p_SaveBlock1->secretBases[14].party.levels[i], 7);
    }
    #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
-      DebugPrintf("Writing field: p_SaveBlock1->secretBases[16].party.levels", 0);
+      DebugPrintf("Writing field: p_SaveBlock1->secretBases[14].party.EVs", 0);
    #endif
    for (i = 0; i < PARTY_SIZE; ++i) {
-      lu_BitstreamWrite_u8(&state, p_SaveBlock1->secretBases[16].party.levels[i], 7);
-   }
-   #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
-      DebugPrintf("Writing field: p_SaveBlock1->secretBases[16].party.EVs", 0);
-   #endif
-   for (i = 0; i < PARTY_SIZE; ++i) {
-      lu_BitstreamWrite_u8(&state, p_SaveBlock1->secretBases[16].party.EVs[i], 8);
+      lu_BitstreamWrite_u8(&state, p_SaveBlock1->secretBases[14].party.EVs[i], 8);
    }
    #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
       DebugPrintf("Writing field: p_SaveBlock1->secretBases", 0);
    #endif
-   for (i = 17; i < 20; ++i) {
+   for (i = 15; i < 20; ++i) {
       lu_BitstreamWrite_SecretBase(&state, &p_SaveBlock1->secretBases[i]);
    }
    #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
@@ -781,9 +810,49 @@ void lu_WriteSaveSector_WorldData02(u8* dst, const struct SaveBlock1* p_SaveBloc
    #endif
    lu_BitstreamWrite_EnigmaBerry(&state, &p_SaveBlock1->enigmaBerry);
    #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
-      DebugPrintf("Writing field: p_SaveBlock1->mysteryGift", 0);
+      DebugPrintf("Writing field: p_SaveBlock1->mysteryGift.newsCrc", 0);
    #endif
-   lu_BitstreamWrite_MysteryGiftSave(&state, &p_SaveBlock1->mysteryGift);
+   lu_BitstreamWrite_u32(&state, p_SaveBlock1->mysteryGift.newsCrc, 32);
+   #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
+      DebugPrintf("Writing field: p_SaveBlock1->mysteryGift.news", 0);
+   #endif
+   lu_BitstreamWrite_WonderNews(&state, &p_SaveBlock1->mysteryGift.news);
+   #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
+      DebugPrintf("Writing field: p_SaveBlock1->mysteryGift.cardCrc", 0);
+   #endif
+   lu_BitstreamWrite_u32(&state, p_SaveBlock1->mysteryGift.cardCrc, 32);
+   #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
+      DebugPrintf("Writing field: p_SaveBlock1->mysteryGift.card.flagId", 0);
+   #endif
+   lu_BitstreamWrite_u16(&state, p_SaveBlock1->mysteryGift.card.flagId, 16);
+   #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
+      DebugPrintf("Writing field: p_SaveBlock1->mysteryGift.card.iconSpecies", 0);
+   #endif
+   lu_BitstreamWrite_u16(&state, p_SaveBlock1->mysteryGift.card.iconSpecies, 11);
+   #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
+      DebugPrintf("Writing field: p_SaveBlock1->mysteryGift.card.idNumber", 0);
+   #endif
+   lu_BitstreamWrite_u32(&state, p_SaveBlock1->mysteryGift.card.idNumber, 32);
+   #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
+      DebugPrintf("Writing field: p_SaveBlock1->mysteryGift.card.type", 0);
+   #endif
+   lu_BitstreamWrite_u8(&state, p_SaveBlock1->mysteryGift.card.type, 2);
+   #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
+      DebugPrintf("Writing field: p_SaveBlock1->mysteryGift.card.bgType", 0);
+   #endif
+   lu_BitstreamWrite_u8(&state, p_SaveBlock1->mysteryGift.card.bgType, 4);
+   #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
+      DebugPrintf("Writing field: p_SaveBlock1->mysteryGift.card.sendType", 0);
+   #endif
+   lu_BitstreamWrite_u8(&state, p_SaveBlock1->mysteryGift.card.sendType, 2);
+   #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
+      DebugPrintf("Writing field: p_SaveBlock1->mysteryGift.card.maxStamps", 0);
+   #endif
+   lu_BitstreamWrite_u8(&state, p_SaveBlock1->mysteryGift.card.maxStamps, 8);
+   #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
+      DebugPrintf("Writing field: p_SaveBlock1->mysteryGift.card.titleText", 0);
+   #endif
+   lu_BitstreamWrite_string_optional_terminator(&state, p_SaveBlock1->mysteryGift.card.titleText, WONDER_CARD_TEXT_LENGTH);
 };
 
 void lu_WriteSaveSector_WorldData03(u8* dst, const struct SaveBlock1* p_SaveBlock1) {
@@ -791,9 +860,53 @@ void lu_WriteSaveSector_WorldData03(u8* dst, const struct SaveBlock1* p_SaveBloc
    struct lu_BitstreamState state;
    lu_BitstreamInitialize(&state, dst);
    #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
+      DebugPrintf("Writing field: p_SaveBlock1->mysteryGift.card.subtitleText", 0);
+   #endif
+   lu_BitstreamWrite_string_optional_terminator(&state, p_SaveBlock1->mysteryGift.card.subtitleText, WONDER_CARD_TEXT_LENGTH);
+   #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
+      DebugPrintf("Writing field: p_SaveBlock1->mysteryGift.card.bodyText", 0);
+   #endif
+   for (i = 0; i < WONDER_CARD_BODY_TEXT_LINES; ++i) {
+      lu_BitstreamWrite_string_optional_terminator(&state, p_SaveBlock1->mysteryGift.card.bodyText[i], WONDER_CARD_TEXT_LENGTH);
+   }
+   #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
+      DebugPrintf("Writing field: p_SaveBlock1->mysteryGift.card.footerLine1Text", 0);
+   #endif
+   lu_BitstreamWrite_string_optional_terminator(&state, p_SaveBlock1->mysteryGift.card.footerLine1Text, WONDER_CARD_TEXT_LENGTH);
+   #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
+      DebugPrintf("Writing field: p_SaveBlock1->mysteryGift.card.footerLine2Text", 0);
+   #endif
+   lu_BitstreamWrite_string_optional_terminator(&state, p_SaveBlock1->mysteryGift.card.footerLine2Text, WONDER_CARD_TEXT_LENGTH);
+   #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
+      DebugPrintf("Writing field: p_SaveBlock1->mysteryGift.cardMetadataCrc", 0);
+   #endif
+   lu_BitstreamWrite_u32(&state, p_SaveBlock1->mysteryGift.cardMetadataCrc, 32);
+   #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
+      DebugPrintf("Writing field: p_SaveBlock1->mysteryGift.cardMetadata", 0);
+   #endif
+   lu_BitstreamWrite_WonderCardMetadata(&state, &p_SaveBlock1->mysteryGift.cardMetadata);
+   #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
+      DebugPrintf("Writing field: p_SaveBlock1->mysteryGift.questionnaireWords", 0);
+   #endif
+   for (i = 0; i < NUM_QUESTIONNAIRE_WORDS; ++i) {
+      lu_BitstreamWrite_u16(&state, p_SaveBlock1->mysteryGift.questionnaireWords[i], 16);
+   }
+   #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
+      DebugPrintf("Writing field: p_SaveBlock1->mysteryGift.newsMetadata", 0);
+   #endif
+   lu_BitstreamWrite_WonderNewsMetadata(&state, &p_SaveBlock1->mysteryGift.newsMetadata);
+   #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
+      DebugPrintf("Writing field: p_SaveBlock1->mysteryGift.trainerIds", 0);
+   #endif
+   for (i = 0; i < 2; ++i) {
+      for (j = 0; j < 5; ++j) {
+         lu_BitstreamWrite_u32(&state, p_SaveBlock1->mysteryGift.trainerIds[i][j], 32);
+      }
+   }
+   #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
       DebugPrintf("Writing field: p_SaveBlock1->trainerHillTimes", 0);
    #endif
-   for (i = 0; i < 4; ++i) {
+   for (i = 0; i < NUM_TRAINER_HILL_MODES; ++i) {
       lu_BitstreamWrite_u32(&state, p_SaveBlock1->trainerHillTimes[i], 32);
    }
    #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE

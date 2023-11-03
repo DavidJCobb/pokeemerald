@@ -1,6 +1,6 @@
 #include "global.h"
 #include "lu/bitstreams.h"
-#include "string_util.h" // for GFLib StringLength
+#include "characters.h" // GFLib chars, for EOS
 
 static void _advance_position_by_bits(struct lu_BitstreamState* state, u8 bits) {
    state->shift += bits;
@@ -172,9 +172,9 @@ void lu_BitstreamRead_string(struct lu_BitstreamState* state, u8* dst, u16 max_l
    }
    for(; i < max_length; ++i) {
       lu_BitstreamRead_u8(state, 8); // skip byte
-      dst[i] = 0xFF;
+      dst[i] = EOS;
    }
-   dst[max_length] = 0xFF; // EOS (TODO: Does Game Freak prefer EOS or 0? Do they ever checksum a string?)
+   dst[max_length] = EOS; // TODO: Does Game Freak prefer EOS or 0? Do they ever checksum a string?
 }
 void lu_BitstreamRead_string_optional_terminator(struct lu_BitstreamState* state, u8* dst, u16 max_length) {
    u16 i;
@@ -381,7 +381,7 @@ void lu_BitstreamWrite_string(struct lu_BitstreamState* state, const u8* value, 
    // is unused. Using their `StringLength` function will break. Fun fun fun!!!!!
    len = max_length;
    for(i = 0; i < max_length; ++i) {
-      if (value[i] == 0xFF) {
+      if (value[i] == EOS) {
          len = i;
          break;
       }
@@ -393,7 +393,7 @@ void lu_BitstreamWrite_string(struct lu_BitstreamState* state, const u8* value, 
       lu_BitstreamWrite_u8(state, value[i], 8);
    }
    for(; i < max_length; ++i) {
-      lu_BitstreamWrite_u8(state, 0xFF, 8); // EOS
+      lu_BitstreamWrite_u8(state, EOS, 8);
    }
    #ifdef INVOKE_POST_WRITE_HANDLERS
       _post_write_string(state, max_length);

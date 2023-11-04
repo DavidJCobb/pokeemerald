@@ -39,34 +39,34 @@
 //
 //          Index | ID | Note
 //          ------+----+-------------------------
-//          0     | 10 | Start of slot 1.
-//          1     | 11 | 
-//          2     | 12 | 
-//          3     | 13 | 
-//          4     | 0  | 
-//          5     | 1  | 
-//          6     | 2  | 
-//          7     | 3  | 
-//          8     | 4  | 
-//          9     | 5  | 
-//          10    | 6  | 
-//          11    | 7  | 
-//          12    | 8  | 
-//          13    | 9  | 
-//          14    | 11 | Start of slot 2.
-//          15    | 12 | 
-//          16    | 13 | 
-//          17    | 0  | 
-//          18    | 1  | 
-//          19    | 2  | 
-//          20    | 3  | 
-//          21    | 4  | 
-//          22    | 5  | 
-//          23    | 6  | 
-//          24    | 7  | 
-//          25    | 8  | 
-//          26    | 9  | 
-//          27    | 10 | 
+//          0     | 10 | PokemonStorage. Start of slot 1.
+//          1     | 11 | PokemonStorage
+//          2     | 12 | PokemonStorage
+//          3     | 13 | PokemonStorage
+//          4     | 0  | SaveBlock2
+//          5     | 1  | SaveBlock1
+//          6     | 2  | SaveBlock1
+//          7     | 3  | SaveBlock1
+//          8     | 4  | SaveBlock1
+//          9     | 5  | PokemonStorage
+//          10    | 6  | PokemonStorage
+//          11    | 7  | PokemonStorage
+//          12    | 8  | PokemonStorage
+//          13    | 9  | PokemonStorage
+//          14    | 11 | PokemonStorage. Start of slot 2.
+//          15    | 12 | PokemonStorage
+//          16    | 13 | PokemonStorage
+//          17    | 0  | SaveBlock2
+//          18    | 1  | SaveBlock1
+//          19    | 2  | SaveBlock1
+//          20    | 3  | SaveBlock1
+//          21    | 4  | SaveBlock1
+//          22    | 5  | PokemonStorage
+//          23    | 6  | PokemonStorage
+//          24    | 7  | PokemonStorage
+//          25    | 8  | PokemonStorage
+//          26    | 9  | PokemonStorage
+//          27    | 10 | PokemonStorage
 //          28    | -- | Non-slot sector: Hall of Fame (1)
 //          29    | -- | Non-slot sector: Hall of Fame (2)
 //          30    | -- | Non-slot sector: Trainer Hill

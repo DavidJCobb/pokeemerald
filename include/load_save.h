@@ -50,8 +50,15 @@ void SaveObjectEvents(void);
 void LoadObjectEvents(void);
 void CopyPartyAndObjectsToSave(void);
 void CopyPartyAndObjectsFromSave(void);
+
+// I think these functions are incorrectly named. They're only invoked for link battles. 
+// `LoadPlayerBag` is invoked before the battle and has the effect of copying the bag to 
+// a dedicated storage space; `SavePlayerBag` restores it from that space.
+//
+// I think these should actually be called BackUpPlayerBag and RestorePlayerBag.
 void LoadPlayerBag(void);
 void SavePlayerBag(void);
+
 void ApplyNewEncryptionKeyToHword(u16 *hWord, u32 newKey);
 void ApplyNewEncryptionKeyToWord(u32 *word, u32 newKey);
 

@@ -15,6 +15,7 @@
 
 #include "lu/generated/sector-serialize/CharacterData.h"
 #include "lu/generated/sector-serialize/WorldData.h"
+#include "lu/generated/sector-serialize/PokemonStorage.h"
 
 struct SaveblockLayoutItem {
    u8 sliceNum;
@@ -264,7 +265,30 @@ static bool8 ReadSector_CharacterData(u8 sliceNum, const u8* src) {
    return TRUE;
 }
 static bool8 ReadSector_PokemonStorage(u8 sliceNum, const u8* src) {
-   READ_SECTOR_CODE_FOR_UNPACKED_STRUCT(PokemonStorage, gPokemonStoragePtr);
+   #if !ENABLE_BITPACKING
+      READ_SECTOR_CODE_FOR_UNPACKED_STRUCT(PokemonStorage, gPokemonStoragePtr);
+   #endif
+   //
+   if (sliceNum == 0) {
+      lu_ReadSaveSector_PokemonStorage00(src, gPokemonStoragePtr);
+   } else if (sliceNum == 1) {
+      lu_ReadSaveSector_PokemonStorage01(src, gPokemonStoragePtr);
+   } else if (sliceNum == 2) {
+      lu_ReadSaveSector_PokemonStorage02(src, gPokemonStoragePtr);
+   } else if (sliceNum == 3) {
+      lu_ReadSaveSector_PokemonStorage03(src, gPokemonStoragePtr);
+   } else if (sliceNum == 4) {
+      lu_ReadSaveSector_PokemonStorage04(src, gPokemonStoragePtr);
+   } else if (sliceNum == 5) {
+      lu_ReadSaveSector_PokemonStorage05(src, gPokemonStoragePtr);
+   } else if (sliceNum == 6) {
+      lu_ReadSaveSector_PokemonStorage06(src, gPokemonStoragePtr);
+   } else if (sliceNum == 7) {
+      lu_ReadSaveSector_PokemonStorage07(src, gPokemonStoragePtr);
+   } else if (sliceNum == 8) {
+      lu_ReadSaveSector_PokemonStorage08(src, gPokemonStoragePtr);
+   }
+   return TRUE;
 }
 static bool8 WriteSector_WorldData(u8 sliceNum, u8* dst) {
    #if !ENABLE_BITPACKING
@@ -293,7 +317,30 @@ static bool8 WriteSector_CharacterData(u8 sliceNum, u8* dst) {
    return TRUE;
 }
 static bool8 WriteSector_PokemonStorage(u8 sliceNum, u8* dst) {
-   WRITE_SECTOR_CODE_FOR_UNPACKED_STRUCT(PokemonStorage, gPokemonStoragePtr);
+   #if !ENABLE_BITPACKING
+      WRITE_SECTOR_CODE_FOR_UNPACKED_STRUCT(PokemonStorage, gPokemonStoragePtr);
+   #endif
+   //
+   if (sliceNum == 0) {
+      lu_WriteSaveSector_PokemonStorage00(dst, gPokemonStoragePtr);
+   } else if (sliceNum == 1) {
+      lu_WriteSaveSector_PokemonStorage01(dst, gPokemonStoragePtr);
+   } else if (sliceNum == 2) {
+      lu_WriteSaveSector_PokemonStorage02(dst, gPokemonStoragePtr);
+   } else if (sliceNum == 3) {
+      lu_WriteSaveSector_PokemonStorage03(dst, gPokemonStoragePtr);
+   } else if (sliceNum == 4) {
+      lu_WriteSaveSector_PokemonStorage04(dst, gPokemonStoragePtr);
+   } else if (sliceNum == 5) {
+      lu_WriteSaveSector_PokemonStorage05(dst, gPokemonStoragePtr);
+   } else if (sliceNum == 6) {
+      lu_WriteSaveSector_PokemonStorage06(dst, gPokemonStoragePtr);
+   } else if (sliceNum == 7) {
+      lu_WriteSaveSector_PokemonStorage07(dst, gPokemonStoragePtr);
+   } else if (sliceNum == 8) {
+      lu_WriteSaveSector_PokemonStorage08(dst, gPokemonStoragePtr);
+   }
+   return TRUE;
 }
 
 

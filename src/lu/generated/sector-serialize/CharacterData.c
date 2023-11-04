@@ -1,5 +1,6 @@
 #include "lu/generated/sector-serialize/CharacterData.h"
 
+#include "global.h"
 // whole-struct serialize funcs:
 #include "lu/generated/struct-serialize/serialize_SaveBlock2.h"
 

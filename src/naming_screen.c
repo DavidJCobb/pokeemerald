@@ -77,7 +77,7 @@ enum {
     WIN_KB_PAGE_2, // Initially WIN_KB_PAGE_1 is in front, with WIN_KB_PAGE_2 on deck
     WIN_TEXT_ENTRY,
     WIN_TEXT_ENTRY_BOX,
-    WIN_BANNER,
+    WIN_BANNER, // controls displayed along the top
     WIN_COUNT,
 };
 

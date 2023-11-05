@@ -46,6 +46,8 @@
 #include "union_room_chat.h"
 #include "constants/items.h"
 
+#include "lu/custom_game_options.h"
+
 extern const u8 EventScript_ResetAllMapFlags[];
 
 static void ClearFrontierRecord(void);
@@ -134,6 +136,9 @@ void Sav2_ClearSetDefault(void)
 {
     ClearSav2();
     SetDefaultOptions();
+    
+    ResetCustomGameOptions();
+    ResetCustomGameSavestate();
 }
 
 void ResetMenuAndMonGlobals(void)
@@ -204,6 +209,7 @@ void NewGameInitData(void)
     WipeTrainerNameRecords();
     ResetTrainerHillResults();
     ResetContestLinkResults();
+    CustomGames_HandleNewPlaythroughStarted();
 }
 
 static void ResetMiniGamesRecords(void)

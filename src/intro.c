@@ -26,6 +26,8 @@
 #include "constants/rgb.h"
 #include "constants/battle_anim.h"
 
+#include "lu/custom_game_options.h"
+
 /*
     The intro is grouped into the following scenes
     Scene 0. Copyright screen
@@ -1146,8 +1148,9 @@ void CB2_InitCopyrightScreenAfterBootup(void)
         ResetMenuAndMonGlobals();
         Save_ResetSaveCounters();
         LoadGameSave(SAVE_NORMAL);
-        if (gSaveFileStatus == SAVE_STATUS_EMPTY || gSaveFileStatus == SAVE_STATUS_CORRUPT)
+        if (gSaveFileStatus == SAVE_STATUS_EMPTY || gSaveFileStatus == SAVE_STATUS_CORRUPT) {
             Sav2_ClearSetDefault();
+        }
         SetPokemonCryStereo(gSaveBlock2Ptr->optionsSound);
         InitHeap(gHeap, HEAP_SIZE);
     }

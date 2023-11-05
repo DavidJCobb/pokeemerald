@@ -17,170 +17,434 @@
 #include "gba/m4a_internal.h"
 #include "constants/rgb.h"
 
-#define tMenuSelection data[0]
-#define tMenuScrollOffset data[1]
-
 #include "characters.h"
+#include "data/text/species_names.h"
 #include "lu/strings.h"
 
 enum {
    WIN_HEADER,
-   WIN_OPTIONS
+   WIN_OPTIONS,
+   WIN_KEYBINDS_STRIP,
 };
 
-#define MENUITEM_COUNT 2
-#define MENUITEM_CANCEL (MENUITEM_COUNT - 1)
-
-#define MAX_VALUES_PER_MENU_ITEM 6
 #define MAX_MENU_ITEMS_VISIBLE_AT_ONCE 7
 //
 #define MENU_ITEM_HALFWAY_ROW (MAX_MENU_ITEMS_VISIBLE_AT_ONCE / 2)
 
 EWRAM_DATA static struct CustomGameOptions sTempOptions;
 
-enum {
+enum { // CGOptionMenuItem::value_type
    VALUE_TYPE_NONE, // e.g. "Cancel"
    VALUE_TYPE_U8,
    VALUE_TYPE_U16,
    VALUE_TYPE_BOOL8,
+   
+   VALUE_TYPE_POKEMON_SPECIES,
 };
 
-//
-// This array stores definitions for each menu item, including "Cancel." Be aware that 
-// at present, we store the current state of each menu item in the menu's task data, 
-// which has 16 fields -- two of which are currently used by the menu itself. This 
-// means that we can define up to 14 menu items, including "Cancel," before we need 
-// to either start storing that data somewhere else, or start storing it more cleverly 
-// (e.g. the fields are u16s but the options hold u8s, so we could double storage with 
-// some bitshifting shenanigans).
-//
-static const struct CGOptionMenuItem {
-   // Option name
-   const u8* name;
-   const u8* value_strings[MAX_VALUES_PER_MENU_ITEM]; // NULL to terminate the list early
+enum { // CGOptionMenuItem::flags
+   MENUITEM_FLAG_END_OF_LIST_SENTINEL,
+   MENUITEM_FLAG_IS_ENUM,
+   MENUITEM_FLAG_IS_SUBMENU,
+   MENUITEM_FLAG_0_MEANS_DISABLED, // Display zero as "Disabled" instead of "0"
+   MENUITEM_FLAG_0_MEANS_DEFAULT,  // Display zero as "Default" instead of "0"
+   MENUITEM_FLAG_POKEMON_SPECIES_ALLOW_0, // Allow zero as a Pokemon species number (displays as "None" by default)
+};
+
+struct CGOptionMenuItem {
+   const u8* name; // == NULL for (sub)menu end sentinel
+   const u8* help_string;
+   
+   u8 flags;
+   u8 value_type;
+   union {
+      struct {
+         const u8** name_strings;
+         const u8** help_strings;
+         u8 count;
+      } named; // used if MENUITEM_FLAG_IS_ENUM is set
+      struct {
+         s16 min;
+         s16 max;
+      } integral; // used if MENUITEM_FLAG_IS_ENUM is not set and the `value_type` is marked as u8 or u16
+   } values;
    union {
       bool8* as_bool8;
       u8*    as_u8;
       u16*   as_u16;
+      const struct CGOptionMenuItem* submenu;
    } target;
-   u8 value_type;
-} sOptions[MENUITEM_COUNT] = {
-   {
-      .name          = gText_lu_CGOption_startWithRunningShoes,
-      .value_strings = {
-         gText_lu_CGOptionValues_common_Disabled,
-         gText_lu_CGOptionValues_common_Enabled,
-         NULL
-      },
-      .target     = { .as_u8 = &sTempOptions.qol.start_with_running_shoes },
-      .value_type = VALUE_TYPE_BOOL8,
-   },
-   [MENUITEM_CANCEL] = {
-      .name          = gText_OptionMenuCancel,
-      .value_strings = { NULL },
-      .target        = { .as_u8 = NULL },
-      .value_type    = VALUE_TYPE_NONE,
-   },
 };
 
+static bool8 MenuItemIsListTerminator(const struct CGOptionMenuItem* item) {
+   if (item->name == NULL)
+      return TRUE;
+   if (item->flags & (1 << MENUITEM_FLAG_END_OF_LIST_SENTINEL))
+      return TRUE;
+   return FALSE;
+}
+static u8 GetMenuItemListCount(const struct CGOptionMenuItem* items) {
+   u8 i;
+   for(i = 0; !MenuItemIsListTerminator(&items[i]); ++i) {
+      ;
+   }
+   return i;
+}
+
+static const struct CGOptionMenuItem sEndOfListSentinel = {
+   .name        = NULL,
+   .help_string = NULL,
+   .flags       = (1 << MENUITEM_FLAG_END_OF_LIST_SENTINEL),
+   .value_type  = VALUE_TYPE_NONE,
+   .target      = NULL,
+};
+
+static const u16 GetOptionValue(const struct CGOptionMenuItem* item) {
+   switch (item->value_type) {
+      case VALUE_TYPE_BOOL8:
+         return *item->target.as_bool8 ? 1 : 0;
+      case VALUE_TYPE_U8:
+         return *item->target.as_u8;
+      case VALUE_TYPE_U16:
+      case VALUE_TYPE_POKEMON_SPECIES:
+         return *item->target.as_u16;
+   }
+   return 0;
+}
+static const void SetOptionValue(const struct CGOptionMenuItem* item, u16 value) {
+   switch (item->value_type) {
+      case VALUE_TYPE_BOOL8:
+         *item->target.as_bool8 = value ? 1 : 0;
+         break;
+      case VALUE_TYPE_U8:
+         *item->target.as_u8 = value;
+         break;
+      case VALUE_TYPE_U16:
+      case VALUE_TYPE_POKEMON_SPECIES:
+         *item->target.as_u16 = value;
+         break;
+   }
+}
+static const u8* GetOptionValueName(const struct CGOptionMenuItem* item, u16 value) {
+   if (item->flags & (1 << MENUITEM_FLAG_IS_SUBMENU)) {
+      return NULL;
+   }
+   if (item->flags & (1 << MENUITEM_FLAG_IS_ENUM)) {
+      return item->values.named.name_strings[value];
+   }
+   
+   if (item->value_type == VALUE_TYPE_BOOL8) {
+      if (GetOptionValue(item) == 0) {
+         return gText_lu_CGOptionValues_common_Disabled;
+      }
+      return gText_lu_CGOptionValues_common_Enabled;
+   }
+   
+   if (item->flags & (1 << MENUITEM_FLAG_0_MEANS_DISABLED)) {
+      return gText_lu_CGOptionValues_common_Disabled;
+   }
+   if (item->flags & (1 << MENUITEM_FLAG_0_MEANS_DEFAULT)) {
+      return gText_lu_CGOptionValues_common_Default;
+   }
+   if (item->value_type == VALUE_TYPE_POKEMON_SPECIES) {
+      u16 species = GetOptionValue(item);
+      if (species == 0) {
+         return gText_lu_CGOptionValues_common_None;
+      }
+      if (species >= NELEMS(gSpeciesNames)) {
+         return gSpeciesNames[0];
+      }
+      return gSpeciesNames[species];
+   }
+   
+   return NULL;
+}
+static u8 GetOptionValueCount(const struct CGOptionMenuItem* item) {
+   if (item->flags & (1 << MENUITEM_FLAG_IS_SUBMENU)) {
+      return 0;
+   }
+   if (item->flags & (1 << MENUITEM_FLAG_IS_ENUM)) {
+      return item->values.named.count;
+   }
+   if (item->value_type == VALUE_TYPE_POKEMON_SPECIES) {
+      return 0; // TODO
+   }
+   switch (item->value_type) {
+      case VALUE_TYPE_BOOL8:
+         return 2; // Disabled, Enabled
+      case VALUE_TYPE_U8:
+      case VALUE_TYPE_U16:
+         return item->values.integral.max - item->values.integral.min;
+   }
+   return 0;
+}
+static u16 GetOptionMinValue(const struct CGOptionMenuItem* item) {
+   if (item->value_type == VALUE_TYPE_POKEMON_SPECIES) {
+      if (item->flags & (1 << MENUITEM_FLAG_POKEMON_SPECIES_ALLOW_0)) {
+         return 0;
+      }
+      return 1;
+   }
+   switch (item->value_type) {
+      case VALUE_TYPE_U8:
+      case VALUE_TYPE_U16:
+         return item->values.integral.min;
+   }
+   return 0;
+}
+static void CycleOptionSelectedValue(const struct CGOptionMenuItem* item, s8 by) {
+   u16 selection;
+   
+   selection = GetOptionValue(item);
+   if (item->value_type == VALUE_TYPE_BOOL8) {
+      selection = !(selection & 1);
+   } else if (item->value_type == VALUE_TYPE_POKEMON_SPECIES) {
+      return;
+   } else {
+      u8  value_count;
+      u16 minimum;
+      
+      value_count = GetOptionValueCount(item);
+      minimum     = GetOptionMinValue(item);
+      
+      if (by < 0) {
+         if (selection - minimum < -by) {
+            selection = value_count - (-by - selection);
+         } else {
+            selection += by;
+         }
+      } else if (by > 0) {
+         selection += by;
+         selection %= value_count;
+      }
+      if (selection < minimum) {
+         selection = minimum;
+      }
+   }
+   
+   SetOptionValue(item, selection);
+}
+
+
+
+//
+// Menu state and associated funcs:
+//
+
+static struct MenuStackFrame {
+   const u8* name;
+   const struct CGOptionMenuItem* menu_items;
+};
+
+static struct MenuState {
+   const struct MenuStackFrame breadcrumbs[8];
+   u8 cursor_pos;
+} sMenuState;
+
+static void ResetMenuState(void);
+
+static void UpdateDisplayedMenuName(void);
+static void UpdateDisplayedMenuItems(void);
+
+static const struct CGOptionMenuItem* GetCurrentMenuItemList(void);
+static u8 GetScreenRowForCursorPos(void);
+
+static void EnterSubmenu(const u8* submenu_name, const struct CGOptionMenuItem* submenu_items);
+static bool8 TryExitSubmenu();
+
+static void TryMoveMenuCursor(s8 by);
+
+
+//
+// Menu definitions:
+//
+
+static const struct CGOptionMenuItem sOverworldPoisonOptions[3] = {
+   {  // Interval
+      .name        = gText_lu_CGOptionName_OverworldPoison_Interval,
+      .help_string = gText_lu_CGOptionHelp_OverworldPoison_Interval,
+      .flags       = (1 << MENUITEM_FLAG_0_MEANS_DISABLED),
+      .value_type = VALUE_TYPE_U8,
+      .values = {
+         .integral = {
+            .min = 0,
+            .max = 60,
+         }
+      },
+      .target = {
+         .as_u8 = &sTempOptions.overworld_poison_interval
+      }
+   },
+   {  // Damage
+      .name        = gText_lu_CGOptionName_OverworldPoison_Damage,
+      .help_string = gText_lu_CGOptionHelp_OverworldPoison_Damage,
+      .flags       = 0,
+      .value_type = VALUE_TYPE_U16,
+      .values = {
+         .integral = {
+            .min = 1,
+            .max = 2000,
+         }
+      },
+      .target = {
+         .as_u16 = &sTempOptions.overworld_poison_damage
+      }
+   },
+   sEndOfListSentinel,
+};
+
+static const struct CGOptionMenuItem sTopLevelMenu[3] = {
+   {  // Start with running shoes
+      .name        = gText_lu_CGOptionName_StartWithRunningShoes,
+      .help_string = gText_lu_CGOptionHelp_StartWithRunningShoes,
+      .flags       = 0,
+      .value_type = VALUE_TYPE_BOOL8,
+      .target = {
+         .as_bool8 = &sTempOptions.start_with_running_shoes
+      }
+   },
+   {  // SUBMENU: Overworld poison
+      .name        = gText_lu_CGOptionCategory_OverworldPoison,
+      .help_string = NULL,
+      .flags       = (1 << MENUITEM_FLAG_IS_SUBMENU),
+      .value_type = VALUE_TYPE_NONE,
+      .target = {
+         .submenu = &sOverworldPoisonOptions
+      }
+   },
+   sEndOfListSentinel,
+};
+
+//
+// Menu state and associated funcs:
+//
+
+static void ResetMenuState(void) {
+   u8 i;
+   
+   sMenuState.breadcrumbs[0].name       = gText_lu_CGO_menuTitle;
+   sMenuState.breadcrumbs[0].menu_items = &sTopLevelMenu;
+   for(i = 1; i < 8; ++i) {
+      sMenuState.breadcrumbs[i].name       = NULL;
+      sMenuState.breadcrumbs[i].menu_items = NULL;
+   }
+   sMenuState.cursor_pos = 0;
+}
+
+static const struct CGOptionMenuItem* GetCurrentMenuItemList(void) {
+   u8 i;
+   const struct CGOptionMenuItem* items;
+   
+   items = &sTopLevelMenu;
+   for(i = 0; i < 8; ++i) {
+      if (sMenuState.breadcrumbs[i].menu_items != NULL) {
+         items = sMenuState.breadcrumbs[i].menu_items;
+      } else {
+         break;
+      }
+   }
+   return items;
+}
+static u8 GetScreenRowForCursorPos(void) {
+   if (sMenuState.cursor_pos > MENU_ITEM_HALFWAY_ROW) {
+      return MENU_ITEM_HALFWAY_ROW;
+   }
+   return sMenuState.cursor_pos;
+}
+
+static void EnterSubmenu(const u8* submenu_name, const struct CGOptionMenuItem* submenu_items) {
+   u8    i;
+   bool8 success;
+   
+   success = FALSE;
+   for(i = 0; i < 8; ++i) {
+      if (sMenuState.breadcrumbs[i] == NULL) {
+         sMenuState.breadcrumbs[i].name       = name;
+         sMenuState.breadcrumbs[i].menu_items = submenu_items;
+         success = TRUE;
+         break;
+      }
+   }
+   if (!success) {
+      // TODO: DebugPrint
+      return;
+   }
+   
+   sMenuState.cursor_pos = 0;
+   
+   UpdateDisplayedMenuName();
+   UpdateDisplayedMenuItems();
+}
+static bool8 TryExitSubmenu() { // returns FALSE if at top-level menu
+   u8    i;
+   bool8 success;
+   
+   success = FALSE;
+   for(int i = 7; i > 0; --i) {
+      if (sMenuState.breadcrumbs[i].items != NULL) {
+         sMenuState.breadcrumbs[i].name       = NULL;
+         sMenuState.breadcrumbs[i].menu_items = NULL;
+         success = TRUE;
+         break;
+      }
+   }
+   if (!success) {
+      return FALSE; // in top-level menu
+   }
+   
+   sMenuState.cursor_pos = 0; // TODO: use the scroll offset of the last entered submenu
+   
+   UpdateDisplayedMenuName();
+   UpdateDisplayedMenuItems();
+   
+   return TRUE;
+}
+
+static void TryMoveMenuCursor(s8 by) {
+   u8 items_count = GetMenuItemListCount(GetCurrentMenuItemList());
+   
+   if (by < 0) {
+      if (sMenuState.cursor_pos < -by) {
+         sMenuState.cursor_pos = items_count - 1;
+      } else {
+         sMenuState.cursor_pos += by;
+      }
+   }
+   if (by > 0) {
+      sMenuState.cursor_pos += by;
+      if (sMenuState.cursor_pos >= items_count) {
+         sMenuState.cursor_pos = 0;
+      }
+   }
+}
+
+//
+// Task and drawing stuff:
+//
+
 static void Task_CGOptionMenuFadeIn(u8 taskId);
-static void ScrollCGOptionMenuTo(u8 taskId, u8 to);
-static void ScrollCGOptionMenuBy(u8 taskId, s8 by);
 static void Task_CGOptionMenuProcessInput(u8 taskId);
 static void Task_CGOptionMenuSave(u8 taskId);
 static void Task_CGOptionMenuFadeOut(u8 taskId);
 static void HighlightCGOptionMenuItem(u8 selection);
 
-// We take pointers here rather than row/option indices because the plan is to eventually 
-// have nested submenus and whatnot.
-static u16  GetOptionSelectedValueIndex(const struct CGOptionMenuItem* item);
-static void SetOptionSelectedValueIndex(const struct CGOptionMenuItem* item, u16 selectionIndex);
-static u8   GetOptionValueCount(const struct CGOptionMenuItem* item);
-static void CycleOptionSelectedValue(const struct CGOptionMenuItem* item, s8 by);
-
-static void DrawFullOptionRow(const struct CGOptionMenuItem* item, u8 visibleRow);
-static void DrawOptionName(const struct CGOptionMenuItem* item, u8 visibleRow);
-static void DrawOptionRowValue(const struct CGOptionMenuItem* item, u8 visibleRow);
+static void DrawControls(void);
 static void DrawHeaderText(void); // draw menu title
 static void DrawBgWindowFrames(void);
-
-// Options' "process inputs" functions should set this to TRUE if the option's value 
-// has changed. Updates to VRAM are done conditionally based on both changes to the 
-// value (as detected from outside the "process inputs" function) and sArrowPressed.
-EWRAM_DATA static bool8 sArrowPressed = FALSE;
 
 static const u16 sOptionMenuText_Pal[] = INCBIN_U16("graphics/interface/option_menu_text.gbapal");
 // note: this is only used in the Japanese release
 static const u8 sEqualSignGfx[] = INCBIN_U8("graphics/interface/option_menu_equals_sign.4bpp");
 
-static u16 GetOptionSelectedValueIndex(const struct CGOptionMenuItem* item) {
-   switch (item->value_type) {
-      case VALUE_TYPE_U8:
-         return *(item->target.as_u8);
-      case VALUE_TYPE_U16:
-         return *(item->target.as_u16);
-      case VALUE_TYPE_BOOL8:
-         return *(item->target.as_bool8) != 0 ? 1 : 0;
-   }
-   return 0;
-}
-static void SetOptionSelectedValueIndex(const struct CGOptionMenuItem* item, u16 selectionIndex) {
-   switch (item->value_type) {
-      case VALUE_TYPE_U8:
-         *(item->target.as_u8) = selectionIndex;
-         return;
-      case VALUE_TYPE_U16:
-         *(item->target.as_u16) = selectionIndex;
-         return;
-      case VALUE_TYPE_BOOL8:
-         *(item->target.as_bool8) = (selectionIndex != 0);
-         return;
-   }
-   return;
-}
-static u8 GetOptionValueCount(const struct CGOptionMenuItem* item) {
-   u8 value_count = 0;
-   while (TRUE) {
-      if (!item->value_strings[value_count])
-         break;
-      ++value_count;
-      if (value_count == MAX_VALUES_PER_MENU_ITEM)
-         break;
-   }
-   return value_count;
-}
-static void CycleOptionSelectedValue(const struct CGOptionMenuItem* item, s8 by) {
-   s8 selection;
-   u8 value_count;
-   
-   selection   = (s8) GetOptionSelectedValueIndex(item) + by;
-   value_count = GetOptionValueCount(item);
-   
-   switch (item->value_type) {
-      case VALUE_TYPE_U8:
-         selection %= value_count;
-         break;
-      case VALUE_TYPE_U16:
-         selection %= value_count;
-         break;
-      case VALUE_TYPE_BOOL8:
-         selection = !(selection & 1);
-         break;
-   }
-   
-   SetOptionSelectedValueIndex(item, selection);
-}
-
-static const struct WindowTemplate sOptionMenuWinTemplates[] =
-{
+static const struct WindowTemplate sOptionMenuWinTemplates[] = {
     [WIN_HEADER] = {
-        .bg = 1,
-        .tilemapLeft = 2,
+        .bg = 0,
+        .tilemapLeft = 0,
         .tilemapTop = 1,
-        .width = 26,
+        .width = DISPLAY_TILE_WIDTH,
         .height = 2,
-        .paletteNum = 1,
-        .baseBlock = 2
+        .paletteNum = 11,
+        .baseBlock = 0x074
     },
     [WIN_OPTIONS] = {
         .bg = 0,
@@ -190,6 +454,15 @@ static const struct WindowTemplate sOptionMenuWinTemplates[] =
         .height = 14,
         .paletteNum = 1,
         .baseBlock = 0x36
+    },
+    [WIN_KEYBINDS_STRIP] = {
+        .bg = 0,
+        .tilemapLeft = 0,
+        .tilemapTop = 0,
+        .width = DISPLAY_TILE_WIDTH,
+        .height = 2,
+        .paletteNum = 11,
+        .baseBlock = 0x074
     },
     DUMMY_WIN_TEMPLATE
 };
@@ -300,21 +573,10 @@ void CB2_InitCustomGameOptionMenu(void) {
        case 8:
            PutWindowTilemap(WIN_OPTIONS);
            FillWindowPixelBuffer(WIN_OPTIONS, PIXEL_FILL(1));
-           {  // draw names for the options that are initially scrolled into view
-              u8 i;
-              
-              #if MENUITEM_COUNT <= MAX_MENU_ITEMS_VISIBLE_AT_ONCE
-              for(i = 0; i < MENUITEM_COUNT; ++i)
-              #else
-              for(i = 0; i < MAX_MENU_ITEMS_VISIBLE_AT_ONCE; ++i)
-              #endif
-              {
-                  DrawOptionName(&sOptions[i], i);
-              }
-           }
            CopyWindowToVram(WIN_OPTIONS, COPYWIN_FULL);
            gMain.state++;
        case 9:
+           DrawControls();
            DrawBgWindowFrames();
            gMain.state++;
            break;
@@ -322,25 +584,10 @@ void CB2_InitCustomGameOptionMenu(void) {
        {
            u8 taskId = CreateTask(Task_CGOptionMenuFadeIn, 0);
 
-           gTasks[taskId].tMenuSelection = 0;
-           gTasks[taskId].tMenuScrollOffset = 0;
-           
+           ResetMenuState();
            sTempOptions = gCustomGameOptions;
-
-           {  // draw choices for the options that are initially scrolled into view
-              u8 i;
-              
-              #if MENUITEM_COUNT <= MAX_MENU_ITEMS_VISIBLE_AT_ONCE
-              for(i = 0; i < MENUITEM_COUNT; ++i)
-              #else
-              for(i = 0; i < MAX_MENU_ITEMS_VISIBLE_AT_ONCE; ++i)
-              #endif
-              {
-                  DrawFullOptionRow(&sOptions[i], i);
-              }
-           }
-           
-           HighlightCGOptionMenuItem(gTasks[taskId].tMenuSelection - gTasks[taskId].tMenuScrollOffset);
+           UpdateDisplayedMenuItems();
+           HighlightCGOptionMenuItem(sMenuState.cursor_pos);
 
            CopyWindowToVram(WIN_OPTIONS, COPYWIN_FULL);
            gMain.state++;
@@ -354,96 +601,58 @@ void CB2_InitCustomGameOptionMenu(void) {
    }
 }
 
-static void Task_CGOptionMenuFadeIn(u8 taskId)
-{
-    if (!gPaletteFade.active)
-        gTasks[taskId].func = Task_CGOptionMenuProcessInput;
-}
-
-static void ScrollCGOptionMenuTo(u8 taskId, u8 to) {
-   #if MENUITEM_COUNT > MAX_MENU_ITEMS_VISIBLE_AT_ONCE
-      if (to > MENUITEM_COUNT - MAX_MENU_ITEMS_VISIBLE_AT_ONCE)
-         to = MENUITEM_COUNT - MAX_MENU_ITEMS_VISIBLE_AT_ONCE;
-   #else
-      to = 0;
-   #endif
-   
-   if (gTasks[taskId].tMenuScrollOffset == to)
-      return;
-      
-   gTasks[taskId].tMenuScrollOffset = to;
-   
-   FillWindowPixelBuffer(WIN_OPTIONS, PIXEL_FILL(1));
-   {
-      u8 i;
-      #if MENUITEM_COUNT > MAX_MENU_ITEMS_VISIBLE_AT_ONCE
-      for(i = 0; i < MAX_MENU_ITEMS_VISIBLE_AT_ONCE; ++i)
-      #else
-      for(i = 0; i < MENUITEM_COUNT; ++i)
-      #endif
-      {
-         u8 option_id = i + gTasks[taskId].tMenuScrollOffset;
-         DrawFullOptionRow(&sOptions[option_id], i);
-      }
-   }
-   
-   // 100% necessary or we see a blank window when we scroll
-   CopyWindowToVram(WIN_OPTIONS, COPYWIN_GFX);
-}
-
-static void ScrollCGOptionMenuBy(u8 taskId, s8 by) {
-   u8 prior = gTasks[taskId].tMenuScrollOffset;
-   if (by < 0) {
-      if (prior - 1 < 0)
-         return;
-      if (prior + by < 0)
-         by = -prior;
-   } else {
-      if (prior + 1 > MENUITEM_COUNT - MAX_MENU_ITEMS_VISIBLE_AT_ONCE)
-         return;
-      if (prior + by > MENUITEM_COUNT - MAX_MENU_ITEMS_VISIBLE_AT_ONCE)
-         by = MENUITEM_COUNT - MAX_MENU_ITEMS_VISIBLE_AT_ONCE - prior;
-   }
-   ScrollCGOptionMenuTo(taskId, prior + by);
+static void Task_CGOptionMenuFadeIn(u8 taskId) {
+   if (!gPaletteFade.active)
+      gTasks[taskId].func = Task_CGOptionMenuProcessInput;
 }
 
 static void Task_CGOptionMenuProcessInput(u8 taskId) {
    if (JOY_NEW(A_BUTTON)) {
-      if (gTasks[taskId].tMenuSelection == MENUITEM_CANCEL) {
-         gTasks[taskId].func = Task_CGOptionMenuSave;
+      const struct CGOptionsMenuItem* items;
+      const struct CGOptionsMenuItem* item;
+      
+      items = GetCurrentMenuItemList();
+      item  = items[sMenuState.cursor_pos];
+      
+      if (item.flags & (1 << MENUITEM_FLAG_IS_SUBMENU)) {
+         EnterSubmenu(item->name, item->target.submenu);
+         return;
       }
+      
+      //
+      // TODO: For Pokemon species, show a special screen to select them
+      //
       return;
    }
    if (JOY_NEW(B_BUTTON)) {
+      if (TryExitSubmenu()) {
+         return;
+      }
+      //
+      // We're in the top-level menu. Back out.
+      //
       gTasks[taskId].func = Task_CGOptionMenuSave;
+      return;
+   }
+   if (JOY_NEW(R_BUTTON)) {
+      //
+      // TODO: Show help text for current option/value pair. Use my automatic word-wrap 
+      // code, since we aren't putting line breaks in these strings.
+      //
       return;
    }
    
    // Up/Down: Move cursor, scrolling if necessary
    if (JOY_NEW(DPAD_UP)) {
-      if (gTasks[taskId].tMenuSelection > 0) {
-         gTasks[taskId].tMenuSelection--;
-         if (gTasks[taskId].tMenuSelection - gTasks[taskId].tMenuScrollOffset < MENU_ITEM_HALFWAY_ROW) {
-            ScrollCGOptionMenuBy(taskId, -1);
-         }
-      } else {
-         gTasks[taskId].tMenuSelection = MENUITEM_CANCEL;
-         ScrollCGOptionMenuTo(taskId, 255);
-      }
-      HighlightCGOptionMenuItem(gTasks[taskId].tMenuSelection - gTasks[taskId].tMenuScrollOffset);
+      TryMoveMenuCursor(-1);
+      UpdateDisplayedMenuItems();
+      HighlightCGOptionMenuItem(sMenuState.cursor_pos);
       return;
    }
    if (JOY_NEW(DPAD_DOWN)) {
-      if (gTasks[taskId].tMenuSelection < MENUITEM_CANCEL) {
-         gTasks[taskId].tMenuSelection++;
-         if (gTasks[taskId].tMenuSelection - gTasks[taskId].tMenuScrollOffset > MENU_ITEM_HALFWAY_ROW) {
-            ScrollCGOptionMenuBy(taskId, 1);
-         }
-      } else {
-         gTasks[taskId].tMenuSelection = 0;
-         ScrollCGOptionMenuTo(taskId, 0);
-      }
-      HighlightCGOptionMenuItem(gTasks[taskId].tMenuSelection - gTasks[taskId].tMenuScrollOffset);
+      TryMoveMenuCursor(1);
+      UpdateDisplayedMenuItems();
+      HighlightCGOptionMenuItem(sMenuState.cursor_pos);
       return;
    }
    
@@ -454,9 +663,10 @@ static void Task_CGOptionMenuProcessInput(u8 taskId) {
          by = JOY_NEW(DPAD_LEFT) ? -1 : 0;
       }
       if (by) {
-         u8 option_id = gTasks[taskId].tMenuSelection;
-         CycleOptionSelectedValue(&sOptions[option_id], by);
-         DrawOptionRowValue(&sOptions[option_id], option_id - gTasks[taskId].tMenuScrollOffset);
+         const struct CGOptionsMenuItem* items = GetCurrentMenuItemList();
+         
+         CycleOptionSelectedValue(&items[sMenuState.cursor_pos], by);
+         DrawMenuItem(&items[sMenuState.cursor_pos], GetScreenRowForCursorPos());
          return;
       }
    }
@@ -479,63 +689,95 @@ static void Task_CGOptionMenuFadeOut(u8 taskId) {
 }
 
 static void HighlightCGOptionMenuItem(u8 index) {
+   index = GetScreenRowForCursorPos(index);
+   
    SetGpuReg(REG_OFFSET_WIN0H, WIN_RANGE(16, DISPLAY_WIDTH - 16));
    SetGpuReg(REG_OFFSET_WIN0V, WIN_RANGE(index * 16 + 40, index * 16 + 56));
+   
+   //
+   // TODO: Show left/right arrows around option value
+   // TODO: Change left/right arrow icons depending on user is at minimum value
+   //        - Don't grey them out, because they wrap around. Maybe shrink them?
+   //
 }
 
-static void DrawFullOptionRow(const struct CGOptionMenuItem* item, u8 visibleRow) {
-   DrawOptionName(item, visibleRow);
-   DrawOptionRowValue(item, visibleRow);
-}
-static void DrawOptionName(const struct CGOptionMenuItem* item, u8 visibleRow) {
-   AddTextPrinterParameterized(WIN_OPTIONS, FONT_NORMAL, item->name, 8, (visibleRow * 16) + 1, TEXT_SKIP_DRAW, NULL);
-}
-static void DrawOptionRowValue(const struct CGOptionMenuItem* item, u8 visibleRow) {
-   u8 selection;
+static void UpdateDisplayedMenuName(void) {
+   u8 i;
+   const u8* title;
    
-   u8 text_width;
-   u8 x_offset;
-   u8 value_buffer[32];
-   
-   if (item->value_type == VALUE_TYPE_NONE || !item->value_strings)
-      return;
-   
-   value_buffer[0] = EXT_CTRL_CODE_BEGIN;
-   value_buffer[1] = EXT_CTRL_CODE_COLOR;
-   value_buffer[2] = TEXT_COLOR_GREEN;
-   value_buffer[3] = EXT_CTRL_CODE_BEGIN;
-   value_buffer[4] = EXT_CTRL_CODE_SHADOW;
-   value_buffer[5] = TEXT_COLOR_LIGHT_GREEN;
-   
-   selection = GetOptionSelectedValueIndex(item);
-   
-   {
-      const u8* src;
-      u8* dst;
-      u16 i;
-      
-      src = item->value_strings[selection];
-      dst = &value_buffer[6];
-      for(i = 0; *src != EOS && i < ARRAY_COUNT(value_buffer) - 7; ++i) {
-         dst[i] = *(src++);
+   title = gText_lu_CGO_menuTitle;
+   for(i = 0; i < 8; ++i) {
+      if (sMenuState.breadcrumbs[i].name) {
+         title = sMenuState.breadcrumbs[i].name;
+      } else {
+         break;
       }
-      dst[i] = EOS;
    }
    
-   // left  edge is at 104px
-   // right edge is at 198px
-   // let's center the option value within the available space, for now
-   // (it'll look neater once we display left/right arrows next to it)
-   text_width = GetStringWidth(FONT_NORMAL, item->name, 0);
-   x_offset   = (94 - text_width) / 2 + 104;
-   
-   AddTextPrinterParameterized(WIN_OPTIONS, FONT_NORMAL, value_buffer, x_offset, (visibleRow * 16) + 1, TEXT_SKIP_DRAW, NULL);
+   FillWindowPixelBuffer(WIN_HEADER, PIXEL_FILL(1));
+   AddTextPrinterParameterized(WIN_HEADER, FONT_NORMAL, title, 8, 1, TEXT_SKIP_DRAW, NULL);
+   CopyWindowToVram(WIN_HEADER, COPYWIN_FULL);
 }
 
-static void DrawHeaderText(void) {
-   FillWindowPixelBuffer(WIN_HEADER, PIXEL_FILL(1));
-   AddTextPrinterParameterized(WIN_HEADER, FONT_NORMAL, gText_lu_CGO_menuTitle, 8, 1, TEXT_SKIP_DRAW, NULL);
-   CopyWindowToVram(WIN_HEADER, COPYWIN_FULL);
+static void DrawMenuItem(const struct CGOptionMenuItem* item, u8 row) {
+   u16 text_width;
+   u16 x_offset;
+   const u8* value_text;
+   
+   // Name
+   AddTextPrinterParameterized(WIN_OPTIONS, FONT_NORMAL, item->name, 8, (row * 16) + 1, TEXT_SKIP_DRAW, NULL);
+   
+   // Value
+   value_text = GetOptionValueName(item, GetOptionValue(item));
+   if (value_text != NULL) {
+      text_width = GetStringWidth(FONT_NORMAL, value_text, 0);
+      //
+      // left  edge is at 104px
+      // right edge is at 198px
+      // let's center the option value within the available space, for now
+      // (it'll look neater once we display left/right arrows next to it)
+      x_offset   = (94 - text_width) / 2 + 104;
+      //
+      AddTextPrinterParameterized(
+         WIN_OPTIONS,
+         FONT_NORMAL,
+         value_text,
+         x_offset,
+         (row * 16) + 1,
+         TEXT_SKIP_DRAW,
+         NULL
+      );
+   } else if (item->flags & (1 << MENUITEM_FLAG_IS_SUBMENU)) {
+      // TODO: For submenus, draw an icon like ">>" in place of the value
+   }
+}
+
+static void UpdateDisplayedMenuItems(void) {
+   u8 i;
+   u8 count;
+   u8 scroll;
+   const struct CGOptionMenuItem* items;
+   
+   items  = GetCurrentMenuItemList();
+   count  = GetMenuItemListCount(items);
+   scroll = sMenuState.cursor_pos;
+   if (count >= MAX_MENU_ITEMS_VISIBLE_AT_ONCE) {
+      if (scroll + MAX_MENU_ITEMS_VISIBLE_AT_ONCE > count) {
+         scroll = count - MAX_MENU_ITEMS_VISIBLE_AT_ONCE;
+      }
+   }
+   
+   FillWindowPixelBuffer(WIN_OPTIONS, PIXEL_FILL(1));
+   
+   for(i = 0; i < MAX_MENU_ITEMS_VISIBLE_AT_ONCE; ++i) {
+      if (i + scroll >= count) {
+         break;
+      }
+      DrawMenuItem(&items[i + scroll]);
+   }
+   
+   // 100% necessary or we see a blank window when we scroll
+   CopyWindowToVram(WIN_OPTIONS, COPYWIN_GFX);
 }
 
 #define TILE_TOP_CORNER_L 0x1A2
@@ -550,6 +792,7 @@ static void DrawHeaderText(void) {
 static void DrawBgWindowFrames(void)
 {
     //                     bg, tile,              x, y, width, height, palNum
+    /*//
     // Draw title window frame
     FillBgTilemapBufferRect(1, TILE_TOP_CORNER_L,  1,  0,  1,  1,  7);
     FillBgTilemapBufferRect(1, TILE_TOP_EDGE,      2,  0, 27,  1,  7);
@@ -559,6 +802,7 @@ static void DrawBgWindowFrames(void)
     FillBgTilemapBufferRect(1, TILE_BOT_CORNER_L,  1,  3,  1,  1,  7);
     FillBgTilemapBufferRect(1, TILE_BOT_EDGE,      2,  3, 27,  1,  7);
     FillBgTilemapBufferRect(1, TILE_BOT_CORNER_R, 28,  3,  1,  1,  7);
+    //*/
 
     // Draw options list window frame
     FillBgTilemapBufferRect(1, TILE_TOP_CORNER_L,  1,  4,  1,  1,  7);
@@ -571,4 +815,13 @@ static void DrawBgWindowFrames(void)
     FillBgTilemapBufferRect(1, TILE_BOT_CORNER_R, 28, 19,  1,  1,  7);
 
     CopyBgTilemapBufferToVram(1);
+}
+
+static void DrawControls(void) {
+   const u8 color[3] = { TEXT_DYNAMIC_COLOR_6, TEXT_COLOR_WHITE, TEXT_COLOR_DARK_GRAY };
+
+   FillWindowPixelBuffer(sOptionMenuWinTemplates->windows[WIN_KEYBINDS_STRIP], PIXEL_FILL(15));
+   AddTextPrinterParameterized3(sOptionMenuWinTemplates->windows[WIN_KEYBINDS_STRIP], FONT_SMALL, 2, 1, color, 0, gText_lu_CGO_keybinds);
+   PutWindowTilemap(sOptionMenuWinTemplates->windows[WIN_KEYBINDS_STRIP]);
+   CopyWindowToVram(sOptionMenuWinTemplates->windows[WIN_KEYBINDS_STRIP], COPYWIN_FULL);
 }

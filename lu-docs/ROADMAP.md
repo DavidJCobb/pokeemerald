@@ -30,20 +30,19 @@
 ** ⬜ Speed up fade-in and other transitions during the Professor Birch intro
 ** ⬜ Coalesce overworld system messages
 *** *// e.g. "PLAYER found an ITEM, and put it in the DOODAD POCKET." instead of two textboxes. the automatic word-wrapping code will help with this!*
-* ⬜ Savedata format optimizations
-** ⬜ Baseline implementation
-*** ⬜ Rebuild save internals so that save sectors are mapped to read/write functors rather than to RAM locations and sizes
-**** ⬜ SaveBlock2 functors
-**** ⬜ SaveBlock1 functors
-**** ⬜ PokemonStorage functors
-*** ⬜ Bitpack SaveBlock2 without major format changes, for now
+* ✅ Savedata format optimizations
+** ✅ Baseline implementation
+*** ✅ Rebuild save internals so that save sectors are mapped to read/write functors rather than to RAM locations and sizes
+**** ✅ SaveBlock2 functors
+**** ✅ SaveBlock1 functors
+**** ✅ PokemonStorage functors
+*** ✅ Bitpack SaveBlock2 without major format changes, for now
 **** ⬜ Store a serialization version number for the whole save file at the start of SaveBlock2
 ***** *// goal is to write an external C++ tool that can take a \*.sav file and "upgrade" it as we revise the hack further in the future*
-*** ⬜ Bitpack SaveBlock1 without major format changes, for now
+*** ✅ Bitpack SaveBlock1 without major format changes, for now
 *** ⬜ Append CustomGameOptions to either of save blocks 2 or 1
 ** ⬜ Format changes
 *** ⬜ Player inventory
-**** ⬜ Use a u16 for all items (9-bit ID; 7-bit quantity capped to 99 on saving and loading)
 **** ⬜ Investigate tighter bitfields for categorized bag items (i.e. fewer bits for item ID)
 ** ⬜ Compile-time control
 *** ⬜ Preprocessor macros to control the presence/absence of certain savedata (and game features generally)
@@ -53,7 +52,7 @@
 ** ⬜ Depends on: savedata format optimizations: player inventory: tighter ID bitfields
 * ⬜ Increase Pokemon name length to 12 characters
 * ⬜ Increase player name length to 12 characters
-** ⬜ Depends on: savedata format optimizations (each byte of length increase adds 126 bytes to total savedata size)
+** ⬜ Depends on: savedata format optimizations (each byte of length increase adds 554 bytes to total savedata size)
 * ⬜ Character customization
 ** ⬜ Separate player pronouns from body, and add a neutral pronoun option
 *** *// actually, i can't find any cases in the vanilla game where the player is referred to by pronoun, aside from Japanese honorifics*
@@ -101,8 +100,6 @@
 ** ⬜ Depends on: savedata format optimizations
 *** *// CG custom data will be bitpacked and versioned*
 ** ⬜ Savedata
-*** *// Prior to savedata optimization, we can just... write this wherever, pretty much. We can jam it at the end of either save block, though we lose forward-compatibility (which is fine for internal testing/development). We already have a singleton struct in memory to hold these prefs, though it's not ASLR'd, so we should modify the save routines to write it after the saveblocks rather than appending it to the saveblock structs themselves.*
-*** *// Never mind, lol. The save code in `save.h` and `save.c` is designed around only storing one struct per sector (though a struct can also be spread across multiple sectors) and we'd have to rewrite half or more of it to change that. This means we'd have to integrate the custom game option data into one of the two saveblocks... which in turn means that in order to store *any* data bitpacked, we'll need to store *all* of it bitpacked.*
 ** ⬜ Apply ASLR to the in-memory CustomGameOptions struct, just like the game does for the two saveblocks.
 ** ⬜ Custom Game Options menu
 *** ✅ Basic implementation (NOTE: untested)
@@ -130,6 +127,7 @@
 *** ⬜ Scale running speed on the overworld
 *** ⬜ Toggle HM use without teaching moves
 *** ⬜ Toggle reusable TMs
+**** Gen V introduced this. They also made it so that you can't exploit TMs to regenerate move PP: a TM-taught move has the "current" PP value of whatever move it replaced.
 *** ⬜ Toggle re-battling missed legendaries
 *** ⬜ Toggle event access (e.g. Eon Ticket)
 *** ⬜ Toggle step counter instead of real-time clock
@@ -147,5 +145,14 @@
 **** ⬜ Dupes Clause (Enable/Disable)
 ***** ⬜ Dupes Clause Shiny Exception (None/Replace Prior/Always Allow)
 *** ⬜ Deactivation Condition (Never/After Champion/After Rayquaza/After All Legendaries)
+** ⬜ Prior to Gen IV, using an item in a Double Battle takes effect immediately, not when you "commit" the turn. This means that you can't cancel these uses, and that NPCs can cheat -- for example, deciding to re-inflict a status condition that you've just cured. It'd be nice to have an option to remedy this, but we'd have to maintain a lot of game state -- essentially, when you select an action for your second Pokemon, we'd have to show "speculative" states for your party and inventory based on the item you queued for use by your first Pokemon. Yeah, I can see why Game Freak didn't make this more robust.
 * ⬜ Minor stability improvements
 ** ⬜ `PokeballGlowEffect_PlaceBalls`: Check for the "0 Pokemon remaining" case first, to fix the underflow and 256-ball animation that occurs if you use the Pokemon Center with an empty party.
+* ⬜ Other features
+** ⬜ Releasing a Pokemon should return its Held Item to the bag.
+*** If there's insufficient bag space, then show a confirmation prompt warning that the held item will be lost.
+** ⬜ Party screen mini-sprites for battle-only forms (e.g. Castform transformations), as in Gen V
+** ⬜ When a Repel wears off, prompt the user to use another, if they have another of the same type.
+*** Ideally tell them how many they have left, too.
+** ⬜ Ball Capsules
+*** Gen IV only stored up to 12 designs, and let you assign these to a Pokemon as desired. It wasn't "one design for every Pokemon," so it might actually be viable to implement.

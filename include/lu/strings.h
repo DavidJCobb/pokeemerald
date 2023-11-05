@@ -17,12 +17,24 @@ extern const u8 gText_lu_NewGame_CustomGame[];
 // CUSTOM GAME OPTIONS MENU
 //
 
+extern const u8 gText_lu_CGO_keybinds[];
 
 extern const u8 gText_lu_CGO_menuTitle[];
 
-extern const u8 gText_lu_CGOption_startWithRunningShoes[];
+extern const u8 gText_lu_CGOptionName_StartWithRunningShoes[];
+extern const u8 gText_lu_CGOptionHelp_StartWithRunningShoes[];
 
+extern const u8 gText_lu_CGOptionCategory_OverworldPoison[];
+//
+extern const u8 gText_lu_CGOptionName_OverworldPoison_Interval[];
+extern const u8 gText_lu_CGOptionHelp_OverworldPoison_Interval[];
+//
+extern const u8 gText_lu_CGOptionName_OverworldPoison_Damage[];
+extern const u8 gText_lu_CGOptionHelp_OverworldPoison_Damage[];
+
+extern const u8 gText_lu_CGOptionValues_common_Default[];
 extern const u8 gText_lu_CGOptionValues_common_Disabled[];
 extern const u8 gText_lu_CGOptionValues_common_Enabled[];
+extern const u8 gText_lu_CGOptionValues_common_None[];
 
 #endif

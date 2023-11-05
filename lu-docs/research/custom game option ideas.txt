@@ -102,6 +102,10 @@ principles:
     - Allow editing options after starting the playthrough
        = Disabled by default. Intended for Let's Players and other content creators who may 
          need to adjust things on the fly.
+       = Actually, instead of going this far, maybe just track when the player changes any 
+         custom game options and remember the fact of them having done that. We can display 
+         the fact of changes occurring or not when entering the player into the Hall of Fame, 
+         and this can guard challenge runs.
     - Start game with Running Shoes
     - Swap trade evolutions for stone or level evolutions
        - Cost: 2-bit enum

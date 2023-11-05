@@ -21,48 +21,60 @@ enum {
    CustomGame_DoubleBattles_Disabled,
 };
 
+struct CustomGameScaleAndClamp {
+   u16 scale; // percentage, i.e. 100 = 100%
+   u16 min;
+   u16 max;   // 0xFFFF = no max
+};
+
+#define UNIMPLEMENTED_CUSTOM_GAME_OPTION
+
 extern struct CustomGameOptions {
-   // not yet implemented
-   bool8 allow_changing_these_during_play;
+   bool8 start_with_running_shoes;
    
-   struct {
-      // not yet implemented
-      bool8 start_with_running_shoes;
-   } qol;
+   UNIMPLEMENTED_CUSTOM_GAME_OPTION u16 scale_wild_encounter_rate;
    
-   // not yet implemented
-   bool8 starter_mode; // tag for next union
-   union {
-      u16 starter_trio[3]; // zero == use vanilla
-      struct {
-         u16   player_species;
-         u16   rival_base_species;
-         u8    catch_mode; // Only Catch Target Species / Polymorph Caught Pokemon into Target Species
-         bool8 give_new_mon_after_gyms; // up to the 6th gym
-      } single_species;
-   } starter_data;
+   // Scale damage dealt by different participants in a battle.
+   UNIMPLEMENTED_CUSTOM_GAME_OPTION u16 scale_battle_damage_dealt_by_player;
+   UNIMPLEMENTED_CUSTOM_GAME_OPTION u16 scale_battle_damage_dealt_by_enemy;
+   UNIMPLEMENTED_CUSTOM_GAME_OPTION u16 scale_battle_damage_dealt_by_ally;
    
-   // not yet implemented
-   u8 double_battles;
+   // Scale the move accuracy of different participants in a battle.
+   UNIMPLEMENTED_CUSTOM_GAME_OPTION u16 scale_battle_accuracy_player;
+   UNIMPLEMENTED_CUSTOM_GAME_OPTION u16 scale_battle_accuracy_enemy;
+   UNIMPLEMENTED_CUSTOM_GAME_OPTION u16 scale_battle_accuracy_ally;
    
-   // not yet implemented
-   struct {
-      bool8 enabled;
-      struct {
-         u8 type;                  // Disabled / One per Location / First Encounter or Bust
-         u8 gift_behavior;         // Free; Doesn't Count / Counts as Encounter / Disable all Gifts
-         u8 shiny_exception_base;  // No Exception / Replace Prior from Same Route / Always Allow
-         struct {
-            bool8 enabled;         // Disabled / Enabled
-            u8    shiny_exception; // No Exception / Replace Prior of Same Species / Always Allow
-         } dupes_clause;
-      } encounter_limit;
-   } nuzlocke;
+   UNIMPLEMENTED_CUSTOM_GAME_OPTION struct CustomGameScaleAndClamp player_money_loss_on_defeat;
+   UNIMPLEMENTED_CUSTOM_GAME_OPTION struct CustomGameScaleAndClamp player_money_gain_on_victory;
+   
+   UNIMPLEMENTED_CUSTOM_GAME_OPTION u16 scale_shop_prices_sell;
+   UNIMPLEMENTED_CUSTOM_GAME_OPTION u16 scale_shop_prices_buy;
+   
+   u8  overworld_poison_interval; // step count; 0 to disable; range [0, 60]
+   u16 overworld_poison_damage;   // damage taken per poison field effect; range [1, 2000]
+   
+   // generational battle rules:
+   UNIMPLEMENTED_CUSTOM_GAME_OPTION bool8 no_physical_special_split; // TODO: implement the physical/special split first lol
+   
+   // Gen V battle improvements:
+   UNIMPLEMENTED_CUSTOM_GAME_OPTION bool8 no_inherently_typeless_moves; // Beat Up, Future Sight, and Doom Desire are typed
+   UNIMPLEMENTED_CUSTOM_GAME_OPTION bool8 wonder_guard_blocks_typeless; // Wonder Guard blocks typeless moves except Struggle
 } gCustomGameOptions;
 
-extern void ResetCustomGameOptions(void);
+// Track in-game progress related to custom game options.
+extern struct CustomGameSavestate {
+   
+   // Needed for Nuzlocke encounter options: we should not enforce any encounter/catch 
+   // limits until the player has obtained at least one of any Poke Ball type.
+   bool8 has_ever_had_poke_balls;
+   
+} gCustomGameSavestate;
 
-extern void BitWriteCustomGameOptions(struct CustomGameOptions*, struct lu_BitstreamState*);
-extern void BitReadCustomGameOptions(struct CustomGameOptions*, struct lu_BitstreamState*);
+#undef UNIMPLEMENTED_CUSTOM_GAME_OPTION
+
+extern void ResetCustomGameOptions(void);
+extern void ResetCustomGameSavestate(void);
+
+extern void CustomGames_HandleNewPlaythroughStarted(void);
 
 #endif

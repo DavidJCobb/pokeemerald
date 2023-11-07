@@ -29,6 +29,7 @@ struct CustomGameScaleAndClamp {
 
 #define UNIMPLEMENTED_CUSTOM_GAME_OPTION
 
+// Track current values of Custom Game options. Intended to be serialized after SaveBlock2.
 extern struct CustomGameOptions {
    bool8 start_with_running_shoes;
    
@@ -61,7 +62,7 @@ extern struct CustomGameOptions {
    UNIMPLEMENTED_CUSTOM_GAME_OPTION bool8 wonder_guard_blocks_typeless; // Wonder Guard blocks typeless moves except Struggle
 } gCustomGameOptions;
 
-// Track in-game progress related to custom game options.
+// Track in-game progress related to custom game options. Intended to be serialized after SaveBlock2.
 extern struct CustomGameSavestate {
    
    // Needed for Nuzlocke encounter options: we should not enforce any encounter/catch 

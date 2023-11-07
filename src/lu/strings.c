@@ -14,6 +14,10 @@ const u8 gText_lu_option_running_vanilla[] = _("{COLOR GREEN}{SHADOW LIGHT_GREEN
 const u8 gText_lu_option_running_toggle[]  = _("{COLOR GREEN}{SHADOW LIGHT_GREEN}TOGGLE");
 
 //
+
+const u8 gText_lu_MainMenuCustomGameOptions[] = _("CUSTOM GAME OPTIONS");
+
+//
 // NEW GAME SUB-OPTIONS
 //
 
@@ -25,7 +29,7 @@ const u8 gText_lu_NewGame_CustomGame[] = _("Custom Game");
 // CUSTOM GAME OPTIONS MENU
 //
 
-const u8 gText_lu_CGO_keybinds[] = _("{DPAD_UPDOWN}PICK  {DPAD_LEFTRIGHT}CHANGE  {A_BUTTON}OK  {B_BUTTON}BACK  {R_BUTTON}HELP");
+const u8 gText_lu_CGO_keybinds[] = _("{DPAD_UPDOWN}PICK  {DPAD_LEFTRIGHT}CHANGE  {A_BUTTON}OK  {B_BUTTON}BACK  {L_BUTTON}{R_BUTTON}HELP");
 
 const u8 gText_lu_CGO_menuTitle[] = _("CUSTOM GAME OPTIONS");
 

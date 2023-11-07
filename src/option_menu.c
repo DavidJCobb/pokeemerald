@@ -37,6 +37,8 @@
 
 #define MENU_ITEM_HALFWAY_ROW (MAX_MENU_ITEMS_VISIBLE_AT_ONCE / 2)
 
+#include "lu/custom_game_options_menu.h"
+
 enum {
    WIN_HEADER,
    WIN_OPTIONS
@@ -433,13 +435,12 @@ static void ScrollOptionMenuBy(u8 taskId, s8 by) {
    ScrollOptionMenuTo(taskId, prior + by);
 }
 
-static void Task_OptionMenuProcessInput(u8 taskId)
-{
-    if (JOY_NEW(A_BUTTON))
-    {
-        if (gTasks[taskId].tMenuSelection == MENUITEM_CANCEL)
-            gTasks[taskId].func = Task_OptionMenuSave;
-    }
+static void Task_OptionMenuProcessInput(u8 taskId) {
+   if (JOY_NEW(A_BUTTON)) {
+      if (gTasks[taskId].tMenuSelection == MENUITEM_CANCEL) {
+         gTasks[taskId].func = Task_OptionMenuSave;
+      }
+   }
     else if (JOY_NEW(B_BUTTON))
     {
         gTasks[taskId].func = Task_OptionMenuSave;

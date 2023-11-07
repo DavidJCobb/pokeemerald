@@ -6,6 +6,10 @@ extern const u8 gText_lu_option_running_vanilla[];
 extern const u8 gText_lu_option_running_toggle[];
 
 //
+
+extern const u8 gText_lu_MainMenuCustomGameOptions[];
+
+//
 // NEW GAME SUB-OPTIONS
 //
 

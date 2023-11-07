@@ -1,11 +1,13 @@
 #include "global.h"
 #include "lu/custom_game_options.h"
+#include "event_data.h" // FlagSet
 
 #include "lu/bitstreams.h"
 
 #define CUSTOM_GAME_OPTION_DATA_VERSION 0
 
-EWRAM_DATA struct CustomGameOptions gCustomGameOptions = {};
+EWRAM_DATA struct CustomGameOptions   gCustomGameOptions   = {};
+EWRAM_DATA struct CustomGameSavestate gCustomGameSavestate = {};
 
 static void InitializeScaleAndClamp(struct CustomGameScaleAndClamp* v) {
    v->scale = 100;
@@ -46,5 +48,4 @@ void CustomGames_HandleNewPlaythroughStarted(void) {
    if (gCustomGameOptions.start_with_running_shoes) {
       FlagSet(FLAG_SYS_B_DASH);
    }
-   
 }

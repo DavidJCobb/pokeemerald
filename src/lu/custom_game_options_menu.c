@@ -20,12 +20,14 @@
 
 #include "characters.h"
 #include "string_util.h"
+#include "lu/string_wrap.h"
 #include "lu/strings.h"
 
 enum {
    WIN_HEADER,
    WIN_KEYBINDS_STRIP,
    WIN_OPTIONS,
+   WIN_HELP,
    //
    WIN_COUNT
 };
@@ -56,7 +58,8 @@ struct MenuStackFrame {
 
 struct MenuState {
    struct MenuStackFrame breadcrumbs[MAX_MENU_TRAVERSAL_DEPTH];
-   u8 cursor_pos;
+   u8    cursor_pos;
+   bool8 is_in_help;
 };
 
 static EWRAM_DATA struct MenuState* sMenuState = NULL;
@@ -88,6 +91,7 @@ static void ResetMenuState(void) {
       sMenuState->breadcrumbs[i].menu_items = NULL;
    }
    sMenuState->cursor_pos = 0;
+   sMenuState->is_in_help = FALSE;
 }
 
 static const struct CGOptionMenuItem* GetCurrentMenuItemList(void) {
@@ -181,22 +185,26 @@ static void Task_CGOptionMenuSave(u8 taskId);
 static void Task_CGOptionMenuFadeOut(u8 taskId);
 static void HighlightCGOptionMenuItem();
 
+static void DrawBgWindowFrames(void);
+
+static void TryDisplayHelp(const struct CGOptionMenuItem* item);
+
 static void UpdateDisplayedMenuName(void);
 static void DrawMenuItem(const struct CGOptionMenuItem* item, u8 row);
 static void UpdateDisplayedMenuItems(void);
-
-static void DrawControls(void);
-static void DrawBgWindowFrames(void);
+static void UpdateDisplayedControls(void);
 
 static const u16 sOptionMenuText_Pal[] = INCBIN_U16("graphics/interface/option_menu_text.gbapal");
 // note: this is only used in the Japanese release
 static const u8 sEqualSignGfx[] = INCBIN_U8("graphics/interface/option_menu_equals_sign.4bpp");
 
-static const u8 sTextColor_OptionNames[] = {TEXT_COLOR_WHITE, TEXT_COLOR_DARK_GRAY, TEXT_COLOR_LIGHT_GRAY};
+static const u8 sTextColor_OptionNames[] = {TEXT_COLOR_WHITE, 6, 7};
 static const u8 sTextColor_OptionValues[] = {TEXT_COLOR_WHITE, TEXT_COLOR_RED, TEXT_COLOR_LIGHT_RED};
+static const u8 sTextColor_HelpBodyText[] = {TEXT_COLOR_WHITE, 6, 7};
 
 #define BACKGROUND_LAYER_NORMAL  0
 #define BACKGROUND_LAYER_OPTIONS 1
+#define BACKGROUND_LAYER_HELP    2
 
 #define BACKGROUND_PALETTE_ID_MENU     0
 #define BACKGROUND_PALETTE_ID_TEXT     1
@@ -219,7 +227,7 @@ static const struct WindowTemplate sOptionMenuWinTemplates[] = {
     [WIN_HEADER] = {
         .bg          = BACKGROUND_LAYER_NORMAL,
         .tilemapLeft = 0,
-        .tilemapTop  = 2,
+        .tilemapTop  = 0,
         .width       = DISPLAY_TILE_WIDTH,
         .height      = 2,
         .paletteNum  = BACKGROUND_PALETTE_ID_CONTROLS,
@@ -228,7 +236,7 @@ static const struct WindowTemplate sOptionMenuWinTemplates[] = {
     [WIN_KEYBINDS_STRIP] = {
         .bg          = BACKGROUND_LAYER_NORMAL,
         .tilemapLeft = 0,
-        .tilemapTop  = 0,
+        .tilemapTop  = DISPLAY_TILE_HEIGHT - 2,
         .width       = DISPLAY_TILE_WIDTH,
         .height      = 2,
         .paletteNum  = BACKGROUND_PALETTE_ID_CONTROLS,
@@ -237,11 +245,20 @@ static const struct WindowTemplate sOptionMenuWinTemplates[] = {
     [WIN_OPTIONS] = {
         .bg          = BACKGROUND_LAYER_OPTIONS,
         .tilemapLeft = 2,
-        .tilemapTop  = 5,
+        .tilemapTop  = 3,
         .width       = 26,
         .height      = 14,
         .paletteNum  = BACKGROUND_PALETTE_ID_TEXT,
         .baseBlock   = 1 + (DISPLAY_TILE_WIDTH * 4)
+    },
+    [WIN_HELP] = {
+        .bg          = BACKGROUND_LAYER_HELP,
+        .tilemapLeft = 0,
+        .tilemapTop  = 2,
+        .width       = DISPLAY_TILE_WIDTH,
+        .height      = DISPLAY_TILE_HEIGHT - 4,
+        .paletteNum  = BACKGROUND_PALETTE_ID_TEXT,
+        .baseBlock   = 1 // this is in its own background with its own tiles, so it can use the same number as other windows
     },
     //
     [WIN_COUNT] = DUMMY_WIN_TEMPLATE
@@ -253,9 +270,9 @@ static const struct BgTemplate sOptionMenuBgTemplates[] = {
       //
       .charBaseIndex = 1,
       .mapBaseIndex  = 31,
-      .screenSize    = 0, // 256x256px
-      .paletteMode   = 0, // 16 palettes with 16 colors per
-      .priority      = 1,
+      .screenSize    = 0,
+      .paletteMode   = 0,
+      .priority      = 2,
       .baseTile      = 0
    },
    {
@@ -263,8 +280,18 @@ static const struct BgTemplate sOptionMenuBgTemplates[] = {
       //
       .charBaseIndex = 1,
       .mapBaseIndex  = 30,
-      .screenSize    = 0, // 256x256px
-      .paletteMode   = 0, // 16 palettes with 16 colors per
+      .screenSize    = 0,
+      .paletteMode   = 0,
+      .priority      = 1,
+      .baseTile      = 0
+   },
+   {
+      .bg = BACKGROUND_LAYER_HELP,
+      //
+      .charBaseIndex = 2,
+      .mapBaseIndex  = 32,
+      .screenSize    = 0,
+      .paletteMode   = 0,
       .priority      = 0,
       .baseTile      = 0
    },
@@ -272,19 +299,42 @@ static const struct BgTemplate sOptionMenuBgTemplates[] = {
 
 static const u16 sOptionMenuBg_Pal[] = {RGB(17, 18, 31)};
 
-static void MainCB2(void)
-{
-    RunTasks();
-    AnimateSprites();
-    BuildOamBuffer();
-    UpdatePaletteFade();
+static void MainCB2(void) {
+   RunTasks();
+   AnimateSprites();
+   BuildOamBuffer();
+   UpdatePaletteFade();
+}
+static void VBlankCB(void) {
+   LoadOam();
+   ProcessSpriteCopyRequests();
+   TransferPlttBuffer();
 }
 
-static void VBlankCB(void)
-{
-    LoadOam();
-    ProcessSpriteCopyRequests();
-    TransferPlttBuffer();
+static void SetUpHighlightEffect(void) {
+   //
+   // Set up the visual effect we'll be using to highlight the selected option.
+   //
+   // We set the current GBA color effect to "darken," and enable it for the options 
+   // layer. We set up LCD Window 0 (not to be confused with UI windows) to show the 
+   // options layer, and set the "Not In Any LCD Window" region to show all background 
+   // layers and the color effect. We'll use LCD Window 0 as a cutout for the darken 
+   // effect: in the options window, any pixel that falls inside of Window 0 won't be 
+   // darkened.
+   //
+   
+   #define _ALL_BG_FLAGS (1 << BACKGROUND_LAYER_NORMAL) | (1 << BACKGROUND_LAYER_OPTIONS) | (1 << BACKGROUND_LAYER_HELP)
+   
+   SetGpuReg(REG_OFFSET_WIN0H,  0);
+   SetGpuReg(REG_OFFSET_WIN0V,  0);
+   SetGpuReg(REG_OFFSET_WININ,  _ALL_BG_FLAGS);
+   SetGpuReg(REG_OFFSET_WINOUT, _ALL_BG_FLAGS | WINOUT_WIN01_CLR);
+   SetGpuReg(REG_OFFSET_BLDCNT, (1 << BACKGROUND_LAYER_OPTIONS) | BLDCNT_EFFECT_DARKEN);
+   SetGpuReg(REG_OFFSET_BLDALPHA, 0);
+   SetGpuReg(REG_OFFSET_BLDY, 4);
+   SetGpuReg(REG_OFFSET_DISPCNT, DISPCNT_WIN0_ON | DISPCNT_OBJ_ON | DISPCNT_OBJ_1D_MAP);
+   
+   #undef _ALL_BG_FLAGS
 }
 
 void CB2_InitCustomGameOptionMenu(void) {
@@ -318,28 +368,13 @@ void CB2_InitCustomGameOptionMenu(void) {
            
          InitWindows(sOptionMenuWinTemplates);
          DeactivateAllTextPrinters();
-         //
-         // Set up the visual effect we'll be using to highlight the selected option.
-         //
-         // We set the current GBA color effect to "darken," and enable it for the options 
-         // layer. We set up LCD Window 0 (not to be confused with UI windows) to show the 
-         // options layer, and set the "Not In Any LCD Window" region to show all background 
-         // layers and the color effect. We'll use LCD Window 0 as a cutout for the darken 
-         // effect: in the options window, any pixel that falls inside of Window 0 won't be 
-         // darkened.
-         //
-         SetGpuReg(REG_OFFSET_WIN0H,  0);
-         SetGpuReg(REG_OFFSET_WIN0V,  0);
-         SetGpuReg(REG_OFFSET_WININ,  (1 << BACKGROUND_LAYER_OPTIONS));
-         SetGpuReg(REG_OFFSET_WINOUT, (1 << BACKGROUND_LAYER_NORMAL) | (1 << BACKGROUND_LAYER_OPTIONS) | WINOUT_WIN01_CLR);
-         SetGpuReg(REG_OFFSET_BLDCNT, (1 << BACKGROUND_LAYER_OPTIONS) | BLDCNT_EFFECT_DARKEN);
-         SetGpuReg(REG_OFFSET_BLDALPHA, 0);
-         SetGpuReg(REG_OFFSET_BLDY, 4);
-         SetGpuReg(REG_OFFSET_DISPCNT, DISPCNT_WIN0_ON | DISPCNT_OBJ_ON | DISPCNT_OBJ_1D_MAP);
          
-         ShowBg(0);
-         ShowBg(1);
-           
+         SetUpHighlightEffect();
+         
+         ShowBg(BACKGROUND_LAYER_NORMAL);
+         ShowBg(BACKGROUND_LAYER_OPTIONS);
+         HideBg(BACKGROUND_LAYER_HELP);
+         
          gMain.state++;
          break;
        case 2:
@@ -375,6 +410,7 @@ void CB2_InitCustomGameOptionMenu(void) {
          gMain.state++;
          break;
        case 7:
+         PutWindowTilemap(WIN_HELP);
          gMain.state++;
          break;
        case 8:
@@ -385,7 +421,6 @@ void CB2_InitCustomGameOptionMenu(void) {
          break;
        case 9:
          PutWindowTilemap(WIN_KEYBINDS_STRIP);
-         DrawControls();
          DrawBgWindowFrames();
          gMain.state++;
          break;
@@ -399,6 +434,7 @@ void CB2_InitCustomGameOptionMenu(void) {
             sTempOptions = gCustomGameOptions;
             UpdateDisplayedMenuName();
             UpdateDisplayedMenuItems();
+            UpdateDisplayedControls();
             HighlightCGOptionMenuItem();
 
             CopyWindowToVram(WIN_OPTIONS, COPYWIN_FULL);
@@ -419,6 +455,24 @@ static void Task_CGOptionMenuFadeIn(u8 taskId) {
 }
 
 static void Task_CGOptionMenuProcessInput(u8 taskId) {
+   if (sMenuState->is_in_help) {
+      if (JOY_NEW(B_BUTTON)) {
+         sMenuState->is_in_help = FALSE;
+         HideBg(BACKGROUND_LAYER_HELP);
+         UpdateDisplayedControls();
+      }
+      return;
+   }
+   
+   // NOTE: We have to check these before the A button, because if the user 
+   // sets the "L/R Button" option to "L=A", then pressing L counts as a 
+   // press of both L and A.
+   if (JOY_NEW(L_BUTTON) || JOY_NEW(R_BUTTON)) {
+      const struct CGOptionMenuItem* items = GetCurrentMenuItemList();
+      TryDisplayHelp(&items[sMenuState->cursor_pos]);
+      return;
+   }
+   
    if (JOY_NEW(A_BUTTON)) {
       const struct CGOptionMenuItem* items;
       const struct CGOptionMenuItem* item;
@@ -428,6 +482,7 @@ static void Task_CGOptionMenuProcessInput(u8 taskId) {
       
       if (item->flags & (1 << MENUITEM_FLAG_IS_SUBMENU)) {
          EnterSubmenu(item->name, item->target.submenu);
+         UpdateDisplayedControls();
          HighlightCGOptionMenuItem();
          return;
       }
@@ -439,6 +494,7 @@ static void Task_CGOptionMenuProcessInput(u8 taskId) {
    }
    if (JOY_NEW(B_BUTTON)) {
       if (TryExitSubmenu()) {
+         UpdateDisplayedControls();
          HighlightCGOptionMenuItem();
          return;
       }
@@ -448,24 +504,19 @@ static void Task_CGOptionMenuProcessInput(u8 taskId) {
       gTasks[taskId].func = Task_CGOptionMenuSave;
       return;
    }
-   if (JOY_NEW(L_BUTTON) || JOY_NEW(R_BUTTON)) {
-      //
-      // TODO: Show help text for current option/value pair. Use my automatic word-wrap 
-      // code, since we aren't putting line breaks in these strings.
-      //
-      return;
-   }
    
    // Up/Down: Move cursor, scrolling if necessary
    if (JOY_NEW(DPAD_UP)) {
       TryMoveMenuCursor(-1);
       UpdateDisplayedMenuItems();
+      UpdateDisplayedControls();
       HighlightCGOptionMenuItem();
       return;
    }
    if (JOY_NEW(DPAD_DOWN)) {
       TryMoveMenuCursor(1);
       UpdateDisplayedMenuItems();
+      UpdateDisplayedControls();
       HighlightCGOptionMenuItem();
       return;
    }
@@ -509,11 +560,40 @@ static void Task_CGOptionMenuFadeOut(u8 taskId) {
    }
 }
 
+
+static void TryDisplayHelp(const struct CGOptionMenuItem* item) {
+   const u8* text = NULL;
+   
+   text = GetRelevantHelpText(item);
+   if (text == NULL) {
+      //
+      // No help text to display.
+      //
+      return;
+   }
+   
+   sMenuState->is_in_help = TRUE;
+   
+   FillWindowPixelBuffer(WIN_HELP, PIXEL_FILL(1));
+   
+   StringExpandPlaceholders(gStringVar4, text);
+   lu_PrepStringWrap(WIN_HELP, FONT_NORMAL);
+   lu_StringWrap(gStringVar4);
+   
+   AddTextPrinterParameterized3(WIN_HELP, FONT_NORMAL, 2, 1, sTextColor_OptionNames, TEXT_SKIP_DRAW, gStringVar4);
+   
+   CopyWindowToVram(WIN_HELP, COPYWIN_FULL);
+   
+   UpdateDisplayedControls();
+   ShowBg(BACKGROUND_LAYER_HELP);
+}
+
+
 static void HighlightCGOptionMenuItem() {
    u8 index = GetScreenRowForCursorPos();
    
    SetGpuReg(REG_OFFSET_WIN0H, WIN_RANGE(16, DISPLAY_WIDTH - 16));
-   SetGpuReg(REG_OFFSET_WIN0V, WIN_RANGE(index * 16 + 40, index * 16 + 56));
+   SetGpuReg(REG_OFFSET_WIN0V, WIN_RANGE(index * 16 + 24, index * 16 + 40));
    
    //
    // TODO: Show left/right arrows around option value
@@ -649,37 +729,67 @@ static u8 GetScreenRowForCursorPos(void) {
    return pos - scroll;
 }
 
-static void DrawBgWindowFrames(void) {
-    //                     bg, tile,              x, y, width, height, palNum
-    /*//
-    // Draw title window frame
-    FillBgTilemapBufferRect(BACKGROUND_LAYER_NORMAL, DIALOG_FRAME_TILE_TOP_CORNER_L,  1,  0,  1,  1,  BACKGROUND_PALETTE_BOX_FRAME);
-    FillBgTilemapBufferRect(BACKGROUND_LAYER_NORMAL, DIALOG_FRAME_TILE_TOP_EDGE,      2,  0, 27,  1,  BACKGROUND_PALETTE_BOX_FRAME);
-    FillBgTilemapBufferRect(BACKGROUND_LAYER_NORMAL, DIALOG_FRAME_TILE_TOP_CORNER_R, 28,  0,  1,  1,  BACKGROUND_PALETTE_BOX_FRAME);
-    FillBgTilemapBufferRect(BACKGROUND_LAYER_NORMAL, DIALOG_FRAME_TILE_LEFT_EDGE,     1,  1,  1,  2,  BACKGROUND_PALETTE_BOX_FRAME);
-    FillBgTilemapBufferRect(BACKGROUND_LAYER_NORMAL, DIALOG_FRAME_TILE_RIGHT_EDGE,   28,  1,  1,  2,  BACKGROUND_PALETTE_BOX_FRAME);
-    FillBgTilemapBufferRect(BACKGROUND_LAYER_NORMAL, DIALOG_FRAME_TILE_BOT_CORNER_L,  1,  3,  1,  1,  BACKGROUND_PALETTE_BOX_FRAME);
-    FillBgTilemapBufferRect(BACKGROUND_LAYER_NORMAL, DIALOG_FRAME_TILE_BOT_EDGE,      2,  3, 27,  1,  BACKGROUND_PALETTE_BOX_FRAME);
-    FillBgTilemapBufferRect(BACKGROUND_LAYER_NORMAL, DIALOG_FRAME_TILE_BOT_CORNER_R, 28,  3,  1,  1,  BACKGROUND_PALETTE_BOX_FRAME);
-    //*/
-
-    // Draw options list window frame
-    FillBgTilemapBufferRect(BACKGROUND_LAYER_NORMAL, DIALOG_FRAME_TILE_TOP_CORNER_L,  1,  4,  1,  1,  BACKGROUND_PALETTE_BOX_FRAME);
-    FillBgTilemapBufferRect(BACKGROUND_LAYER_NORMAL, DIALOG_FRAME_TILE_TOP_EDGE,      2,  4, 26,  1,  BACKGROUND_PALETTE_BOX_FRAME);
-    FillBgTilemapBufferRect(BACKGROUND_LAYER_NORMAL, DIALOG_FRAME_TILE_TOP_CORNER_R, 28,  4,  1,  1,  BACKGROUND_PALETTE_BOX_FRAME);
-    FillBgTilemapBufferRect(BACKGROUND_LAYER_NORMAL, DIALOG_FRAME_TILE_LEFT_EDGE,     1,  5,  1, 18,  BACKGROUND_PALETTE_BOX_FRAME);
-    FillBgTilemapBufferRect(BACKGROUND_LAYER_NORMAL, DIALOG_FRAME_TILE_RIGHT_EDGE,   28,  5,  1, 18,  BACKGROUND_PALETTE_BOX_FRAME);
-    FillBgTilemapBufferRect(BACKGROUND_LAYER_NORMAL, DIALOG_FRAME_TILE_BOT_CORNER_L,  1, 19,  1,  1,  BACKGROUND_PALETTE_BOX_FRAME);
-    FillBgTilemapBufferRect(BACKGROUND_LAYER_NORMAL, DIALOG_FRAME_TILE_BOT_EDGE,      2, 19, 26,  1,  BACKGROUND_PALETTE_BOX_FRAME);
-    FillBgTilemapBufferRect(BACKGROUND_LAYER_NORMAL, DIALOG_FRAME_TILE_BOT_CORNER_R, 28, 19,  1,  1,  BACKGROUND_PALETTE_BOX_FRAME);
-
-    CopyBgTilemapBufferToVram(BACKGROUND_LAYER_NORMAL);
+static void DrawWindowFrame(u8 inner_x, u8 inner_y, u8 inner_w, u8 inner_h) {
+   u8 l = inner_x - 1;
+   u8 r = inner_x + inner_w;
+   u8 t = inner_y - 1;
+   u8 b = inner_y + inner_h;
+   
+   FillBgTilemapBufferRect(BACKGROUND_LAYER_NORMAL, DIALOG_FRAME_TILE_TOP_CORNER_L, l,     t,      1,        1,  BACKGROUND_PALETTE_BOX_FRAME);
+   FillBgTilemapBufferRect(BACKGROUND_LAYER_NORMAL, DIALOG_FRAME_TILE_TOP_EDGE,     l + 1, t,      inner_w,  1,  BACKGROUND_PALETTE_BOX_FRAME);
+   FillBgTilemapBufferRect(BACKGROUND_LAYER_NORMAL, DIALOG_FRAME_TILE_TOP_CORNER_R, r,     t,      1,        1,  BACKGROUND_PALETTE_BOX_FRAME);
+   FillBgTilemapBufferRect(BACKGROUND_LAYER_NORMAL, DIALOG_FRAME_TILE_LEFT_EDGE,    l,     t + 1,  1,  inner_h,  BACKGROUND_PALETTE_BOX_FRAME);
+   FillBgTilemapBufferRect(BACKGROUND_LAYER_NORMAL, DIALOG_FRAME_TILE_RIGHT_EDGE,   r,     t + 1,  1,  inner_h,  BACKGROUND_PALETTE_BOX_FRAME);
+   FillBgTilemapBufferRect(BACKGROUND_LAYER_NORMAL, DIALOG_FRAME_TILE_BOT_CORNER_L, l,     b,      1,        1,  BACKGROUND_PALETTE_BOX_FRAME);
+   FillBgTilemapBufferRect(BACKGROUND_LAYER_NORMAL, DIALOG_FRAME_TILE_BOT_EDGE,     l + 1, b,      inner_w,  1,  BACKGROUND_PALETTE_BOX_FRAME);
+   FillBgTilemapBufferRect(BACKGROUND_LAYER_NORMAL, DIALOG_FRAME_TILE_BOT_CORNER_R, r,     b,      1,        1,  BACKGROUND_PALETTE_BOX_FRAME);
 }
 
-static void DrawControls(void) {
-   const u8 color[3] = { TEXT_DYNAMIC_COLOR_6, TEXT_COLOR_WHITE, TEXT_COLOR_DARK_GRAY };
+static void DrawBgWindowFrames(void) {
+   DrawWindowFrame(
+      sOptionMenuWinTemplates[WIN_OPTIONS].tilemapLeft,
+      sOptionMenuWinTemplates[WIN_OPTIONS].tilemapTop,
+      sOptionMenuWinTemplates[WIN_OPTIONS].width,
+      sOptionMenuWinTemplates[WIN_OPTIONS].height
+   );
+   CopyBgTilemapBufferToVram(BACKGROUND_LAYER_NORMAL);
+}
+
+static void UpdateDisplayedControls(void) {
+   bool8 draw_help_option;
+   //
+   const u8* text;
+   const u8  color[3] = { TEXT_DYNAMIC_COLOR_6, TEXT_COLOR_WHITE, TEXT_COLOR_DARK_GRAY };
 
    FillWindowPixelBuffer(WIN_KEYBINDS_STRIP, PIXEL_FILL(15));
-   AddTextPrinterParameterized3(WIN_KEYBINDS_STRIP, FONT_SMALL, 2, 1, color, TEXT_SKIP_DRAW, gText_lu_CGO_keybinds);
+   
+   draw_help_option = FALSE;
+   //
+   text = gText_lu_CGO_KeybindsForItem;
+   if (sMenuState->is_in_help) {
+      text = gText_lu_CGO_KeybindsForHelp;
+   } else {
+      const struct CGOptionMenuItem* item;
+      const struct CGOptionMenuItem* items = GetCurrentMenuItemList();
+      
+      item = NULL;
+      if (items != NULL)
+         item = &items[sMenuState->cursor_pos];
+      
+      if (item) {
+         if ((item->flags & (1 << MENUITEM_FLAG_IS_SUBMENU)) != 0) {
+            text = gText_lu_CGO_keybindsForSubmenu;
+         }
+         if (GetRelevantHelpText(item) != NULL) {
+            draw_help_option = TRUE;
+         }
+      }
+   }
+   AddTextPrinterParameterized3(WIN_KEYBINDS_STRIP, FONT_SMALL, 2, 1, color, TEXT_SKIP_DRAW, text);
+   if (draw_help_option) {
+      u8 draw_help_option_at = GetStringWidth(FONT_SMALL, text, 0);
+      AddTextPrinterParameterized3(WIN_KEYBINDS_STRIP, FONT_SMALL, 2 + draw_help_option_at, 1, color, TEXT_SKIP_DRAW, gText_lu_CGO_keybindFragment_ItemHelp);
+   }
+   
    CopyWindowToVram(WIN_KEYBINDS_STRIP, COPYWIN_FULL);
 }

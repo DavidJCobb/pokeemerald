@@ -133,7 +133,7 @@ void CycleOptionSelectedValue(const struct CGOptionMenuItem* item, s8 by) {
          if (selection - minimum < -by) {
             u16 skipped = selection - minimum;
             
-            selection = item->values.integral.max - ((u16)-by - skipped);
+            selection = item->values.integral.max - ((u16)-by - skipped - 1);
          } else {
             selection += by;
          }
@@ -147,4 +147,21 @@ void CycleOptionSelectedValue(const struct CGOptionMenuItem* item, s8 by) {
    }
    
    SetOptionValue(item, selection);
+}
+
+const u8* GetRelevantHelpText(const struct CGOptionMenuItem* item) {
+   const u8* text = NULL;
+   
+   if ((item->flags & MENUITEM_FLAG_IS_ENUM) != 0) {
+      u8 value;
+      u8 value_count;
+      
+      value_count = item->values.named.count;
+      value       = GetOptionValue(item);
+      if (value < value_count) {
+         return item->values.named.help_strings[value];
+      }
+   }
+   
+   return item->help_string;
 }

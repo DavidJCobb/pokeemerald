@@ -17,6 +17,7 @@ static void InitializeScaleAndClamp(struct CustomGameScaleAndClamp* v) {
 
 void ResetCustomGameOptions(void) {
    gCustomGameOptions.start_with_running_shoes = FALSE;
+   gCustomGameOptions.can_run_indoors          = FALSE;
    
    gCustomGameOptions.scale_wild_encounter_rate = 100;
    

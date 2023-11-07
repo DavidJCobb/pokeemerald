@@ -56,8 +56,8 @@ static const struct CGOptionMenuItem sTopLevelMenu[3] = {
       }
    },
    {  // SUBMENU: Overworld poison
-      .name        = gText_lu_CGOptionCategory_OverworldPoison,
-      .help_string = NULL,
+      .name        = gText_lu_CGOptionCategoryName_OverworldPoison,
+      .help_string = gText_lu_CGOptionCategoryHelp_OverworldPoison,
       .flags       = (1 << MENUITEM_FLAG_IS_SUBMENU),
       .value_type = VALUE_TYPE_NONE,
       .target = {

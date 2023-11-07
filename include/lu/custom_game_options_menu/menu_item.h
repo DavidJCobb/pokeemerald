@@ -58,4 +58,6 @@ u16       GetOptionMinValue(const struct CGOptionMenuItem* item);
 
 void CycleOptionSelectedValue(const struct CGOptionMenuItem* item, s8 by);
 
+const u8* GetRelevantHelpText(const struct CGOptionMenuItem* item);
+
 #endif

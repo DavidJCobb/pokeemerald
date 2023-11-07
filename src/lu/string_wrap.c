@@ -46,9 +46,12 @@ static struct SimulatedTextPrinting {
    u8  letter_spacing;
    u8  override_spacing; // when non-zero, forces monospacing
    u8  japanese;
+   
+   u8* last_seen_space; // last-seen space character that we are allowed to overwrite with '\n' or '\p'
+   u16 last_space_x;    // righthand edge of last seen space
 } _sim_state;
 
-void _lu_PrepStringWrap(
+void lu_PrepStringWrap(
    u8 win_id,
    u8 font_id
 ) {
@@ -72,14 +75,36 @@ void _lu_PrepStringWrap(
 }
 
 void lu_PrepStringWrap_Normal(void) {
-   _lu_PrepStringWrap(0, FONT_NORMAL);
+   lu_PrepStringWrap(0, FONT_NORMAL);
+}
+
+static void lu_StringWrap_OnSpace(u8 current_char, u8* str) {
+   if (_sim_state.current_x > _sim_state.canvas_width) {
+      // TODO: if _sim_state.word_length >= 6, consider breaking and hyphenating
+      //       (...but if we're overwriting the string in place, how do we do that?
+      //       we'd have to add a 1-byte control code so "\n-" can be just one char.)
+      
+      if (_sim_state.last_seen_space != NULL) {
+         *_sim_state.last_seen_space = CHAR_NEWLINE;
+         ++_sim_state.line_count;
+         if (_sim_state.line_count >= _sim_state.canvas_lines) {
+            *_sim_state.last_seen_space = CHAR_PROMPT_SCROLL;
+         }
+         _sim_state.current_x -= _sim_state.last_space_x;
+      }
+   }
+   if (current_char == CHAR_SPACE) {
+      _sim_state.last_seen_space = str - 1;
+   } else {
+      _sim_state.last_seen_space = NULL;
+   }
+   _sim_state.last_space_x = _sim_state.current_x;
+   _sim_state.word_length = 0;
+   _sim_state.word_width  = 0;
 }
 
 // Based on StringExpandPlaceholders in gflib/string_util.c
 u8* lu_StringWrap(u8* str) {
-   u8* last_seen_space = NULL; // last-seen space character that we are allowed to overwrite with '\n' or '\p'
-   u16 last_space_x    = 0;    // righthand edge of last seen space
-   
    _sim_state.current_x   = 0;
    _sim_state.word_width  = 0;
    _sim_state.word_length = 0;
@@ -93,29 +118,32 @@ u8* lu_StringWrap(u8* str) {
       
       switch (current_byte) {
          case CHAR_NEWLINE:
+            lu_StringWrap_OnSpace(current_byte, str);
             ++_sim_state.line_count;
             _sim_state.current_x   = 0;
             _sim_state.word_length = 0;
             _sim_state.word_width  = 0;
-            last_seen_space = NULL;
-            last_space_x    = 0;
+            _sim_state.last_seen_space = NULL;
+            _sim_state.last_space_x    = 0;
             continue;
             
          case CHAR_PROMPT_CLEAR:
+            lu_StringWrap_OnSpace(current_byte, str);
             _sim_state.line_count  = 0;
             _sim_state.current_x   = 0;
             _sim_state.word_length = 0;
             _sim_state.word_width  = 0;
-            last_seen_space = NULL;
-            last_space_x    = 0;
+            _sim_state.last_seen_space = NULL;
+            _sim_state.last_space_x    = 0;
             continue;
             
          case CHAR_PROMPT_SCROLL:
+            lu_StringWrap_OnSpace(current_byte, str);
             _sim_state.line_count  = _sim_state.canvas_lines;
             _sim_state.word_length = 0;
             _sim_state.word_width  = 0;
-            last_seen_space = NULL;
-            last_space_x    = 0;
+            _sim_state.last_seen_space = NULL;
+            _sim_state.last_space_x    = 0;
             continue;
          
          case CHAR_EXTRA_SYMBOL:
@@ -128,6 +156,7 @@ u8* lu_StringWrap(u8* str) {
             continue;
          
          case EOS:
+            lu_StringWrap_OnSpace(current_byte, str);
             break;
          
          // should never happen
@@ -152,23 +181,23 @@ u8* lu_StringWrap(u8* str) {
                   break;
                case EXT_CTRL_CODE_SHIFT_RIGHT:
                case EXT_CTRL_CODE_SKIP:
-                  last_seen_space = NULL;
-                  last_space_x    = 0;
+                  _sim_state.last_seen_space = NULL;
+                  _sim_state.last_space_x    = 0;
                   _sim_state.current_x   = *str++;
                   _sim_state.word_width  = 0;
                   _sim_state.word_length = 0;
                   continue;
                case EXT_CTRL_CODE_FILL_WINDOW:
-                  last_seen_space = NULL;
-                  last_space_x    = 0;
+                  _sim_state.last_seen_space = NULL;
+                  _sim_state.last_space_x    = 0;
                   _sim_state.current_x   = 0;
                   _sim_state.line_count  = 0;
                   _sim_state.word_width  = 0;
                   _sim_state.word_length = 0;
                   continue;
                case EXT_CTRL_CODE_CLEAR:
-                  last_seen_space = str;
-                  last_seen_space--;
+                  _sim_state.last_seen_space = str;
+                  _sim_state.last_seen_space--;
                   _sim_state.word_width  = 0;
                   _sim_state.word_length = 0;
                   //
@@ -176,7 +205,7 @@ u8* lu_StringWrap(u8* str) {
                   if (current_byte > 0) {
                      _sim_state.current_x += current_byte;
                   }
-                  last_space_x = _sim_state.current_x;
+                  _sim_state.last_space_x = _sim_state.current_x;
                   continue;
                case EXT_CTRL_CODE_MIN_LETTER_SPACING:
                   _sim_state.override_spacing = *str++;
@@ -279,25 +308,8 @@ u8* lu_StringWrap(u8* str) {
       //
       // Check if we need to break the text:
       //
-      if (current_char == CHAR_SPACE) { // space
-         if (_sim_state.current_x > _sim_state.canvas_width) {
-            // TODO: if _sim_state.word_length >= 6, consider breaking and hyphenating
-            //       (...but if we're overwriting the string in place, how do we do that?
-            //       we'd have to add a 1-byte control code so "\n-" can be just one char.)
-            
-            if (last_seen_space != NULL) {
-               *last_seen_space = CHAR_NEWLINE;
-               ++_sim_state.line_count;
-               if (_sim_state.line_count >= _sim_state.canvas_lines) {
-                  *last_seen_space = CHAR_PROMPT_SCROLL;
-               }
-               _sim_state.current_x -= last_space_x;
-            }
-         }
-         last_seen_space = str - 1;
-         last_space_x    = _sim_state.current_x;
-         _sim_state.word_length = 0;
-         _sim_state.word_width  = 0;
+      if (current_char == CHAR_SPACE) {
+         lu_StringWrap_OnSpace(current_char, str);
       } else {
          ++_sim_state.word_length;
          _sim_state.word_width += glyph_width;

@@ -32,6 +32,7 @@ struct CustomGameScaleAndClamp {
 // Track current values of Custom Game options. Intended to be serialized after SaveBlock2.
 extern struct CustomGameOptions {
    bool8 start_with_running_shoes;
+   UNIMPLEMENTED_CUSTOM_GAME_OPTION bool8 can_run_indoors;
    
    UNIMPLEMENTED_CUSTOM_GAME_OPTION u16 scale_wild_encounter_rate;
    

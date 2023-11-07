@@ -123,7 +123,7 @@ void CycleOptionSelectedValue(const struct CGOptionMenuItem* item, s8 by) {
    } else if (item->value_type == VALUE_TYPE_POKEMON_SPECIES) {
       return;
    } else {
-      u8  value_count;
+      u16 value_count;
       u16 minimum;
       
       value_count = GetOptionValueCount(item);
@@ -131,7 +131,9 @@ void CycleOptionSelectedValue(const struct CGOptionMenuItem* item, s8 by) {
       
       if (by < 0) {
          if (selection - minimum < -by) {
-            selection = (u16)value_count - (-by - selection);
+            u16 skipped = selection - minimum;
+            
+            selection = item->values.integral.max - ((u16)-by - skipped);
          } else {
             selection += by;
          }

@@ -19,6 +19,7 @@
 #include "constants/rgb.h"
 
 #include "characters.h"
+#include "string_util.h"
 #include "lu/strings.h"
 
 enum {
@@ -30,6 +31,9 @@ enum {
 #define MAX_MENU_ITEMS_VISIBLE_AT_ONCE 7
 //
 #define MENU_ITEM_HALFWAY_ROW (MAX_MENU_ITEMS_VISIBLE_AT_ONCE / 2)
+
+#define OPTION_VALUE_COLUMN_X     128
+#define OPTION_VALUE_COLUMN_WIDTH  94
 
 EWRAM_DATA static struct CustomGameOptions sTempOptions;
 
@@ -57,9 +61,9 @@ static void ResetMenuState(void);
 
 static void UpdateDisplayedMenuName(void);
 static void UpdateDisplayedMenuItems(void);
+static u8 GetScreenRowForCursorPos(void);
 
 static const struct CGOptionMenuItem* GetCurrentMenuItemList(void);
-static u8 GetScreenRowForCursorPos(void);
 
 static void EnterSubmenu(const u8* submenu_name, const struct CGOptionMenuItem* submenu_items);
 static bool8 TryExitSubmenu();
@@ -95,12 +99,6 @@ static const struct CGOptionMenuItem* GetCurrentMenuItemList(void) {
       }
    }
    return items;
-}
-static u8 GetScreenRowForCursorPos(void) {
-   if (sMenuState->cursor_pos > MENU_ITEM_HALFWAY_ROW) {
-      return MENU_ITEM_HALFWAY_ROW;
-   }
-   return sMenuState->cursor_pos;
 }
 
 static void EnterSubmenu(const u8* submenu_name, const struct CGOptionMenuItem* submenu_items) {
@@ -191,33 +189,36 @@ static const u16 sOptionMenuText_Pal[] = INCBIN_U16("graphics/interface/option_m
 // note: this is only used in the Japanese release
 static const u8 sEqualSignGfx[] = INCBIN_U8("graphics/interface/option_menu_equals_sign.4bpp");
 
+static const u8 sTextColor_OptionNames[] = {TEXT_COLOR_WHITE, TEXT_COLOR_DARK_GRAY, TEXT_COLOR_LIGHT_GRAY};
+static const u8 sTextColor_OptionValues[] = {TEXT_COLOR_WHITE, TEXT_COLOR_RED, TEXT_COLOR_LIGHT_RED};
+
 static const struct WindowTemplate sOptionMenuWinTemplates[] = {
-    [WIN_HEADER] = {
-        .bg = 0,
+    [WIN_KEYBINDS_STRIP] = {
+        .bg          = 0,
         .tilemapLeft = 0,
-        .tilemapTop = 1,
-        .width = DISPLAY_TILE_WIDTH,
-        .height = 2,
-        .paletteNum = 11,
-        .baseBlock = 0x074
+        .tilemapTop  = 0,
+        .width       = DISPLAY_TILE_WIDTH,
+        .height      = 2,
+        .paletteNum  = 2,
+        .baseBlock   = (DISPLAY_TILE_WIDTH * 2)
+    },
+    [WIN_HEADER] = {
+        .bg          = 0,
+        .tilemapLeft = 0,
+        .tilemapTop  = 1,
+        .width       = DISPLAY_TILE_WIDTH,
+        .height      = 2,
+        .paletteNum  = 2,
+        .baseBlock   = 0
     },
     [WIN_OPTIONS] = {
-        .bg = 0,
+        .bg          = 1,
         .tilemapLeft = 2,
-        .tilemapTop = 5,
-        .width = 26,
-        .height = 14,
-        .paletteNum = 1,
-        .baseBlock = 0x36
-    },
-    [WIN_KEYBINDS_STRIP] = {
-        .bg = 0,
-        .tilemapLeft = 0,
-        .tilemapTop = 0,
-        .width = DISPLAY_TILE_WIDTH,
-        .height = 2,
-        .paletteNum = 11,
-        .baseBlock = 0x074
+        .tilemapTop  = 5,
+        .width       = 26,
+        .height      = 14,
+        .paletteNum  = 1,
+        .baseBlock   = (DISPLAY_TILE_WIDTH * 4)
     },
     DUMMY_WIN_TEMPLATE
 };
@@ -225,21 +226,22 @@ static const struct WindowTemplate sOptionMenuWinTemplates[] = {
 static const struct BgTemplate sOptionMenuBgTemplates[] = {
     {
         .bg = 1,
+        //
         .charBaseIndex = 1,
-        .mapBaseIndex = 30,
-        .screenSize = 0,
-        .paletteMode = 0,
-        .priority = 0,
-        .baseTile = 0
+        .mapBaseIndex  = 30,
+        .screenSize    = 0,
+        .paletteMode   = 0,
+        .priority      = 0,
+        .baseTile      = 0
     },
     {
         .bg = 0,
         .charBaseIndex = 1,
-        .mapBaseIndex = 31,
-        .screenSize = 0,
-        .paletteMode = 0,
-        .priority = 1,
-        .baseTile = 0
+        .mapBaseIndex  = 31,
+        .screenSize    = 0,
+        .paletteMode   = 0,
+        .priority      = 1,
+        .baseTile      = 0
     }
 };
 
@@ -286,9 +288,9 @@ void CB2_InitCustomGameOptionMenu(void) {
            DeactivateAllTextPrinters();
            SetGpuReg(REG_OFFSET_WIN0H, 0);
            SetGpuReg(REG_OFFSET_WIN0V, 0);
-           SetGpuReg(REG_OFFSET_WININ, WININ_WIN0_BG0);
+           SetGpuReg(REG_OFFSET_WININ, WININ_WIN0_BG1);
            SetGpuReg(REG_OFFSET_WINOUT, WINOUT_WIN01_BG0 | WINOUT_WIN01_BG1 | WINOUT_WIN01_CLR);
-           SetGpuReg(REG_OFFSET_BLDCNT, BLDCNT_TGT1_BG0 | BLDCNT_EFFECT_DARKEN);
+           SetGpuReg(REG_OFFSET_BLDCNT, BLDCNT_TGT1_BG1 | BLDCNT_EFFECT_DARKEN);
            SetGpuReg(REG_OFFSET_BLDALPHA, 0);
            SetGpuReg(REG_OFFSET_BLDY, 4);
            SetGpuReg(REG_OFFSET_DISPCNT, DISPCNT_WIN0_ON | DISPCNT_OBJ_ON | DISPCNT_OBJ_1D_MAP);
@@ -314,6 +316,7 @@ void CB2_InitCustomGameOptionMenu(void) {
            break;
        case 5:
            LoadPalette(sOptionMenuText_Pal, BG_PLTT_ID(1), sizeof(sOptionMenuText_Pal));
+           LoadPalette(GetTextWindowPalette(2), BG_PLTT_ID(2), PLTT_SIZE_4BPP);
            gMain.state++;
            break;
        case 6:
@@ -419,10 +422,16 @@ static void Task_CGOptionMenuProcessInput(u8 taskId) {
          by = JOY_NEW(DPAD_LEFT) ? -1 : 0;
       }
       if (by) {
+         u8 row;
          const struct CGOptionMenuItem* items = GetCurrentMenuItemList();
          
+         row = GetScreenRowForCursorPos();
+         
          CycleOptionSelectedValue(&items[sMenuState->cursor_pos], by);
-         DrawMenuItem(&items[sMenuState->cursor_pos], GetScreenRowForCursorPos());
+         //FillWindowPixelRect(WIN_OPTIONS, COPYWIN_GFX, 8, (row * 16) + 1, 240, 16);
+         DrawMenuItem(&items[sMenuState->cursor_pos], row);
+         CopyWindowToVram(WIN_OPTIONS, COPYWIN_GFX);
+         //CopyWindowRectToVram(WIN_OPTIONS, COPYWIN_GFX, 8, (row * 16) + 1, 240, 16);
          return;
       }
    }
@@ -477,38 +486,84 @@ static void UpdateDisplayedMenuName(void) {
 }
 
 static void DrawMenuItem(const struct CGOptionMenuItem* item, u8 row) {
+   u16 value;
    u16 text_width;
    u16 x_offset;
    const u8* value_text;
    
    // Name
-   AddTextPrinterParameterized(WIN_OPTIONS, FONT_NORMAL, item->name, 8, (row * 16) + 1, TEXT_SKIP_DRAW, NULL);
+   AddTextPrinterParameterized3(
+      WIN_OPTIONS,
+      FONT_NORMAL,
+      8,              // x
+      (row * 16) + 1, // y
+      sTextColor_OptionNames,
+      TEXT_SKIP_DRAW,
+      item->name
+   );
    
    // Value
-   value_text = GetOptionValueName(item, GetOptionValue(item));
+   value      = GetOptionValue(item);
+   value_text = GetOptionValueName(item, value);
    if (value_text != NULL) {
       text_width = GetStringWidth(FONT_NORMAL, value_text, 0);
       //
-      // left  edge is at 104px
-      // right edge is at 198px
       // let's center the option value within the available space, for now
       // (it'll look neater once we display left/right arrows next to it)
-      x_offset   = (94 - text_width) / 2 + 104;
+      x_offset   = (OPTION_VALUE_COLUMN_WIDTH - text_width) / 2 + OPTION_VALUE_COLUMN_X;
       //
-      AddTextPrinterParameterized(
+      AddTextPrinterParameterized3(
          WIN_OPTIONS,
          FONT_NORMAL,
-         value_text,
-         x_offset,
-         (row * 16) + 1,
+         x_offset,       // x
+         (row * 16) + 1, // y
+         sTextColor_OptionValues,
          TEXT_SKIP_DRAW,
-         NULL
+         value_text
       );
    } else if (item->flags & (1 << MENUITEM_FLAG_IS_SUBMENU)) {
       // TODO: For submenus, draw an icon like ">>" in place of the value
+   } else if (item->value_type == VALUE_TYPE_U8 || item->value_type == VALUE_TYPE_U16) {
+      u8  text[7];
+      u8  i;
+      
+      if (value == 0) {
+         text[0] = CHAR_0;
+         text[1] = EOS;
+      } else {
+         ConvertIntToDecimalStringN(text, value, STR_CONV_MODE_LEFT_ALIGN, 6);
+      }
+      
+      text_width = GetStringWidth(FONT_NORMAL, text, 0);
+      x_offset   = (OPTION_VALUE_COLUMN_WIDTH - text_width) / 2 + OPTION_VALUE_COLUMN_X;
+      //
+      AddTextPrinterParameterized3(
+         WIN_OPTIONS,
+         FONT_NORMAL,
+         x_offset,       // x
+         (row * 16) + 1, // y
+         sTextColor_OptionValues,
+         TEXT_SKIP_DRAW,
+         text
+      );
    }
 }
 
+static u8 GetScrollPosition() {
+   u8 count;
+   u8 scroll = sMenuState->cursor_pos;
+   if (scroll <= MENU_ITEM_HALFWAY_ROW) {
+      scroll = 0;
+   } else {
+      scroll -= MENU_ITEM_HALFWAY_ROW;
+      if (count >= MAX_MENU_ITEMS_VISIBLE_AT_ONCE) {
+         if (scroll + MAX_MENU_ITEMS_VISIBLE_AT_ONCE > count) {
+            scroll = count - MAX_MENU_ITEMS_VISIBLE_AT_ONCE;
+         }
+      }
+   }
+   return scroll;
+}
 static void UpdateDisplayedMenuItems(void) {
    u8 i;
    u8 count;
@@ -517,12 +572,7 @@ static void UpdateDisplayedMenuItems(void) {
    
    items  = GetCurrentMenuItemList();
    count  = GetMenuItemListCount(items);
-   scroll = sMenuState->cursor_pos;
-   if (count >= MAX_MENU_ITEMS_VISIBLE_AT_ONCE) {
-      if (scroll + MAX_MENU_ITEMS_VISIBLE_AT_ONCE > count) {
-         scroll = count - MAX_MENU_ITEMS_VISIBLE_AT_ONCE;
-      }
-   }
+   scroll = GetScrollPosition();
    
    FillWindowPixelBuffer(WIN_OPTIONS, PIXEL_FILL(1));
    
@@ -535,6 +585,11 @@ static void UpdateDisplayedMenuItems(void) {
    
    // 100% necessary or we see a blank window when we scroll
    CopyWindowToVram(WIN_OPTIONS, COPYWIN_GFX);
+}
+static u8 GetScreenRowForCursorPos(void) {
+   u8 pos    = sMenuState->cursor_pos;
+   u8 scroll = GetScrollPosition();
+   return pos - scroll;
 }
 
 #define TILE_TOP_CORNER_L 0x1A2

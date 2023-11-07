@@ -53,7 +53,7 @@ u16  GetOptionValue(const struct CGOptionMenuItem* item);
 void SetOptionValue(const struct CGOptionMenuItem* item, u16 value);
 
 const u8* GetOptionValueName(const struct CGOptionMenuItem* item, u16 value);
-u8        GetOptionValueCount(const struct CGOptionMenuItem* item);
+u16       GetOptionValueCount(const struct CGOptionMenuItem* item);
 u16       GetOptionMinValue(const struct CGOptionMenuItem* item);
 
 void CycleOptionSelectedValue(const struct CGOptionMenuItem* item, s8 by);

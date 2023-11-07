@@ -81,6 +81,10 @@ static const u8 sEqualSignGfx[] = INCBIN_U8("graphics/interface/option_menu_equa
 #define MENUITEM_COUNT 8
 #define MENUITEM_CANCEL (MENUITEM_COUNT - 1)
 
+         #undef  MENUITEM_COUNT
+         #define MENUITEM_COUNT 9
+         #define MENUITEM_CUSTOM_GAME_OPTIONS (MENUITEM_COUNT - 2)
+
 #define MENU_IS_SCROLLABLE 0
 #if MENUITEM_COUNT > MAX_MENU_ITEMS_VISIBLE_AT_ONCE
    #undef MENU_IS_SCROLLABLE
@@ -149,6 +153,13 @@ static const struct OptionMenuItem {
       .handle_input = &lu_Running_ProcessInput,
       .draw_choices = &lu_Running_DrawChoices,
    },
+   #ifdef MENUITEM_CUSTOM_GAME_OPTIONS
+   [MENUITEM_CUSTOM_GAME_OPTIONS] = {
+      .name         = gText_lu_MainMenuCustomGameOptions,
+      .handle_input = NULL,
+      .draw_choices = NULL,
+   },
+   #endif
    [MENUITEM_CANCEL] = {
       .name         = gText_OptionMenuCancel,
       .handle_input = NULL,
@@ -440,6 +451,17 @@ static void Task_OptionMenuProcessInput(u8 taskId) {
       if (gTasks[taskId].tMenuSelection == MENUITEM_CANCEL) {
          gTasks[taskId].func = Task_OptionMenuSave;
       }
+      #ifdef MENUITEM_CUSTOM_GAME_OPTIONS
+      if (gTasks[taskId].tMenuSelection == MENUITEM_CUSTOM_GAME_OPTIONS) {
+         SetMainCallback2(CB2_InitCustomGameOptionMenu);
+         #if MENU_IS_SCROLLABLE
+            RemoveScrollIndicatorArrowPair(gTasks[taskId].tScrollArrowTaskId);
+         #endif
+         DestroyTask(taskId);
+         FreeAllWindowBuffers();
+         return;
+      }
+      #endif
    }
     else if (JOY_NEW(B_BUTTON))
     {
@@ -477,6 +499,11 @@ static void Task_OptionMenuProcessInput(u8 taskId) {
         u8 priorValue;
         u8 afterValue;
         
+         #ifdef MENUITEM_CUSTOM_GAME_OPTIONS
+         if (option_id == MENUITEM_CUSTOM_GAME_OPTIONS) {
+            return;
+         }
+         #endif
         if (option_id >= MENUITEM_CANCEL) {
            return;
         }

@@ -60,11 +60,13 @@ const u8* GetOptionValueName(const struct CGOptionMenuItem* item, u16 value) {
       return gText_lu_CGOptionValues_common_Enabled;
    }
    
-   if (item->flags & (1 << MENUITEM_FLAG_0_MEANS_DISABLED)) {
-      return gText_lu_CGOptionValues_common_Disabled;
-   }
-   if (item->flags & (1 << MENUITEM_FLAG_0_MEANS_DEFAULT)) {
-      return gText_lu_CGOptionValues_common_Default;
+   if (value == 0) {
+      if (item->flags & (1 << MENUITEM_FLAG_0_MEANS_DISABLED)) {
+         return gText_lu_CGOptionValues_common_Disabled;
+      }
+      if (item->flags & (1 << MENUITEM_FLAG_0_MEANS_DEFAULT)) {
+         return gText_lu_CGOptionValues_common_Default;
+      }
    }
    if (item->value_type == VALUE_TYPE_POKEMON_SPECIES) {
       u16 species = GetOptionValue(item);
@@ -79,7 +81,7 @@ const u8* GetOptionValueName(const struct CGOptionMenuItem* item, u16 value) {
    
    return NULL;
 }
-u8 GetOptionValueCount(const struct CGOptionMenuItem* item) {
+u16 GetOptionValueCount(const struct CGOptionMenuItem* item) {
    if (item->flags & (1 << MENUITEM_FLAG_IS_SUBMENU)) {
       return 0;
    }
@@ -94,7 +96,7 @@ u8 GetOptionValueCount(const struct CGOptionMenuItem* item) {
          return 2; // Disabled, Enabled
       case VALUE_TYPE_U8:
       case VALUE_TYPE_U16:
-         return item->values.integral.max - item->values.integral.min;
+         return item->values.integral.max - item->values.integral.min + 1;
    }
    return 0;
 }
@@ -129,13 +131,13 @@ void CycleOptionSelectedValue(const struct CGOptionMenuItem* item, s8 by) {
       
       if (by < 0) {
          if (selection - minimum < -by) {
-            selection = value_count - (-by - selection);
+            selection = (u16)value_count - (-by - selection);
          } else {
             selection += by;
          }
       } else if (by > 0) {
          selection += by;
-         selection %= value_count;
+         selection %= (u16)value_count;
       }
       if (selection < minimum) {
          selection = minimum;

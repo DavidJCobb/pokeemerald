@@ -24,8 +24,10 @@
 
 enum {
    WIN_HEADER,
-   WIN_OPTIONS,
    WIN_KEYBINDS_STRIP,
+   WIN_OPTIONS,
+   //
+   WIN_COUNT
 };
 
 #define MAX_MENU_ITEMS_VISIBLE_AT_ONCE 7
@@ -45,13 +47,15 @@ EWRAM_DATA static struct CustomGameOptions sTempOptions;
 // Menu state and associated funcs:
 //
 
+#define MAX_MENU_TRAVERSAL_DEPTH 8
+
 struct MenuStackFrame {
    const u8* name;
    const struct CGOptionMenuItem* menu_items;
 };
 
 struct MenuState {
-   struct MenuStackFrame breadcrumbs[8];
+   struct MenuStackFrame breadcrumbs[MAX_MENU_TRAVERSAL_DEPTH];
    u8 cursor_pos;
 };
 
@@ -79,7 +83,7 @@ static void ResetMenuState(void) {
    
    sMenuState->breadcrumbs[0].name       = gText_lu_CGO_menuTitle;
    sMenuState->breadcrumbs[0].menu_items = sTopLevelMenu;
-   for(i = 1; i < 8; ++i) {
+   for(i = 1; i < MAX_MENU_TRAVERSAL_DEPTH; ++i) {
       sMenuState->breadcrumbs[i].name       = NULL;
       sMenuState->breadcrumbs[i].menu_items = NULL;
    }
@@ -91,7 +95,7 @@ static const struct CGOptionMenuItem* GetCurrentMenuItemList(void) {
    const struct CGOptionMenuItem* items;
    
    items = sTopLevelMenu;
-   for(i = 0; i < 8; ++i) {
+   for(i = 0; i < MAX_MENU_TRAVERSAL_DEPTH; ++i) {
       if (sMenuState->breadcrumbs[i].menu_items != NULL) {
          items = sMenuState->breadcrumbs[i].menu_items;
       } else {
@@ -106,7 +110,7 @@ static void EnterSubmenu(const u8* submenu_name, const struct CGOptionMenuItem* 
    bool8 success;
    
    success = FALSE;
-   for(i = 0; i < 8; ++i) {
+   for(i = 0; i < MAX_MENU_TRAVERSAL_DEPTH; ++i) {
       if (sMenuState->breadcrumbs[i].menu_items == NULL) {
          sMenuState->breadcrumbs[i].name       = submenu_name;
          sMenuState->breadcrumbs[i].menu_items = submenu_items;
@@ -129,7 +133,7 @@ static bool8 TryExitSubmenu() { // returns FALSE if at top-level menu
    bool8 success;
    
    success = FALSE;
-   for(i = 7; i > 0; --i) {
+   for(i = MAX_MENU_TRAVERSAL_DEPTH - 1; i > 0; --i) {
       if (sMenuState->breadcrumbs[i].menu_items != NULL) {
          sMenuState->breadcrumbs[i].name       = NULL;
          sMenuState->breadcrumbs[i].menu_items = NULL;
@@ -182,7 +186,6 @@ static void DrawMenuItem(const struct CGOptionMenuItem* item, u8 row);
 static void UpdateDisplayedMenuItems(void);
 
 static void DrawControls(void);
-static void DrawHeaderText(void); // draw menu title
 static void DrawBgWindowFrames(void);
 
 static const u16 sOptionMenuText_Pal[] = INCBIN_U16("graphics/interface/option_menu_text.gbapal");
@@ -240,7 +243,8 @@ static const struct WindowTemplate sOptionMenuWinTemplates[] = {
         .paletteNum  = BACKGROUND_PALETTE_ID_TEXT,
         .baseBlock   = 1 + (DISPLAY_TILE_WIDTH * 4)
     },
-    DUMMY_WIN_TEMPLATE
+    //
+    [WIN_COUNT] = DUMMY_WIN_TEMPLATE
 };
 
 static const struct BgTemplate sOptionMenuBgTemplates[] = {
@@ -368,7 +372,6 @@ void CB2_InitCustomGameOptionMenu(void) {
          break;
        case 6:
          PutWindowTilemap(WIN_HEADER);
-         DrawHeaderText();
          gMain.state++;
          break;
        case 7:
@@ -394,6 +397,7 @@ void CB2_InitCustomGameOptionMenu(void) {
                ResetMenuState();
             }
             sTempOptions = gCustomGameOptions;
+            UpdateDisplayedMenuName();
             UpdateDisplayedMenuItems();
             HighlightCGOptionMenuItem();
 
@@ -523,8 +527,8 @@ static void UpdateDisplayedMenuName(void) {
    const u8* title;
    
    title = gText_lu_CGO_menuTitle;
-   for(i = 0; i < 8; ++i) {
-      if (sMenuState->breadcrumbs[i].name) {
+   for(i = 0; i < MAX_MENU_TRAVERSAL_DEPTH; ++i) {
+      if (sMenuState->breadcrumbs[i].name != NULL) {
          title = sMenuState->breadcrumbs[i].name;
       } else {
          break;
@@ -678,20 +682,4 @@ static void DrawControls(void) {
    FillWindowPixelBuffer(WIN_KEYBINDS_STRIP, PIXEL_FILL(15));
    AddTextPrinterParameterized3(WIN_KEYBINDS_STRIP, FONT_SMALL, 2, 1, color, TEXT_SKIP_DRAW, gText_lu_CGO_keybinds);
    CopyWindowToVram(WIN_KEYBINDS_STRIP, COPYWIN_FULL);
-}
-
-static void DrawHeaderText(void) {
-   u8 i;
-   const u8* name = gText_lu_CGO_menuTitle;
-   
-   for(i = 7; i > 0; --i) {
-      if (sMenuState->breadcrumbs[i].menu_items != NULL && sMenuState->breadcrumbs[i].name != NULL) {
-         name = sMenuState->breadcrumbs[i].name;
-         break;
-      }
-   }
-   
-   FillWindowPixelBuffer(WIN_HEADER, PIXEL_FILL(1));
-   AddTextPrinterParameterized(WIN_HEADER, FONT_NORMAL, name, 8, 1, TEXT_SKIP_DRAW, NULL);
-   CopyWindowToVram(WIN_HEADER, COPYWIN_FULL);
 }

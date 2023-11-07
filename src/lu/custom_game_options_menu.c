@@ -9,6 +9,7 @@
 #include "menu.h"
 #include "palette.h"
 #include "scanline_effect.h"
+#include "sound.h" // PlaySE
 #include "sprite.h"
 #include "strings.h" // literally just for the "Cancel" option lol
 #include "task.h"
@@ -17,6 +18,7 @@
 #include "window.h"
 #include "gba/m4a_internal.h"
 #include "constants/rgb.h"
+#include "constants/songs.h" // SE_SELECT and other sound effect constants
 
 #include "characters.h"
 #include "string_util.h"
@@ -39,6 +41,16 @@ enum {
 #define OPTION_VALUE_COLUMN_X     128
 #define OPTION_VALUE_COLUMN_WIDTH  94
 
+#define SOUND_EFFECT_MENU_SCROLL   SE_SELECT
+#define SOUND_EFFECT_VALUE_SCROLL  SE_SELECT
+#define SOUND_EFFECT_SUBMENU_ENTER SE_SELECT
+#define SOUND_EFFECT_SUBMENU_EXIT  SE_SELECT
+#define SOUND_EFFECT_HELP_EXIT     SE_SELECT
+
+// unused:
+#define INTEGRAL_OPTION_VALUE_SCROLL_DELAY (60 / 2) // half of a second (this constant is the delay between an initial press and later increments)
+#define INTEGRAL_OPTION_VALUE_SCROLL_SPEED (60 / 6) // advance by 6 values per second (this constant is the delay between increments)
+
 EWRAM_DATA static struct CustomGameOptions sTempOptions;
 
 #include "lu/custom_game_options_menu/menu_item.h"
@@ -59,6 +71,8 @@ struct MenuStackFrame {
 struct MenuState {
    struct MenuStackFrame breadcrumbs[MAX_MENU_TRAVERSAL_DEPTH];
    u8    cursor_pos;
+   s8    scroll_dir;
+   u8    scroll_timer;
    bool8 is_in_help;
 };
 
@@ -90,8 +104,10 @@ static void ResetMenuState(void) {
       sMenuState->breadcrumbs[i].name       = NULL;
       sMenuState->breadcrumbs[i].menu_items = NULL;
    }
-   sMenuState->cursor_pos = 0;
-   sMenuState->is_in_help = FALSE;
+   sMenuState->cursor_pos   = 0;
+   sMenuState->is_in_help   = FALSE;
+   sMenuState->scroll_dir   = 0;
+   sMenuState->scroll_timer = 0;
 }
 
 static const struct CGOptionMenuItem* GetCurrentMenuItemList(void) {
@@ -129,6 +145,7 @@ static void EnterSubmenu(const u8* submenu_name, const struct CGOptionMenuItem* 
    
    sMenuState->cursor_pos = 0;
    
+   PlaySE(SOUND_EFFECT_SUBMENU_ENTER);
    UpdateDisplayedMenuName();
    UpdateDisplayedMenuItems();
 }
@@ -151,6 +168,7 @@ static bool8 TryExitSubmenu() { // returns FALSE if at top-level menu
    
    sMenuState->cursor_pos = 0; // TODO: use the scroll offset of the last entered submenu
    
+   PlaySE(SOUND_EFFECT_SUBMENU_EXIT);
    UpdateDisplayedMenuName();
    UpdateDisplayedMenuItems();
    
@@ -173,6 +191,7 @@ static void TryMoveMenuCursor(s8 by) {
          sMenuState->cursor_pos = 0;
       }
    }
+   PlaySE(SOUND_EFFECT_MENU_SCROLL);
 }
 
 //
@@ -460,6 +479,7 @@ static void Task_CGOptionMenuProcessInput(u8 taskId) {
          sMenuState->is_in_help = FALSE;
          HideBg(BACKGROUND_LAYER_HELP);
          UpdateDisplayedControls();
+         PlaySE(SOUND_EFFECT_HELP_EXIT);
       }
       return;
    }
@@ -523,10 +543,11 @@ static void Task_CGOptionMenuProcessInput(u8 taskId) {
    
    // Left/Right: Cycle option value
    {
-      s8 by = JOY_NEW(DPAD_RIGHT) ? 1 : 0;
+      s8 by = JOY_REPEAT(DPAD_RIGHT) ? 1 : 0;
       if (!by) {
-         by = JOY_NEW(DPAD_LEFT) ? -1 : 0;
+         by = JOY_REPEAT(DPAD_LEFT) ? -1 : 0;
       }
+      
       if (by) {
          u8 row;
          const struct CGOptionMenuItem* items = GetCurrentMenuItemList();
@@ -538,6 +559,10 @@ static void Task_CGOptionMenuProcessInput(u8 taskId) {
          DrawMenuItem(&items[sMenuState->cursor_pos], row);
          CopyWindowToVram(WIN_OPTIONS, COPYWIN_GFX);
          //CopyWindowRectToVram(WIN_OPTIONS, COPYWIN_GFX, 8, (row * 16) + 1, 240, 16);
+         
+         PlaySE(SOUND_EFFECT_VALUE_SCROLL);
+         //sMenuState->scroll_timer = INTEGRAL_OPTION_VALUE_SCROLL_SPEED;
+         
          return;
       }
    }
@@ -661,14 +686,28 @@ static void DrawMenuItem(const struct CGOptionMenuItem* item, u8 row) {
    } else if (item->flags & (1 << MENUITEM_FLAG_IS_SUBMENU)) {
       // TODO: For submenus, draw an icon like ">>" in place of the value
    } else if (item->value_type == VALUE_TYPE_U8 || item->value_type == VALUE_TYPE_U16) {
-      u8  text[7];
+      
+      #define _BUFFER_SIZE 7
+      
+      u8  text[_BUFFER_SIZE];
       u8  i;
       
       if (value == 0) {
          text[0] = CHAR_0;
          text[1] = EOS;
+         if (item->flags & (1 << MENUITEM_FLAG_PERCENTAGE)) {
+            text[1] = CHAR_PERCENT;
+            text[2] = EOS;
+         }
       } else {
-         ConvertIntToDecimalStringN(text, value, STR_CONV_MODE_LEFT_ALIGN, 6);
+         ConvertIntToDecimalStringN(text, value, STR_CONV_MODE_LEFT_ALIGN, _BUFFER_SIZE - 2);
+         if (item->flags & (1 << MENUITEM_FLAG_PERCENTAGE)) {
+            u16 len = StringLength(text);
+            if (len < _BUFFER_SIZE - 2) {
+               text[len]     = CHAR_PERCENT;
+               text[len + 1] = EOS;
+            }
+         }
       }
       
       text_width = GetStringWidth(FONT_NORMAL, text, 0);
@@ -683,23 +722,44 @@ static void DrawMenuItem(const struct CGOptionMenuItem* item, u8 row) {
          TEXT_SKIP_DRAW,
          text
       );
+      
+      #undef _BUFFER_SIZE
    }
 }
 
 static u8 GetScrollPosition() {
    u8 count;
    u8 scroll = sMenuState->cursor_pos;
-   if (scroll <= MENU_ITEM_HALFWAY_ROW) {
+   
+   count = GetMenuItemListCount(GetCurrentMenuItemList());
+   
+   if (scroll <= MENU_ITEM_HALFWAY_ROW || count <= MAX_MENU_ITEMS_VISIBLE_AT_ONCE) {
       scroll = 0;
    } else {
       scroll -= MENU_ITEM_HALFWAY_ROW;
-      if (count >= MAX_MENU_ITEMS_VISIBLE_AT_ONCE) {
-         if (scroll + MAX_MENU_ITEMS_VISIBLE_AT_ONCE > count) {
-            scroll = count - MAX_MENU_ITEMS_VISIBLE_AT_ONCE;
-         }
+      if (scroll + MAX_MENU_ITEMS_VISIBLE_AT_ONCE > count) {
+         scroll = count - MAX_MENU_ITEMS_VISIBLE_AT_ONCE;
       }
    }
    return scroll;
+}
+static u8 GetScreenRowForCursorPos(void) {
+   u8 count;
+   u8 scroll;
+   u8 pos = sMenuState->cursor_pos;
+   
+   count = GetMenuItemListCount(GetCurrentMenuItemList());
+   if (count < MAX_MENU_ITEMS_VISIBLE_AT_ONCE) {
+      return pos;
+   }
+   if (pos <= MENU_ITEM_HALFWAY_ROW) {
+      return pos;
+   }
+   scroll = pos - MENU_ITEM_HALFWAY_ROW;
+   if (scroll + MAX_MENU_ITEMS_VISIBLE_AT_ONCE > count) {
+      scroll = count - MAX_MENU_ITEMS_VISIBLE_AT_ONCE;
+   }
+   return pos - scroll;
 }
 static void UpdateDisplayedMenuItems(void) {
    u8 i;
@@ -722,11 +782,6 @@ static void UpdateDisplayedMenuItems(void) {
    
    // 100% necessary or we see a blank window when we scroll
    CopyWindowToVram(WIN_OPTIONS, COPYWIN_GFX);
-}
-static u8 GetScreenRowForCursorPos(void) {
-   u8 pos    = sMenuState->cursor_pos;
-   u8 scroll = GetScrollPosition();
-   return pos - scroll;
 }
 
 static void DrawWindowFrame(u8 inner_x, u8 inner_y, u8 inner_w, u8 inner_h) {

@@ -10,7 +10,7 @@
 #include "constants/map_types.h"
 #include "constants/songs.h"
 
-#include "lu/constants.h"
+#include "lu/custom_game_options.h"
 
 // this file's functions
 static void MovePlayerOnMachBike(u8, u16, u16);
@@ -1056,12 +1056,16 @@ void Bike_HandleBumpySlopeJump(void)
 
 bool32 IsRunningDisallowed(u8 metatile) {
    if (!gMapHeader.allowRunning) {
-      #if LU_ALLOW_RUNNING_INDOORS
+      #ifndef LU_DISABLE_CUSTOM_GAME_OPTIONS
          if (gMapHeader.mapType != MAP_TYPE_INDOOR)
             return TRUE;
-         // else, if indoor, fall through to other checks.
-         
-         // to make a similar change for biking indoors, edit Overworld_IsBikingAllowed in overworld.c.
+         if (gCustomGameOptions.can_run_indoors == FALSE)
+            return TRUE;
+         //
+         // Else, fall through to other checks.
+         //
+         // To make a similar change for biking indoors, edit Overworld_IsBikingAllowed in overworld.c.
+         //
       #else
          return TRUE;
       #endif

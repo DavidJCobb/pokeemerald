@@ -39,6 +39,26 @@ const u8 gText_lu_CGO_menuTitle[] = _("CUSTOM GAME OPTIONS");
 const u8 gText_lu_CGOptionName_StartWithRunningShoes[] = _("Start w/ running");
 const u8 gText_lu_CGOptionHelp_StartWithRunningShoes[] = _("In the original Pokémon Emerald, you could only run on the overworld after receiving your first Pokémon, your Pokédex, and the Running Shoes. This option can be used to enable running from the moment you start the game.");
 
+const u8 gText_lu_CGOptionName_AllowRunningIndoors[] = _("Allow running indoors");
+
+const u8 gText_lu_CGOptionName_AllowBikingIndoors[] = _("Allow biking indoors");
+
+const u8 gText_lu_CGOptionCategoryName_Battles[] = _("Battle options");
+
+const u8 gText_lu_CGOptionName_BattlesScaleDamagePlayer[] = _("Scale damage by player");
+const u8 gText_lu_CGOptionHelp_BattlesScaleDamagePlayer[] = _("Applies a percentage multiplier to damage dealt by the player. This multiplier is applied after all other damage calculations, and does not affect NPC AI decision-making.");
+const u8 gText_lu_CGOptionName_BattlesScaleDamageEnemy[] = _("Scale damage by enemies");
+const u8 gText_lu_CGOptionHelp_BattlesScaleDamageEnemy[] = _("Applies a percentage multiplier to damage dealt by the player's opponents. This multiplier is applied after all other damage calculation, and does not affect NPC AI decision-makings.");
+const u8 gText_lu_CGOptionName_BattlesScaleDamageAlly[] = _("Scale damage by allies");
+const u8 gText_lu_CGOptionHelp_BattlesScaleDamageAlly[] = _("Applies a percentage multiplier to damage dealt by the player's NPC allies, like Steven in Mossdeep City. This multiplier is applied after all other damage calculations, and does not affect NPC AI decision-making.");
+
+const u8 gText_lu_CGOptionName_BattlesScaleAccuracyPlayer[] = _("Scale accuracy of player");
+const u8 gText_lu_CGOptionHelp_BattlesScaleAccuracyPlayer[] = _("Applies a percentage multiplier to the player's accuracy. This multiplier is applied after all other accuracy calculations, and does not affect NPC AI decision-making.");
+const u8 gText_lu_CGOptionName_BattlesScaleAccuracyEnemy[] = _("Scale accuracy of enemies");
+const u8 gText_lu_CGOptionHelp_BattlesScaleAccuracyEnemy[] = _("Applies a percentage multiplier to opponents' accuracy. This multiplier is applied after all other accuracy calculations, and does not affect NPC AI decision-making.");
+const u8 gText_lu_CGOptionName_BattlesScaleAccuracyAlly[] = _("Scale accuracy of allies");
+const u8 gText_lu_CGOptionHelp_BattlesScaleAccuracyAlly[] = _("Applies a percentage multiplier to NPC allies' accuracy. This multiplier is applied after all other accuracy calculations, and does not affect NPC AI decision-making.");
+
 const u8 gText_lu_CGOptionCategoryName_OverworldPoison[] = _("Overworld poison damage");
 const u8 gText_lu_CGOptionCategoryHelp_OverworldPoison[] = _("On the overworld, poisoned Pokémon take damage after every few steps you take. You can change the number of steps and amount of damage dealt, or disable poison damage on the overworld entirely.");
 //

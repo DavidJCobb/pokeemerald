@@ -15,9 +15,36 @@ static void InitializeScaleAndClamp(struct CustomGameScaleAndClamp* v) {
    v->max   = 0xFFFF;
 }
 
+u16 ApplyCustomGameScale_u16(u16 v, u16 scale) {
+   if (scale != 100) {
+      v = (u32)v * scale / 100;
+   }
+   return v;
+}
+s32 ApplyCustomGameScale_s32(s32 v, u16 scale) {
+   if (scale != 100) {
+      v = v * scale / 100;
+   }
+   return v;
+}
+
+u16 ApplyCustomGameScaleAndClamp_u16(u16 v, const struct CustomGameScaleAndClamp* params) {
+   if (params->scale != 100) {
+      u32 scaled = v;
+      scaled *= params->scale;
+      scaled /= 100;
+   }
+   if (v < params->min)
+      v = params->min;
+   else if (v > params->max)
+      v = params->max;
+   return v;
+}
+
 void ResetCustomGameOptions(void) {
    gCustomGameOptions.start_with_running_shoes = FALSE;
    gCustomGameOptions.can_run_indoors          = FALSE;
+   gCustomGameOptions.can_bike_indoors         = FALSE;
    
    gCustomGameOptions.scale_wild_encounter_rate = 100;
    

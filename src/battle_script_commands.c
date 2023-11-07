@@ -51,6 +51,8 @@
 #include "constants/rgb.h"
 #include "constants/songs.h"
 #include "constants/trainers.h"
+//
+#include "lu/custom_game_option_handlers/battle.h"
 
 extern const u8 *const gBattleScriptsForMoveEffects[];
 
@@ -1171,6 +1173,10 @@ static void Cmd_accuracycheck(void)
 
         if (holdEffect == HOLD_EFFECT_EVASION_UP)
             calc = (calc * (100 - param)) / 100;
+         
+        #ifndef LU_DISABLE_CUSTOM_GAME_OPTIONS
+            calc = ApplyCustomGameBattleAccuracyScaling(calc);
+        #endif
 
         // final calculation
         if ((Random() % 100 + 1) > calc)
@@ -1660,6 +1666,9 @@ static void Cmd_adjustnormaldamage(void)
     u8 holdEffect, param;
 
     ApplyRandomDmgMultiplier();
+    #ifndef LU_DISABLE_CUSTOM_GAME_OPTIONS
+        ApplyCustomGameBattleDamageScaling();
+    #endif
 
     if (gBattleMons[gBattlerTarget].item == ITEM_ENIGMA_BERRY)
     {
@@ -1703,6 +1712,9 @@ static void Cmd_adjustnormaldamage2(void)
     u8 holdEffect, param;
 
     ApplyRandomDmgMultiplier();
+    #ifndef LU_DISABLE_CUSTOM_GAME_OPTIONS
+        ApplyCustomGameBattleDamageScaling();
+    #endif
 
     if (gBattleMons[gBattlerTarget].item == ITEM_ENIGMA_BERRY)
     {
@@ -5831,6 +5843,10 @@ static void Cmd_cancelallactions(void)
 static void Cmd_adjustsetdamage(void)
 {
     u8 holdEffect, param;
+    
+    #ifndef LU_DISABLE_CUSTOM_GAME_OPTIONS
+        ApplyCustomGameBattleDamageScaling();
+    #endif
 
     if (gBattleMons[gBattlerTarget].item == ITEM_ENIGMA_BERRY)
     {

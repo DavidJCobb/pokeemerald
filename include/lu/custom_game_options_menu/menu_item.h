@@ -18,6 +18,7 @@ enum { // CGOptionMenuItem::flags
    MENUITEM_FLAG_IS_SUBMENU,
    MENUITEM_FLAG_0_MEANS_DISABLED, // Display zero as "Disabled" instead of "0"
    MENUITEM_FLAG_0_MEANS_DEFAULT,  // Display zero as "Default" instead of "0"
+   MENUITEM_FLAG_PERCENTAGE,
    MENUITEM_FLAG_POKEMON_SPECIES_ALLOW_0, // Allow zero as a Pokemon species number (displays as "None" by default)
 };
 

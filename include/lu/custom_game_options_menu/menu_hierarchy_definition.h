@@ -11,7 +11,101 @@
 
 //
 
-static const struct CGOptionMenuItem sOverworldPoisonOptions[3] = {
+static const struct CGOptionMenuItem sBattleOptions[] = {
+   {  // Scale accuracy by player
+      .name        = gText_lu_CGOptionName_BattlesScaleAccuracyPlayer,
+      .help_string = gText_lu_CGOptionHelp_BattlesScaleAccuracyPlayer,
+      .flags       = (1 << MENUITEM_FLAG_PERCENTAGE),
+      .value_type = VALUE_TYPE_U16,
+      .values = {
+         .integral = {
+            .min = 0,
+            .max = 5000,
+         }
+      },
+      .target = {
+         .as_u16 = &sTempOptions.scale_battle_accuracy_player
+      }
+   },
+   {  // Scale accuracy by enemy
+      .name        = gText_lu_CGOptionName_BattlesScaleAccuracyEnemy,
+      .help_string = gText_lu_CGOptionHelp_BattlesScaleAccuracyEnemy,
+      .flags       = (1 << MENUITEM_FLAG_PERCENTAGE),
+      .value_type = VALUE_TYPE_U16,
+      .values = {
+         .integral = {
+            .min = 0,
+            .max = 5000,
+         }
+      },
+      .target = {
+         .as_u16 = &sTempOptions.scale_battle_accuracy_enemy
+      }
+   },
+   {  // Scale accuracy by ally
+      .name        = gText_lu_CGOptionName_BattlesScaleAccuracyAlly,
+      .help_string = gText_lu_CGOptionHelp_BattlesScaleAccuracyAlly,
+      .flags       = (1 << MENUITEM_FLAG_PERCENTAGE),
+      .value_type = VALUE_TYPE_U16,
+      .values = {
+         .integral = {
+            .min = 0,
+            .max = 5000,
+         }
+      },
+      .target = {
+         .as_u16 = &sTempOptions.scale_battle_accuracy_ally
+      }
+   },
+   {  // Scale damage by player
+      .name        = gText_lu_CGOptionName_BattlesScaleDamagePlayer,
+      .help_string = gText_lu_CGOptionHelp_BattlesScaleDamagePlayer,
+      .flags       = (1 << MENUITEM_FLAG_PERCENTAGE),
+      .value_type = VALUE_TYPE_U16,
+      .values = {
+         .integral = {
+            .min = 0,
+            .max = 5000,
+         }
+      },
+      .target = {
+         .as_u16 = &sTempOptions.scale_battle_damage_dealt_by_player
+      }
+   },
+   {  // Scale damage by enemy
+      .name        = gText_lu_CGOptionName_BattlesScaleDamageEnemy,
+      .help_string = gText_lu_CGOptionHelp_BattlesScaleDamageEnemy,
+      .flags       = (1 << MENUITEM_FLAG_PERCENTAGE),
+      .value_type = VALUE_TYPE_U16,
+      .values = {
+         .integral = {
+            .min = 0,
+            .max = 5000,
+         }
+      },
+      .target = {
+         .as_u16 = &sTempOptions.scale_battle_damage_dealt_by_enemy
+      }
+   },
+   {  // Scale damage by ally
+      .name        = gText_lu_CGOptionName_BattlesScaleDamageAlly,
+      .help_string = gText_lu_CGOptionHelp_BattlesScaleDamageAlly,
+      .flags       = (1 << MENUITEM_FLAG_PERCENTAGE),
+      .value_type = VALUE_TYPE_U16,
+      .values = {
+         .integral = {
+            .min = 0,
+            .max = 5000,
+         }
+      },
+      .target = {
+         .as_u16 = &sTempOptions.scale_battle_damage_dealt_by_ally
+      }
+   },
+   END_OF_LIST_SENTINEL,
+};
+
+static const struct CGOptionMenuItem sOverworldPoisonOptions[] = {
    {  // Interval
       .name        = gText_lu_CGOptionName_OverworldPoison_Interval,
       .help_string = gText_lu_CGOptionHelp_OverworldPoison_Interval,
@@ -45,7 +139,7 @@ static const struct CGOptionMenuItem sOverworldPoisonOptions[3] = {
    END_OF_LIST_SENTINEL,
 };
 
-static const struct CGOptionMenuItem sTopLevelMenu[3] = {
+static const struct CGOptionMenuItem sTopLevelMenu[] = {
    {  // Start with running shoes
       .name        = gText_lu_CGOptionName_StartWithRunningShoes,
       .help_string = gText_lu_CGOptionHelp_StartWithRunningShoes,
@@ -54,6 +148,33 @@ static const struct CGOptionMenuItem sTopLevelMenu[3] = {
       .target = {
          .as_bool8 = &sTempOptions.start_with_running_shoes
       }
+   },
+   {  // Allow running indoors
+      .name        = gText_lu_CGOptionName_AllowRunningIndoors,
+      .help_string = NULL,
+      .flags       = 0,
+      .value_type = VALUE_TYPE_BOOL8,
+      .target = {
+         .as_bool8 = &sTempOptions.can_run_indoors
+      }
+   },
+   {  // Allow biking indoors
+      .name        = gText_lu_CGOptionName_AllowBikingIndoors,
+      .help_string = NULL,
+      .flags       = 0,
+      .value_type = VALUE_TYPE_BOOL8,
+      .target = {
+         .as_bool8 = &sTempOptions.can_bike_indoors
+      }
+   },
+   {  // SUBMENU: Battle options
+      .name        = gText_lu_CGOptionCategoryName_Battles,
+      .help_string = NULL,
+      .flags       = (1 << MENUITEM_FLAG_IS_SUBMENU),
+      .value_type = VALUE_TYPE_NONE,
+      .target = {
+         .submenu = sBattleOptions
+      },
    },
    {  // SUBMENU: Overworld poison
       .name        = gText_lu_CGOptionCategoryName_OverworldPoison,

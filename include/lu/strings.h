@@ -31,6 +31,26 @@ extern const u8 gText_lu_CGO_menuTitle[];
 extern const u8 gText_lu_CGOptionName_StartWithRunningShoes[];
 extern const u8 gText_lu_CGOptionHelp_StartWithRunningShoes[];
 
+extern const u8 gText_lu_CGOptionName_AllowRunningIndoors[];
+
+extern const u8 gText_lu_CGOptionName_AllowBikingIndoors[];
+
+extern const u8 gText_lu_CGOptionCategoryName_Battles[];
+
+extern const u8 gText_lu_CGOptionName_BattlesScaleDamagePlayer[];
+extern const u8 gText_lu_CGOptionHelp_BattlesScaleDamagePlayer[];
+extern const u8 gText_lu_CGOptionName_BattlesScaleDamageEnemy[];
+extern const u8 gText_lu_CGOptionHelp_BattlesScaleDamageEnemy[];
+extern const u8 gText_lu_CGOptionName_BattlesScaleDamageAlly[];
+extern const u8 gText_lu_CGOptionHelp_BattlesScaleDamageAlly[];
+
+extern const u8 gText_lu_CGOptionName_BattlesScaleAccuracyPlayer[];
+extern const u8 gText_lu_CGOptionHelp_BattlesScaleAccuracyPlayer[];
+extern const u8 gText_lu_CGOptionName_BattlesScaleAccuracyEnemy[];
+extern const u8 gText_lu_CGOptionHelp_BattlesScaleAccuracyEnemy[];
+extern const u8 gText_lu_CGOptionName_BattlesScaleAccuracyAlly[];
+extern const u8 gText_lu_CGOptionHelp_BattlesScaleAccuracyAlly[];
+
 extern const u8 gText_lu_CGOptionCategoryName_OverworldPoison[];
 extern const u8 gText_lu_CGOptionCategoryHelp_OverworldPoison[];
 //

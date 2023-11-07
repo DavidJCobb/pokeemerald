@@ -66,6 +66,8 @@
 #include "constants/songs.h"
 #include "constants/trainer_hill.h"
 #include "constants/weather.h"
+//
+#include "lu/custom_game_options.h"
 
 struct CableClubPlayer
 {
@@ -961,9 +963,13 @@ static u16 GetCenterScreenMetatileBehavior(void)
 
 bool32 Overworld_IsBikingAllowed(void)
 {
-    if (!gMapHeader.allowCycling)
+    if (!gMapHeader.allowCycling) {
+        #ifndef LU_DISABLE_CUSTOM_GAME_OPTIONS
+            if (gCustomGameOptions.can_bike_indoors && gMapHeader.mapType == MAP_TYPE_INDOOR)
+                return TRUE;
+        #endif
         return FALSE;
-    else
+    } else
         return TRUE;
 }
 

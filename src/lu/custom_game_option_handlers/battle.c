@@ -23,13 +23,23 @@ static bool8 ShouldApplyToThisBattle() {
    return TRUE;
 }
 
-static bool8 CurrentAttackerIsPlayerNPCAlly() {
+enum {
+   PLAYER,
+   ALLY,
+   ENEMY,
+};
+//
+static u8 IdentifyCurrentAttacker() {
+   u8 pos = GetBattlerPosition(gBattlerAttacker);
+   if ((pos & BIT_SIDE) != B_SIDE_PLAYER) {
+      return ENEMY;
+   }
    if (gBattleTypeFlags & BATTLE_TYPE_INGAME_PARTNER) {
-      if (GetBattlerPosition(gActiveBattler) == B_POSITION_PLAYER_RIGHT) {
-         return TRUE;
+      if (pos == B_POSITION_PLAYER_RIGHT) {
+         return ALLY;
       }
    }
-   return FALSE;
+   return PLAYER;
 }
 
 u16 ApplyCustomGameBattleAccuracyScaling(u16 accuracy) {
@@ -38,12 +48,16 @@ u16 ApplyCustomGameBattleAccuracyScaling(u16 accuracy) {
    if (!ShouldApplyToThisBattle()) {
       return accuracy;
    }
-   scale = gCustomGameOptions.scale_battle_accuracy_enemy;
-   if (GetBattlerSide(gActiveBattler) == B_SIDE_PLAYER) {
-      scale = gCustomGameOptions.scale_battle_accuracy_player;
-      if (CurrentAttackerIsPlayerNPCAlly()) {
+   switch (IdentifyCurrentAttacker()) {
+      case ENEMY:
+         scale = gCustomGameOptions.scale_battle_accuracy_enemy;
+         break;
+      case PLAYER:
+         scale = gCustomGameOptions.scale_battle_accuracy_player;
+         break;
+      case ALLY:
          scale = gCustomGameOptions.scale_battle_accuracy_ally;
-      }
+         break;
    }
    return ApplyCustomGameScale_u16(accuracy, scale);
 }
@@ -54,12 +68,16 @@ void ApplyCustomGameBattleDamageScaling(void) {
    if (!ShouldApplyToThisBattle()) {
       return;
    }
-   scale = gCustomGameOptions.scale_battle_damage_dealt_by_enemy;
-   if (GetBattlerSide(gActiveBattler) == B_SIDE_PLAYER) {
-      scale = gCustomGameOptions.scale_battle_damage_dealt_by_player;
-      if (CurrentAttackerIsPlayerNPCAlly()) {
+   switch (IdentifyCurrentAttacker()) {
+      case ENEMY:
+         scale = gCustomGameOptions.scale_battle_damage_dealt_by_enemy;
+         break;
+      case PLAYER:
+         scale = gCustomGameOptions.scale_battle_damage_dealt_by_player;
+         break;
+      case ALLY:
          scale = gCustomGameOptions.scale_battle_damage_dealt_by_ally;
-      }
+         break;
    }
    gBattleMoveDamage = ApplyCustomGameScale_s32(gBattleMoveDamage, scale);
 }

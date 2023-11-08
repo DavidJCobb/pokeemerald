@@ -209,6 +209,18 @@ Occasionally, you may need to modify a window's attributes after its creation. Y
 
 # Common tasks
 
+## Drawing anything
+
+If your goal is to repaint an entire window, then start by calling `FillWindowPixelBuffer(WINDOW_ID_HERE, PIXEL_FILL(PALETTE_INDEX_HERE));`, passing the window ID you wish to use and the index of a color in its palette to use. That'll clear the entire window and paint in the color you've specified. Then, perform your drawing tasks. This may involve painting tiles directly to the window or using a text printer (see the section on displaying text). Once you've made your changes, call `CopyWindowToVram(WINDOW_ID_HERE, COPYWIN_GFX);` to update the display of your window.
+
+If your goal is to repaint just part of a window, you can use these functions instead:
+
+```c
+// Coordinates are relative to the window's content-box.
+FillWindowPixelRect(window_id, PIXEL_FILL(palette_color), x_px, y_px, width_px, height_px);
+CopyWindowRectToVram(window_id, COPYWIN_FULL, x_px, y_px, width_px, height_px);
+```
+
 ## Drawing the user's dialog window frame
 
 First, you'll need to load the window frame:

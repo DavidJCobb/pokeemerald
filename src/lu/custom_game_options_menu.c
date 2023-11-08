@@ -47,10 +47,6 @@ enum {
 #define SOUND_EFFECT_SUBMENU_EXIT  SE_SELECT
 #define SOUND_EFFECT_HELP_EXIT     SE_SELECT
 
-// unused:
-#define INTEGRAL_OPTION_VALUE_SCROLL_DELAY (60 / 2) // half of a second (this constant is the delay between an initial press and later increments)
-#define INTEGRAL_OPTION_VALUE_SCROLL_SPEED (60 / 6) // advance by 6 values per second (this constant is the delay between increments)
-
 EWRAM_DATA static struct CustomGameOptions sTempOptions;
 
 #include "lu/custom_game_options_menu/menu_item.h"
@@ -71,8 +67,6 @@ struct MenuStackFrame {
 struct MenuState {
    struct MenuStackFrame breadcrumbs[MAX_MENU_TRAVERSAL_DEPTH];
    u8    cursor_pos;
-   s8    scroll_dir;
-   u8    scroll_timer;
    bool8 is_in_help;
 };
 
@@ -104,10 +98,8 @@ static void ResetMenuState(void) {
       sMenuState->breadcrumbs[i].name       = NULL;
       sMenuState->breadcrumbs[i].menu_items = NULL;
    }
-   sMenuState->cursor_pos   = 0;
-   sMenuState->is_in_help   = FALSE;
-   sMenuState->scroll_dir   = 0;
-   sMenuState->scroll_timer = 0;
+   sMenuState->cursor_pos = 0;
+   sMenuState->is_in_help = FALSE;
 }
 
 static const struct CGOptionMenuItem* GetCurrentMenuItemList(void) {
@@ -209,7 +201,7 @@ static void DrawBgWindowFrames(void);
 static void TryDisplayHelp(const struct CGOptionMenuItem* item);
 
 static void UpdateDisplayedMenuName(void);
-static void DrawMenuItem(const struct CGOptionMenuItem* item, u8 row);
+static void DrawMenuItem(const struct CGOptionMenuItem* item, u8 row, bool8 is_single_update);
 static void UpdateDisplayedMenuItems(void);
 static void UpdateDisplayedControls(void);
 
@@ -555,13 +547,9 @@ static void Task_CGOptionMenuProcessInput(u8 taskId) {
          row = GetScreenRowForCursorPos();
          
          CycleOptionSelectedValue(&items[sMenuState->cursor_pos], by);
-         //FillWindowPixelRect(WIN_OPTIONS, PIXEL_FILL(1), 8, (row * 16) + 1, 240, 16);
-         DrawMenuItem(&items[sMenuState->cursor_pos], row);
-         CopyWindowToVram(WIN_OPTIONS, COPYWIN_GFX);
-         //CopyWindowRectToVram(WIN_OPTIONS, COPYWIN_GFX, 8, (row * 16) + 1, 240, 16);
+         DrawMenuItem(&items[sMenuState->cursor_pos], row, TRUE);
          
          PlaySE(SOUND_EFFECT_VALUE_SCROLL);
-         //sMenuState->scroll_timer = INTEGRAL_OPTION_VALUE_SCROLL_SPEED;
          
          return;
       }
@@ -645,13 +633,15 @@ static void UpdateDisplayedMenuName(void) {
    CopyWindowToVram(WIN_HEADER, COPYWIN_FULL);
 }
 
-static void DrawMenuItem(const struct CGOptionMenuItem* item, u8 row) {
+static void DrawMenuItem(const struct CGOptionMenuItem* item, u8 row, bool8 is_single_update) {
    u16 value;
    u16 text_width;
    u16 x_offset;
    const u8* value_text;
    
-   FillWindowPixelRect(WIN_OPTIONS, PIXEL_FILL(1), 8, (row * 16) + 1, 240 - 8, 16);
+   if (is_single_update) {
+      FillWindowPixelRect(WIN_OPTIONS, PIXEL_FILL(1), 0, (row * 16) + 1, sOptionMenuWinTemplates[WIN_OPTIONS].width * TILE_WIDTH, 16);
+   }
    
    // Name
    AddTextPrinterParameterized3(
@@ -725,6 +715,11 @@ static void DrawMenuItem(const struct CGOptionMenuItem* item, u8 row) {
       
       #undef _BUFFER_SIZE
    }
+   
+   if (is_single_update) {
+      //CopyWindowRectToVram(WIN_OPTIONS, COPYWIN_GFX, 0, (row * 16) + 1, sOptionMenuWinTemplates[WIN_OPTIONS].width, 16);
+      CopyWindowToVram(WIN_OPTIONS, COPYWIN_GFX);
+   }
 }
 
 static u8 GetScrollPosition() {
@@ -777,10 +772,9 @@ static void UpdateDisplayedMenuItems(void) {
       if (i + scroll >= count) {
          break;
       }
-      DrawMenuItem(&items[i + scroll], i);
+      DrawMenuItem(&items[i + scroll], i, FALSE);
    }
    
-   // 100% necessary or we see a blank window when we scroll
    CopyWindowToVram(WIN_OPTIONS, COPYWIN_GFX);
 }
 

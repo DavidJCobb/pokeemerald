@@ -38,20 +38,20 @@ s32 ApplyCustomGameScale_s32(s32, u16 scale);
 // Track current values of Custom Game options. Intended to be serialized after SaveBlock2.
 extern struct CustomGameOptions {
    bool8 start_with_running_shoes;
-   bool8 can_run_indoors;       UNTESTED_CUSTOM_GAME_OPTION
-   bool8 can_bike_indoors;      UNTESTED_CUSTOM_GAME_OPTION
+   bool8 can_run_indoors;
+   bool8 can_bike_indoors; UNTESTED_CUSTOM_GAME_OPTION
    
    UNIMPLEMENTED_CUSTOM_GAME_OPTION u16 scale_wild_encounter_rate;
    
    // Scale damage dealt by different participants in a battle.
-   u16 scale_battle_damage_dealt_by_player;       UNTESTED_CUSTOM_GAME_OPTION // range [0, 5000]
-   u16 scale_battle_damage_dealt_by_enemy;        UNTESTED_CUSTOM_GAME_OPTION // range [0, 5000]
-   u16 scale_battle_damage_dealt_by_ally;         UNTESTED_CUSTOM_GAME_OPTION // range [0, 5000]
+   u16 scale_battle_damage_dealt_by_player; // range [0, 5000]
+   u16 scale_battle_damage_dealt_by_enemy;  // range [0, 5000]
+   u16 scale_battle_damage_dealt_by_ally;   UNTESTED_CUSTOM_GAME_OPTION // range [0, 5000]
    
    // Scale the move accuracy of different participants in a battle.
-   u16 scale_battle_accuracy_player;       UNTESTED_CUSTOM_GAME_OPTION // range [0, 5000]
-   u16 scale_battle_accuracy_enemy;        UNTESTED_CUSTOM_GAME_OPTION // range [0, 5000]
-   u16 scale_battle_accuracy_ally;         UNTESTED_CUSTOM_GAME_OPTION // range [0, 5000]
+   u16 scale_battle_accuracy_player; // range [0, 5000]
+   u16 scale_battle_accuracy_enemy;  // range [0, 5000]
+   u16 scale_battle_accuracy_ally;   UNTESTED_CUSTOM_GAME_OPTION // range [0, 5000]
    
    UNIMPLEMENTED_CUSTOM_GAME_OPTION struct CustomGameScaleAndClamp player_money_loss_on_defeat;
    UNIMPLEMENTED_CUSTOM_GAME_OPTION struct CustomGameScaleAndClamp player_money_gain_on_victory;
@@ -59,8 +59,8 @@ extern struct CustomGameOptions {
    UNIMPLEMENTED_CUSTOM_GAME_OPTION u16 scale_shop_prices_sell;
    UNIMPLEMENTED_CUSTOM_GAME_OPTION u16 scale_shop_prices_buy;
    
-   u8  overworld_poison_interval;      UNTESTED_CUSTOM_GAME_OPTION // step count; 0 to disable; range [0, 60]
-   u16 overworld_poison_damage;        UNTESTED_CUSTOM_GAME_OPTION // damage taken per poison field effect; range [1, 2000]
+   u8  overworld_poison_interval; // step count; 0 to disable; range [0, 60]
+   u16 overworld_poison_damage;   // damage taken per poison field effect; range [1, 2000]
    
    // generational battle rules:
    UNIMPLEMENTED_CUSTOM_GAME_OPTION bool8 no_physical_special_split; // TODO: implement the physical/special split first lol

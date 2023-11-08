@@ -25,6 +25,28 @@
 #include "lu/string_wrap.h"
 #include "lu/strings.h"
 
+/*//
+
+   The current menu design is as follows:
+   
+    - Most of the GUI is on a shared background layer.
+    
+    - The list of options is on its own background layer. Screen color effects and 
+      blending are used to darken all options except the row the player has their 
+      cursor on. This is the same basic effect used in the vanilla Options menu. 
+      It's set up in `SetUpHighlightEffect`, and the non-darkened area is positioned 
+      in `HighlightCGOptionMenuItem`.
+      
+    - The help text is on its own background layer as well, set to display overtop 
+      all others. The help text window is sized so that it doesn't cover the menu 
+      header or keybind strip, so those always show through.
+      
+    - Because the screen color effects used by `SetUpHighlightEffect` are set up to 
+      only darken the layer used for the options list, we don't actually have to 
+      disable the effect when showing help text. It gets covered up too.
+
+//*/
+
 enum {
    WIN_HEADER,
    WIN_KEYBINDS_STRIP,
@@ -334,6 +356,10 @@ static void SetUpHighlightEffect(void) {
    // darkened.
    //
    
+   // Once we enable an LCD I/O window region, we have to explicitly define which 
+   // background layers render in which regions, no matter what else we've done to 
+   // enable a background layer. In this case, we want all layers visible; the only 
+   // difference between regions is whether they have the GBA color effect applied.
    #define _ALL_BG_FLAGS (1 << BACKGROUND_LAYER_NORMAL) | (1 << BACKGROUND_LAYER_OPTIONS) | (1 << BACKGROUND_LAYER_HELP)
    
    SetGpuReg(REG_OFFSET_WIN0H,  0);

@@ -44,6 +44,75 @@
     - Because the screen color effects used by `SetUpHighlightEffect` are set up to 
       only darken the layer used for the options list, we don't actually have to 
       disable the effect when showing help text. It gets covered up too.
+   
+   
+   
+   Potential design improvements:
+   
+    - It'd be nice if pressing A on an integral option would open a small editor 
+      allowing you to type in a new numeric value. We could display the editor 
+      directly overtop the option value, with a 3x4 grid of digits to enter (0-9) 
+      and OK/Cancel buttons you can navigate to. We'd have to implement a usable 
+      cursor, among other things.
+      
+      I feel like this might be a useful UI to implement as a general-purpose 
+      thing: the ability to call a function and say, "Hey, buddy, spawn this 
+      widget at W screen offset on X background layer, and use Y task ID until 
+      you're done; then run Z callback." We could put this widget on the Help 
+      layer.
+      
+       - Being able to press A on enum options to get a drop-down would be nice, 
+         too.
+   
+    - Submenus should have some kind of icon like ">>" shown where a value would 
+      be.
+      
+    - We should show a scrollbar on the righthand side of the options list. In 
+      general, we should eschew the current window frame in favor of custom tiles 
+      and palettes. The scrollbar thumb could be drawn as a sprite, potentially 
+      with non-uniform scaling if that's supported, to make it easier to animate 
+      compared to updating the background layer. Ideally, the scrollbar would 
+      only display when the list is long enough to be scrolled.
+      
+      At present, there's no indicator as to whether the list is scrollable.
+      
+       - Game Freak has a scrollbar widget like the one we want built into the 
+         Pokedex. Could be a good idea to look at it and see how it's coded.
+         
+          - Things like this make me wonder how many common UI widgets and 
+            dialogs could be factored out into reusable functions. Given how 
+            low-level a lot of GBA graphics code needs to be, I'm not sure we 
+            could do a *ton* with that, but it's worth thinking about. In 
+            particular, I'm sure that once we're done with QOL stuff and we 
+            start thinking about doing a custom region/story, we'll come up 
+            with UI designs that have a lot of shared elements.
+      
+    - We need theming in general but especially for the Help page.
+      
+    - It'd be nice if the Help text were scrollable, so we wouldn't have to 
+      worry about it being too long to display. Maybe we could enable Window 1 
+      and use it for the help screen: set the help background layer to a size of 
+      256x512px, and only enable it within LCD Window 1, not LCD Window 0 or the 
+      Not-in-Window region; then, we can modify the layer's position to scroll it, 
+      with LCD Window 1 cropping it.
+   
+    - An enum option can be defined to have help text for the option as a whole, 
+      and for each individual value. However, we only display one. It'd be nice 
+      if we could draw both, though maybe that should require a MENUITEM_FLAG_.
+      
+       - Let's hold off on this until we actually have enough enum options to 
+         see if it'd be terribly helpful.
+   
+    - We need a separate UI for rendering Pokemon species selection, with the 
+      ability to search by type and by name substring. This is required in order 
+      to implement options that let you pick a species, like overriding the game's 
+      starter Pokemon, or forcing single-species runs.
+      
+       - The Pokedex has filter-and-sort functionality, though the actual sort 
+         and filter criteria available are very limited. It'd be useful to see 
+         just how they implemented generating the list of species to display. 
+         Their actual search form, however, isn't worth copying; we should design 
+         our own.
 
 //*/
 

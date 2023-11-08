@@ -63,10 +63,10 @@ const u8 gText_lu_CGOptionCategoryName_OverworldPoison[] = _("Overworld poison d
 const u8 gText_lu_CGOptionCategoryHelp_OverworldPoison[] = _("On the overworld, poisoned Pokémon take damage after every few steps you take. You can change the number of steps and amount of damage dealt, or disable poison damage on the overworld entirely.");
 //
 const u8 gText_lu_CGOptionName_OverworldPoison_Interval[] = _("Damage interval (steps)");
-const u8 gText_lu_CGOptionHelp_OverworldPoison_Interval[] = _("On the overworld, poisoned Pokémon take damage after every few steps you take. You can increase or decrease that number of steps, or disable poison damage on the overworld entirely.\n\nDefault: Pokémon take damage every 4 steps.");
+const u8 gText_lu_CGOptionHelp_OverworldPoison_Interval[] = _("Poisoned Pokémon take damage after every few steps you take. (Steps are counted even when no one is poisoned.) You can change the number of steps, or disable poison damage on the overworld entirely.\n\nDefault: Pokémon take damage every 4 steps.");
 //
 const u8 gText_lu_CGOptionName_OverworldPoison_Damage[] = _("Damage dealt");
-const u8 gText_lu_CGOptionHelp_OverworldPoison_Damage[] = _("On the overworld, poisoned Pokémon take damage after every few steps you take. You can change the amount of damage dealt at one time.\n\nDefault: Pokémon take 1 HP of damage at a time.");
+const u8 gText_lu_CGOptionHelp_OverworldPoison_Damage[] = _("Poisoned Pokémon take damage after every few steps you take. You can change the amount of damage dealt at one time.\n\nDefault: Pokémon take 1 HP of damage at a time.");
 
 const u8 gText_lu_CGOptionValues_common_Default[] = _("Default");
 const u8 gText_lu_CGOptionValues_common_Disabled[] = _("Disabled");

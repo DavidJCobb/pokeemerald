@@ -154,5 +154,17 @@
 ** ⬜ Party screen mini-sprites for battle-only forms (e.g. Castform transformations), as in Gen V
 ** ⬜ When a Repel wears off, prompt the user to use another, if they have another of the same type.
 *** Ideally tell them how many they have left, too.
+** ⬜ Better Pokedex search
+*** Gen III only lets you search by the following criteria:
+**** First letter of species name, but only in batches (ABC, DEF, GHI, and so on)
+**** Color (but you can't see what color(s) the Pokedex considers a species to be, and you can only pick one; it's not a flags-mask)
+**** Type (including dual-type search)
+**** Order (numeric, alphabetical, heaviest, lightest, tallest, smallest; there's no separate control for ascenidng/descending)
+**** Search results are displayed using the same UI as normally browsing the Pokedex. It's basically a filter-and-sort operation.
+***** Returning to the search form from here resets the form.
+*** We should redesign this to...
+**** Substring search
+**** Color as flags-mask; pick from a visible palette; double-check how the 'Dex even matches these and improve it if need be
+**** Order (same sorts, but allow separate asc/desc selection)
 ** ⬜ Ball Capsules
 *** Gen IV only stored up to 12 designs, and let you assign these to a Pokemon as desired. It wasn't "one design for every Pokemon," so it might actually be viable to implement.

@@ -1,0 +1,42 @@
+<data>
+   <constants>
+      <header path="constants/global.h">
+         <constant name="PARTY_SIZE"       value="6" />
+         <constant name="MULTI_PARTY_SIZE" value="3" />
+         
+         <constant name="PLAYER_NAME_LENGTH"  value="7" />
+         <constant name="POKEMON_NAME_LENGTH" value="10" />
+         
+         <constant name="EASY_CHAT_BATTLE_WORDS_COUNT" value="6" />
+         
+         <constant name="MAX_MON_MOVES"     value="4" />
+         <constant name="TRAINER_ID_LENGTH" value="4" />
+      </header>
+      <header path="constants/pokemon.h">
+         <constant name="NUMBER_OF_MON_TYPES" value="18" />
+         <constant name="NUM_NATURES" value="25" />
+         <constant name="NUM_STATS"   value="6" />
+      </header>
+      <header path="constants/species.h">
+         <!-- Leftover/scrapped Unowns are included, but there are also modern sentinel values for Unonwn species (used to index into sprite tables, etc.) that are #define'd to be after NUM_SPECIES. Don't confuse those (which are not included) for the "legacy" Unowns (which are). -->
+         <constant name="NUM_SPECIES" value="412" />
+      </header>
+   </constants>
+   <heritables>
+      <!-- Several pieces of game data store the language as a bitfield, 4 bits wide, but there are one or two that do not. Language IDs are defined from 0 to 7 in constants/global.h. -->
+      <number name="$game-language" min="0" max="7" />
+   
+      <!-- The plan with this is to divide item IDs up into per-pocket IDs, so that each bag pocket can potentially be stored with fewer bits. However, "global" item IDs will still need to exist, e.g. for convenient run-time inventory management, Pokemon held items, mail items, and so on. -->
+      <u16 name="$global-item-id" max="511" />
+      
+      <number name="$item-quantity" min="0" max="99" />
+      
+      <number name="$pokemon-move-id" min="0" />
+      <number name="$pokemon-species-id" min="0" max="1024" />
+      
+      <string name="$player-name"      char-type="u8" length="PLAYER_NAME_LENGTH" />
+      <string name="$pokemon-nickname" char-type="u8" length="POKEMON_NAME_LENGTH" />
+      
+      <number name="$easy-chat-word" />
+   </heritables>
+</data>

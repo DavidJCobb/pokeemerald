@@ -1,0 +1,440 @@
+<data>
+   <dependencies>
+      <xml path="./common-defines.xml" />
+      <xml path="./berry-types.xml" />
+      <xml path="./daycare-types.xml" />
+      <xml path="./external-event-data-types.xml" />
+      <xml path="./location-types.xml" />
+      <xml path="./mystery-gift-types.xml" />
+      <xml path="./pokemon-types.xml" />
+      <xml path="./script-types.xml" />
+      <xml path="./secret-base-types.xml" />
+      <xml path="./tv-types.xml" />
+   </dependencies>
+   <constants>
+      <header path="global.h">
+         <!-- == ROUND_BITS_TO_BYTES(NUM_SPECIES), i.e. ceil(NUM_SPECIES / 8) -->
+         <constant name="NUM_DEX_FLAG_BYTES" value="52" />
+         
+         <!-- == ROUND_BITS_TO_BYTES(NUM_TRENDY_SAYINGS), i.e. ceil(NUM_TRENDY_SAYINGS / 8) -->
+         <constant name="NUM_TRENDY_SAYING_BYTES" value="5" />
+         
+         <constant name="LINK_B_RECORDS_COUNT" value="5" />
+      </header>
+      <header path="constants/berry.h">
+         <constant name="BERRY_TREES_COUNT" value="128" />
+      </header>
+      <header path="constants/game_stat.h">
+         <constant name="NUM_GAME_STATS" value="64" />
+      </header>
+      <header path="constants/global.h">
+         <!-- inventory -->
+         <constant name="PC_ITEMS_COUNT"      value="50" />
+         <constant name="BAG_ITEMS_COUNT"     value="30" />
+         <constant name="BAG_KEYITEMS_COUNT"  value="30" />
+         <constant name="BAG_POKEBALLS_COUNT" value="16" />
+         <constant name="BAG_POKEBALLS_COUNT" value="16" />
+         <constant name="BAG_POKEBALLS_COUNT" value="16" />
+         <constant name="BAG_TMHM_COUNT"      value="64" />
+         <constant name="BAG_BERRIES_COUNT"   value="46" />
+         <constant name="POKEBLOCKS_COUNT"    value="40" />
+         
+         <constant name="MAX_REMATCH_ENTRIES"  value="100" />
+         
+         <constant name="SECRET_BASES_COUNT" value="20" />
+         
+         <constant name="DECOR_MAX_PLAYERS_HOUSE" value="12" />
+         
+         <constant name="MAIL_COUNT" value="16" /> <!-- 10 + PARTY_SIZE -->
+         
+         <constant name="GIFT_RIBBONS_COUNT" value="11" />
+         <constant name="NUM_CONTEST_WINNERS" value="13" />
+         <constant name="SAVED_TRENDS_COUNT" value="5" />
+         
+         <constant name="UNION_ROOM_KB_ROW_COUNT" value="10" />
+      </header>
+      <header path="constants/items.h">
+         <constant name="MAX_BAG_ITEM_CAPACITY" value="99" />
+         <constant name="MAX_PC_ITEM_CAPACITY"  value="999" />
+         <constant name="MAX_BERRY_CAPACITY"    value="999" />
+      </header>
+      <header path="constants/trainer_hill.h">
+         <constant name="NUM_TRAINER_HILL_MODES" value="4" />
+      </header>
+   </constants>
+   <types>
+      <!-- inventory -->
+      <struct name="ItemSlot" header="global.h">
+         <fields>
+            <u16 name="itemId" inherit="$global-item-id" />
+            <u16 name="quantity" min="0" max="MAX_PC_ITEM_CAPACITY">
+               <line-comment>Encrypted using SaveBlock2::encryptionKey; see `ApplyNewEncryptionKeyToBagItems` in `item.c`</line-comment>
+               <!--
+                  If we update the bitcount for this value, we also need to update the 
+                  code for managing its encryption, in `ApplyNewEncryptionKeyToBagItems`.
+               -->
+            </u16>
+         </fields>
+      </struct>
+      <struct name="Pokeblock" header="global.h">
+         <fields>
+            <u8 name="color" />
+            <u8 name="spicy" />
+            <u8 name="dry" />
+            <u8 name="sweet" />
+            <u8 name="bitter" />
+            <u8 name="sour" />
+            <u8 name="feel" />
+         </fields>
+      </struct>
+      
+      <union name="LilycoveLady" header="global.h"
+         do-not-codegen="true"
+         sizeof="64"
+         defined-via-typedef="true"
+      />
+      
+      <!-- old man in Mauville City (e.g. bard, hipster, etc.) -->
+      <union name="OldMan" header="global.h"
+         do-not-codegen="true"
+         sizeof="64"
+         defined-via-typedef="true"
+      />
+      
+      <!-- link -->
+      <struct name="LinkBattleRecord" header="global.h">
+         <fields>
+            <field name="name" inherit="$player-name" />
+            <u16 name="trainerId" />
+            <u16 name="wins" />
+            <u16 name="losses" />
+            <u16 name="draws" />
+         </fields>
+      </struct>
+      <struct name="LinkBattleRecords" header="global.h">
+         <fields>
+            <field name="entries" c-type="LinkBattleRecord" c-type-decl="struct">
+               <array-rank extent="LINK_B_RECORDS_COUNT" />
+            </field>
+            <u8 name="languages" inherit="$game-language">
+               <array-rank extent="LINK_B_RECORDS_COUNT" />
+            </u8>
+         </fields>
+      </struct>
+      <struct name="RecordMixingGiftData" header="global.h">
+         <fields>
+            <u8 name="unk0" />
+            <u8 name="quantity" />
+            <u16 name="itemId" inherit="$global-item-id" />
+            <u8 name="filler4">
+               <array-rank extent="8" />
+            </u8>
+         </fields>
+      </struct>
+      <struct name="RecordMixingGift" header="global.h">
+         <fields>
+            <int name="checksum" is-checksum="true" />
+            <field name="data" c-type="RecordMixingGiftData" c-type-decl="struct" />
+         </fields>
+      </struct>
+      
+      <!-- other -->
+      <struct name="TrainerNameRecord" header="global.h">
+         <fields>
+            <u32 name="trainerId" />
+            <field name="trainerName" inherit="$player-name" c-alignment="2" />
+         </fields>
+      </struct>
+      
+      <struct name="TrainerHillSave" header="global.h">
+         <fields>
+            <u32 name="timer" />
+            <u32 name="bestTime" />
+            <u8 name="unk_3D6C" />
+            <u8 name="unused" />
+            <u16 name="receivedPrize" c-bitfield="1" />
+            <u16 name="checkedFinalTime" c-bitfield="1" />
+            <u16 name="spokeToOwner" c-bitfield="1" />
+            <u16 name="hasLost" c-bitfield="1" />
+            <u16 name="maybeECardScanDuringChallenge" c-bitfield="1" />
+            <u16 name="field_3D6E_0f" c-bitfield="1" />
+            <u16 name="mode" c-bitfield="2">
+               <line-comment>HILL_MODE_*</line-comment>
+            </u16>
+         </fields>
+      </struct>
+      
+      <!-- general world state -->
+      <struct name="ContestWinner" header="global.h">
+         <fields>
+            <u32 name="personality" />
+            <u32 name="trainerId" />
+            <u16 name="species" inherit="$pokemon-species-id" />
+            <u8 name="contestCategory" />
+            <field name="monName" inherit="$pokemon-nickname" />
+            <field name="trainerName" inherit="$player-name" />
+            <u8 name="contestRank" />
+         </fields>
+      </struct>
+      <struct name="DewfordTrend" header="global.h">
+         <fields>
+            <u16 name="trendiness" c-bitfield="7" />
+            <u16 name="maxTrendiness" c-bitfield="7" />
+            <u16 name="gainingTrendiness" c-bitfield="1" />
+            <u16 name="rand" />
+            <u16 name="words" inherit="$easy-chat-word">
+               <array-rank extent="2" />
+            </u16>
+         </fields>
+      </struct>
+      <struct name="Roamer" header="global.h">
+         <fields>
+            <u32 name="ivs" />
+            <u32 name="personality" />
+            <u16 name="species" inherit="$pokemon-species-id" />
+            <u16 name="hp" />
+            <u8 name="level" min="0" max="100" />
+            <u8 name="status" />
+            <u8 name="cool" />
+            <u8 name="beauty" />
+            <u8 name="cute" />
+            <u8 name="smart" />
+            <u8 name="tough" />
+            <bool8 name="active" />
+            <u8 name="filler" do-not-serialize="true">
+               <array-rank extent="8" />
+            </u8>
+         </fields>
+      </struct>
+      <struct name="WaldaPhrase" header="global.h">
+         <fields>
+            <u16 name="colors">
+               <line-comment>Background, foreground.</line-comment>
+               <array-rank extent="2" />
+            </u16>
+            <u8 name="text"> <!-- EOS-terminated string? -->
+               <array-rank extent="16" />
+            </u8>
+            <u8 name="iconId" />
+            <u8 name="patternId" />
+            <bool8 name="patternUnlocked" />
+         </fields>
+      </struct>
+      
+      <!-- This struct is best understood as "world state." SaveBlock2 is best understood as "character state." -->
+      <struct name="SaveBlock1" header="global.h">
+         <fields>
+            <field name="pos" c-type="Coords16" c-type-decl="struct" />
+            <field name="location" c-type="WarpData" c-type-decl="struct" />
+            <field name="continueGameWarp" c-type="WarpData" c-type-decl="struct" />
+            <field name="dynamicWarp" c-type="WarpData" c-type-decl="struct" />
+            <field name="lastHealLocation" c-type="WarpData" c-type-decl="struct">
+               <line-comment>used by white-out and teleport</line-comment>
+            </field>
+            <field name="escapeWarp" c-type="WarpData" c-type-decl="struct">
+               <line-comment>used by Dig and Escape Rope</line-comment>
+            </field>
+            <u16 name="savedMusic" />
+            <u8 name="weather" />
+            <u8 name="weatherCycleStage" />
+            <u8 name="flashLevel" />
+            <u16 name="mapLayoutId" />
+            <u16 name="mapView">
+               <array-rank extent="256" extent-expr="0x100" />
+            </u16>
+            
+            <u8 name="playerPartyCount" min="0" max="PARTY_SIZE" />
+            <field name="playerParty" c-type="Pokemon" c-type-decl="struct">
+               <array-rank extent="PARTY_SIZE" />
+            </field>
+            
+            <u32 name="money">
+               <line-comment>Encrypted using SaveBlock2::encryptionKey; see `ApplyNewEncryptionKeyToAllEncryptedData` in `load_save.c`</line-comment>
+            </u32>
+            <u16 name="coins">
+               <line-comment>Encrypted using SaveBlock2::encryptionKey; see `ApplyNewEncryptionKeyToAllEncryptedData` in `load_save.c`</line-comment>
+            </u16>
+            <u16 name="registeredItem" inherit="$global-item-id" />
+            <field name="pcItems" c-type="ItemSlot" c-type-decl="struct">
+               <array-rank extent="PC_ITEMS_COUNT" />
+            </field>
+            <field name="bagPocket_Items" c-type="ItemSlot" c-type-decl="struct">
+               <array-rank extent="BAG_ITEMS_COUNT" />
+            </field>
+            <field name="bagPocket_KeyItems" c-type="ItemSlot" c-type-decl="struct">
+               <array-rank extent="BAG_KEYITEMS_COUNT" />
+            </field>
+            <field name="bagPocket_PokeBalls" c-type="ItemSlot" c-type-decl="struct">
+               <array-rank extent="BAG_POKEBALLS_COUNT" />
+            </field>
+            <field name="bagPocket_TMHM" c-type="ItemSlot" c-type-decl="struct">
+               <array-rank extent="BAG_TMHM_COUNT" />
+            </field>
+            <field name="bagPocket_Berries" c-type="ItemSlot" c-type-decl="struct">
+               <array-rank extent="BAG_BERRIES_COUNT" />
+            </field>
+            <field name="pokeblocks" c-type="Pokeblock" c-type-decl="struct">
+               <array-rank extent="POKEBLOCKS_COUNT" />
+            </field>
+            
+            <u8 name="seen1">
+               <array-rank extent="NUM_DEX_FLAG_BYTES" />
+            </u8>
+            <u16 name="berryBlenderRecords">
+               <array-rank extent="3" />
+            </u16>
+            <u8 name="unused_9C2" do-not-serialize="true">
+               <array-rank extent="6" />
+            </u8>
+            
+            <u16 name="trainerRematchStepCounter" />
+            <u8 name="trainerRematches">
+               <array-rank extent="MAX_REMATCH_ENTRIES" />
+            </u8>
+            
+            <field name="objectEvents" c-type="ObjectEvent" c-type-decl="struct">
+               <array-rank extent="OBJECT_EVENTS_COUNT" />
+            </field>
+            <field name="objectEventTemplates" c-type="ObjectEventTemplate" c-type-decl="struct">
+               <array-rank extent="OBJECT_EVENT_TEMPLATES_COUNT" />
+            </field>
+            <u8 name="flags">
+               <array-rank extent="NUM_FLAG_BYTES" />
+            </u8>
+            <u16 name="vars">
+               <array-rank extent="VARS_COUNT" />
+            </u16>
+            <u32 name="gameStats">
+               <line-comment>Encrypted using SaveBlock2::encryptionKey; see `ApplyNewEncryptionKeyToGameStats` in `overworld.c`</line-comment>
+               <array-rank extent="NUM_GAME_STATS" />
+            </u32>
+            
+            <field name="berryTrees" c-type="BerryTree" c-type-decl="struct">
+               <array-rank extent="BERRY_TREES_COUNT" />
+            </field>
+            
+            <field name="secretBases" c-type="SecretBase" c-type-decl="struct">
+               <array-rank extent="SECRET_BASES_COUNT" />
+            </field>
+            <u8 name="playerRoomDecorations">
+               <array-rank extent="DECOR_MAX_PLAYERS_HOUSE" />
+            </u8>
+            <u8 name="playerRoomDecorationPositions">
+               <array-rank extent="DECOR_MAX_PLAYERS_HOUSE" />
+            </u8>
+            <u8 name="decorationDesks">
+               <array-rank extent="10" />
+            </u8>
+            <u8 name="decorationChairs">
+               <array-rank extent="10" />
+            </u8>
+            <u8 name="decorationPlants">
+               <array-rank extent="10" />
+            </u8>
+            <u8 name="decorationOrnaments">
+               <array-rank extent="30" />
+            </u8>
+            <u8 name="decorationMats">
+               <array-rank extent="30" />
+            </u8>
+            <u8 name="decorationPosters">
+               <array-rank extent="10" />
+            </u8>
+            <u8 name="decorationDolls">
+               <array-rank extent="40" />
+            </u8>
+            <u8 name="decorationCushions">
+               <array-rank extent="10" />
+            </u8>
+            
+            <field name="tvShows" c-type="TVShow" c-type-decl="">
+               <array-rank extent="TV_SHOWS_COUNT" />
+            </field>
+            <field name="pokeNews" c-type="PokeNews" c-type-decl="">
+               <array-rank extent="POKE_NEWS_COUNT" />
+            </field>
+            <u16 name="outbreakPokemonSpecies" inherit="$pokemon-species-id" />
+            <u8 name="outbreakLocationMapNum" />
+            <u8 name="outbreakLocationMapGroup" />
+            <u8 name="outbreakPokemonLevel" min="0" max="100" />
+            <u8 name="outbreakUnused1" />
+            <u8 name="outbreakUnused2" />
+            <u16 name="outbreakPokemonMoves" inherit="$pokemon-move-id">
+               <array-rank extent="MAX_MON_MOVES" />
+            </u16>
+            <u8 name="outbreakUnused3" />
+            <u8 name="outbreakPokemonProbability" />
+            <u16 name="outbreakDaysLeft" />
+            <field name="gabbyAndTyData" c-type="GabbyAndTyData" c-type-decl="struct" />
+            
+            <u16 name="easyChatProfile" inherit="$easy-chat-word">
+               <array-rank extent="EASY_CHAT_BATTLE_WORDS_COUNT" />
+            </u16>
+            <u16 name="easyChatBattleStart" inherit="$easy-chat-word">
+               <array-rank extent="EASY_CHAT_BATTLE_WORDS_COUNT" />
+            </u16>
+            <u16 name="easyChatBattleWon" inherit="$easy-chat-word">
+               <array-rank extent="EASY_CHAT_BATTLE_WORDS_COUNT" />
+            </u16>
+            <u16 name="easyChatBattleLost" inherit="$easy-chat-word">
+               <array-rank extent="EASY_CHAT_BATTLE_WORDS_COUNT" />
+            </u16>
+            
+            <field name="mail" c-type="Mail" c-type-decl="struct">
+               <array-rank extent="MAIL_COUNT" />
+            </field>
+            
+            <u8 name="unlockedTrendySayings">
+               <line-comment>Bitfield for unlockable Easy Chat words in EC_GROUP_TRENDY_SAYING</line-comment>
+               <array-rank extent="NUM_TRENDY_SAYING_BYTES" />
+            </u8>
+            
+            <field name="oldMan" c-type="OldMan" c-type-decl="" />
+            <field name="dewfordTrends" c-type="DewfordTrend" c-type-decl="struct">
+               <array-rank extent="SAVED_TRENDS_COUNT" />
+            </field>
+            <field name="contestWinners" c-type="ContestWinner" c-type-decl="struct">
+               <array-rank extent="NUM_CONTEST_WINNERS" />
+            </field>
+            <field name="daycare" c-type="DayCare" c-type-decl="struct" />
+            <field name="linkBattleRecords" c-type="LinkBattleRecords" c-type-decl="struct" />
+            <u8 name="giftRibbons">
+               <array-rank extent="GIFT_RIBBONS_COUNT" />
+            </u8>
+            <field name="externalEventData" c-type="ExternalEventData" c-type-decl="struct" />
+            <field name="externalEventFlags" c-type="ExternalEventFlags" c-type-decl="struct" />
+            <field name="roamer" c-type="Roamer" c-type-decl="struct" />
+            <field name="enigmaBerry" c-type="EnigmaBerry" c-type-decl="struct" />
+            <field name="mysteryGift" c-type="MysteryGiftSave" c-type-decl="struct" />
+            <u8 name="unused_3598" do-not-serialize="true">
+               <array-rank extent="384" extent-expr="0x180" />
+            </u8>
+            <u32 name="trainerHillTimes">
+               <array-rank extent="NUM_TRAINER_HILL_MODES" />
+            </u32>
+            <field name="ramScript" c-type="RamScript" c-type-decl="struct" />
+            <field name="recordMixingGift" c-type="RecordMixingGift" c-type-decl="struct" />
+            
+            <u8 name="seen2">
+               <array-rank extent="NUM_DEX_FLAG_BYTES" />
+            </u8>
+            
+            <field name="lilycoveLady" c-type="LilycoveLady" c-type-decl="" />
+            
+            <field name="trainerNameRecords" c-type="TrainerNameRecord" c-type-decl="struct">
+               <array-rank extent="20" />
+            </field>
+            <u8 name="registeredTexts">
+               <array-rank extent="UNION_ROOM_KB_ROW_COUNT" />
+               <array-rank extent="21" />
+            </u8>
+            <u8 name="unused_3D5A" do-not-serialize="true">
+               <array-rank extent="10" />
+            </u8>
+            
+            <field name="trainerHill" c-type="TrainerHillSave" c-type-decl="struct" />
+            <field name="waldaPhrase" c-type="WaldaPhrase" c-type-decl="struct" />
+         </fields>
+      </struct>
+   </types>
+</data>

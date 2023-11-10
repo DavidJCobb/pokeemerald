@@ -1,0 +1,31 @@
+<data>
+   <dependencies>
+      <xml path="./common-defines.xml" />
+      <xml path="./pokemon-types.xml" />
+   </dependencies>
+   <constants>
+      <header path="pokemon_storage_system.h">
+         <constant name="TOTAL_BOXES_COUNT" value="14" />
+         <constant name="IN_BOX_COUNT" value="30" />
+         
+         <constant name="BOX_NAME_LENGTH" value="8" />
+      </header>
+   </constants>
+   <types>
+      <struct name="PokemonStorage" header="pokemon_storage_system.h">
+         <fields>
+            <u8 name="currentBox" max="TOTAL_BOXES_COUNT" />
+            <field name="boxes" c-type="BoxPokemon" c-type-decl="struct">
+               <array-rank extent="TOTAL_BOXES_COUNT" />
+               <array-rank extent="IN_BOX_COUNT" />
+            </field>
+            <string name="boxNames" char-type="u8" length="BOX_NAME_LENGTH">
+               <array-rank extent="TOTAL_BOXES_COUNT" />
+            </string>
+            <u8 name="boxWallpapers">
+               <array-rank extent="TOTAL_BOXES_COUNT" />
+            </u8>
+         </fields>
+      </struct>
+   </types>
+</data>

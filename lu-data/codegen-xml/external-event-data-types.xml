@@ -1,0 +1,78 @@
+<data>
+   <types>
+      <!--
+         These savedata substructures are accessed and written to directly by external 
+         applications, such as the Pokemon Colosseum Bonus Disc for the GameCube. There 
+         is absolutely zero chance that we manage to preserve compatibility with those 
+         applications; we'd have to maintain these struct layouts AND locations.
+         
+         We're making a friggin' ROM hack. It doesn't matter.
+      -->
+      
+      <struct name="ExternalEventData" header="global.h" is-packed="true">
+         <fields>
+            <u8 name="unknownExternalDataFields1">
+               <line-comment>if actually used, may be broken up into different fields.</line-comment>
+               <array-rank extent="7" />
+            </u8>
+            <u32 name="unknownExternalDataFields2" c-bitfield="8" />
+            <u32 name="currentPokeCoupons" c-bitfield="24">
+               <line-comment>PokéCoupons stored by Pokémon Colosseum and XD from Mt. Battle runs. Earned PokéCoupons are also added to totalEarnedPokeCoupons. Colosseum/XD caps this at 9,999,999, but will read up to 16,777,215.</line-comment>
+            </u32>
+            <u32 name="gotGoldPokeCouponTitleReward" c-bitfield="1">
+               <line-comment>Master Ball from JP Colosseum Bonus Disc; for reaching 30,000 totalEarnedPokeCoupons</line-comment>
+            </u32>
+            <u32 name="gotSilverPokeCouponTitleReward" c-bitfield="1">
+               <line-comment>Light Ball Pikachu from JP Colosseum Bonus Disc; for reaching 5000 totalEarnedPokeCoupons</line-comment>
+            </u32>
+            <u32 name="gotBronzePokeCouponTitleReward" c-bitfield="1">
+               <line-comment>PP Max from JP Colosseum Bonus Disc; for reaching 2500 totalEarnedPokeCoupons</line-comment>
+            </u32>
+            <u32 name="receivedAgetoCelebi" c-bitfield="1">
+               <line-comment>from JP Colosseum Bonus Disc</line-comment>
+            </u32>
+            <u32 name="unknownExternalDataFields3" c-bitfield="4" />
+            <u32 name="totalEarnedPokeCoupons" c-bitfield="24">
+               <line-comment>Used by the JP Colosseum bonus disc. Determines PokéCoupon rank to distribute rewards. Unread in International games. Colosseum/XD caps this at 9,999,999.</line-comment>
+            </u32>
+            <u8 name="unknownExternalDataFields4">
+               <line-comment>if actually used, may be broken up into different fields.</line-comment>
+               <array-rank extent="5" />
+            </u8>
+         </fields>
+      </struct>
+   
+      <struct name="ExternalEventFlags" header="global.h" is-packed="true">
+         <fields>
+            <u8 name="usedBoxRS" c-bitfield="1">
+               <line-comment>Set by Pokémon Box: Ruby & Sapphire; denotes whether this save has connected to it and triggered the free False Swipe Swablu Egg giveaway.</line-comment>
+            </u8>
+            <u8 name="boxRSEggsUnlocked" c-bitfield="2">
+               <line-comment>Set by Pokémon Box: Ruby & Sapphire; denotes the number of Eggs unlocked from deposits; 1 for ExtremeSpeed Zigzagoon (at 100 deposited), 2 for Pay Day Skitty (at 500 deposited), 3 for Surf Pichu (at 1499 deposited)</line-comment>
+            </u8>
+            <u8 name="unknownFlag1" />
+            <u8 name="receivedGCNJirachi">
+               <line-comment>Both the US Colosseum Bonus Disc and PAL/AUS Pokémon Channel use this field. One cannot receive a WISHMKR Jirachi and CHANNEL Jirachi with the same savefile.</line-comment>
+            </u8>
+            <u8 name="unknownFlag3" />
+            <u8 name="unknownFlag4" />
+            <u8 name="unknownFlag5" />
+            <u8 name="unknownFlag6" />
+            <u8 name="unknownFlag7" />
+            <u8 name="unknownFlag8" />
+            <u8 name="unknownFlag9" />
+            <u8 name="unknownFlag10" />
+            <u8 name="unknownFlag11" />
+            <u8 name="unknownFlag12" />
+            <u8 name="unknownFlag13" />
+            <u8 name="unknownFlag14" />
+            <u8 name="unknownFlag15" />
+            <u8 name="unknownFlag16" />
+            <u8 name="unknownFlag17" />
+            <u8 name="unknownFlag18" />
+            <u8 name="unknownFlag19" />
+            <u8 name="unknownFlag20" />
+         </fields>
+      </struct>
+   </types>
+</data>

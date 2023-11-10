@@ -1,0 +1,346 @@
+<data>
+   <dependencies>
+      <xml path="./common-defines.xml" />
+      <xml path="./pokemon-types.xml" />
+   </dependencies>
+   <constants>
+      <header path="constants/global.h">
+         <constant name="FRONTIER_PARTY_SIZE"         value="3" />
+         <constant name="FRONTIER_DOUBLES_PARTY_SIZE" value="4" />
+         <constant name="FRONTIER_MULTI_PARTY_SIZE"   value="2" />
+         <constant name="MAX_FRONTIER_PARTY_SIZE"     value="4" />
+         
+         <constant name="FRONTIER_LVL_MODE_COUNT" value="2" />
+         <constant name="PYRAMID_BAG_ITEMS_COUNT" value="10" />
+      </header>
+      <header path="global.h">
+         <!-- Defined just above the BattleFrontier struct. -->
+         <constant name="BATTLE_TOWER_RECORD_COUNT"      value="5" />
+         <constant name="DOME_TOURNAMENT_TRAINERS_COUNT" value="16" />
+      </header>
+   </constants>
+   <types>
+      <struct name="BattleTowerPokemon" header="global.h">
+         <fields>
+            <u16 name="species" inherit="$pokemon-species-id" />
+            <u16 name="heldItem" inherit="$global-item-id" />
+            <u16 name="moves" inherit="$pokemon-move-id">
+               <array-rank extent="MAX_MON_MOVES" />
+            </u16>
+            <u8 name="level" min="0" max="100" />
+            <u8 name="ppBonuses" />
+            <u8 name="hpEV" />
+            <u8 name="attackEV" />
+            <u8 name="defenseEV" />
+            <u8 name="speedEV" />
+            <u8 name="spAttackEV" />
+            <u8 name="spDefenseEV" />
+            <u32 name="otId" />
+            <u32 name="hpIV" c-bitfield="5" />
+            <u32 name="attackIV" c-bitfield="5" />
+            <u32 name="defenseIV" c-bitfield="5" />
+            <u32 name="speedIV" c-bitfield="5" />
+            <u32 name="spAttackIV" c-bitfield="5" />
+            <u32 name="spDefenseIV" c-bitfield="5" />
+            <u32 name="gap" c-bitfield="1" do-not-serialize="true" />
+            <u32 name="abilityNum" c-bitfield="1" />
+            <u32 name="personality" />
+            <field name="nickname" inherit="$pokemon-nickname" />
+            <u8 name="friendship" />
+         </fields>
+      </struct>
+      <struct name="EmeraldBattleTowerRecord" header="global.h">
+         <fields>
+            <u8 name="lvlMode">
+               <line-comment>0 = level 50, 1 = level 100</line-comment>
+            </u8>
+            <u8 name="facilityClass" />
+            <u16 name="winStreak" />
+            <field name="name" inherit="$player-name" />
+            <u8 name="trainerId">
+               <array-rank extent="TRAINER_ID_LENGTH" />
+            </u8>
+            <u16 name="greeting" inherit="$easy-chat-word">
+               <array-rank extent="EASY_CHAT_BATTLE_WORDS_COUNT" />
+            </u16>
+            <u16 name="speechWon" inherit="$easy-chat-word">
+               <array-rank extent="EASY_CHAT_BATTLE_WORDS_COUNT" />
+            </u16>
+            <u16 name="speechLost" inherit="$easy-chat-word">
+               <array-rank extent="EASY_CHAT_BATTLE_WORDS_COUNT" />
+            </u16>
+            <field name="party" c-type="BattleTowerPokemon" c-type-decl="struct">
+               <array-rank extent="MAX_FRONTIER_PARTY_SIZE" />
+            </field>
+            <u8 name="language" inherit="$game-language" />
+            <u32 name="checksum" is-checksum="true" /> <!-- game ensures that all padding bits/bytes are zero -->
+         </fields>
+      </struct>
+      <struct name="BattleTowerInterview" header="global.h">
+         <fields>
+            <u16 name="playerSpecies" inherit="$pokemon-species-id" />
+            <u16 name="opponentSpecies" inherit="$pokemon-species-id" />
+            <field name="opponentName" inherit="$player-name" />
+            <field name="opponentMonNickname" inherit="$pokemon-nickname" />
+            <u8 name="opponentLanguage" inherit="$game-language" />
+         </fields>
+      </struct>
+      <struct name="BattleTowerEReaderTrainer" header="global.h">
+         <fields>
+            <u8 name="unk0" />
+            <u8 name="facilityClass" />
+            <u16 name="winStreak" />
+            <field name="name" inherit="$player-name" />
+            <u8 name="trainerId">
+               <array-rank extent="TRAINER_ID_LENGTH" />
+            </u8>
+            <u16 name="greeting" inherit="$easy-chat-word">
+               <array-rank extent="EASY_CHAT_BATTLE_WORDS_COUNT" />
+            </u16>
+            <u16 name="farewellPlayerLost" inherit="$easy-chat-word">
+               <array-rank extent="EASY_CHAT_BATTLE_WORDS_COUNT" />
+            </u16>
+            <u16 name="farewellPlayerWon" inherit="$easy-chat-word">
+               <array-rank extent="EASY_CHAT_BATTLE_WORDS_COUNT" />
+            </u16>
+            <field name="party" c-type="BattleTowerPokemon" c-type-decl="struct">
+               <array-rank extent="FRONTIER_PARTY_SIZE" />
+            </field>
+            <u32 name="checksum" is-checksum="true" /> <!-- game ensures that all padding bits/bytes are zero -->
+         </fields>
+      </struct>
+   
+      <struct name="BattleDomeTrainer" header="global.h">
+         <fields>
+            <u16 name="trainerId" c-bitfield="10" />
+            <u16 name="isEliminated" c-bitfield="1" />
+            <u16 name="eliminatedAt" c-bitfield="2" />
+            <u16 name="forfeited" c-bitfield="3" />
+         </fields>
+      </struct>
+      <struct name="DomeMonData" header="global.h">
+         <fields>
+            <u16 name="moves" inherit="$pokemon-move-id">
+               <array-rank extent="MAX_MON_MOVES" />
+            </u16>
+            <u8 name="evs">
+               <array-rank extent="NUM_STATS" />
+            </u8>
+            <u8 name="nature" />
+         </fields>
+      </struct>
+      
+      <struct name="PyramidBag" header="global.h">
+         <fields>
+            <u16 name="itemId" inherit="$global-item-id">
+               <array-rank extent="FRONTIER_LVL_MODE_COUNT" />
+               <array-rank extent="PYRAMID_BAG_ITEMS_COUNT" />
+            </u16>
+            <u8 name="quantity" inherit="$item-quantity">
+               <array-rank extent="FRONTIER_LVL_MODE_COUNT" />
+               <array-rank extent="PYRAMID_BAG_ITEMS_COUNT" />
+            </u8>
+         </fields>
+      </struct>
+      
+      <struct name="RentalMon" header="global.h">
+         <fields>
+            <u16 name="monId" inherit="$pokemon-species-id" />
+            <u32 name="personality" />
+            <u8  name="ivs" />
+            <u8  name="abilityNum" />
+         </fields>
+      </struct>
+      
+      <struct name="BattleFrontier" header="global.h">
+         <fields>
+            <field name="towerPlayer" c-type="EmeraldBattleTowerRecord" c-type-decl="struct" />
+            <field name="towerRecords" c-type="EmeraldBattleTowerRecord" c-type-decl="struct">
+               <line-comment>From record mixing.</line-comment>
+               <array-rank extent="BATTLE_TOWER_RECORD_COUNT" />
+            </field>
+            <field name="towerInterview" c-type="BattleTowerInterview" c-type-decl="struct" />
+            <field name="ereaderTrainer" c-type="BattleTowerEReaderTrainer" c-type-decl="struct" />
+            
+            <u8 name="challengeStatus" />
+            <u8 name="lvlMode" c-bitfield="2" />
+            <u8 name="challengePaused" c-bitfield="1" />
+            <u8 name="disableRecordBattle" c-bitfield="1" />
+            <u16 name="selectedPartyMons" inherit="$pokemon-species-id">
+               <array-rank extent="MAX_FRONTIER_PARTY_SIZE" />
+            </u16>
+            <u16 name="curChallengeBattleNum">
+               <line-comment>Battle number / room number (Pike) / floor number (Pyramid)</line-comment>
+            </u16>
+            <u16 name="trainerIds">
+               <array-rank extent="20" />
+            </u16>
+            <u32 name="winStreakActiveFlags" />
+            
+            <u16 name="towerWinStreaks">
+               <array-rank extent="4" />
+               <array-rank extent="FRONTIER_LVL_MODE_COUNT" />
+            </u16>
+            <u16 name="towerRecordWinStreaks">
+               <array-rank extent="4" />
+               <array-rank extent="FRONTIER_LVL_MODE_COUNT" />
+            </u16>
+            <u16 name="battledBrainFlags" />
+            <u16 name="towerSinglesStreak">
+               <line-comment>Never read</line-comment>
+            </u16>
+            <u16 name="towerNumWins">
+               <line-comment>Increments to MAX_STREAK but never read otherwise</line-comment>
+            </u16>
+            <u8 name="towerBattleOutcome" />
+            <u8 name="towerLvlMode" />
+            
+            <u8 name="domeAttemptedSingles50"   c-bitfield="1" />
+            <u8 name="domeAttemptedSinglesOpen" c-bitfield="1" />
+            <u8 name="domeHasWonSingles50"      c-bitfield="1" />
+            <u8 name="domeHasWonSinglesOpen"    c-bitfield="1" />
+            <u8 name="domeAttemptedDoubles50"   c-bitfield="1" />
+            <u8 name="domeAttemptedDoublesOpen" c-bitfield="1" />
+            <u8 name="domeHasWonDoubles50"      c-bitfield="1" />
+            <u8 name="domeHasWonDoublesOpen"    c-bitfield="1" />
+            <u8 name="domeUnused" />
+            <u8 name="domeLvlMode" />
+            <u8 name="domeBattleMode" />
+            <u16 name="domeWinStreaks">
+               <array-rank extent="2" />
+               <array-rank extent="FRONTIER_LVL_MODE_COUNT" />
+            </u16>
+            <u16 name="domeRecordWinStreaks">
+               <array-rank extent="2" />
+               <array-rank extent="FRONTIER_LVL_MODE_COUNT" />
+            </u16>
+            <u16 name="domeTotalChampionships">
+               <array-rank extent="2" />
+               <array-rank extent="FRONTIER_LVL_MODE_COUNT" />
+            </u16>
+            <field name="domeTrainers" c-type="BattleDomeTrainer" c-type-decl="struct">
+               <array-rank extent="DOME_TOURNAMENT_TRAINERS_COUNT" />
+            </field>
+            <u16 name="domeMonIds" inherit="$pokemon-species-id">
+               <array-rank extent="DOME_TOURNAMENT_TRAINERS_COUNT" />
+               <array-rank extent="FRONTIER_PARTY_SIZE" />
+            </u16>
+            <u16 name="unused_DC4" />
+            
+            <u16 name="palacePrice" />
+            <u16 name="palaceWinStreaks">
+               <array-rank extent="2" />
+               <array-rank extent="FRONTIER_LVL_MODE_COUNT" />
+            </u16>
+            <u16 name="palaceRecordWinStreaks">
+               <array-rank extent="2" />
+               <array-rank extent="FRONTIER_LVL_MODE_COUNT" />
+            </u16>
+            
+            <u16 name="arenaPrize" />
+            <u16 name="arenaWinStreaks">
+               <array-rank extent="2" />
+               <array-rank extent="FRONTIER_LVL_MODE_COUNT" />
+            </u16>
+            <u16 name="arenaRecordStreaks">
+               <array-rank extent="2" />
+               <array-rank extent="FRONTIER_LVL_MODE_COUNT" />
+            </u16>
+            
+            <u16 name="factoryWinStreaks">
+               <array-rank extent="2" />
+               <array-rank extent="FRONTIER_LVL_MODE_COUNT" />
+            </u16>
+            <u16 name="factoryRecordWinStreaks">
+               <array-rank extent="2" />
+               <array-rank extent="FRONTIER_LVL_MODE_COUNT" />
+            </u16>
+            <u16 name="factoryRentsCount">
+               <array-rank extent="2" />
+               <array-rank extent="FRONTIER_LVL_MODE_COUNT" />
+            </u16>
+            <u16 name="factoryRecordRentsCount">
+               <array-rank extent="2" />
+               <array-rank extent="FRONTIER_LVL_MODE_COUNT" />
+            </u16>
+            
+            <u16 name="pikePrize" />
+            <u16 name="pikeWinStreaks">
+               <array-rank extent="2" />
+               <array-rank extent="FRONTIER_LVL_MODE_COUNT" />
+            </u16>
+            <u16 name="pikeRecordStreaks">
+               <array-rank extent="2" />
+               <array-rank extent="FRONTIER_LVL_MODE_COUNT" />
+            </u16>
+            <u16 name="pikeTotalStreaks">
+               <array-rank extent="2" />
+               <array-rank extent="FRONTIER_LVL_MODE_COUNT" />
+            </u16>
+            <u8 name="pikeHintedRoomIndex" c-bitfield="3" />
+            <u8 name="pikeHintedRoomType" c-bitfield="4" />
+            <u8 name="pikeHealingRoomsDisabled" c-bitfield="1" />
+            <u16 name="pikeHeldItemsBackup" inherit="$global-item-id">
+               <array-rank extent="FRONTIER_PARTY_SIZE" />
+            </u16>
+            
+            <u16 name="pyramidPrize" />
+            <u16 name="pyramidWinStreaks">
+               <array-rank extent="2" />
+               <array-rank extent="FRONTIER_LVL_MODE_COUNT" />
+            </u16>
+            <u16 name="pyramidRecordStreaks">
+               <array-rank extent="2" />
+               <array-rank extent="FRONTIER_LVL_MODE_COUNT" />
+            </u16>
+            <u16 name="pyramidRandoms">
+               <array-rank extent="4" />
+            </u16>
+            <u8 name="pyramidTrainerFlags">
+               <line-comment>1 bit for each trainer (MAX_PYRAMID_TRAINERS)</line-comment>
+            </u8>
+            <field name="pyramidBag" c-type="PyramidBag" c-type-decl="struct" />
+            <u8 name="pyramidLightRadius" />
+            
+            <u16 name="verdanturfTentPrize" />
+            <u16 name="fallarborTentPrize" />
+            <u16 name="slateportTentPrize" />
+            
+            <field name="rentalMons" c-type="RentalMon" c-type-decl="struct">
+               <array-rank extent="6" extent-expr="FRONTIER_PARTY_SIZE * 2" />
+            </field>
+            
+            <u16 name="battlePoints" />
+            <u16 name="cardBattlePoints" />
+            <u32 name="battlesCount" />
+            
+            <u16 name="domeWinningMoves">
+               <array-rank extent="DOME_TOURNAMENT_TRAINERS_COUNT" />
+            </u16>
+            
+            <u8 name="trainerFlags" />
+            
+            <field name="opponentNames" inherit="$player-name">
+               <array-rank extent="FRONTIER_LVL_MODE_COUNT" />
+               <!-- should produce: u8 opponentNames[FRONTIER_LVL_MODE_COUNT][PLAYER_NAME_LENGTH + 1]; -->
+            </field>
+            
+            <u8 name="opponentTrainerIds">
+               <array-rank extent="FRONTIER_LVL_MODE_COUNT" />
+               <array-rank extent="TRAINER_ID_LENGTH" />
+            </u8>
+            
+            <u8 name="unk_EF9" c-bitfield="7">
+               <line-comment>Never read</line-comment>
+            </u8>
+            <u8 name="savedGame" c-bitfield="1" />
+            <u8 name="unused_EFA" />
+            <u8 name="unused_EFB" />
+            
+            <field name="domePlayerPartyData" c-type="DomeMonData" c-type-decl="struct">
+               <array-rank extent="FRONTIER_PARTY_SIZE" />
+            </field>
+         </fields>
+      </struct>
+   </types>
+</data>

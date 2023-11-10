@@ -17,6 +17,8 @@
 #include "lu/generated/sector-serialize/WorldData.h"
 #include "lu/generated/sector-serialize/PokemonStorage.h"
 
+#include "lu/generated/save-functors/save_functors.h"
+
 struct SaveblockLayoutItem {
    u8 sliceNum;
    bool8(*func_read)(u8 sliceNum, const u8* src);
@@ -28,13 +30,6 @@ static void ReadFlashSector(u8, struct SaveSector*);
 static bool32 SetDamagedSectorBits(u8 op, u8 sectorId);
 static u8 TryWriteSector(u8, u8*);
 static u8 TryWriteSectorFooter(u8 sector_index, const struct SaveSector*);
-
-static bool8 ReadSector_WorldData(u8 sectorNum, const u8* src);
-static bool8 ReadSector_CharacterData(u8 sectorNum, const u8* src);
-static bool8 ReadSector_PokemonStorage(u8 sectorNum, const u8* src);
-static bool8 WriteSector_WorldData(u8 sectorNum, u8* dst);
-static bool8 WriteSector_CharacterData(u8 sectorNum, u8* dst);
-static bool8 WriteSector_PokemonStorage(u8 sectorNum, u8* dst);
 
 static u8 GetSaveValidStatus();
 
@@ -75,22 +70,7 @@ static void WriteHallOfFame();
 #define SAVEBLOCK_LAYOUT_ITEM(index, name)  {  index, &ReadSector_##name , &WriteSector_##name  }
 
 static const struct SaveblockLayoutItem sSaveSlotLayout[NUM_SECTORS_PER_SLOT] = {
-   SAVEBLOCK_LAYOUT_ITEM(0, CharacterData), // SECTOR_ID_SAVEBLOCK2
-   
-   SAVEBLOCK_LAYOUT_ITEM(0, WorldData), // SECTOR_ID_SAVEBLOCK1_START
-   SAVEBLOCK_LAYOUT_ITEM(1, WorldData),
-   SAVEBLOCK_LAYOUT_ITEM(2, WorldData),
-   SAVEBLOCK_LAYOUT_ITEM(3, WorldData), // SECTOR_ID_SAVEBLOCK1_END
-   
-   SAVEBLOCK_LAYOUT_ITEM(0, PokemonStorage), // SECTOR_ID_PKMN_STORAGE_START
-   SAVEBLOCK_LAYOUT_ITEM(1, PokemonStorage),
-   SAVEBLOCK_LAYOUT_ITEM(2, PokemonStorage),
-   SAVEBLOCK_LAYOUT_ITEM(3, PokemonStorage),
-   SAVEBLOCK_LAYOUT_ITEM(4, PokemonStorage),
-   SAVEBLOCK_LAYOUT_ITEM(5, PokemonStorage),
-   SAVEBLOCK_LAYOUT_ITEM(6, PokemonStorage),
-   SAVEBLOCK_LAYOUT_ITEM(7, PokemonStorage),
-   SAVEBLOCK_LAYOUT_ITEM(8, PokemonStorage), // SECTOR_ID_PKMN_STORAGE_END
+#include "lu/generated/save-functors/save_functor_table.inl"
 };
 
 u16 gLastWrittenSector;
@@ -206,142 +186,6 @@ u16 GetSaveBlocksPointersBaseOffset(void) {
    return 0;
 }
 
-
-
-#define READ_SECTOR_CODE_FOR_UNPACKED_STRUCT(typename, ptr)     \
-   u16 offset;                                                  \
-   u16 size;                                                    \
-                                                                \
-   offset = sliceNum * SECTOR_DATA_SIZE;            \
-   size   = min(sizeof(struct typename ) - offset, SECTOR_DATA_SIZE); \
-   {                                                            \
-      u16 j;                                                    \
-      for (j = 0; j < size; j++)                                \
-         ((u8*) ptr )[offset + j] = src[j];                     \
-   }                                                            \
-   return TRUE;
-   
-#define WRITE_SECTOR_CODE_FOR_UNPACKED_STRUCT(typename, ptr)    \
-   u16 offset;                                                  \
-   u16 size;                                                    \
-                                                                \
-   offset = sliceNum * SECTOR_DATA_SIZE;            \
-   size   = min(sizeof(struct typename ) - offset, SECTOR_DATA_SIZE); \
-   {                                                            \
-      u16 j;                                                    \
-      for (j = 0; j < size; j++)                                \
-         dst[j] = ((u8*) ptr )[offset + j];                     \
-   }                                                            \
-   return TRUE;
-
-
-#define ENABLE_BITPACKING 1
-
-
-static bool8 ReadSector_WorldData(u8 sliceNum, const u8* src) {
-   #if !ENABLE_BITPACKING
-      READ_SECTOR_CODE_FOR_UNPACKED_STRUCT(SaveBlock1, gSaveBlock1Ptr);
-   #endif
-   //
-   if (sliceNum == 0) {
-      lu_ReadSaveSector_WorldData00(src, gSaveBlock1Ptr);
-   } else if (sliceNum == 1) {
-      lu_ReadSaveSector_WorldData01(src, gSaveBlock1Ptr);
-   } else if (sliceNum == 2) {
-      lu_ReadSaveSector_WorldData02(src, gSaveBlock1Ptr);
-   } else if (sliceNum == 3) {
-      lu_ReadSaveSector_WorldData03(src, gSaveBlock1Ptr);
-   }
-   return TRUE;
-}
-static bool8 ReadSector_CharacterData(u8 sliceNum, const u8* src) {
-   #if !ENABLE_BITPACKING
-      READ_SECTOR_CODE_FOR_UNPACKED_STRUCT(SaveBlock2, gSaveBlock2Ptr);
-   #endif
-   //
-   if (sliceNum == 0) {
-      lu_ReadSaveSector_CharacterData00(src, gSaveBlock2Ptr);
-   }
-   return TRUE;
-}
-static bool8 ReadSector_PokemonStorage(u8 sliceNum, const u8* src) {
-   #if !ENABLE_BITPACKING
-      READ_SECTOR_CODE_FOR_UNPACKED_STRUCT(PokemonStorage, gPokemonStoragePtr);
-   #endif
-   //
-   if (sliceNum == 0) {
-      lu_ReadSaveSector_PokemonStorage00(src, gPokemonStoragePtr);
-   } else if (sliceNum == 1) {
-      lu_ReadSaveSector_PokemonStorage01(src, gPokemonStoragePtr);
-   } else if (sliceNum == 2) {
-      lu_ReadSaveSector_PokemonStorage02(src, gPokemonStoragePtr);
-   } else if (sliceNum == 3) {
-      lu_ReadSaveSector_PokemonStorage03(src, gPokemonStoragePtr);
-   } else if (sliceNum == 4) {
-      lu_ReadSaveSector_PokemonStorage04(src, gPokemonStoragePtr);
-   } else if (sliceNum == 5) {
-      lu_ReadSaveSector_PokemonStorage05(src, gPokemonStoragePtr);
-   } else if (sliceNum == 6) {
-      lu_ReadSaveSector_PokemonStorage06(src, gPokemonStoragePtr);
-   } else if (sliceNum == 7) {
-      lu_ReadSaveSector_PokemonStorage07(src, gPokemonStoragePtr);
-   } else if (sliceNum == 8) {
-      lu_ReadSaveSector_PokemonStorage08(src, gPokemonStoragePtr);
-   }
-   return TRUE;
-}
-static bool8 WriteSector_WorldData(u8 sliceNum, u8* dst) {
-   #if !ENABLE_BITPACKING
-      WRITE_SECTOR_CODE_FOR_UNPACKED_STRUCT(SaveBlock1, gSaveBlock1Ptr);
-   #endif
-   //
-   if (sliceNum == 0) {
-      lu_WriteSaveSector_WorldData00(dst, gSaveBlock1Ptr);
-   } else if (sliceNum == 1) {
-      lu_WriteSaveSector_WorldData01(dst, gSaveBlock1Ptr);
-   } else if (sliceNum == 2) {
-      lu_WriteSaveSector_WorldData02(dst, gSaveBlock1Ptr);
-   } else if (sliceNum == 3) {
-      lu_WriteSaveSector_WorldData03(dst, gSaveBlock1Ptr);
-   }
-   return TRUE;
-}
-static bool8 WriteSector_CharacterData(u8 sliceNum, u8* dst) {
-   #if !ENABLE_BITPACKING
-      WRITE_SECTOR_CODE_FOR_UNPACKED_STRUCT(SaveBlock2, gSaveBlock2Ptr);
-   #endif
-   //
-   if (sliceNum == 0) {
-      lu_WriteSaveSector_CharacterData00(dst, gSaveBlock2Ptr);
-   }
-   return TRUE;
-}
-static bool8 WriteSector_PokemonStorage(u8 sliceNum, u8* dst) {
-   #if !ENABLE_BITPACKING
-      WRITE_SECTOR_CODE_FOR_UNPACKED_STRUCT(PokemonStorage, gPokemonStoragePtr);
-   #endif
-   //
-   if (sliceNum == 0) {
-      lu_WriteSaveSector_PokemonStorage00(dst, gPokemonStoragePtr);
-   } else if (sliceNum == 1) {
-      lu_WriteSaveSector_PokemonStorage01(dst, gPokemonStoragePtr);
-   } else if (sliceNum == 2) {
-      lu_WriteSaveSector_PokemonStorage02(dst, gPokemonStoragePtr);
-   } else if (sliceNum == 3) {
-      lu_WriteSaveSector_PokemonStorage03(dst, gPokemonStoragePtr);
-   } else if (sliceNum == 4) {
-      lu_WriteSaveSector_PokemonStorage04(dst, gPokemonStoragePtr);
-   } else if (sliceNum == 5) {
-      lu_WriteSaveSector_PokemonStorage05(dst, gPokemonStoragePtr);
-   } else if (sliceNum == 6) {
-      lu_WriteSaveSector_PokemonStorage06(dst, gPokemonStoragePtr);
-   } else if (sliceNum == 7) {
-      lu_WriteSaveSector_PokemonStorage07(dst, gPokemonStoragePtr);
-   } else if (sliceNum == 8) {
-      lu_WriteSaveSector_PokemonStorage08(dst, gPokemonStoragePtr);
-   }
-   return TRUE;
-}
 
 
 

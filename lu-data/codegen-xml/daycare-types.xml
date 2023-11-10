@@ -1,0 +1,53 @@
+<data>
+   <dependencies>
+      <xml path="./common-defines.xml" />
+      <xml path="./pokemon-types.xml" />
+   </dependencies>
+   <constants>
+      <header path="constants/global.h">
+         <constant name="DAYCARE_MON_COUNT" value="2" />
+         <constant name="MAIL_WORDS_COUNT"  value="9" />
+      </header>
+   </constants>
+   <types>
+      <struct name="Mail" header="global.h">
+         <fields>
+            <u16 name="words" inherit="$easy-chat-word">
+               <array-rank extent="MAIL_WORDS_COUNT" />
+            </u16>
+            <field name="playerName" inherit="$player-name" />
+            <u8 name="trainerId">
+               <array-rank extent="TRAINER_ID_LENGTH" />
+            </u8>
+            <u16 name="species" inherit="$pokemon-species-id" />
+            <u16 name="itemId" inherit="$global-item-id" />
+         </fields>
+      </struct>
+      <struct name="DaycareMail" header="global.h">
+         <fields>
+            <field name="message" c-type="Mail" c-type-decl="struct" />
+            <field name="otName" inherit="$player-name" />
+            <field name="monName" inherit="$pokemon-nickname" />
+            <u8 name="gameLanguage" c-bitfield="4" inherit="$game-language" />
+            <u8 name="monLanguage" c-bitfield="4" inherit="$game-language" />
+         </fields>
+      </struct>
+      <struct name="DaycareMon" header="global.h">
+         <fields>
+            <field name="mon"  c-type="BoxPokemon"  c-type-decl="struct" />
+            <field name="mail" c-type="DaycareMail" c-type-decl="struct" />
+            <u32 name="steps" />
+         </fields>
+      </struct>
+      
+      <struct name="DayCare" header="global.h">
+         <fields>
+            <field name="mons" c-type="DaycareMon" c-type-decl="struct">
+               <array-rank extent="DAYCARE_MON_COUNT" />
+            </field>
+            <u32 name="offspringPersonality" />
+            <u8  name="stepCounter" />
+         </fields>
+      </struct>
+   </types>
+</data>

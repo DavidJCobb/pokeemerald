@@ -1,0 +1,282 @@
+<data>
+   <dependencies>
+      <xml path="./common-defines.xml" />
+      <xml path="./battle-frontier-types.xml" />
+   </dependencies>
+   <constants>
+      <header path="constants/global.h">
+         <constant name="APPRENTICE_MAX_QUESTIONS" value="9" />
+      
+         <constant name="APPRENTICE_COUNT"         value="4" />
+         <constant name="CONTESTANT_COUNT"         value="4" />
+         <constant name="CONTEST_CATEGORIES_COUNT" value="5" />
+         <constant name="FRONTIER_LVL_MODE_COUNT"  value="2" />
+         <constant name="HALL_FACILITIES_COUNT"    value="9" />
+         <constant name="HALL_RECORDS_COUNT"       value="3" />
+      </header>
+      <header path="global.h">
+         <!-- == ROUND_BITS_TO_BYTES(NUM_SPECIES), i.e. ceil(NUM_SPECIES / 8) -->
+         <constant name="NUM_DEX_FLAG_BYTES" value="52" />
+      </header>
+   </constants>
+   <types>
+      <struct name="ApprenticeQuestion" header="global.h">
+         <fields>
+            <u8 name="questionId" c-bitfield="2" />
+            <u8 name="monId" c-bitfield="2" />
+            <u8 name="moveSlot" c-bitfield="2" />
+            <u8 name="suggestedChange" c-bitfield="2">
+               <line-comment>TRUE if told to use held item or second move, FALSE if told to use no item or first move</line-comment>
+            </u8>
+            <u16 name="data">
+               <line-comment>used both as an itemId and a moveId</line-comment>
+            </u16>
+         </fields>
+      </struct>
+      <struct name="PlayersApprentice" header="global.h">
+         <fields>
+            <u8 name="id" />
+            <u8 name="lvlMode" c-bitfield="2">
+               <line-comment>0: Unassigned, 1: Lv 50, 2: Open Lv</line-comment>
+            </u8>
+            <u8 name="questionsAnswered" c-bitfield="4" />
+            <u8 name="leadMonId" c-bitfield="2" />
+            <u8 name="party" c-bitfield="3" />
+            <u8 name="saveId" c-bitfield="2" />
+            <u8 name="unused" do-not-serialize="true" />
+            <u8 name="speciesIds">
+               <array-rank extent="MULTI_PARTY_SIZE" />
+            </u8>
+            <field name="questions" c-type="ApprenticeQuestion" c-type-decl="struct">
+               <array-rank extent="APPRENTICE_MAX_QUESTIONS" />
+            </field>
+         </fields>
+      </struct>
+      <!-- past apprentices: -->
+      <struct name="ApprenticeMon" header="global.h">
+         <fields>
+            <u16 name="species" inherit="$pokemon-species-id" />
+            <u16 name="moves" inherit="$pokemon-move-id">
+               <array-rank extent="MAX_MON_MOVES" />
+            </u16>
+            <u16 name="item" inherit="$global-item-id" />
+         </fields>
+      </struct>
+      <struct name="Apprentice" header="global.h">
+         <fields>
+            <u8 name="id" c-bitfield="5" />
+            <u8 name="lvlMode" c-bitfield="2" />
+            <u8 name="numQuestions" />
+            <u8 name="number" />
+            <field name="party" c-type="ApprenticeMon" c-type-decl="struct">
+               <array-rank extent="MULTI_PARTY_SIZE" />
+            </field>
+            <u16 name="speechWon" inherit="$easy-chat-word">
+               <array-rank extent="EASY_CHAT_BATTLE_WORDS_COUNT" />
+            </u16>
+            <u8 name="playerId">
+               <array-rank extent="TRAINER_ID_LENGTH" />
+            </u8>
+            <field name="playerName" inherit="$player-name" only-early-terminator="true" />
+            <u8 name="language" inherit="$game-language" />
+            <u32 name="checksum" is-checksum="true" /> <!-- game ensures that all padding bits/bytes are zero -->
+            <!--
+               NOTES:
+               
+                - `ResetApprenticeStruct` sets all speechWon words to `EC_EMPTY_WORD`, which is 0xFFFF
+                
+                - `ResetApprenticeStruct` sets  `playerName[0]` to EOS, but doesn't set anything else
+                
+                - `ResetAllApprenticeData` behaves the same as `ResetApprenticeStruct`, but for all of 
+                  the stored apprentices. It's only invoked once, when starting a new playthrough.
+            -->
+         </fields>
+      </struct>
+      
+      <struct name="BerryCrush" header="global.h">
+         <fields>
+            <u16 name="pressingSpeeds">
+               <line-comment>For the record with each possible group size, 2-5 players</line-comment>
+               <array-rank extent="4" />
+            </u16>
+            <u32 name="berryPowderAmount">
+               <line-comment>Encrypted using SaveBlock2::encryptionKey; see `ApplyNewEncryptionKeyToBerryPowder` in `berry_powder.c`</line-comment>
+            </u32>
+            <u32 name="unk" />
+         </fields>
+      </struct>
+      <struct name="BerryPickingResults" header="global.h">
+         <fields>
+            <u32 name="bestScore" />
+            <u16 name="berriesPicked" />
+            <u16 name="berriesPickedInRow" />
+            <u8 name="field_8" />
+            <u8 name="field_9" />
+            <u8 name="field_A" />
+            <u8 name="field_B" />
+            <u8 name="field_C" />
+            <u8 name="field_D" />
+            <u8 name="field_E" />
+            <u8 name="field_F" />
+         </fields>
+      </struct>
+      <struct name="PokemonJumpRecords" header="global.h">
+         <fields>
+            <u16 name="jumpsInRow" />
+            <u16 name="unused1">
+               <line-comment>Set to 0, never read</line-comment>
+            </u16>
+            <u16 name="excellentsInRow" />
+            <u16 name="gamesWithMaxPlayers" />
+            <u16 name="unused2">
+               <line-comment>Set to 0, never read</line-comment>
+            </u16>
+            <u32 name="bestJumpScore" />
+         </fields>
+      </struct>
+      
+      <struct name="Pokedex" header="global.h">
+         <fields>
+            <u8 name="order" />
+            <u8 name="mode" />
+            <u8 name="nationalMagic">
+               <line-comment>must equal 0xDA in order to have National Mode</line-comment>
+            </u8>
+            <u8 name="unknown2" />
+            <u32 name="unownPersonality">
+               <line-comment>set when you first see Unown</line-comment>
+            </u32>
+            <u32 name="spindaPersonality">
+               <line-comment>set when you first see Spinda</line-comment>
+            </u32>
+            <u32 name="unknown3" />
+            <u8 name="owned">
+               <array-rank extent="NUM_DEX_FLAG_BYTES" />
+            </u8>
+            <u8 name="seen">
+               <array-rank extent="NUM_DEX_FLAG_BYTES" />
+            </u8>
+         </fields>
+      </struct>
+      
+      <struct name="RankingHall1P" header="global.h">
+         <fields>
+            <u8 name="id">
+               <array-rank extent="TRAINER_ID_LENGTH" />
+            </u8>
+            <u16 name="winStreak" />
+            <field name="name" inherit="$player-name" />
+            <u8 name="language" inherit="$game-language" />
+         </fields>
+      </struct>
+      <struct name="RankingHall2P" header="global.h">
+         <fields>
+            <u8 name="id1">
+               <array-rank extent="TRAINER_ID_LENGTH" />
+            </u8>
+            <u8 name="id2">
+               <array-rank extent="TRAINER_ID_LENGTH" />
+            </u8>
+            <u16 name="winStreak" />
+            <field name="name1" inherit="$player-name" />
+            <field name="name2" inherit="$player-name" />
+            <u8 name="language" inherit="$game-language" />
+         </fields>
+      </struct>
+      
+      <struct name="Time" header="global.h">
+         <fields>
+            <s16 name="days" />
+            <s8  name="hours"   min="-24" max="24" />
+            <s8  name="minutes" min="-60" max="60" />
+            <s8  name="seconds" min="-60" max="60" />
+         </fields>
+      </struct>
+      
+      <!-- This struct is best understood as "character state." SaveBlock1 is best understood as "world state." -->
+      <struct name="SaveBlock2" header="global.h">
+         <fields>
+            <field name="playerName" inherit="$player-name" />
+            <u8 name="playerGender"
+               min="0"
+               max="1"
+            />
+            <u8 name="specialSaveWarpFlags" />
+            <u8 name="playerTrainerId">
+               <array-rank extent="TRAINER_ID_LENGTH" />
+            </u8>
+            
+            <u16 name="playTimeHours" />
+            <u8  name="playTimeMinutes" min="0" max="60" />
+            <u8  name="playTimeSeconds" min="0" max="60" />
+            <u8  name="playTimeVBlanks" />
+            
+            <u8  name="optionsButtonMode" min="0" max="2">
+               <line-comment>OPTIONS_BUTTON_MODE_[NORMAL/LR/L_EQUALS_A]</line-comment>
+            </u8>
+            <u16 name="optionsTextSpeed" c-bitfield="3">
+               <line-comment>OPTIONS_TEXT_SPEED_[SLOW/MID/FAST]</line-comment>
+            </u16>
+            <u16 name="optionsWindowFrameType" c-bitfield="5">
+               <line-comment>Specifies one of the 20 decorative borders for text boxes</line-comment>
+            </u16>
+            <u16 name="optionsSound" c-bitfield="1">
+               <line-comment>OPTIONS_SOUND_[MONO/STERE</line-comment>
+            </u16>
+            <u16 name="optionsBattleStyle" c-bitfield="1">
+               <line-comment>OPTIONS_BATTLE_STYLE_[SHIFT/SET]</line-comment>
+            </u16>
+            <u16 name="optionsBattleSceneOff" c-bitfield="1">
+               <line-comment>whether battle animations are disabled</line-comment>
+            </u16>
+            <u16 name="regionMapZoom" c-bitfield="1">
+               <line-comment>whether the map is zoomed in</line-comment>
+            </u16>
+            <u16 name="optionsRunningToggle" c-bitfield="1">
+               <line-comment>Lu: Running Shoes option</line-comment>
+            </u16>
+            
+            <field name="pokedex" c-type="Pokedex" c-type-decl="struct" />
+            
+            <u8 name="filler_90" do-not-serialize="true">
+               <array-rank extent="8" />
+            </u8>
+            
+            <field name="localTimeOffset" c-type="Time" c-type-decl="struct" />
+            <field name="lastBerryTreeUpdate" c-type="Time" c-type-decl="struct" />
+            
+            <u32 name="gcnLinkFlags">
+               <line-comment>Read by Pokemon Colosseum/XD</line-comment>
+               <ensure-offset>0xA8</ensure-offset>
+            </u32>
+            <u32 name="encryptionKey" />
+            
+            <field name="playerApprentice" c-type="PlayersApprentice" c-type-decl="struct" />
+            <field name="apprentices" c-type="Apprentice" c-type-decl="struct">
+               <array-rank extent="APPRENTICE_COUNT" />
+            </field>
+            
+            <field name="berryCrush" c-type="BerryCrush" c-type-decl="struct" />
+            <field name="pokeJump" c-type="PokemonJumpRecords" c-type-decl="struct" />
+            <field name="berryPick" c-type="BerryPickingResults" c-type-decl="struct" />
+            <field name="hallRecords1P" c-type="RankingHall1P" c-type-decl="struct">
+               <line-comment>From record mixing.</line-comment>
+               <array-rank extent="HALL_FACILITIES_COUNT" />
+               <array-rank extent="FRONTIER_LVL_MODE_COUNT" />
+               <array-rank extent="HALL_RECORDS_COUNT" />
+            </field>
+            <field name="hallRecords2P" c-type="RankingHall2P" c-type-decl="struct">
+               <line-comment>From record mixing.</line-comment>
+               <array-rank extent="FRONTIER_LVL_MODE_COUNT" />
+               <array-rank extent="HALL_RECORDS_COUNT" />
+            </field>
+            <field name="contestLinkResults" c-type="u16">
+               <array-rank extent="CONTEST_CATEGORIES_COUNT" />
+               <array-rank extent="CONTESTANT_COUNT" />
+            </field>
+            
+            <field name="frontier" c-type="BattleFrontier" c-type-decl="struct" />
+         </fields>
+      </struct>
+   </types>
+</data>

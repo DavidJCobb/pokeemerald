@@ -141,3 +141,18 @@ The "Savings" columns are measured in bytes. The percentage in the "Savings per"
 | WonderNews | 444 | 3552 | 444 | 0 (0%) | 1 | 0 (0%) |
 | WonderNewsMetadata | 4 | 16 | 2 | 2 (50%) | 1 | 2 (0%) |
 
+
+
+## Every heritable data definition
+
+| Name | Uses in CharacterData | Uses in WorldData | Uses in PokemonStorage | Total uses |
+| - | -:  | -:  | -:  | -: |
+| $player-name | 80 | 86 | 420 | 586 |
+| $game-language | 71 | 33 | 420 | 524 |
+| $item-quantity | 1 | 0 | 0 | 1 |
+| $global-item-id | 41 | 276 | 0 | 317 |
+| $pokemon-move-id | 42 | 22 | 0 | 64 |
+| $pokemon-nickname | 28 | 23 | 420 | 471 |
+| $pokemon-species-id | 49 | 57 | 0 | 106 |
+| $easy-chat-word | 25 | 28 | 0 | 53 |
+

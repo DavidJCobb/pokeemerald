@@ -1,4 +1,4 @@
-#include "struct-serialize//serialize_BattleTowerPokemon.h"
+#include "lu/generated/struct-serialize//serialize_BattleTowerPokemon.h"
 
 #include "global.h"
 

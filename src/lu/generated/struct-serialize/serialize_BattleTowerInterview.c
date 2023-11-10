@@ -1,4 +1,4 @@
-#include "struct-serialize//serialize_BattleTowerInterview.h"
+#include "lu/generated/struct-serialize//serialize_BattleTowerInterview.h"
 
 #include "global.h"
 

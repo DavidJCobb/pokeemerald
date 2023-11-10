@@ -1,4 +1,4 @@
-#include "struct-serialize//serialize_DomeMonData.h"
+#include "lu/generated/struct-serialize//serialize_DomeMonData.h"
 
 #include "global.h"
 

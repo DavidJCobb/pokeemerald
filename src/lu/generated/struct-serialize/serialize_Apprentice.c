@@ -1,11 +1,11 @@
-#include "struct-serialize//serialize_Apprentice.h"
+#include "lu/generated/struct-serialize//serialize_Apprentice.h"
 
 #include "global.h"
 
 #include "lu/bitstreams.h"
 
 // dependencies
-#include "struct-serialize//serialize_ApprenticeMon.h"
+#include "lu/generated/struct-serialize//serialize_ApprenticeMon.h"
 
 #include "string_util.h" // gflib; for StringLength
 

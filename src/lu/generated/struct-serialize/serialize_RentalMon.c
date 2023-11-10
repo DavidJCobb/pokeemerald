@@ -1,4 +1,4 @@
-#include "struct-serialize//serialize_RentalMon.h"
+#include "lu/generated/struct-serialize//serialize_RentalMon.h"
 
 #include "global.h"
 

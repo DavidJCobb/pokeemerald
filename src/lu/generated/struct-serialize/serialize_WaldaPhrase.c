@@ -1,4 +1,4 @@
-#include "struct-serialize//serialize_WaldaPhrase.h"
+#include "lu/generated/struct-serialize//serialize_WaldaPhrase.h"
 
 #include "global.h"
 

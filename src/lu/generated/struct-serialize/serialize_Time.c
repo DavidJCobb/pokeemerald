@@ -1,4 +1,4 @@
-#include "struct-serialize//serialize_Time.h"
+#include "lu/generated/struct-serialize//serialize_Time.h"
 
 #include "global.h"
 

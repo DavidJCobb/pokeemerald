@@ -1,4 +1,4 @@
-#include "struct-serialize//serialize_WonderNews.h"
+#include "lu/generated/struct-serialize//serialize_WonderNews.h"
 
 #include "global.h"
 

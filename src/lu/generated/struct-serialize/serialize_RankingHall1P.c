@@ -1,4 +1,4 @@
-#include "struct-serialize//serialize_RankingHall1P.h"
+#include "lu/generated/struct-serialize//serialize_RankingHall1P.h"
 
 #include "global.h"
 

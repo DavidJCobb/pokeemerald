@@ -1,4 +1,4 @@
-#include "struct-serialize//serialize_RecordMixingGiftData.h"
+#include "lu/generated/struct-serialize//serialize_RecordMixingGiftData.h"
 
 #include "global.h"
 

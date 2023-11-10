@@ -1,4 +1,4 @@
-#include "struct-serialize//serialize_SecretBaseParty.h"
+#include "lu/generated/struct-serialize//serialize_SecretBaseParty.h"
 
 #include "global.h"
 

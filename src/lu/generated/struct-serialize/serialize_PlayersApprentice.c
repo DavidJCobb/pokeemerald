@@ -1,11 +1,11 @@
-#include "struct-serialize//serialize_PlayersApprentice.h"
+#include "lu/generated/struct-serialize//serialize_PlayersApprentice.h"
 
 #include "global.h"
 
 #include "lu/bitstreams.h"
 
 // dependencies
-#include "struct-serialize//serialize_ApprenticeQuestion.h"
+#include "lu/generated/struct-serialize//serialize_ApprenticeQuestion.h"
 
 // check constants:
 #if MULTI_PARTY_SIZE != 3

@@ -1,4 +1,4 @@
-#include "struct-serialize//serialize_PokemonStorage.h"
+#include "lu/generated/struct-serialize//serialize_PokemonStorage.h"
 
 #include "global.h"
 #include "pokemon_storage_system.h" // struct definition
@@ -6,7 +6,7 @@
 #include "lu/bitstreams.h"
 
 // dependencies
-#include "struct-serialize//serialize_BoxPokemon.h"
+#include "lu/generated/struct-serialize//serialize_BoxPokemon.h"
 
 #include "string_util.h" // gflib; for StringLength
 

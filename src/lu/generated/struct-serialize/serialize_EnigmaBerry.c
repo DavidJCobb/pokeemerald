@@ -1,4 +1,4 @@
-#include "struct-serialize//serialize_EnigmaBerry.h"
+#include "lu/generated/struct-serialize//serialize_EnigmaBerry.h"
 
 #include "global.h"
 #include "global.berry.h" // struct definition
@@ -6,7 +6,7 @@
 #include "lu/bitstreams.h"
 
 // dependencies
-#include "struct-serialize//serialize_Berry2.h"
+#include "lu/generated/struct-serialize//serialize_Berry2.h"
 
 // check constants:
 #if BERRY_ITEM_EFFECT_COUNT != 18

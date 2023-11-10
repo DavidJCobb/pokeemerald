@@ -1,11 +1,11 @@
-#include "struct-serialize//serialize_SecretBase.h"
+#include "lu/generated/struct-serialize//serialize_SecretBase.h"
 
 #include "global.h"
 
 #include "lu/bitstreams.h"
 
 // dependencies
-#include "struct-serialize//serialize_SecretBaseParty.h"
+#include "lu/generated/struct-serialize//serialize_SecretBaseParty.h"
 
 #include "string_util.h" // gflib; for StringLength
 

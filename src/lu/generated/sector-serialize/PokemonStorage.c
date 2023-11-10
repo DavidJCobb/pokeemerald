@@ -1,9 +1,9 @@
-#include "sector-serialize/PokemonStorage.h"
+#include "lu/generated/sector-serialize/PokemonStorage.h"
 
 #include "global.h"
 #include "pokemon_storage_system.h"
 // whole-struct serialize funcs:
-#include "struct-serialize/serialize_BoxPokemon.h"
+#include "lu/generated/struct-serialize/serialize_BoxPokemon.h"
 
 void lu_ReadSaveSector_PokemonStorage00(const u8* src, struct PokemonStorage* p_PokemonStorage) {
    u8 i, j;

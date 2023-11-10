@@ -1,11 +1,11 @@
-#include "struct-serialize//serialize_DaycareMail.h"
+#include "lu/generated/struct-serialize//serialize_DaycareMail.h"
 
 #include "global.h"
 
 #include "lu/bitstreams.h"
 
 // dependencies
-#include "struct-serialize//serialize_Mail.h"
+#include "lu/generated/struct-serialize//serialize_Mail.h"
 
 #include "string_util.h" // gflib; for StringLength
 

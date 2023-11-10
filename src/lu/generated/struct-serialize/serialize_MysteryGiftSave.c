@@ -1,14 +1,14 @@
-#include "struct-serialize//serialize_MysteryGiftSave.h"
+#include "lu/generated/struct-serialize//serialize_MysteryGiftSave.h"
 
 #include "global.h"
 
 #include "lu/bitstreams.h"
 
 // dependencies
-#include "struct-serialize//serialize_WonderNews.h"
-#include "struct-serialize//serialize_WonderCard.h"
-#include "struct-serialize//serialize_WonderCardMetadata.h"
-#include "struct-serialize//serialize_WonderNewsMetadata.h"
+#include "lu/generated/struct-serialize//serialize_WonderNews.h"
+#include "lu/generated/struct-serialize//serialize_WonderCard.h"
+#include "lu/generated/struct-serialize//serialize_WonderCardMetadata.h"
+#include "lu/generated/struct-serialize//serialize_WonderNewsMetadata.h"
 
 // check constants:
 #if NUM_QUESTIONNAIRE_WORDS != 4

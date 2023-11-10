@@ -1,4 +1,4 @@
-#include "struct-serialize//serialize_PyramidBag.h"
+#include "lu/generated/struct-serialize//serialize_PyramidBag.h"
 
 #include "global.h"
 

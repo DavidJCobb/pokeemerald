@@ -1,4 +1,4 @@
-#include "struct-serialize//serialize_TrainerHillSave.h"
+#include "lu/generated/struct-serialize//serialize_TrainerHillSave.h"
 
 #include "global.h"
 

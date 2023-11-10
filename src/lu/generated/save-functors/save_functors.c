@@ -1,9 +1,9 @@
 #include "global.h"
 
 // sector-group serialize functions: 
-#include "sector-serialize/CharacterData.h"
-#include "sector-serialize/WorldData.h"
-#include "sector-serialize/PokemonStorage.h"
+#include "lu/generated/sector-serialize/CharacterData.h"
+#include "lu/generated/sector-serialize/WorldData.h"
+#include "lu/generated/sector-serialize/PokemonStorage.h"
 
 // globals to serialize:
 #include "pokemon_storage_system.h"

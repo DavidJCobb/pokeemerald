@@ -1,4 +1,4 @@
-#include "struct-serialize//serialize_WonderCardMetadata.h"
+#include "lu/generated/struct-serialize//serialize_WonderCardMetadata.h"
 
 #include "global.h"
 

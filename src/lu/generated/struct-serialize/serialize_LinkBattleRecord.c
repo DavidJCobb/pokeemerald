@@ -1,4 +1,4 @@
-#include "struct-serialize//serialize_LinkBattleRecord.h"
+#include "lu/generated/struct-serialize//serialize_LinkBattleRecord.h"
 
 #include "global.h"
 

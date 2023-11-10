@@ -1,4 +1,4 @@
-#include "struct-serialize//serialize_BerryPickingResults.h"
+#include "lu/generated/struct-serialize//serialize_BerryPickingResults.h"
 
 #include "global.h"
 

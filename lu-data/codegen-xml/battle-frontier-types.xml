@@ -257,7 +257,7 @@
             </u16>
             <u16 name="unused_DC4" />
             
-            <u16 name="palacePrice" />
+            <u16 name="palacePrize" />
             <u16 name="palaceWinStreaks">
                <array-rank extent="2" />
                <array-rank extent="FRONTIER_LVL_MODE_COUNT" />
@@ -269,11 +269,9 @@
             
             <u16 name="arenaPrize" />
             <u16 name="arenaWinStreaks">
-               <array-rank extent="2" />
                <array-rank extent="FRONTIER_LVL_MODE_COUNT" />
             </u16>
             <u16 name="arenaRecordStreaks">
-               <array-rank extent="2" />
                <array-rank extent="FRONTIER_LVL_MODE_COUNT" />
             </u16>
             
@@ -296,15 +294,12 @@
             
             <u16 name="pikePrize" />
             <u16 name="pikeWinStreaks">
-               <array-rank extent="2" />
                <array-rank extent="FRONTIER_LVL_MODE_COUNT" />
             </u16>
             <u16 name="pikeRecordStreaks">
-               <array-rank extent="2" />
                <array-rank extent="FRONTIER_LVL_MODE_COUNT" />
             </u16>
             <u16 name="pikeTotalStreaks">
-               <array-rank extent="2" />
                <array-rank extent="FRONTIER_LVL_MODE_COUNT" />
             </u16>
             <u8 name="pikeHintedRoomIndex" c-bitfield="3" />
@@ -316,11 +311,9 @@
             
             <u16 name="pyramidPrize" />
             <u16 name="pyramidWinStreaks">
-               <array-rank extent="2" />
                <array-rank extent="FRONTIER_LVL_MODE_COUNT" />
             </u16>
             <u16 name="pyramidRecordStreaks">
-               <array-rank extent="2" />
                <array-rank extent="FRONTIER_LVL_MODE_COUNT" />
             </u16>
             <u16 name="pyramidRandoms">

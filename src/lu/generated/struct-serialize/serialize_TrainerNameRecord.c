@@ -1,4 +1,4 @@
-#include "struct-serialize//serialize_TrainerNameRecord.h"
+#include "lu/generated/struct-serialize//serialize_TrainerNameRecord.h"
 
 #include "global.h"
 

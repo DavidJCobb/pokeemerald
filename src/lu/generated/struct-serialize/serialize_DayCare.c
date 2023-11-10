@@ -1,11 +1,11 @@
-#include "struct-serialize//serialize_DayCare.h"
+#include "lu/generated/struct-serialize//serialize_DayCare.h"
 
 #include "global.h"
 
 #include "lu/bitstreams.h"
 
 // dependencies
-#include "struct-serialize//serialize_DaycareMon.h"
+#include "lu/generated/struct-serialize//serialize_DaycareMon.h"
 
 // check constants:
 #if DAYCARE_MON_COUNT != 2

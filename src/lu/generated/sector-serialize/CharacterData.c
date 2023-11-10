@@ -1,8 +1,8 @@
-#include "sector-serialize/CharacterData.h"
+#include "lu/generated/sector-serialize/CharacterData.h"
 
 #include "global.h"
 // whole-struct serialize funcs:
-#include "struct-serialize/serialize_SaveBlock2.h"
+#include "lu/generated/struct-serialize/serialize_SaveBlock2.h"
 
 void lu_ReadSaveSector_CharacterData00(const u8* src, struct SaveBlock2* p_SaveBlock2) {
    struct lu_BitstreamState state;

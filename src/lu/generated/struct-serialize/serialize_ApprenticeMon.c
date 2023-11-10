@@ -1,4 +1,4 @@
-#include "struct-serialize//serialize_ApprenticeMon.h"
+#include "lu/generated/struct-serialize//serialize_ApprenticeMon.h"
 
 #include "global.h"
 

@@ -4,17 +4,17 @@ This report describes the last successful attempt at code generation.
 In vanilla `pokeemerald`, the `SaveBlock1` (world state) and `SaveBlock2` (character state) structs consume 99% of the space allotted to them in flash memory (savedata). This is because they are blindly `memcpy`'d from RAM. A bitpacked format would consume substantially less space; however, maintaining the code to bitpack these structs would be prohibitively difficult by hand because savedata is split into ~4KiB strips ("sectors"). Instead, we use custom code generation to produce the serialization code, minding sector boundaries.
 
 ## Overall stats
-53408 bytes in RAM / 55552 bytes available across 14 sectors (96% space usage)  
-406742 packed bits = 50843 packed bytes (91% space usage)  
+53380 bytes in RAM / 55552 bytes available across 14 sectors (96% space usage)  
+406518 packed bits = 50815 packed bytes (91% space usage)  
 
 
 ## Struct stats
 | Name | Bytes in RAM | Packed bits | Packed bytes | Savings |
 | - | -: | -: | -: | -: |
-| SaveBlock2 | 3912 | 27662 |3458 | 454 (11%) |
+| SaveBlock2 | 3884 | 27438 |3430 | 454 (11%) |
 | SaveBlock1 | 15752 | 111368 |13921 | 1831 (11%) |
 | PokemonStorage | 33744 | 267712 |33464 | 280 (0%) |
-| **Total** | 53408 | 406742 |50843 | 2565 (4%) |
+| **Total** | 53380 | 406518 |50815 | 2565 (4%) |
 
 
 ## Sector group: CharacterData
@@ -23,8 +23,8 @@ In vanilla `pokeemerald`, the `SaveBlock1` (world state) and `SaveBlock2` (chara
 
 | Sector # | Bits used | Bits available | % |
 | - | -: | -: |
-| 0 | 27662 | 31744 | 87% |
-| Total | 27662 | 31744 | 87% |
+| 0 | 27438 | 31744 | 86% |
+| Total | 27438 | 31744 | 86% |
 
 ### Member info
 * Last field serialized to sector 0: `p_SaveBlock2`
@@ -83,7 +83,7 @@ The "Savings" columns are measured in bytes. The percentage in the "Savings per"
 | ApprenticeMon | 12 | 84 | 11 | 1 (8%) | 12 | 12 (0%) |
 | ApprenticeQuestion | 4 | 24 | 3 | 1 (25%) | 9 | 9 (0%) |
 | BattleDomeTrainer | 4 | 16 | 2 | 2 (50%) | 16 | 32 (0%) |
-| BattleFrontier | 2300 | 16546 | 2069 | 231 (10%) | 1 | 231 (3%) |
+| BattleFrontier | 2272 | 16322 | 2041 | 231 (10%) | 1 | 231 (3%) |
 | BattleTowerEReaderTrainer | 188 | 1427 | 179 | 9 (4%) | 1 | 9 (0%) |
 | BattleTowerInterview | 24 | 161 | 21 | 3 (12%) | 1 | 3 (0%) |
 | BattleTowerPokemon | 44 | 330 | 42 | 2 (4%) | 27 | 54 (2%) |
@@ -128,7 +128,7 @@ The "Savings" columns are measured in bytes. The percentage in the "Savings per"
 | RentalMon | 12 | 59 | 8 | 4 (33%) | 6 | 24 (0%) |
 | Roamer | 28 | 147 | 19 | 9 (32%) | 1 | 9 (0%) |
 | SaveBlock1 | 15752 | 111368 | 13921 | 1831 (11%) | 1 | 1831 (26%) |
-| SaveBlock2 | 3912 | 27662 | 3458 | 454 (11%) | 1 | 454 (6%) |
+| SaveBlock2 | 3884 | 27438 | 3430 | 454 (11%) | 1 | 454 (6%) |
 | SecretBase | 160 | 1181 | 148 | 12 (7%) | 20 | 240 (5%) |
 | SecretBaseParty | 108 | 786 | 99 | 9 (8%) | 20 | 180 (3%) |
 | Time | 8 | 36 | 5 | 3 (37%) | 2 | 6 (0%) |

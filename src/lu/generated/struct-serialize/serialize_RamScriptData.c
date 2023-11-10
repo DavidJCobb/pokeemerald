@@ -1,4 +1,4 @@
-#include "struct-serialize//serialize_RamScriptData.h"
+#include "lu/generated/struct-serialize//serialize_RamScriptData.h"
 
 #include "global.h"
 

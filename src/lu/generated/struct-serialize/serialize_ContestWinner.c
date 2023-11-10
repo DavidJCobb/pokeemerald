@@ -1,4 +1,4 @@
-#include "struct-serialize//serialize_ContestWinner.h"
+#include "lu/generated/struct-serialize//serialize_ContestWinner.h"
 
 #include "global.h"
 

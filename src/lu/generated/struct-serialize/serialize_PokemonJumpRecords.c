@@ -1,4 +1,4 @@
-#include "struct-serialize//serialize_PokemonJumpRecords.h"
+#include "lu/generated/struct-serialize//serialize_PokemonJumpRecords.h"
 
 #include "global.h"
 

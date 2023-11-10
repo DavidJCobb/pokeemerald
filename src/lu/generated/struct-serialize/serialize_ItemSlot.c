@@ -1,4 +1,4 @@
-#include "struct-serialize//serialize_ItemSlot.h"
+#include "lu/generated/struct-serialize//serialize_ItemSlot.h"
 
 #include "global.h"
 

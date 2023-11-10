@@ -14,7 +14,7 @@ The following changes are made to Emerald itself:
 
 XML files used for the purposes of codegen are stored in the `lu-data/codegen-xml/` directory. In general, "Lu" is used as as prefix for most of the changed content. **Code generation is not part of the normal build process, since that runs in Linux and the code generator is built for Windows. If you modify anything that gets generated, you need to re-run the code generator manually.**
 
-In tests, early-game savedata seems to save and load properly. Late-game savedata is not tested, though the late-game data looks pretty normal when using the codegen system's built-in save dumper to analyze an early savegame.
+In tests, early-game savedata seems to save and load properly. Late-game savedata is not tested, though the late-game data looks pretty normal when using the codegen system's built-in save dumper to analyze an early savegame. We don't dump special sectors (Hall of Fame; Trainer Hill; Recorded Battle), though, so I can't promise that I haven't damaged those somehow. Maybe I'll test those in-game using a walk-through-walls code at some point.
 
 I don't know what software license to put on this *entire* package, but, like, I'm not gonna call the Internet police on you if you use it for your own Pokémon modding projects.
 

@@ -7,11 +7,12 @@ The following changes are made to Emerald itself:
 * The makefile is adjusted to allow for deeper folder hierarchies for `*.h` and `*.c` files.
 * `item.c` is modified so that saving item quantities as 10-bit numbers doesn't break the game's encryption of them (i.e. the six truncated bits are lopped off during the re-encryption step).
 * `save.h` and `save.c` are rewritten. The original code mapped RAM regions to sector IDs, whereas the rewrite maps sector IDs to functions that perform reading and writing of bitpacked data.
-   * A lot of code has been de-duplicated as well. The effects of this on multiplayer link saves have not been tested.
-* Tons of struct definitions in `global.h`, `pokemon.h`, and other files have been modified to `#include` generated struct member lists.
+   * A lot of code has been de-duplicated as well. I haven't tested what effect this will have on multiplayer link saves.
+* Tons of struct definitions in `global.h`, `pokemon.h`, and other files have been modified to `#include` generated struct member lists. The goal is to ensure a "single source of truth" for the contents of all savegame-relevant structs, save for those that the generator can't actually produce yet (i.e. named union types).
 * My bitstream functions, for reading and writing bitpacked data, are included in `lu/bitstreams.h` and `lu/bitstreams.c`.
+* Generated code can be found in `lu/generated/`.
 
-XML files used for the purposes of codegen are stored in the `lu-data/codegen-xml/` directory. In general, "Lu" is used as as prefix for most of the changed content.
+XML files used for the purposes of codegen are stored in the `lu-data/codegen-xml/` directory. In general, "Lu" is used as as prefix for most of the changed content. **Code generation is not part of the normal build process, since that runs in Linux and the code generator is built for Windows. If you modify anything that gets generated, you need to re-run the code generator manually.**
 
 In tests, early-game savedata seems to save and load properly. Late-game savedata is not tested, though the late-game data looks pretty normal when using the codegen system's built-in save dumper to analyze an early savegame.
 

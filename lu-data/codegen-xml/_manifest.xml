@@ -1,0 +1,26 @@
+<data>
+   <dependencies>
+      <xml path="./save-block-1.xml" />
+      <xml path="./save-block-2.xml" />
+   </dependencies>
+   <sector-groups>
+      <group name="CharacterData"
+         sector-count="1"
+         sector-base-id="0"
+      >
+         <struct name="SaveBlock2" ptr="gSaveBlock2Ptr" var-header="global.h" />
+      </group>
+      <group name="WorldData"
+         sector-count="4"
+         sector-base-id="1"
+      >
+         <struct name="SaveBlock1" ptr="gSaveBlock1Ptr" var-header="global.h" />
+      </group>
+      <group name="PokemonStorage"
+         sector-count="9"
+         sector-base-id="5"
+      >
+         <struct name="PokemonStorage" ptr="gPokemonStoragePtr" var-header="pokemon_storage_system.h" />
+      </group>
+   </sector-groups>
+</data>

@@ -1,0 +1,61 @@
+<data>
+   <dependencies>
+      <xml path="./common-defines.xml" />
+   </dependencies>
+   <constants>
+      <header path="constants/pokemon.h">
+         <constant name="NUM_SUBSTRUCT_BYTES" value="12" />
+      </header>
+   </constants>
+   <types>
+      <struct name="BoxPokemon" header="pokemon.h">
+         <fields>
+            <u32 name="personality" />
+            <u32 name="otId" />
+            <field name="nickname" inherit="$pokemon-nickname" only-early-terminator="true" />
+            <u8 name="language" inherit="$game-language" />
+            <u8 name="isBadEgg" c-bitfield="1" />
+            <u8 name="hasSpecies" c-bitfield="1" />
+            <u8 name="isEgg" c-bitfield="1" />
+            <u8 name="unused" c-bitfield="5" />
+            <field name="otName" inherit="$player-name" only-early-terminator="true" />
+            <u8 name="markings" />
+            <u16 name="checksum" is-checksum="true">
+               <checksum-of>
+                  <!-- ONLY checksums the secure substructs, and without bothering to decrypt them. the game zeroes the entire Pokemon struct (in `CreateMon` and `CreateBoxMon` when a Pokemon is created, so padding bits and bytes shouldn't be an issue as long as *we* zero them too. -->
+                  <target c-access="secure.raw[0]" />
+                  <target c-access="secure.raw[1]" />
+                  <target c-access="secure.raw[2]" />
+                  <target c-access="secure.raw[3]" />
+               </checksum-of>
+            </u16>
+            <u16 name="unknown" />
+            
+            <union name="secure" member-to-serialize="raw">
+               <u32 name="raw">
+                  <line-comment>*4 because there are 4 substructs, /4 because it's u32, not u8</line-comment>
+                  <array-rank extent="12" extent-expr="(NUM_SUBSTRUCT_BYTES * 4) / 4" />
+               </u32>
+               <field name="substructs" c-type="PokemonSubstruct" c-type-decl="union">
+                  <array-rank extent="4" />
+               </field>
+            </union>
+         </fields>
+      </struct>
+      <struct name="Pokemon" header="pokemon.h">
+         <fields>
+            <field name="box" c-type="BoxPokemon" c-type-decl="struct" />
+            <u32 name="status" />
+            <u8 name="level" min="0" max="100"  />
+            <u8  name="mail" />
+            <u16 name="hp" />
+            <u16 name="maxHP" />
+            <u16 name="attack" />
+            <u16 name="defense" />
+            <u16 name="speed" />
+            <u16 name="spAttack" />
+            <u16 name="spDefense" />
+         </fields>
+      </struct>
+   </types>
+</data>

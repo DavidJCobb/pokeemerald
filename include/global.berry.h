@@ -26,30 +26,12 @@ struct Berry
 
 struct Berry2
 {
-    u8 name[BERRY_NAME_LENGTH + 1];
-    u8 firmness;
-    u16 size;
-    u8 maxYield;
-    u8 minYield;
-    u8 *description1;
-    u8 *description2;
-    u8 stageDuration;
-    u8 spicy;
-    u8 dry;
-    u8 sweet;
-    u8 bitter;
-    u8 sour;
-    u8 smoothness;
-    //u8 padding;
+#include "lu/generated/struct-members/Berry2.members.inl"
 };
 
 struct EnigmaBerry
 {
-    struct Berry2 berry;
-    u8 itemEffect[BERRY_ITEM_EFFECT_COUNT];
-    u8 holdEffect;
-    u8 holdEffectParam;
-    u32 checksum;
+#include "lu/generated/struct-members/EnigmaBerry.members.inl"
 };
 
 struct BattleEnigmaBerry
@@ -62,16 +44,7 @@ struct BattleEnigmaBerry
 
 struct BerryTree
 {
-    u8 berry;
-    u8 stage:7;
-    u8 stopGrowth:1;
-    u16 minutesUntilNextStage;
-    u8 berryYield;
-    u8 regrowthCount:4;
-    u8 watered1:1;
-    u8 watered2:1;
-    u8 watered3:1;
-    u8 watered4:1;
+#include "lu/generated/struct-members/BerryTree.members.inl"
 };
 
 #endif // GUARD_GLOBAL_BERRY_H

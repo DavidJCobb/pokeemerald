@@ -1,0 +1,118 @@
+<data>
+   <dependencies>
+      <xml path="./common-defines.xml" />
+      <xml path="./location-types.xml" />
+   </dependencies>
+   <constants>
+      <header path="global.h">
+         <!-- == ROUND_BITS_TO_BYTES(FLAGS_COUNT), i.e. ceil(FLAGS_COUNT / 8) -->
+         <constant name="NUM_FLAG_BYTES" value="300" />
+      </header>
+      <header path="constants/global.h">
+         <constant name="OBJECT_EVENTS_COUNT"          value="16" />
+         <constant name="OBJECT_EVENT_TEMPLATES_COUNT" value="64" />
+         
+         <constant name="VARS_COUNT" value="256" />
+      </header>
+   </constants>
+   <types>
+      <struct name="ObjectEvent" header="global.fieldmap.h">
+         <fields>
+            <u32 name="active" c-bitfield="1" />
+            <u32 name="singleMovementActive" c-bitfield="1" />
+            <u32 name="triggerGroundEffectsOnMove" c-bitfield="1" />
+            <u32 name="triggerGroundEffectsOnStop" c-bitfield="1" />
+            <u32 name="disableCoveringGroundEffects" c-bitfield="1" />
+            <u32 name="landingJump" c-bitfield="1" />
+            <u32 name="heldMovementActive" c-bitfield="1" />
+            <u32 name="heldMovementFinished" c-bitfield="1" />
+            <u32 name="frozen" c-bitfield="1" />
+            <u32 name="facingDirectionLocked" c-bitfield="1" />
+            <u32 name="disableAnim" c-bitfield="1" />
+            <u32 name="enableAnim" c-bitfield="1" />
+            <u32 name="inanimate" c-bitfield="1" />
+            <u32 name="invisible" c-bitfield="1" />
+            <u32 name="offScreen" c-bitfield="1" />
+            <u32 name="trackedByCamera" c-bitfield="1" />
+            <u32 name="isPlayer" c-bitfield="1" />
+            <u32 name="hasReflection" c-bitfield="1" />
+            <u32 name="inShortGrass" c-bitfield="1" />
+            <u32 name="inShallowFlowingWater" c-bitfield="1" />
+            <u32 name="inSandPile" c-bitfield="1" />
+            <u32 name="inHotSprings" c-bitfield="1" />
+            <u32 name="hasShadow" c-bitfield="1" />
+            <u32 name="spriteAnimPausedBackup" c-bitfield="1" />
+            <u32 name="spriteAffineAnimPausedBackup" c-bitfield="1" />
+            <u32 name="disableJumpLandingGroundEffect" c-bitfield="1" />
+            <u32 name="fixedPriority" c-bitfield="1" />
+            <u32 name="hideReflection" c-bitfield="1" />
+            <u8 name="spriteId" />
+            <u8 name="graphicsId" />
+            <u8 name="movementType" />
+            <u8 name="trainerType" />
+            <u8 name="localId" />
+            <u8 name="mapNum" />
+            <u8 name="mapGroup" />
+            <u8 name="currentElevation" c-bitfield="4" />
+            <u8 name="previousElevation" c-bitfield="4" />
+            <field name="initialCoords" c-type="Coords16" c-type-decl="struct" />
+            <field name="currentCoords" c-type="Coords16" c-type-decl="struct" />
+            <field name="previousCoords" c-type="Coords16" c-type-decl="struct" />
+            <u16 name="facingDirection" c-bitfield="4">
+               <line-comment>current direction?</line-comment>
+            </u16>
+            <u16 name="movementDirection" c-bitfield="4" />
+            <u16 name="rangeX" c-bitfield="4" />
+            <u16 name="rangeY" c-bitfield="4" />
+            <u8 name="fieldEffectSpriteId" />
+            <u8 name="warpArrowSpriteId" />
+            <u8 name="movementActionId" />
+            <u8 name="trainerRange_berryTreeId" />
+            <u8 name="currentMetatileBehavior" />
+            <u8 name="previousMetatileBehavior" />
+            <u8 name="previousMovementDirection" />
+            <u8 name="directionSequenceIndex" />
+            <u8 name="playerCopyableMovement">
+               <line-comment>COPY_MOVE_*</line-comment>
+            </u8>
+         </fields>
+      </struct>
+      <struct name="ObjectEventTemplate" header="global.fieldmap.h">
+         <fields>
+            <u8 name="localId" />
+            <u8 name="graphicsId" />
+            <u8 name="kind">
+               <line-comment>Always OBJ_KIND_NORMAL in Emerald.</line-comment>
+            </u8>
+            <s16 name="x" />
+            <s16 name="y" />
+            <u8 name="elevation" />
+            <u8 name="movementType" />
+            <u16 name="movementRangeX" c-bitfield="4" />
+            <u16 name="movementRangeY" c-bitfield="4" />
+            <u16 name="trainerType" />
+            <u16 name="trainerRange_berryTreeId" />
+            <pointer c-type="u8" name="script" const="true" />
+            <u16 name="flagId" />
+         </fields>
+      </struct>
+   
+      <struct name="RamScriptData" header="global.h">
+         <fields>
+            <u8 name="magic" />
+            <u8 name="mapGroup" />
+            <u8 name="mapNum" />
+            <u8 name="objectId" />
+            <u8 name="script">
+               <array-rank extent="995" />
+            </u8>
+         </fields>
+      </struct>
+      <struct name="RamScript" header="global.h">
+         <fields>
+            <u32 name="checksum" is-checksum="true" />
+            <field name="data" c-type="RamScriptData" c-type-decl="struct" />
+         </fields>
+      </struct>
+   </types>
+</data>

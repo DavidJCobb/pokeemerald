@@ -1,0 +1,96 @@
+<data>
+   <dependencies>
+      <xml path="./common-defines.xml" />
+   </dependencies>
+   <constants>
+      <header path="constants/global.h">
+         <constant name="MAX_STAMP_CARD_STAMPS" value="7" />
+         <constant name="NUM_QUESTIONNAIRE_WORDS" value="4" />
+         <constant name="WONDER_CARD_TEXT_LENGTH" value="40" />
+         <constant name="WONDER_NEWS_TEXT_LENGTH" value="40" />
+         <constant name="WONDER_CARD_BODY_TEXT_LINES" value="4" />
+         <constant name="WONDER_NEWS_BODY_TEXT_LINES" value="10" />
+      </header>
+   </constants>
+   <types>
+      <struct name="WonderNews" header="global.h">
+         <fields>
+            <u16 name="id" />
+            <u8 name="sendType">
+               <line-comment>SEND_TYPE_*</line-comment>
+            </u8>
+            <u8 name="bgType" />
+            <string name="titleText" char-type="u8" length="WONDER_NEWS_TEXT_LENGTH" only-early-terminator="true" />
+            <string name="bodyText"  char-type="u8" length="WONDER_NEWS_TEXT_LENGTH" only-early-terminator="true">
+               <array-rank extent="WONDER_NEWS_BODY_TEXT_LINES" />
+            </string>
+         </fields>
+      </struct>
+      <struct name="WonderNewsMetadata" header="global.h">
+         <fields>
+            <u8 name="newsType" c-bitfield="2" />
+            <u8 name="sentRewardCounter" c-bitfield="3" />
+            <u8 name="rewardCounter" c-bitfield="3" />
+            <u8 name="berry" />
+         </fields>
+      </struct>
+      
+      <struct name="WonderCard" header="global.h">
+         <fields>
+            <u16 name="flagId">
+               <line-comment>Event flag (sReceivedGiftFlags) + WONDER_CARD_FLAG_OFFSET</line-comment>
+            </u16>
+            <u16 name="iconSpecies" inherit="$pokemon-species-id" />
+            <u32 name="idNumber" />
+            <u8 name="type" c-bitfield="2">
+               <line-comment>CARD_TYPE_*</line-comment>
+            </u8>
+            <u8 name="bgType" c-bitfield="4" />
+            <u8 name="sendType" c-bitfield="2">
+               <line-comment>SEND_TYPE_*</line-comment>
+            </u8>
+            <u8 name="maxStamps" />
+            <string name="titleText"    char-type="u8" length="WONDER_CARD_TEXT_LENGTH" only-early-terminator="true" />
+            <string name="subtitleText" char-type="u8" length="WONDER_CARD_TEXT_LENGTH" only-early-terminator="true" />
+            <string name="bodyText"     char-type="u8" length="WONDER_CARD_TEXT_LENGTH" only-early-terminator="true">
+               <array-rank extent="WONDER_CARD_BODY_TEXT_LINES" />
+            </string>
+            <string name="footerLine1Text" char-type="u8" length="WONDER_CARD_TEXT_LENGTH" only-early-terminator="true" />
+            <string name="footerLine2Text" char-type="u8" length="WONDER_CARD_TEXT_LENGTH" only-early-terminator="true" />
+         </fields>
+      </struct>
+      <struct name="WonderCardMetadata" header="global.h">
+         <fields>
+            <u16 name="battlesWon" />
+            <u16 name="battlesLost" />
+            <u16 name="numTrades" />
+            <u16 name="iconSpecies" inherit="$pokemon-species-id" />
+            <u16 name="stampData">
+               <line-comment>First element is STAMP_SPECIES, second is STAMP_ID</line-comment>
+               <array-rank extent="2" />
+               <array-rank extent="MAX_STAMP_CARD_STAMPS" />
+            </u16>
+         </fields>
+      </struct>
+      
+      <struct name="MysteryGiftSave" header="global.h">
+         <fields>
+            <u32 name="newsCrc" />
+            <field name="news" c-type="WonderNews" c-type-decl="struct" />
+            <u32 name="cardCrc" />
+            <field name="card" c-type="WonderCard" c-type-decl="struct" />
+            <u32 name="cardMetadataCrc" />
+            <field name="cardMetadata" c-type="WonderCardMetadata" c-type-decl="struct" />
+            <u16 name="questionnaireWords" inherit="$easy-chat-word">
+               <array-rank extent="NUM_QUESTIONNAIRE_WORDS" />
+            </u16>
+            <field name="newsMetadata" c-type="WonderNewsMetadata" c-type-decl="struct" />
+            <u32 name="trainerIds">
+               <line-comment>Saved ids for 10 trainers, 5 each for battles and trades</line-comment>
+               <array-rank extent="2" />
+               <array-rank extent="5" />
+            </u32>
+         </fields>
+      </struct>
+   </types>
+</data>

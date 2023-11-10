@@ -1,0 +1,55 @@
+<data>
+   <constants>
+      <header path="global.berry.h">
+         <constant name="BERRY_NAME_LENGTH"       value="6" />
+         <constant name="BERRY_ITEM_EFFECT_COUNT" value="18" />
+      </header>
+   </constants>
+   <types>
+      <struct name="Berry2" header="global.berry.h">
+         <fields>
+            <string name="name" char-type="u8" length="BERRY_NAME_LENGTH" />
+            <u8 name="firmness" />
+            <u16 name="size" />
+            <u8 name="maxYield" />
+            <u8 name="minYield" />
+            <pointer c-type="u8" name="description1" />
+            <pointer c-type="u8" name="description2" />
+            <u8 name="stageDuration" />
+            <u8 name="spicy" />
+            <u8 name="dry" />
+            <u8 name="sweet" />
+            <u8 name="bitter" />
+            <u8 name="sour" />
+            <u8 name="smoothness" />
+         </fields>
+      </struct>
+   
+      <struct name="BerryTree" header="global.berry.h">
+         <fields>
+            <u8 name="berry" />
+            <u8 name="stage" c-bitfield="7" />
+            <u8 name="stopGrowth" c-bitfield="1" />
+            <u16 name="minutesUntilNextStage" />
+            <u8 name="berryYield" />
+            <u8 name="regrowthCount" c-bitfield="4" />
+            <u8 name="watered1" c-bitfield="1" />
+            <u8 name="watered2" c-bitfield="1" />
+            <u8 name="watered3" c-bitfield="1" />
+            <u8 name="watered4" c-bitfield="1" />
+         </fields>
+      </struct>
+      
+      <struct name="EnigmaBerry" header="global.berry.h">
+         <fields>
+            <field name="berry" c-type="Berry2" c-type-decl="struct" />
+            <u8 name="itemEffect">
+               <array-rank extent="BERRY_ITEM_EFFECT_COUNT" />
+            </u8>
+            <u8 name="holdEffect" />
+            <u8 name="holdEffectParam" />
+            <u32 name="checksum" is-checksum="true" />
+         </fields>
+      </struct>
+   </types>
+</data>

@@ -48,8 +48,19 @@ void ApplyNewEncryptionKeyToBagItems(u32 newKey)
     u32 pocket, item;
     for (pocket = 0; pocket < POCKETS_COUNT; pocket++)
     {
-        for (item = 0; item < gBagPockets[pocket].capacity; item++)
-            ApplyNewEncryptionKeyToHword(&(gBagPockets[pocket].itemSlots[item].quantity), newKey);
+        for (item = 0; item < gBagPockets[pocket].capacity; item++) {
+            u16* hword = &(gBagPockets[pocket].itemSlots[item].quantity);
+            
+            //ApplyNewEncryptionKeyToHword(hword, newKey); // from load_save.h
+            //
+            // We only serialize 10 bits (since the quantity is capped at 999) to savedata. 
+            // We need to make sure that after loading, no bits above that get set to 1 
+            // by the encryption. This means ANDing the value between re-encryption steps.
+            //
+            *hword ^= gSaveBlock2Ptr->encryptionKey;
+            *hword &= 0x3FF;
+            *hword ^= newKey;
+        }
     }
 }
 

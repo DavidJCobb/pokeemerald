@@ -1,0 +1,22 @@
+<data>
+   <dependencies>
+      <xml path="./common-defines.xml" />
+   </dependencies>
+   <types>
+      <struct name="Coords16" header="global.h">
+         <fields>
+            <s16 name="x" />
+            <s16 name="y" />
+         </fields>
+      </struct>
+      <struct name="WarpData" header="global.h">
+         <fields>
+            <s8 name="mapGroup" />
+            <s8 name="mapNum" />
+            <s8 name="warpId" />
+            <s16 name="x" />
+            <s16 name="y" />
+         </fields>
+      </struct>
+   </types>
+</data>

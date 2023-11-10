@@ -1,0 +1,56 @@
+<data>
+   <constants>
+      <header path="global.berry.h">
+         <constant name="NUM_NORMAL_TVSHOW_SLOTS" value="5" />
+         <constant name="TV_SHOWS_COUNT" value="25" />
+         
+         <constant name="POKE_NEWS_COUNT" value="16" />
+      </header>
+   </constants>
+   <types>
+      <!--
+         This is a tagged union, but the tag is embedded inside of all union 
+         members as their first two fields. I... really can't be bothered to 
+         implement handling that, and besides: it'd pretty much have to be a 
+         blind memcpy anyway since all the union members vary in length,  so 
+         just don't even codegen it.
+      -->
+      <union name="TVShow" header="global.tv.h"
+         do-not-codegen="true"
+         sizeof="36"
+         defined-via-typedef="true"
+      />
+      
+      <struct name="PokeNews" header="global.tv.h" defined-via-typedef="true">
+         <fields>
+            <u8 name="kind" />
+            <u8 name="state" />
+            <u16 name="dayCountdown" />
+         </fields>
+      </struct>
+      
+      <struct name="GabbyAndTyData" header="global.tv.h">
+         <fields>
+            <u16 name="mon1" inherit="$pokemon-species-id" />
+            <u16 name="mon2" inherit="$pokemon-species-id" />
+            <u16 name="lastMove" inherit="$pokemon-move-id" />
+            <u16 name="quote">
+               <array-rank extent="1" /> <!-- no, really. -->
+            </u16>
+            <u8 name="mapnum" /> <!-- all-lowercase is not a typo -->
+            <u8 name="battleNum" />
+            <u8 name="battleTookMoreThanOneTurn" c-bitfield="1" />
+            <u8 name="playerLostAMon" c-bitfield="1" />
+            <u8 name="playerUsedHealingItem" c-bitfield="1" />
+            <u8 name="playerThrewABall" c-bitfield="1" />
+            <u8 name="onAir" c-bitfield="1" />
+            <u8 name="valA_5" c-bitfield="3" />
+            <u8 name="battleTookMoreThanOneTurn2" c-bitfield="1" />
+            <u8 name="playerLostAMon2" c-bitfield="1" />
+            <u8 name="playerUsedHealingItem2" c-bitfield="1" />
+            <u8 name="playerThrewABall2" c-bitfield="1" />
+            <u8 name="valB_4" c-bitfield="4" />
+         </fields>
+      </struct>
+   </types>
+</data>

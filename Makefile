@@ -338,6 +338,10 @@ endif
 else
 define C_DEP
 $1: $2 $$(shell $(SCANINC) -I include -I tools/agbcc/include -I gflib $2)
+ifneq ($$(.SHELLSTATUS),0)
+	@echo SCANINC failed with one or more FATAL ERRORS, which should have been printed somewhere above, during an attempted dependency scan of $2.
+	@exit $$(.SHELLSTATUS)
+endif
 ifeq (,$$(KEEP_TEMPS))
 	@echo "$$(CC1) <flags> -o $$@ $$<"
 	@$$(CPP) $$(CPPFLAGS) $$< | $$(PREPROC) $$< charmap.txt -i | $$(CC1) $$(CFLAGS) -o - - | cat - <(echo -e ".text\n\t.align\t2, 0") | $$(AS) $$(ASFLAGS) -o $$@ -

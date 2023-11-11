@@ -5,14 +5,14 @@
 #include "lu/bitstreams.h"
 
 // dependencies
-#include "lu/generated/struct-serialize//serialize_EmeraldBattleTowerRecord.h"
-#include "lu/generated/struct-serialize//serialize_EmeraldBattleTowerRecord.h"
-#include "lu/generated/struct-serialize//serialize_BattleTowerInterview.h"
-#include "lu/generated/struct-serialize//serialize_BattleTowerEReaderTrainer.h"
-#include "lu/generated/struct-serialize//serialize_BattleDomeTrainer.h"
-#include "lu/generated/struct-serialize//serialize_PyramidBag.h"
-#include "lu/generated/struct-serialize//serialize_RentalMon.h"
-#include "lu/generated/struct-serialize//serialize_DomeMonData.h"
+#include "lu/generated/struct-serialize/serialize_EmeraldBattleTowerRecord.h"
+#include "lu/generated/struct-serialize/serialize_EmeraldBattleTowerRecord.h"
+#include "lu/generated/struct-serialize/serialize_BattleTowerInterview.h"
+#include "lu/generated/struct-serialize/serialize_BattleTowerEReaderTrainer.h"
+#include "lu/generated/struct-serialize/serialize_BattleDomeTrainer.h"
+#include "lu/generated/struct-serialize/serialize_PyramidBag.h"
+#include "lu/generated/struct-serialize/serialize_RentalMon.h"
+#include "lu/generated/struct-serialize/serialize_DomeMonData.h"
 
 #include "string_util.h" // gflib; for StringLength
 

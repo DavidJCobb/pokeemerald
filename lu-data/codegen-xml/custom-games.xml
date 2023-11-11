@@ -45,7 +45,7 @@
             <u16 name="scale_exp_gains_normal" min="0" max="5000" /> <!-- untested -->
             <u16 name="scale_exp_gains_traded" min="0" max="5000" /> <!-- untested -->
             
-            <u16 name="scale_player_money_gain_on_victory" min="0" max="5000"> <!-- untested -->
+            <u16 name="scale_player_money_gain_on_victory" min="0" max="5000">
                <line-comment>Does not scale Pay Day gains, which are applied at the end of a victory and lost if you lose the battle.</line-comment>
             </u16>
             <bool8 name="modern_calc_player_money_loss_on_defeat"> <!-- untested -->

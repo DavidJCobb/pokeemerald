@@ -5,7 +5,7 @@
 #include "lu/bitstreams.h"
 
 // dependencies
-#include "lu/generated/struct-serialize//serialize_RamScriptData.h"
+#include "lu/generated/struct-serialize/serialize_RamScriptData.h"
 
 void lu_BitstreamRead_RamScript(struct lu_BitstreamState* state, struct RamScript* v) {
    v->checksum = lu_BitstreamRead_u32(state, 32);

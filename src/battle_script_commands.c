@@ -3246,6 +3246,8 @@ static void Cmd_getexp(void)
 
     gBattlerFainted = GetBattlerForBattleScript(gBattlescriptCurrInstr[1]);
     sentIn = gSentPokesToOpponent[(gBattlerFainted & 2) >> 1];
+    
+    DebugPrintf("getexp: state is %d", gBattleScripting.getexpState);
 
     switch (gBattleScripting.getexpState)
     {
@@ -3340,11 +3342,24 @@ static void Cmd_getexp(void)
             else
             {
                 // music change in wild battle after fainting a poke
-                if (!(gBattleTypeFlags & BATTLE_TYPE_TRAINER) && gBattleMons[0].hp != 0 && !gBattleStruct->wildVictorySong)
-                {
-                    BattleStopLowHpSound();
-                    PlayBGM(MUS_VICTORY_WILD);
-                    gBattleStruct->wildVictorySong++;
+                if (!(gBattleTypeFlags & BATTLE_TYPE_TRAINER) && gBattleMons[0].hp != 0 && !gBattleStruct->wildVictorySong) {
+                   //
+                   // Only change the music if:
+                   //
+                   //  - The Pokemon we're awarding experience to is a foe.
+                   //  - All foes are down.
+                   //  - This foe was not captured (the capture theme will play instead).
+                   //
+                   // TODO: Handle "All foes are down" in Double Battles.
+                   //
+                   if (GetBattlerSide(gBattlerFainted) == B_SIDE_OPPONENT) {
+                       u16 ball = GetMonData(&gEnemyParty[gBattlerPartyIndexes[gBattlerFainted]], MON_DATA_POKEBALL);
+                       if (ball == ITEM_NONE) {
+                           BattleStopLowHpSound();
+                           PlayBGM(MUS_VICTORY_WILD);
+                           gBattleStruct->wildVictorySong++;
+                       }
+                   }
                 }
 
                 if (GetMonData(&gPlayerParty[gBattleStruct->expGetterMonId], MON_DATA_HP))
@@ -3366,9 +3381,6 @@ static void Cmd_getexp(void)
                         // check if the pokemon doesn't belong to the player
                         if (gBattleTypeFlags & BATTLE_TYPE_INGAME_PARTNER && gBattleStruct->expGetterMonId >= 3)
                         {
-                            #ifndef LU_DISABLE_CUSTOM_GAME_OPTIONS
-                                gBattleMoveDamage = ApplyCustomGameScale_s32(gBattleMoveDamage, gCustomGameOptions.scale_exp_gains_normal);
-                            #endif
                             i = STRINGID_EMPTYSTRING4;
                         }
                         else
@@ -3383,6 +3395,9 @@ static void Cmd_getexp(void)
                     }
                     else
                     {
+                        #ifndef LU_DISABLE_CUSTOM_GAME_OPTIONS
+                            gBattleMoveDamage = ApplyCustomGameScale_s32(gBattleMoveDamage, gCustomGameOptions.scale_exp_gains_normal);
+                        #endif
                         i = STRINGID_EMPTYSTRING4;
                     }
 
@@ -9963,6 +9978,8 @@ static void Cmd_handleballthrow(void)
                 gBattleCommunication[MULTISTRING_CHOOSER] = 0;
             else
                 gBattleCommunication[MULTISTRING_CHOOSER] = 1;
+    
+            DebugPrintf("handleballthrow: successful catch, right off rip", 0);
         }
         else // mon may be caught, calculate shakes
         {
@@ -9988,6 +10005,22 @@ static void Cmd_handleballthrow(void)
                     gBattleCommunication[MULTISTRING_CHOOSER] = 0;
                 else
                     gBattleCommunication[MULTISTRING_CHOOSER] = 1;
+    
+                DebugPrintf("handleballthrow: successful catch", 0);
+                
+                // The `getexp` command computes and grants earned EXP. It also plays the wild battle 
+                // victory theme if the current battle is a wild battle. (So much for separation of 
+                // concerns, lmao.) The successful capture theme, however, is played via control codes 
+                // in the "Congratulations!" message.
+                //
+                // If we allow the victory theme to play, it'll cut off the capture theme. Luckily, 
+                // Game Freak uses a counter (as a flag...) to check if they've already forcibly 
+                // overridden the music. So, we can just increment that here.
+                //
+                //gBattleStruct->wildVictorySong++;
+                //
+                // But that's pretty spaghetti, so instead, we'll modify the code that plays the 
+                // victory fanfare to be more robust.
             }
             else // not caught
             {

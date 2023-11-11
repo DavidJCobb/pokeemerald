@@ -5,17 +5,17 @@
 #include "lu/bitstreams.h"
 
 // dependencies
-#include "lu/generated/struct-serialize//serialize_Pokedex.h"
-#include "lu/generated/struct-serialize//serialize_Time.h"
-#include "lu/generated/struct-serialize//serialize_Time.h"
-#include "lu/generated/struct-serialize//serialize_PlayersApprentice.h"
-#include "lu/generated/struct-serialize//serialize_Apprentice.h"
-#include "lu/generated/struct-serialize//serialize_BerryCrush.h"
-#include "lu/generated/struct-serialize//serialize_PokemonJumpRecords.h"
-#include "lu/generated/struct-serialize//serialize_BerryPickingResults.h"
-#include "lu/generated/struct-serialize//serialize_RankingHall1P.h"
-#include "lu/generated/struct-serialize//serialize_RankingHall2P.h"
-#include "lu/generated/struct-serialize//serialize_BattleFrontier.h"
+#include "lu/generated/struct-serialize/serialize_Pokedex.h"
+#include "lu/generated/struct-serialize/serialize_Time.h"
+#include "lu/generated/struct-serialize/serialize_Time.h"
+#include "lu/generated/struct-serialize/serialize_PlayersApprentice.h"
+#include "lu/generated/struct-serialize/serialize_Apprentice.h"
+#include "lu/generated/struct-serialize/serialize_BerryCrush.h"
+#include "lu/generated/struct-serialize/serialize_PokemonJumpRecords.h"
+#include "lu/generated/struct-serialize/serialize_BerryPickingResults.h"
+#include "lu/generated/struct-serialize/serialize_RankingHall1P.h"
+#include "lu/generated/struct-serialize/serialize_RankingHall2P.h"
+#include "lu/generated/struct-serialize/serialize_BattleFrontier.h"
 
 #include "string_util.h" // gflib; for StringLength
 

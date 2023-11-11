@@ -5,7 +5,7 @@
 #include "lu/bitstreams.h"
 
 // dependencies
-#include "lu/generated/struct-serialize//serialize_LinkBattleRecord.h"
+#include "lu/generated/struct-serialize/serialize_LinkBattleRecord.h"
 
 // check constants:
 #if LINK_B_RECORDS_COUNT != 5

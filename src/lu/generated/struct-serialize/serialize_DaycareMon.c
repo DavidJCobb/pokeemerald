@@ -5,8 +5,8 @@
 #include "lu/bitstreams.h"
 
 // dependencies
-#include "lu/generated/struct-serialize//serialize_BoxPokemon.h"
-#include "lu/generated/struct-serialize//serialize_DaycareMail.h"
+#include "lu/generated/struct-serialize/serialize_BoxPokemon.h"
+#include "lu/generated/struct-serialize/serialize_DaycareMail.h"
 
 void lu_BitstreamRead_DaycareMon(struct lu_BitstreamState* state, struct DaycareMon* v) {
    lu_BitstreamRead_BoxPokemon(state, &v->mon);

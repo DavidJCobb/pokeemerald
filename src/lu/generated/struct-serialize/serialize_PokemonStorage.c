@@ -6,7 +6,7 @@
 #include "lu/bitstreams.h"
 
 // dependencies
-#include "lu/generated/struct-serialize//serialize_BoxPokemon.h"
+#include "lu/generated/struct-serialize/serialize_BoxPokemon.h"
 
 #include "string_util.h" // gflib; for StringLength
 

@@ -38,12 +38,12 @@ s32 ApplyCustomGameScale_s32(s32, u16 scale);
 
 // Track current values of Custom Game options. Intended to be serialized after SaveBlock2.
 extern struct CustomGameOptions {
-#include "lu/generated/struct-members/CustomGameOptions.members.inl"
+#include "lu/generated/struct-members/CustomGameOptions.members.h"
 } gCustomGameOptions;
 
 // Track in-game progress related to custom game options. Intended to be serialized after SaveBlock2.
 extern struct CustomGameSavestate {
-#include "lu/generated/struct-members/CustomGameSavestate.members.inl"
+#include "lu/generated/struct-members/CustomGameSavestate.members.h"
 } gCustomGameSavestate;
 
 #undef UNIMPLEMENTED_CUSTOM_GAME_OPTION

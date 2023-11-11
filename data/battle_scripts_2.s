@@ -71,12 +71,13 @@ BattleScript_SuccessBallThrow::
    @
 BattleScript_PrintCaughtMonInfo::
 	printstring STRINGID_GOTCHAPKMNCAUGHTPLAYER
+	waitstate
    @
-   lu_cgo_jump_if_bool_eq CGOPTION_BOOL_GRANT_CATCH_XP, 0, BattleScript_AfterPotentiallyGrantXP
+   lu_cgo_jump_if_bool_eq CGOPTION_BOOL_GRANT_CATCH_XP, 0, BattleScript_SuccessBallThrow_AfterPotentiallyGrantXP
 	setbyte sGIVEEXP_STATE, 0
 	getexp BS_TARGET
    @
-BattleScript_AfterPotentiallyGrantXP::
+BattleScript_SuccessBallThrow_AfterPotentiallyGrantXP::
 	trysetcaughtmondexflags BattleScript_TryNicknameCaughtMon
 	printstring STRINGID_PKMNDATAADDEDTODEX
 	waitstate

@@ -40,7 +40,7 @@ SourceFileType GetFileType(std::string& path)
     else if (extension == "inc")
         return SourceFileType::Inc;
     else
-        FATAL_ERROR("Unrecognized extension \"%s\"\n", extension.c_str());
+        FATAL_ERROR("Unrecognized extension \"%s\" in path \"%s\"\n", extension.c_str(), path.c_str());
     
     // Unreachable
     return SourceFileType::Cpp;

@@ -5,7 +5,7 @@
 #include "lu/bitstreams.h"
 
 // dependencies
-#include "lu/generated/struct-serialize//serialize_Mail.h"
+#include "lu/generated/struct-serialize/serialize_Mail.h"
 
 #include "string_util.h" // gflib; for StringLength
 

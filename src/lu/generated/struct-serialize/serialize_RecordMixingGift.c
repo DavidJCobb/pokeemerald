@@ -5,7 +5,7 @@
 #include "lu/bitstreams.h"
 
 // dependencies
-#include "lu/generated/struct-serialize//serialize_RecordMixingGiftData.h"
+#include "lu/generated/struct-serialize/serialize_RecordMixingGiftData.h"
 
 void lu_BitstreamRead_RecordMixingGift(struct lu_BitstreamState* state, struct RecordMixingGift* v) {
    v->checksum = lu_BitstreamRead_s32(state, 32);

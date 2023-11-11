@@ -903,15 +903,9 @@ LittlerootTown_EventScript_GiveRunningShoes::
    @ getting the Pokedex, your character's mom is set to be visible so that she can give 
    @ you the Running Shoes in a cutscene.
    @
-   @ TODO: We plan on adding a Custom Game option that allows you to start a playthrough 
-   @       with the Running Shoes already active. We should add a script command that'll 
-   @       retrieve the value of a specified Custom Game option, and use it here: if you 
-   @       have the Running Shoes available at game start, we should branch to new code, 
-   @       to have Mom send you on your way while skipping Running Shoes dialogue.
-   @
-   @       Alternatively, we could have the effect of the Custom Game option be to just 
-   @       set FLAG_SYS_B_DASH at game start, and we could then check that here. Then, 
-   @       we won't need a new script command just yet.
+   @ We offer a Custom Game option that lets you start with the Running Shoes. It works 
+   @ by setting FLAG_SYS_B_DASH on game start. If that flag is set, then use alternate 
+   @ dialogue that omits mention of the Running Shoes.
    @
    goto_if_set FLAG_SYS_B_DASH, LittlerootTown_EventScript_GiveRunningShoes_AlreadyHaveRunningShoes
    

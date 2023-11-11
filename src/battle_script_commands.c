@@ -53,6 +53,8 @@
 #include "constants/trainers.h"
 //
 #include "lu/custom_game_option_handlers/battle.h"
+#include "lu/custom_game_option_script_helpers.h"
+#include "lu/custom_game_options.h"
 
 extern const u8 *const gBattleScriptsForMoveEffects[];
 
@@ -327,6 +329,7 @@ static void Cmd_removeattackerstatus1(void);
 static void Cmd_finishaction(void);
 static void Cmd_finishturn(void);
 static void Cmd_trainerslideout(void);
+static void Cmd_lu_extensions(void);
 
 void (* const gBattleScriptingCommandsTable[])(void) =
 {
@@ -578,7 +581,8 @@ void (* const gBattleScriptingCommandsTable[])(void) =
     Cmd_removeattackerstatus1,                   //0xF5
     Cmd_finishaction,                            //0xF6
     Cmd_finishturn,                              //0xF7
-    Cmd_trainerslideout                          //0xF8
+    Cmd_trainerslideout,                         //0xF8
+    Cmd_lu_extensions                            //0xF9 // EXTENSION
 };
 
 struct StatFractions
@@ -3362,11 +3366,18 @@ static void Cmd_getexp(void)
                         // check if the pokemon doesn't belong to the player
                         if (gBattleTypeFlags & BATTLE_TYPE_INGAME_PARTNER && gBattleStruct->expGetterMonId >= 3)
                         {
+                            #ifndef LU_DISABLE_CUSTOM_GAME_OPTIONS
+                                gBattleMoveDamage = ApplyCustomGameScale_s32(gBattleMoveDamage, gCustomGameOptions.scale_exp_gains_normal);
+                            #endif
                             i = STRINGID_EMPTYSTRING4;
                         }
                         else
                         {
-                            gBattleMoveDamage = (gBattleMoveDamage * 150) / 100;
+                            #ifndef LU_DISABLE_CUSTOM_GAME_OPTIONS
+                                gBattleMoveDamage = ApplyCustomGameScale_s32(gBattleMoveDamage, gCustomGameOptions.scale_exp_gains_traded);
+                            #else
+                                gBattleMoveDamage = (gBattleMoveDamage * 150) / 100;
+                            #endif
                             i = STRINGID_ABOOSTED;
                         }
                     }
@@ -5619,6 +5630,10 @@ static void Cmd_getmoneyreward(void)
     u32 moneyReward = GetTrainerMoneyToGive(gTrainerBattleOpponent_A);
     if (gBattleTypeFlags & BATTLE_TYPE_TWO_OPPONENTS)
         moneyReward += GetTrainerMoneyToGive(gTrainerBattleOpponent_B);
+    
+    #ifndef LU_DISABLE_CUSTOM_GAME_OPTIONS
+        moneyReward = ApplyCustomGameBattleMoneyVictoryScaling(moneyReward);
+    #endif
 
     AddMoney(&gSaveBlock1Ptr->money, moneyReward);
     PREPARE_WORD_NUMBER_BUFFER(gBattleTextBuff1, 5, moneyReward);
@@ -9927,6 +9942,15 @@ static void Cmd_handleballthrow(void)
                     gBattleResults.catchAttempts[gLastUsedItem - ITEM_ULTRA_BALL]++;
             }
         }
+        
+        #ifndef LU_DISABLE_CUSTOM_GAME_OPTIONS
+            odds = ApplyCustomGameScale_u32(odds, gCustomGameOptions.catch_rate_scale);
+            //
+            if (gCustomGameOptions.catch_rate_increase_base > 0) {
+                u8 increase = (u16)25400 / gCustomGameOptions.catch_rate_increase_base;
+                odds += increase;
+            }
+        #endif
 
         if (odds > 254) // mon caught
         {
@@ -10245,4 +10269,47 @@ static void Cmd_trainerslideout(void)
     MarkBattlerForControllerExec(gActiveBattler);
 
     gBattlescriptCurrInstr += 2;
+}
+
+#include "lu/custom_game_option_script_helpers.h"
+
+enum {
+   Lu_Subinstruction_NoOp,
+   Lu_Subinstruction_JumpIfEq_CustomGameOptionBool, // option ID, comparand, jump destination
+};
+
+static void Cmd_lu_extensions(void) {
+   //
+   // I plan on implementing any battle script commands I need to add as multi-byte 
+   // instructions, since vanilla opcodes already use everything up through 0xF8.
+   //
+   // Macros are defined in `asm/macros/battle_script.inc`, and I plan on having 
+   // separate macros for each custom command.
+   //
+   u8 sub_instruction;
+   
+   sub_instruction = T1_READ_8(gBattlescriptCurrInstr + 1);
+   gBattlescriptCurrInstr += 2; // move past instruction and subinstruction byte
+   
+   switch (sub_instruction) {
+      default:
+         return;
+      case Lu_Subinstruction_JumpIfEq_CustomGameOptionBool:
+         {
+            u8 option_id;
+            u8 comparand;
+            const u8* destination;
+            
+            option_id   = T1_READ_8(  gBattlescriptCurrInstr);
+            comparand   = T1_READ_8(  gBattlescriptCurrInstr + 1);
+            destination = T1_READ_PTR(gBattlescriptCurrInstr + 2);
+            //
+            if (GetCustomGameOptionBool(option_id) == comparand) {
+               gBattlescriptCurrInstr = destination;
+            } else {
+               gBattlescriptCurrInstr += 6;
+            }
+         }
+         return;
+   }
 }

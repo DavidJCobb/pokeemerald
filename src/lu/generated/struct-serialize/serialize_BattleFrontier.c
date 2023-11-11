@@ -127,7 +127,7 @@ void lu_BitstreamRead_BattleFrontier(struct lu_BitstreamState* state, struct Bat
       }
    }
    v->unused_DC4 = lu_BitstreamRead_u16(state, 16);
-   v->palacePrice = lu_BitstreamRead_u16(state, 16);
+   v->palacePrize = lu_BitstreamRead_u16(state, 16);
    for (i = 0; i < 2; ++i) {
       for (j = 0; j < FRONTIER_LVL_MODE_COUNT; ++j) {
          v->palaceWinStreaks[i][j] = lu_BitstreamRead_u16(state, 16);
@@ -139,15 +139,11 @@ void lu_BitstreamRead_BattleFrontier(struct lu_BitstreamState* state, struct Bat
       }
    }
    v->arenaPrize = lu_BitstreamRead_u16(state, 16);
-   for (i = 0; i < 2; ++i) {
-      for (j = 0; j < FRONTIER_LVL_MODE_COUNT; ++j) {
-         v->arenaWinStreaks[i][j] = lu_BitstreamRead_u16(state, 16);
-      }
+   for (i = 0; i < FRONTIER_LVL_MODE_COUNT; ++i) {
+      v->arenaWinStreaks[i] = lu_BitstreamRead_u16(state, 16);
    }
-   for (i = 0; i < 2; ++i) {
-      for (j = 0; j < FRONTIER_LVL_MODE_COUNT; ++j) {
-         v->arenaRecordStreaks[i][j] = lu_BitstreamRead_u16(state, 16);
-      }
+   for (i = 0; i < FRONTIER_LVL_MODE_COUNT; ++i) {
+      v->arenaRecordStreaks[i] = lu_BitstreamRead_u16(state, 16);
    }
    for (i = 0; i < 2; ++i) {
       for (j = 0; j < FRONTIER_LVL_MODE_COUNT; ++j) {
@@ -170,20 +166,14 @@ void lu_BitstreamRead_BattleFrontier(struct lu_BitstreamState* state, struct Bat
       }
    }
    v->pikePrize = lu_BitstreamRead_u16(state, 16);
-   for (i = 0; i < 2; ++i) {
-      for (j = 0; j < FRONTIER_LVL_MODE_COUNT; ++j) {
-         v->pikeWinStreaks[i][j] = lu_BitstreamRead_u16(state, 16);
-      }
+   for (i = 0; i < FRONTIER_LVL_MODE_COUNT; ++i) {
+      v->pikeWinStreaks[i] = lu_BitstreamRead_u16(state, 16);
    }
-   for (i = 0; i < 2; ++i) {
-      for (j = 0; j < FRONTIER_LVL_MODE_COUNT; ++j) {
-         v->pikeRecordStreaks[i][j] = lu_BitstreamRead_u16(state, 16);
-      }
+   for (i = 0; i < FRONTIER_LVL_MODE_COUNT; ++i) {
+      v->pikeRecordStreaks[i] = lu_BitstreamRead_u16(state, 16);
    }
-   for (i = 0; i < 2; ++i) {
-      for (j = 0; j < FRONTIER_LVL_MODE_COUNT; ++j) {
-         v->pikeTotalStreaks[i][j] = lu_BitstreamRead_u16(state, 16);
-      }
+   for (i = 0; i < FRONTIER_LVL_MODE_COUNT; ++i) {
+      v->pikeTotalStreaks[i] = lu_BitstreamRead_u16(state, 16);
    }
    v->pikeHintedRoomIndex = lu_BitstreamRead_u8(state, 3);
    v->pikeHintedRoomType = lu_BitstreamRead_u8(state, 4);
@@ -192,15 +182,11 @@ void lu_BitstreamRead_BattleFrontier(struct lu_BitstreamState* state, struct Bat
       v->pikeHeldItemsBackup[i] = lu_BitstreamRead_u16(state, 9);
    }
    v->pyramidPrize = lu_BitstreamRead_u16(state, 16);
-   for (i = 0; i < 2; ++i) {
-      for (j = 0; j < FRONTIER_LVL_MODE_COUNT; ++j) {
-         v->pyramidWinStreaks[i][j] = lu_BitstreamRead_u16(state, 16);
-      }
+   for (i = 0; i < FRONTIER_LVL_MODE_COUNT; ++i) {
+      v->pyramidWinStreaks[i] = lu_BitstreamRead_u16(state, 16);
    }
-   for (i = 0; i < 2; ++i) {
-      for (j = 0; j < FRONTIER_LVL_MODE_COUNT; ++j) {
-         v->pyramidRecordStreaks[i][j] = lu_BitstreamRead_u16(state, 16);
-      }
+   for (i = 0; i < FRONTIER_LVL_MODE_COUNT; ++i) {
+      v->pyramidRecordStreaks[i] = lu_BitstreamRead_u16(state, 16);
    }
    for (i = 0; i < 4; ++i) {
       v->pyramidRandoms[i] = lu_BitstreamRead_u16(state, 16);
@@ -308,7 +294,7 @@ void lu_BitstreamWrite_BattleFrontier(struct lu_BitstreamState* state, const str
       }
    }
    lu_BitstreamWrite_u16(state, v->unused_DC4, 16);
-   lu_BitstreamWrite_u16(state, v->palacePrice, 16);
+   lu_BitstreamWrite_u16(state, v->palacePrize, 16);
    for (i = 0; i < 2; ++i) {
       for (j = 0; j < FRONTIER_LVL_MODE_COUNT; ++j) {
          lu_BitstreamWrite_u16(state, v->palaceWinStreaks[i][j], 16);
@@ -320,15 +306,11 @@ void lu_BitstreamWrite_BattleFrontier(struct lu_BitstreamState* state, const str
       }
    }
    lu_BitstreamWrite_u16(state, v->arenaPrize, 16);
-   for (i = 0; i < 2; ++i) {
-      for (j = 0; j < FRONTIER_LVL_MODE_COUNT; ++j) {
-         lu_BitstreamWrite_u16(state, v->arenaWinStreaks[i][j], 16);
-      }
+   for (i = 0; i < FRONTIER_LVL_MODE_COUNT; ++i) {
+      lu_BitstreamWrite_u16(state, v->arenaWinStreaks[i], 16);
    }
-   for (i = 0; i < 2; ++i) {
-      for (j = 0; j < FRONTIER_LVL_MODE_COUNT; ++j) {
-         lu_BitstreamWrite_u16(state, v->arenaRecordStreaks[i][j], 16);
-      }
+   for (i = 0; i < FRONTIER_LVL_MODE_COUNT; ++i) {
+      lu_BitstreamWrite_u16(state, v->arenaRecordStreaks[i], 16);
    }
    for (i = 0; i < 2; ++i) {
       for (j = 0; j < FRONTIER_LVL_MODE_COUNT; ++j) {
@@ -351,20 +333,14 @@ void lu_BitstreamWrite_BattleFrontier(struct lu_BitstreamState* state, const str
       }
    }
    lu_BitstreamWrite_u16(state, v->pikePrize, 16);
-   for (i = 0; i < 2; ++i) {
-      for (j = 0; j < FRONTIER_LVL_MODE_COUNT; ++j) {
-         lu_BitstreamWrite_u16(state, v->pikeWinStreaks[i][j], 16);
-      }
+   for (i = 0; i < FRONTIER_LVL_MODE_COUNT; ++i) {
+      lu_BitstreamWrite_u16(state, v->pikeWinStreaks[i], 16);
    }
-   for (i = 0; i < 2; ++i) {
-      for (j = 0; j < FRONTIER_LVL_MODE_COUNT; ++j) {
-         lu_BitstreamWrite_u16(state, v->pikeRecordStreaks[i][j], 16);
-      }
+   for (i = 0; i < FRONTIER_LVL_MODE_COUNT; ++i) {
+      lu_BitstreamWrite_u16(state, v->pikeRecordStreaks[i], 16);
    }
-   for (i = 0; i < 2; ++i) {
-      for (j = 0; j < FRONTIER_LVL_MODE_COUNT; ++j) {
-         lu_BitstreamWrite_u16(state, v->pikeTotalStreaks[i][j], 16);
-      }
+   for (i = 0; i < FRONTIER_LVL_MODE_COUNT; ++i) {
+      lu_BitstreamWrite_u16(state, v->pikeTotalStreaks[i], 16);
    }
    lu_BitstreamWrite_u8(state, v->pikeHintedRoomIndex, 3);
    lu_BitstreamWrite_u8(state, v->pikeHintedRoomType, 4);
@@ -373,15 +349,11 @@ void lu_BitstreamWrite_BattleFrontier(struct lu_BitstreamState* state, const str
       lu_BitstreamWrite_u16(state, v->pikeHeldItemsBackup[i], 9);
    }
    lu_BitstreamWrite_u16(state, v->pyramidPrize, 16);
-   for (i = 0; i < 2; ++i) {
-      for (j = 0; j < FRONTIER_LVL_MODE_COUNT; ++j) {
-         lu_BitstreamWrite_u16(state, v->pyramidWinStreaks[i][j], 16);
-      }
+   for (i = 0; i < FRONTIER_LVL_MODE_COUNT; ++i) {
+      lu_BitstreamWrite_u16(state, v->pyramidWinStreaks[i], 16);
    }
-   for (i = 0; i < 2; ++i) {
-      for (j = 0; j < FRONTIER_LVL_MODE_COUNT; ++j) {
-         lu_BitstreamWrite_u16(state, v->pyramidRecordStreaks[i][j], 16);
-      }
+   for (i = 0; i < FRONTIER_LVL_MODE_COUNT; ++i) {
+      lu_BitstreamWrite_u16(state, v->pyramidRecordStreaks[i], 16);
    }
    for (i = 0; i < 4; ++i) {
       lu_BitstreamWrite_u16(state, v->pyramidRandoms[i], 16);

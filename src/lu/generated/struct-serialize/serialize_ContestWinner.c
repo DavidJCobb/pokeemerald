@@ -21,7 +21,7 @@ void lu_BitstreamRead_ContestWinner(struct lu_BitstreamState* state, struct Cont
    v->contestCategory = lu_BitstreamRead_u8(state, 8);
    lu_BitstreamRead_string(state, v->monName, POKEMON_NAME_LENGTH);
    lu_BitstreamRead_string(state, v->trainerName, PLAYER_NAME_LENGTH);
-   v->contestRank = lu_BitstreamRead_u8(state, 8);
+   v->contestRank = lu_BitstreamRead_u8(state, 3);
 }
 
 void lu_BitstreamWrite_ContestWinner(struct lu_BitstreamState* state, const struct ContestWinner* v) {
@@ -31,5 +31,5 @@ void lu_BitstreamWrite_ContestWinner(struct lu_BitstreamState* state, const stru
    lu_BitstreamWrite_u8(state, v->contestCategory, 8);
    lu_BitstreamWrite_string(state, v->monName, POKEMON_NAME_LENGTH);
    lu_BitstreamWrite_string(state, v->trainerName, PLAYER_NAME_LENGTH);
-   lu_BitstreamWrite_u8(state, v->contestRank, 8);
+   lu_BitstreamWrite_u8(state, v->contestRank, 3);
 }

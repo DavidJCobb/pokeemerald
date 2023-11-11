@@ -30,6 +30,7 @@ struct CustomGameScaleAndClamp {
 u16 ApplyCustomGameScaleAndClamp_u16(u16, const struct CustomGameScaleAndClamp*);
 
 u16 ApplyCustomGameScale_u16(u16, u16 scale);
+u32 ApplyCustomGameScale_u32(u32, u16 scale);
 s32 ApplyCustomGameScale_s32(s32, u16 scale);
 
 #define UNIMPLEMENTED_CUSTOM_GAME_OPTION
@@ -37,55 +38,12 @@ s32 ApplyCustomGameScale_s32(s32, u16 scale);
 
 // Track current values of Custom Game options. Intended to be serialized after SaveBlock2.
 extern struct CustomGameOptions {
-   bool8 start_with_running_shoes;
-   bool8 can_run_indoors;
-   bool8 can_bike_indoors; UNTESTED_CUSTOM_GAME_OPTION
-   
-   UNIMPLEMENTED_CUSTOM_GAME_OPTION u16 scale_wild_encounter_rate;
-   
-   // Scale damage dealt by different participants in a battle.
-   u16 scale_battle_damage_dealt_by_player; // range [0, 5000]
-   u16 scale_battle_damage_dealt_by_enemy;  // range [0, 5000]
-   u16 scale_battle_damage_dealt_by_ally;   UNTESTED_CUSTOM_GAME_OPTION // range [0, 5000]
-   
-   // Scale the move accuracy of different participants in a battle.
-   u16 scale_battle_accuracy_player; // range [0, 5000]
-   u16 scale_battle_accuracy_enemy;  // range [0, 5000]
-   u16 scale_battle_accuracy_ally;   UNTESTED_CUSTOM_GAME_OPTION // range [0, 5000]
-   
-   UNIMPLEMENTED_CUSTOM_GAME_OPTION struct CustomGameScaleAndClamp player_money_loss_on_defeat;
-   UNIMPLEMENTED_CUSTOM_GAME_OPTION struct CustomGameScaleAndClamp player_money_gain_on_victory;
-   
-   UNIMPLEMENTED_CUSTOM_GAME_OPTION u16 scale_shop_prices_sell;
-   UNIMPLEMENTED_CUSTOM_GAME_OPTION u16 scale_shop_prices_buy;
-   
-   u8  overworld_poison_interval; // step count; 0 to disable; range [0, 60]
-   u16 overworld_poison_damage;   // damage taken per poison field effect; range [1, 2000]
-   
-   // generational battle rules:
-   UNIMPLEMENTED_CUSTOM_GAME_OPTION bool8 no_physical_special_split; // TODO: implement the physical/special split first lol
-   
-   // Gen IV battle improvements:
-   UNIMPLEMENTED_CUSTOM_GAME_OPTION bool8 never_white_out_with_partner; // effect: when battling alongside Steven, you don't lose until your Pokemon AND HIS all faint
-   
-   // Gen V battle improvements:
-   UNIMPLEMENTED_CUSTOM_GAME_OPTION bool8 no_inherently_typeless_moves; // effect: Beat Up, Future Sight, and Doom Desire are typed
-   UNIMPLEMENTED_CUSTOM_GAME_OPTION bool8 wonder_guard_blocks_typeless; // effect: Wonder Guard blocks typeless moves except Struggle
+#include "lu/generated/struct-members/CustomGameOptions.members.inl"
 } gCustomGameOptions;
 
 // Track in-game progress related to custom game options. Intended to be serialized after SaveBlock2.
 extern struct CustomGameSavestate {
-   
-   // Needed for Nuzlocke encounter options: we should not enforce any encounter/catch 
-   // limits until the player has obtained at least one of any Poke Ball type.
-   UNIMPLEMENTED_CUSTOM_GAME_OPTION bool8 has_ever_had_poke_balls;
-   
-   //
-   // TODO: Recorded Battles need to be modified to store the state of battle-related 
-   //       custom game options at the time the recording was made, so that they can be 
-   //       played back properly... I assume, anyway.
-   //
-   
+#include "lu/generated/struct-members/CustomGameSavestate.members.inl"
 } gCustomGameSavestate;
 
 #undef UNIMPLEMENTED_CUSTOM_GAME_OPTION

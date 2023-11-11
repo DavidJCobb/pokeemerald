@@ -11,6 +11,48 @@
 
 //
 
+static const struct CGOptionMenuItem sCatchingOptions[] = {
+   {  // Catch EXP
+      .name        = gText_lu_CGOptionName_CatchEXP,
+      .help_string = gText_lu_CGOptionHelp_CatchEXP,
+      .value_type = VALUE_TYPE_BOOL8,
+      .target = {
+         .as_bool8 = &sTempOptions.enable_catch_exp
+      }
+   },
+   {  // Base catch rate
+      .name        = gText_lu_CGOptionName_CatchRateBase,
+      .help_string = gText_lu_CGOptionHelp_CatchRateBase,
+      .flags       = (1 << MENUITEM_FLAG_PERCENTAGE),
+      .value_type = VALUE_TYPE_U8,
+      .values = {
+         .integral = {
+            .min = 0,
+            .max = 100,
+         }
+      },
+      .target = {
+         .as_u8 = &sTempOptions.catch_rate_increase_base
+      }
+   },
+   {  // Scale catch rate
+      .name        = gText_lu_CGOptionName_CatchRateScale,
+      .help_string = gText_lu_CGOptionHelp_CatchRateScale,
+      .flags       = (1 << MENUITEM_FLAG_PERCENTAGE),
+      .value_type = VALUE_TYPE_U16,
+      .values = {
+         .integral = {
+            .min = 0,
+            .max = 5000,
+         }
+      },
+      .target = {
+         .as_u16 = &sTempOptions.catch_rate_scale
+      }
+   },
+   END_OF_LIST_SENTINEL,
+};
+
 static const struct CGOptionMenuItem sBattleOptions[] = {
    {  // Scale accuracy by player
       .name        = gText_lu_CGOptionName_BattlesScaleAccuracyPlayer,
@@ -102,6 +144,59 @@ static const struct CGOptionMenuItem sBattleOptions[] = {
          .as_u16 = &sTempOptions.scale_battle_damage_dealt_by_ally
       }
    },
+   {  // Scale EXP gains (normal)
+      .name        = gText_lu_CGOptionName_BattlesScaleEXPNormal,
+      .help_string = gText_lu_CGOptionHelp_BattlesScaleEXPNormal,
+      .flags       = (1 << MENUITEM_FLAG_PERCENTAGE),
+      .value_type = VALUE_TYPE_U16,
+      .values = {
+         .integral = {
+            .min = 0,
+            .max = 5000,
+         }
+      },
+      .target = {
+         .as_u16 = &sTempOptions.scale_exp_gains_normal
+      }
+   },
+   {  // Scale EXP gains (traded)
+      .name        = gText_lu_CGOptionName_BattlesScaleEXPTraded,
+      .help_string = gText_lu_CGOptionHelp_BattlesScaleEXPTraded,
+      .flags       = (1 << MENUITEM_FLAG_PERCENTAGE),
+      .value_type = VALUE_TYPE_U16,
+      .values = {
+         .integral = {
+            .min = 0,
+            .max = 5000,
+         }
+      },
+      .target = {
+         .as_u16 = &sTempOptions.scale_exp_gains_traded
+      }
+   },
+   {  // Scale monetary earnings on victory
+      .name        = gText_lu_CGOptionName_BattlesScaleVictoryPayout,
+      .help_string = gText_lu_CGOptionHelp_BattlesScaleVictoryPayout,
+      .flags       = (1 << MENUITEM_FLAG_PERCENTAGE),
+      .value_type = VALUE_TYPE_U16,
+      .values = {
+         .integral = {
+            .min = 0,
+            .max = 5000,
+         }
+      },
+      .target = {
+         .as_u16 = &sTempOptions.scale_player_money_gain_on_victory
+      }
+   },
+   {  // Use modern calc for money loss on defeat
+      .name        = gText_lu_CGOptionName_ModernMoneyLossOnDefeat,
+      .help_string = gText_lu_CGOptionHelp_ModernMoneyLossOnDefeat,
+      .value_type = VALUE_TYPE_BOOL8,
+      .target = {
+         .as_bool8 = &sTempOptions.modern_calc_player_money_loss_on_defeat
+      }
+   },
    END_OF_LIST_SENTINEL,
 };
 
@@ -174,6 +269,15 @@ static const struct CGOptionMenuItem sTopLevelMenu[] = {
       .value_type = VALUE_TYPE_NONE,
       .target = {
          .submenu = sBattleOptions
+      },
+   },
+   {  // SUBMENU: Catching options
+      .name        = gText_lu_CGOptionCategoryName_Catching,
+      .help_string = NULL,
+      .flags       = (1 << MENUITEM_FLAG_IS_SUBMENU),
+      .value_type = VALUE_TYPE_NONE,
+      .target = {
+         .submenu = sCatchingOptions
       },
    },
    {  // SUBMENU: Overworld poison

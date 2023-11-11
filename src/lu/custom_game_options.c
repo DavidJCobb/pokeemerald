@@ -17,13 +17,19 @@ static void InitializeScaleAndClamp(struct CustomGameScaleAndClamp* v) {
 
 u16 ApplyCustomGameScale_u16(u16 v, u16 scale) {
    if (scale != 100) {
-      v = (u32)v * scale / 100;
+      v = ((u32)v * scale) / 100;
+   }
+   return v;
+}
+u32 ApplyCustomGameScale_u32(u32 v, u16 scale) {
+   if (scale != 100) {
+      v = (v * scale) / 100;
    }
    return v;
 }
 s32 ApplyCustomGameScale_s32(s32 v, u16 scale) {
    if (scale != 100) {
-      v = v * scale / 100;
+      v = (v * scale) / 100;
    }
    return v;
 }
@@ -48,6 +54,10 @@ void ResetCustomGameOptions(void) {
    
    gCustomGameOptions.scale_wild_encounter_rate = 100;
    
+   gCustomGameOptions.enable_catch_exp = FALSE;
+   gCustomGameOptions.catch_rate_scale = 100;
+   gCustomGameOptions.catch_rate_increase_base = 0;
+   
    gCustomGameOptions.scale_battle_damage_dealt_by_player = 100;
    gCustomGameOptions.scale_battle_damage_dealt_by_enemy  = 100;
    gCustomGameOptions.scale_battle_damage_dealt_by_ally   = 100;
@@ -56,11 +66,16 @@ void ResetCustomGameOptions(void) {
    gCustomGameOptions.scale_battle_accuracy_enemy  = 100;
    gCustomGameOptions.scale_battle_accuracy_ally   = 100;
    
-   InitializeScaleAndClamp(&gCustomGameOptions.player_money_loss_on_defeat);
-   InitializeScaleAndClamp(&gCustomGameOptions.player_money_gain_on_victory);
+   gCustomGameOptions.scale_exp_gains_normal = 100;
+   gCustomGameOptions.scale_exp_gains_traded = 150;
    
+   gCustomGameOptions.scale_player_money_gain_on_victory      = 100;
+   gCustomGameOptions.modern_calc_player_money_loss_on_defeat = FALSE;
+   
+   /*//
    gCustomGameOptions.scale_shop_prices_sell = 100;
    gCustomGameOptions.scale_shop_prices_buy  = 100;
+   //*/
    
    gCustomGameOptions.overworld_poison_interval = 4; // vanilla value; formerly hardcoded
    gCustomGameOptions.overworld_poison_damage   = 1; // vanilla value; formerly hardcoded

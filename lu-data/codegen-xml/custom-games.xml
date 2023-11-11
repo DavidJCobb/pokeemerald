@@ -1,0 +1,92 @@
+<data>
+   <constants>
+   </constants>
+   <types>
+      <struct name="CustomGameScaleAndClamp" header="lu/custom_game_options.h">
+         <fields>
+            <u16 name="scale">
+               <line-comment>percentage, i.e. 100 = 100%</line-comment>
+            </u16>
+            <u16 name="min" />
+            <u16 name="max">
+               <line-comment>0xFFFF = no max</line-comment>
+            </u16>
+         </fields>
+      </struct>
+      
+      <struct name="CustomGameOptions" header="lu/custom_game_options.h">
+         <fields>
+            <bool8 name="start_with_running_shoes" />
+            <bool8 name="can_run_indoors" />
+            <bool8 name="can_bike_indoors" /> <!-- untested -->
+            
+            <u16 name="scale_wild_encounter_rate" min="0" max="5000" /> <!-- unimplemented -->
+            
+            <!-- Enable XP gain when catching Wild Pokemon. -->
+            <bool8 name="enable_catch_exp" /> <!-- untested -->
+            
+            <u16 name="catch_rate_scale" min="0" max="5000"> <!-- untested -->
+               <line-comment>applies to final computed catch rate</line-comment>
+            </u16>
+            <u8 name="catch_rate_increase_base" min="0" max="100"> <!-- untested -->
+               <line-comment>percentage, where 100% = guaranteed catch</line-comment>
+            </u8>
+            
+            <!-- Scale damage dealt by different participants in a battle. -->
+            <u16 name="scale_battle_damage_dealt_by_player" min="0" max="5000" />
+            <u16 name="scale_battle_damage_dealt_by_enemy"  min="0" max="5000" />
+            <u16 name="scale_battle_damage_dealt_by_ally"   min="0" max="5000" /> <!-- untested -->
+            
+            <!-- Scale the move accuracy of different participants in a battle. -->
+            <u16 name="scale_battle_accuracy_player" min="0" max="5000" />
+            <u16 name="scale_battle_accuracy_enemy"  min="0" max="5000" />
+            <u16 name="scale_battle_accuracy_ally"   min="0" max="5000" /> <!-- untested -->
+            
+            <u16 name="scale_exp_gains_normal" min="0" max="5000" /> <!-- untested -->
+            <u16 name="scale_exp_gains_traded" min="0" max="5000" /> <!-- untested -->
+            
+            <u16 name="scale_player_money_gain_on_victory" min="0" max="5000"> <!-- untested -->
+               <line-comment>Does not scale Pay Day gains, which are applied at the end of a victory and lost if you lose the battle.</line-comment>
+            </u16>
+            <bool8 name="modern_calc_player_money_loss_on_defeat"> <!-- untested -->
+               <line-comment>enabled: FR/LG and Gen IV+ calc; disabled: half your cash</line-comment>
+            </bool8>
+            
+            <u8 name="overworld_poison_interval" min="0" max="60">
+               <line-comment>step count; 0 to disable</line-comment>
+            </u8>
+            <u16 name="overworld_poison_damage" min="1" max="2000">
+               <line-comment>damage taken per poison field effect</line-comment>
+            </u16>
+            
+            <!-- generational battle rules -->
+            <bool8 name="no_physical_special_split"> <!-- unimplemented -->
+               <line-comment>TODO: implement the physical/special split first lol</line-comment>
+            </bool8>
+            
+            <!-- Gen IV battle improvements -->
+            <bool8 name="never_white_out_with_partner"> <!-- unimplemented -->
+               <line-comment>effect: when battling alongside Steven, you don't lose until your Pokemon AND HIS all faint</line-comment>
+            </bool8>
+            
+            <!-- Gen V battle improvements -->
+            <bool8 name="no_inherently_typeless_moves"> <!-- unimplemented -->
+               <line-comment>effect: Beat Up, Future Sight, and Doom Desire are typed</line-comment>
+            </bool8>
+            <bool8 name="wonder_guard_blocks_typeless"> <!-- unimplemented -->
+               <line-comment>effect: Wonder Guard blocks typeless moves except Struggle</line-comment>
+            </bool8>
+         </fields>
+      </struct>
+      
+      <struct name="CustomGameSavestate" header="lu/custom_game_options.h">
+         <fields>
+            <!--
+               Needed for Nuzlocke encounter options: we should not enforce any encounter/catch 
+               limits until the player has obtained at least one of any Poke Ball type.
+            -->
+            <bool8 name="has_ever_had_poke_balls" /> <!-- unimplemented -->
+         </fields>
+      </struct>
+   </types>
+</data>

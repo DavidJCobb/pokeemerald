@@ -6,11 +6,12 @@
 #include "lu/generated/sector-serialize/PokemonStorage.h"
 
 // globals to serialize:
+#include "lu/custom_game_options.h"
 #include "pokemon_storage_system.h"
 
 extern bool8 ReadSector_CharacterData(u8 sliceNum, const u8* src) {
    if (sliceNum == 0) {
-      lu_ReadSaveSector_CharacterData00(src, gSaveBlock2Ptr);
+      lu_ReadSaveSector_CharacterData00(src, gSaveBlock2Ptr, &gCustomGameOptions, &gCustomGameSavestate);
    } else {
       return FALSE;
    }
@@ -18,7 +19,7 @@ extern bool8 ReadSector_CharacterData(u8 sliceNum, const u8* src) {
 }
 extern bool8 WriteSector_CharacterData(u8 sliceNum, u8* dst) {
    if (sliceNum == 0) {
-      lu_WriteSaveSector_CharacterData00(dst, gSaveBlock2Ptr);
+      lu_WriteSaveSector_CharacterData00(dst, gSaveBlock2Ptr, &gCustomGameOptions, &gCustomGameSavestate);
    } else {
       return FALSE;
    }

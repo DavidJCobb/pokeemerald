@@ -5,6 +5,7 @@
 #include "constants/items.h"
 #include "constants/songs.h"
 #include "constants/game_stat.h"
+#include "lu/custom_game_option_scripted_ids.h"
 	.include "asm/macros.inc"
 	.include "asm/macros/battle_script.inc"
 	.include "constants/constants.inc"
@@ -62,10 +63,20 @@ BattleScript_SafariBallThrow::
 	handleballthrow
 
 BattleScript_SuccessBallThrow::
+   @
+   @ Do not increment the Pokemon Captures stat when in the Safari Zone.
+   @
 	jumpifhalfword CMP_EQUAL, gLastUsedItem, ITEM_SAFARI_BALL, BattleScript_PrintCaughtMonInfo
 	incrementgamestat GAME_STAT_POKEMON_CAPTURES
+   @
 BattleScript_PrintCaughtMonInfo::
 	printstring STRINGID_GOTCHAPKMNCAUGHTPLAYER
+   @
+   lu_cgo_jump_if_bool_eq CGOPTION_BOOL_GRANT_CATCH_XP, 0, BattleScript_AfterPotentiallyGrantXP
+	setbyte sGIVEEXP_STATE, 0
+	getexp BS_TARGET
+   @
+BattleScript_AfterPotentiallyGrantXP::
 	trysetcaughtmondexflags BattleScript_TryNicknameCaughtMon
 	printstring STRINGID_PKMNDATAADDEDTODEX
 	waitstate

@@ -158,7 +158,7 @@
             <u16 name="hasLost" c-bitfield="1" />
             <u16 name="maybeECardScanDuringChallenge" c-bitfield="1" />
             <u16 name="field_3D6E_0f" c-bitfield="1" />
-            <u16 name="mode" c-bitfield="2">
+            <u16 name="mode" c-bitfield="2" inherit="$trainer-hill-mode">
                <line-comment>HILL_MODE_*</line-comment>
             </u16>
          </fields>
@@ -170,10 +170,24 @@
             <u32 name="personality" />
             <u32 name="trainerId" />
             <u16 name="species" inherit="$pokemon-species-id" />
+            
+            <!--
+               When a painting isn't being saved, this is in the range [0, 4], and refers, 
+               as you'd expect, to a contest category.
+               
+               When a painting is being saved, then this is a "caption ID." That is: it's 
+               a contest category, times NUM_PAINTING_CAPTIONS, plus a random number within 
+               the range [0, NUM_PAINTING_CAPTIONS]. The highest value, then, is 12.
+               
+               I could set that here, but there'd be no verification (within codegen or 
+               within generated preprocessor directives) to guard against these values 
+               changing (e.g. a hack adding more museum painting captions per category).
+            -->
             <u8 name="contestCategory" />
+            
             <field name="monName" inherit="$pokemon-nickname" />
             <field name="trainerName" inherit="$player-name" />
-            <u8 name="contestRank" />
+            <u8 name="contestRank" inherit="$contest-rank" />
          </fields>
       </struct>
       <struct name="DewfordTrend" header="global.h">
@@ -235,9 +249,23 @@
                <line-comment>used by Dig and Escape Rope</line-comment>
             </field>
             <u16 name="savedMusic" />
+            
             <u8 name="weather" />
             <u8 name="weatherCycleStage" />
+            <!--
+               The max value for this is `WEATHER_CYCLE_LENGTH - 1`, since it gets modulo'd 
+               by the constant. Said constant is defined in a *.c file, so we can't include 
+               it for preprocessor tests, and we don't support expressions anyway.
+            -->
+            
             <u8 name="flashLevel" />
+            <!--
+               No constant for this. It's an index into `sFlashLevelToRadius`, an array 
+               defined in `field_screen_effect.c`, and is bounds-checked by `SetFlashLevel` 
+               in `overworld.h`. You could cap this at 8, but you'd want to make sure that 
+               if you ever edit that array, you update this field definition, too.
+            -->
+            
             <u16 name="mapLayoutId" />
             <u16 name="mapView">
                <array-rank extent="256" extent-expr="0x100" />

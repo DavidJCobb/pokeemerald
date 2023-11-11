@@ -35,6 +35,17 @@ extern const u8 gText_lu_CGOptionName_AllowRunningIndoors[];
 
 extern const u8 gText_lu_CGOptionName_AllowBikingIndoors[];
 
+extern const u8 gText_lu_CGOptionCategoryName_Catching[];
+
+extern const u8 gText_lu_CGOptionName_CatchEXP[];
+extern const u8 gText_lu_CGOptionHelp_CatchEXP[];
+
+extern const u8 gText_lu_CGOptionName_CatchRateBase[];
+extern const u8 gText_lu_CGOptionHelp_CatchRateBase[];
+
+extern const u8 gText_lu_CGOptionName_CatchRateScale[];
+extern const u8 gText_lu_CGOptionHelp_CatchRateScale[];
+
 extern const u8 gText_lu_CGOptionCategoryName_Battles[];
 
 extern const u8 gText_lu_CGOptionName_BattlesScaleDamagePlayer[];
@@ -50,6 +61,17 @@ extern const u8 gText_lu_CGOptionName_BattlesScaleAccuracyEnemy[];
 extern const u8 gText_lu_CGOptionHelp_BattlesScaleAccuracyEnemy[];
 extern const u8 gText_lu_CGOptionName_BattlesScaleAccuracyAlly[];
 extern const u8 gText_lu_CGOptionHelp_BattlesScaleAccuracyAlly[];
+
+extern const u8 gText_lu_CGOptionName_BattlesScaleEXPNormal[];
+extern const u8 gText_lu_CGOptionHelp_BattlesScaleEXPNormal[];
+extern const u8 gText_lu_CGOptionName_BattlesScaleEXPTraded[];
+extern const u8 gText_lu_CGOptionHelp_BattlesScaleEXPTraded[];
+
+extern const u8 gText_lu_CGOptionName_BattlesScaleVictoryPayout[];
+extern const u8 gText_lu_CGOptionHelp_BattlesScaleVictoryPayout[];
+
+extern const u8 gText_lu_CGOptionName_ModernMoneyLossOnDefeat[];
+extern const u8 gText_lu_CGOptionHelp_ModernMoneyLossOnDefeat[];
 
 extern const u8 gText_lu_CGOptionCategoryName_OverworldPoison[];
 extern const u8 gText_lu_CGOptionCategoryHelp_OverworldPoison[];

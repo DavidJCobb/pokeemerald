@@ -20,7 +20,7 @@ void lu_BitstreamRead_DomeMonData(struct lu_BitstreamState* state, struct DomeMo
    for (i = 0; i < NUM_STATS; ++i) {
       v->evs[i] = lu_BitstreamRead_u8(state, 8);
    }
-   v->nature = lu_BitstreamRead_u8(state, 8);
+   v->nature = lu_BitstreamRead_u8(state, 5);
 }
 
 void lu_BitstreamWrite_DomeMonData(struct lu_BitstreamState* state, const struct DomeMonData* v) {
@@ -31,5 +31,5 @@ void lu_BitstreamWrite_DomeMonData(struct lu_BitstreamState* state, const struct
    for (i = 0; i < NUM_STATS; ++i) {
       lu_BitstreamWrite_u8(state, v->evs[i], 8);
    }
-   lu_BitstreamWrite_u8(state, v->nature, 8);
+   lu_BitstreamWrite_u8(state, v->nature, 5);
 }

@@ -25,8 +25,8 @@
 
 void lu_BitstreamRead_EmeraldBattleTowerRecord(struct lu_BitstreamState* state, struct EmeraldBattleTowerRecord* v) {
    u8 i;
-   v->lvlMode = lu_BitstreamRead_u8(state, 8);
-   v->facilityClass = lu_BitstreamRead_u8(state, 8);
+   v->lvlMode = lu_BitstreamRead_bool(state);
+   v->facilityClass = lu_BitstreamRead_u8(state, 5);
    v->winStreak = lu_BitstreamRead_u16(state, 16);
    lu_BitstreamRead_string(state, v->name, PLAYER_NAME_LENGTH);
    for (i = 0; i < TRAINER_ID_LENGTH; ++i) {
@@ -50,8 +50,8 @@ void lu_BitstreamRead_EmeraldBattleTowerRecord(struct lu_BitstreamState* state, 
 
 void lu_BitstreamWrite_EmeraldBattleTowerRecord(struct lu_BitstreamState* state, const struct EmeraldBattleTowerRecord* v) {
    u8 i;
-   lu_BitstreamWrite_u8(state, v->lvlMode, 8);
-   lu_BitstreamWrite_u8(state, v->facilityClass, 8);
+   lu_BitstreamWrite_bool(state, v->lvlMode);
+   lu_BitstreamWrite_u8(state, v->facilityClass, 5);
    lu_BitstreamWrite_u16(state, v->winStreak, 16);
    lu_BitstreamWrite_string(state, v->name, PLAYER_NAME_LENGTH);
    for (i = 0; i < TRAINER_ID_LENGTH; ++i) {

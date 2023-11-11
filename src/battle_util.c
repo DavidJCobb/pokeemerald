@@ -319,6 +319,11 @@ void HandleAction_UseItem(void)
 
     if (gLastUsedItem <= LAST_BALL) // is ball
     {
+        //
+        // gBattlerTarget is used by the script to determine how much EXP to award... 
+        // but the `handleballthrow` script command sets it for us, so we don't need 
+        // to worry about it being equal to gBattlerAttacker right here and now.
+        //
         gBattlescriptCurrInstr = gBattlescriptsForBallThrow[gLastUsedItem];
     }
     else if (gLastUsedItem == ITEM_POKE_DOLL || gLastUsedItem == ITEM_FLUFFY_TAIL)

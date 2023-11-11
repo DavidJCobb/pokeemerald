@@ -36,6 +36,11 @@
          <fields>
             <field name="mon"  c-type="BoxPokemon"  c-type-decl="struct" />
             <field name="mail" c-type="DaycareMail" c-type-decl="struct" />
+            
+            <!--
+               Used to track XP gain while at daycare, and to potentially lay an egg (whenever the 
+               low byte is 0xFF).
+            -->
             <u32 name="steps" />
          </fields>
       </struct>

@@ -9,6 +9,8 @@
          sector-base-id="0"
       >
          <struct name="SaveBlock2" ptr="gSaveBlock2Ptr" var-header="global.h" />
+         <struct name="CustomGameOptions" var="gCustomGameOptions" var-header="lu/custom_game_options.h" />
+         <struct name="CustomGameSavestate" var="gCustomGameSavestate" var-header="lu/custom_game_options.h" />
       </group>
       <group name="WorldData"
          sector-count="4"

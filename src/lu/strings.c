@@ -43,6 +43,17 @@ const u8 gText_lu_CGOptionName_AllowRunningIndoors[] = _("Allow running indoors"
 
 const u8 gText_lu_CGOptionName_AllowBikingIndoors[] = _("Allow biking indoors");
 
+const u8 gText_lu_CGOptionCategoryName_Catching[] = _("Pokémon catching options");
+
+const u8 gText_lu_CGOptionName_CatchEXP[] = _("Catch EXP");
+const u8 gText_lu_CGOptionHelp_CatchEXP[] = _("Control whether the player's Pokémon earn EXP when the player catches a Wild Pokémon. EXP earnings are the same as if the Wild Pokémon were defeated in battle.\n\nDefault: Disabled.");
+
+const u8 gText_lu_CGOptionName_CatchRateBase[] = _("Catch rate increase");
+const u8 gText_lu_CGOptionHelp_CatchRateBase[] = _("Apply a flat increase to all computed catch rates. Setting this value to 100%, for example, would guarantee catch odds of 100%.\n\nDefault: 0%: catch rates do not receive a flat increase.");
+
+const u8 gText_lu_CGOptionName_CatchRateScale[] = _("Catch rate scale");
+const u8 gText_lu_CGOptionHelp_CatchRateScale[] = _("Multiply the computed catch chance when throwing any Poké Ball. This multiplier is applied after all catch calculations are complete.\n\nDefault: 100%.");
+
 const u8 gText_lu_CGOptionCategoryName_Battles[] = _("Battle options");
 
 const u8 gText_lu_CGOptionName_BattlesScaleDamagePlayer[] = _("Scale damage by player");
@@ -58,6 +69,17 @@ const u8 gText_lu_CGOptionName_BattlesScaleAccuracyEnemy[] = _("Scale accuracy o
 const u8 gText_lu_CGOptionHelp_BattlesScaleAccuracyEnemy[] = _("Applies a percentage multiplier to opponents' accuracy. This multiplier is applied after all other accuracy calculations, and does not affect NPC AI decision-making.");
 const u8 gText_lu_CGOptionName_BattlesScaleAccuracyAlly[] = _("Scale accuracy of allies");
 const u8 gText_lu_CGOptionHelp_BattlesScaleAccuracyAlly[] = _("Applies a percentage multiplier to NPC allies' accuracy. This multiplier is applied after all other accuracy calculations, and does not affect NPC AI decision-making.");
+
+const u8 gText_lu_CGOptionName_BattlesScaleEXPNormal[] = _("Scale EXP gains (normal)");
+const u8 gText_lu_CGOptionHelp_BattlesScaleEXPNormal[] = _("Scale the EXP awarded to the player's non-traded Pokémon.\n\nDefault: 100%.");
+const u8 gText_lu_CGOptionName_BattlesScaleEXPTraded[] = _("Scale EXP gains (traded)");
+const u8 gText_lu_CGOptionHelp_BattlesScaleEXPTraded[] = _("Scale the EXP awarded to the player's traded Pokémon. Text in the UI will display as normal, describing the EXP earned as “boosted” regardless of the value you set here.\n\nDefault: 150%.");
+
+const u8 gText_lu_CGOptionName_BattlesScaleVictoryPayout[] = _("Scale payout after winning");
+const u8 gText_lu_CGOptionHelp_BattlesScaleVictoryPayout[] = _("Applies a percentage multiplier to the money the player earns after winning a battle. This only affects the payout received from the opposing trainer; it doesn't affect other income, such as the results of using Pay Day.");
+
+const u8 gText_lu_CGOptionName_ModernMoneyLossOnDefeat[] = _("Modern money loss on defeat");
+const u8 gText_lu_CGOptionHelp_ModernMoneyLossOnDefeat[] = _("In the classic Pokémon games, losing a battle would cost the player exactly half of all the money they were carrying. In FireRed, LeafGreen, and all newer games (from Gen IV onward), the player's money loss is calculated similarly to NPCs' money loss, while factoring in the player's badge count and the highest level amongst their party Pokémon.\n\nDefault: Disabled; Emerald uses the classic rules.");
 
 const u8 gText_lu_CGOptionCategoryName_OverworldPoison[] = _("Overworld poison damage");
 const u8 gText_lu_CGOptionCategoryHelp_OverworldPoison[] = _("On the overworld, poisoned Pokémon take damage after every few steps you take. You can change the number of steps and amount of damage dealt, or disable poison damage on the overworld entirely.");

@@ -19,6 +19,36 @@
          <constant name="DOME_TOURNAMENT_TRAINERS_COUNT" value="16" />
       </header>
    </constants>
+   <heritables>
+      <!--
+         FRONTIER_LVL_50   == 0
+         FRONTIER_LVL_OPEN == 1
+         FRONTIER_LVL_TENT == 2 == FRONTIER_LVL_MODE_COUNT
+      -->
+      <number name="$battle-frontier-level-mode-incl-tent" min="0" max="2" />
+      
+      <!--
+         FRONTIER_LVL_50   == 0
+         FRONTIER_LVL_OPEN == 1
+      -->
+      <!--
+         NOTE: The game uses `SaveBlock2::frontier::lvlMode` for the level mode 
+         all over the place, but has lots of code that would read past the ends 
+         of arrays if that value were 2 (FRONTIER_LVL_TENT). My assumption is 
+         that there's no way for it to ever be 2 in those codepaths, so savegame 
+         fields that are only used there, I'm listing as modes not including the 
+         tent.
+      -->
+      <number name="$battle-frontier-level-mode" min="0" max="1" />
+      
+      <!--
+         These are trainer classes used within Battle Tower facilities. There 
+         are two lists, one for men and one for women, defined in `battle_tower.c` 
+         as `gTowerMaleFacilityClasses` and `gTowerFemaleFacilityClasses`. You 
+         should use the length of the lonegr of the two lists as the max here.
+      -->
+      <number name="$battle-frontier-facility-class" min="0" max="30" />
+   </heritables>
    <types>
       <struct name="BattleTowerPokemon" header="global.h">
          <fields>
@@ -51,10 +81,10 @@
       </struct>
       <struct name="EmeraldBattleTowerRecord" header="global.h">
          <fields>
-            <u8 name="lvlMode">
+            <u8 name="lvlMode" inherit="$battle-frontier-level-mode">
                <line-comment>0 = level 50, 1 = level 100</line-comment>
             </u8>
-            <u8 name="facilityClass" />
+            <u8 name="facilityClass" inherit="$battle-frontier-facility-class" />
             <u16 name="winStreak" />
             <field name="name" inherit="$player-name" />
             <u8 name="trainerId">
@@ -88,7 +118,7 @@
       <struct name="BattleTowerEReaderTrainer" header="global.h">
          <fields>
             <u8 name="unk0" />
-            <u8 name="facilityClass" />
+            <u8 name="facilityClass" inherit="$battle-frontier-facility-class" />
             <u16 name="winStreak" />
             <field name="name" inherit="$player-name" />
             <u8 name="trainerId">
@@ -126,7 +156,7 @@
             <u8 name="evs">
                <array-rank extent="NUM_STATS" />
             </u8>
-            <u8 name="nature" />
+            <u8 name="nature" inherit="$pokemon-nature" />
          </fields>
       </struct>
       
@@ -163,7 +193,7 @@
             <field name="ereaderTrainer" c-type="BattleTowerEReaderTrainer" c-type-decl="struct" />
             
             <u8 name="challengeStatus" />
-            <u8 name="lvlMode" c-bitfield="2" />
+            <u8 name="lvlMode" c-bitfield="2" inherit="$battle-frontier-level-mode-incl-tent" />
             <u8 name="challengePaused" c-bitfield="1" />
             <u8 name="disableRecordBattle" c-bitfield="1" />
             <u16 name="selectedPartyMons" inherit="$pokemon-species-id">
@@ -227,7 +257,7 @@
             </u16>
             <u16 name="unused_DC4" />
             
-            <u16 name="palacePrice" />
+            <u16 name="palacePrize" />
             <u16 name="palaceWinStreaks">
                <array-rank extent="2" />
                <array-rank extent="FRONTIER_LVL_MODE_COUNT" />
@@ -239,11 +269,9 @@
             
             <u16 name="arenaPrize" />
             <u16 name="arenaWinStreaks">
-               <array-rank extent="2" />
                <array-rank extent="FRONTIER_LVL_MODE_COUNT" />
             </u16>
             <u16 name="arenaRecordStreaks">
-               <array-rank extent="2" />
                <array-rank extent="FRONTIER_LVL_MODE_COUNT" />
             </u16>
             
@@ -266,15 +294,12 @@
             
             <u16 name="pikePrize" />
             <u16 name="pikeWinStreaks">
-               <array-rank extent="2" />
                <array-rank extent="FRONTIER_LVL_MODE_COUNT" />
             </u16>
             <u16 name="pikeRecordStreaks">
-               <array-rank extent="2" />
                <array-rank extent="FRONTIER_LVL_MODE_COUNT" />
             </u16>
             <u16 name="pikeTotalStreaks">
-               <array-rank extent="2" />
                <array-rank extent="FRONTIER_LVL_MODE_COUNT" />
             </u16>
             <u8 name="pikeHintedRoomIndex" c-bitfield="3" />
@@ -286,11 +311,9 @@
             
             <u16 name="pyramidPrize" />
             <u16 name="pyramidWinStreaks">
-               <array-rank extent="2" />
                <array-rank extent="FRONTIER_LVL_MODE_COUNT" />
             </u16>
             <u16 name="pyramidRecordStreaks">
-               <array-rank extent="2" />
                <array-rank extent="FRONTIER_LVL_MODE_COUNT" />
             </u16>
             <u16 name="pyramidRandoms">
@@ -314,7 +337,7 @@
             <u16 name="cardBattlePoints" />
             <u32 name="battlesCount" />
             
-            <u16 name="domeWinningMoves">
+            <u16 name="domeWinningMoves" inherit="$pokemon-move-id">
                <array-rank extent="DOME_TOURNAMENT_TRAINERS_COUNT" />
             </u16>
             

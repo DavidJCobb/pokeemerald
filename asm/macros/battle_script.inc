@@ -1438,3 +1438,11 @@
 	.macro jumpifnotbattletype flags:req, jumpptr:req
 	jumpifword CMP_NO_COMMON_BITS, gBattleTypeFlags, \flags, \jumpptr
 	.endm
+   
+   .macro lu_cgo_jump_if_bool_eq option_id:req, comparand:req, jumpptr:req
+	.byte 0xF9 @ instruction
+   .byte 0x00 @ sub-instruction
+   .byte  \option_id
+   .byte  \comparand
+	.4byte \jumpptr
+   .endm

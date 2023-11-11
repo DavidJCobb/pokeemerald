@@ -81,3 +81,7 @@ void ApplyCustomGameBattleDamageScaling(void) {
    }
    gBattleMoveDamage = ApplyCustomGameScale_s32(gBattleMoveDamage, scale);
 }
+
+u32 ApplyCustomGameBattleMoneyVictoryScaling(u32 reward) {
+   return ApplyCustomGameScale_u32(reward, gCustomGameOptions.scale_player_money_gain_on_victory);
+}

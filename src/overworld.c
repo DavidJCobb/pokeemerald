@@ -68,6 +68,7 @@
 #include "constants/weather.h"
 //
 #include "lu/custom_game_options.h"
+#include "constants/flags.h" // NUM_BADGES
 
 struct CableClubPlayer
 {
@@ -359,11 +360,49 @@ static void (*const sMovementStatusHandler[])(struct LinkPlayerObjectEvent *, st
     MovementStatusHandler_TryAdvanceScript,
 };
 
+// from FR/LG; used if Custom Game Options so dictate
+static const u8 sWhiteOutMoneyLossMultipliers[NUM_BADGES + 1] = {
+     2,
+     4,
+     6,
+     9,
+    12,
+    16,
+    20,
+    25,
+    30
+};
+
 // code
 void DoWhiteOut(void)
 {
     RunScriptImmediately(EventScript_WhiteOut);
-    SetMoney(&gSaveBlock1Ptr->money, GetMoney(&gSaveBlock1Ptr->money) / 2);
+    #ifdef LU_DISABLE_CUSTOM_GAME_OPTIONS
+        SetMoney(&gSaveBlock1Ptr->money, GetMoney(&gSaveBlock1Ptr->money) / 2);
+    #else
+        if (gCustomGameOptions.modern_calc_player_money_loss_on_defeat) {
+            u8  badges = 0;
+            u8  level;
+            u32 penalty;
+            u32 money;
+            {
+               u8 i;
+               for(i = 0; i < NUM_BADGES; ++i)
+                  if (FlagGet(FLAG_BADGE01_GET + i))
+                     ++badges;
+            }
+            level = GetPlayerPartyHighestLevel();
+            
+            penalty = level * 4 * sWhiteOutMoneyLossMultipliers[badges];
+            money   = GetMoney(&gSaveBlock1Ptr->money);
+            if (penalty > money)
+               penalty = money;
+            
+            SetMoney(&gSaveBlock1Ptr->money, money - penalty);
+        } else {
+            SetMoney(&gSaveBlock1Ptr->money, GetMoney(&gSaveBlock1Ptr->money) / 2);
+        }
+    #endif
     HealPlayerParty();
     Overworld_ResetStateAfterWhiteOut();
     SetWarpDestinationToLastHealLocation();

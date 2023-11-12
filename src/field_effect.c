@@ -1146,6 +1146,15 @@ static void SpriteCB_PokeballGlowEffect(struct Sprite *sprite)
 static void PokeballGlowEffect_PlaceBalls(struct Sprite *sprite)
 {
     u8 spriteId;
+    if (sprite->sNumMons == 0)
+    {
+       //
+       // This specific branch would only run if the player activated a PokeCenter heal 
+       // with an empty party.
+       //
+       sprite->sState++;
+       return;
+    }
     if (sprite->sTimer == 0 || (--sprite->sTimer) == 0)
     {
         sprite->sTimer = 25;

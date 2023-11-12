@@ -10307,8 +10307,8 @@ static void Cmd_trainerslideout(void)
 #include "lu/custom_game_option_script_helpers.h"
 
 enum {
-   Lu_Subinstruction_NoOp,
-   Lu_Subinstruction_JumpIfEq_CustomGameOptionBool, // option ID, comparand, jump destination
+   Lu_Subinstruction_NoOp = 0,
+   Lu_Subinstruction_JumpIfEq_CustomGameOptionBool = 1, // option ID, comparand, jump destination
 };
 
 static void Cmd_lu_extensions(void) {
@@ -10321,26 +10321,35 @@ static void Cmd_lu_extensions(void) {
    //
    u8 sub_instruction;
    
-   sub_instruction = T1_READ_8(gBattlescriptCurrInstr + 1);
+   DebugPrintf("battle script: Lu command: at %d", gBattlescriptCurrInstr);
+   
+   sub_instruction = gBattlescriptCurrInstr[1];
    gBattlescriptCurrInstr += 2; // move past instruction and subinstruction byte
    
+   DebugPrintf("battle script: Lu command: subinstruction %d", sub_instruction);
+   DebugPrintf("battle script: Lu command: moved to %d", gBattlescriptCurrInstr);
+   
    switch (sub_instruction) {
-      default:
-         return;
       case Lu_Subinstruction_JumpIfEq_CustomGameOptionBool:
          {
             u8 option_id;
             u8 comparand;
             const u8* destination;
+   DebugPrintf("battle script: Lu command: subinstruction is JumpIfEq_CustomGameOptionBool", 0);
             
-            option_id   = T1_READ_8(  gBattlescriptCurrInstr);
-            comparand   = T1_READ_8(  gBattlescriptCurrInstr + 1);
+            option_id   = gBattlescriptCurrInstr[0];
+            comparand   = gBattlescriptCurrInstr[1];
             destination = T1_READ_PTR(gBattlescriptCurrInstr + 2);
+   DebugPrintf("battle script: Lu command: option ID: %d", option_id);
+   DebugPrintf("battle script: Lu command: comparand: %d", comparand);
+   DebugPrintf("battle script: Lu command: destination: %d", destination);
             //
             if (GetCustomGameOptionBool(option_id) == comparand) {
                gBattlescriptCurrInstr = destination;
+   DebugPrintf("battle script: Lu command: taking jump to %d", gBattlescriptCurrInstr);
             } else {
                gBattlescriptCurrInstr += 6;
+   DebugPrintf("battle script: Lu command: not jumping; moved to %d", gBattlescriptCurrInstr);
             }
          }
          return;

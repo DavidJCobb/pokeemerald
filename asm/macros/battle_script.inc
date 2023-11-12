@@ -1441,7 +1441,7 @@
    
    .macro lu_cgo_jump_if_bool_eq option_id:req, comparand:req, jumpptr:req
 	.byte 0xF9 @ instruction
-   .byte 0x00 @ sub-instruction
+   .byte 0x01 @ sub-instruction
    .byte  \option_id
    .byte  \comparand
 	.4byte \jumpptr

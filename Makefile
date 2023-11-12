@@ -339,8 +339,10 @@ else
 define C_DEP
 $1: $2 $$(shell $(SCANINC) -I include -I tools/agbcc/include -I gflib $2)
 ifneq ($$(.SHELLSTATUS),0)
-	@echo SCANINC failed with one or more FATAL ERRORS, which should have been printed somewhere above, during an attempted dependency scan of $2.
-	@exit $$(.SHELLSTATUS)
+	# Re-run the command here so its output is actually visible...
+	$$(shell $(SCANINC) -I include -I tools/agbcc/include -I gflib $2)
+	# ...and then fail with an error, within Make.
+	$$(error SCANINC failed with one or more FATAL ERRORS, which should have been printed somewhere above, during an attempted dependency scan of $2.)
 endif
 ifeq (,$$(KEEP_TEMPS))
 	@echo "$$(CC1) <flags> -o $$@ $$<"

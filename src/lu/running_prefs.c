@@ -4,7 +4,6 @@
 #include "global.fieldmap.h"
 #include "field_player_avatar.h"
 #include "constants/map_types.h" // MAP_TYPE_INDOOR
-#include "lu/constants.h"
 #include "event_data.h" // FlagGet
 
 EWRAM_DATA static bool8 sRunToggleIsActive = FALSE;

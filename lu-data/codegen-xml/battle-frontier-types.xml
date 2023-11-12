@@ -99,7 +99,7 @@
             <u16 name="speechLost" inherit="$easy-chat-word">
                <array-rank extent="EASY_CHAT_BATTLE_WORDS_COUNT" />
             </u16>
-            <field name="party" c-type="BattleTowerPokemon" c-type-decl="struct">
+            <field name="party" c-type="BattleTowerPokemon">
                <array-rank extent="MAX_FRONTIER_PARTY_SIZE" />
             </field>
             <u8 name="language" inherit="$game-language" />
@@ -133,7 +133,7 @@
             <u16 name="farewellPlayerWon" inherit="$easy-chat-word">
                <array-rank extent="EASY_CHAT_BATTLE_WORDS_COUNT" />
             </u16>
-            <field name="party" c-type="BattleTowerPokemon" c-type-decl="struct">
+            <field name="party" c-type="BattleTowerPokemon">
                <array-rank extent="FRONTIER_PARTY_SIZE" />
             </field>
             <u32 name="checksum" is-checksum="true" /> <!-- game ensures that all padding bits/bytes are zero -->
@@ -184,13 +184,13 @@
       
       <struct name="BattleFrontier" header="global.h">
          <fields>
-            <field name="towerPlayer" c-type="EmeraldBattleTowerRecord" c-type-decl="struct" />
-            <field name="towerRecords" c-type="EmeraldBattleTowerRecord" c-type-decl="struct">
+            <field name="towerPlayer" c-type="EmeraldBattleTowerRecord" />
+            <field name="towerRecords" c-type="EmeraldBattleTowerRecord">
                <line-comment>From record mixing.</line-comment>
                <array-rank extent="BATTLE_TOWER_RECORD_COUNT" />
             </field>
-            <field name="towerInterview" c-type="BattleTowerInterview" c-type-decl="struct" />
-            <field name="ereaderTrainer" c-type="BattleTowerEReaderTrainer" c-type-decl="struct" />
+            <field name="towerInterview" c-type="BattleTowerInterview" />
+            <field name="ereaderTrainer" c-type="BattleTowerEReaderTrainer" />
             
             <u8 name="challengeStatus" />
             <u8 name="lvlMode" c-bitfield="2" inherit="$battle-frontier-level-mode-incl-tent" />
@@ -248,7 +248,7 @@
                <array-rank extent="2" />
                <array-rank extent="FRONTIER_LVL_MODE_COUNT" />
             </u16>
-            <field name="domeTrainers" c-type="BattleDomeTrainer" c-type-decl="struct">
+            <field name="domeTrainers" c-type="BattleDomeTrainer">
                <array-rank extent="DOME_TOURNAMENT_TRAINERS_COUNT" />
             </field>
             <u16 name="domeMonIds" inherit="$pokemon-species-id">
@@ -322,14 +322,14 @@
             <u8 name="pyramidTrainerFlags">
                <line-comment>1 bit for each trainer (MAX_PYRAMID_TRAINERS)</line-comment>
             </u8>
-            <field name="pyramidBag" c-type="PyramidBag" c-type-decl="struct" />
+            <field name="pyramidBag" c-type="PyramidBag" />
             <u8 name="pyramidLightRadius" />
             
             <u16 name="verdanturfTentPrize" />
             <u16 name="fallarborTentPrize" />
             <u16 name="slateportTentPrize" />
             
-            <field name="rentalMons" c-type="RentalMon" c-type-decl="struct">
+            <field name="rentalMons" c-type="RentalMon">
                <array-rank extent="6" extent-expr="FRONTIER_PARTY_SIZE * 2" />
             </field>
             
@@ -360,7 +360,7 @@
             <u8 name="unused_EFA" />
             <u8 name="unused_EFB" />
             
-            <field name="domePlayerPartyData" c-type="DomeMonData" c-type-decl="struct">
+            <field name="domePlayerPartyData" c-type="DomeMonData">
                <array-rank extent="FRONTIER_PARTY_SIZE" />
             </field>
          </fields>

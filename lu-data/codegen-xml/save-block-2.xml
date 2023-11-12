@@ -47,7 +47,7 @@
             <u8 name="speciesIds">
                <array-rank extent="MULTI_PARTY_SIZE" />
             </u8>
-            <field name="questions" c-type="ApprenticeQuestion" c-type-decl="struct">
+            <field name="questions" c-type="ApprenticeQuestion">
                <array-rank extent="APPRENTICE_MAX_QUESTIONS" />
             </field>
          </fields>
@@ -68,7 +68,7 @@
             <u8 name="lvlMode" c-bitfield="2" />
             <u8 name="numQuestions" />
             <u8 name="number" />
-            <field name="party" c-type="ApprenticeMon" c-type-decl="struct">
+            <field name="party" c-type="ApprenticeMon">
                <array-rank extent="MULTI_PARTY_SIZE" />
             </field>
             <u16 name="speechWon" inherit="$easy-chat-word">
@@ -236,14 +236,14 @@
                <line-comment>Lu: Running Shoes option</line-comment>
             </u16>
             
-            <field name="pokedex" c-type="Pokedex" c-type-decl="struct" />
+            <field name="pokedex" c-type="Pokedex" />
             
             <u8 name="filler_90" do-not-serialize="true">
                <array-rank extent="8" />
             </u8>
             
-            <field name="localTimeOffset" c-type="Time" c-type-decl="struct" />
-            <field name="lastBerryTreeUpdate" c-type="Time" c-type-decl="struct" />
+            <field name="localTimeOffset" c-type="Time" />
+            <field name="lastBerryTreeUpdate" c-type="Time" />
             
             <u32 name="gcnLinkFlags">
                <line-comment>Read by Pokemon Colosseum/XD</line-comment>
@@ -251,21 +251,21 @@
             </u32>
             <u32 name="encryptionKey" />
             
-            <field name="playerApprentice" c-type="PlayersApprentice" c-type-decl="struct" />
-            <field name="apprentices" c-type="Apprentice" c-type-decl="struct">
+            <field name="playerApprentice" c-type="PlayersApprentice" />
+            <field name="apprentices" c-type="Apprentice">
                <array-rank extent="APPRENTICE_COUNT" />
             </field>
             
-            <field name="berryCrush" c-type="BerryCrush" c-type-decl="struct" />
-            <field name="pokeJump" c-type="PokemonJumpRecords" c-type-decl="struct" />
-            <field name="berryPick" c-type="BerryPickingResults" c-type-decl="struct" />
-            <field name="hallRecords1P" c-type="RankingHall1P" c-type-decl="struct">
+            <field name="berryCrush" c-type="BerryCrush" />
+            <field name="pokeJump" c-type="PokemonJumpRecords" />
+            <field name="berryPick" c-type="BerryPickingResults" />
+            <field name="hallRecords1P" c-type="RankingHall1P">
                <line-comment>From record mixing.</line-comment>
                <array-rank extent="HALL_FACILITIES_COUNT" />
                <array-rank extent="FRONTIER_LVL_MODE_COUNT" />
                <array-rank extent="HALL_RECORDS_COUNT" />
             </field>
-            <field name="hallRecords2P" c-type="RankingHall2P" c-type-decl="struct">
+            <field name="hallRecords2P" c-type="RankingHall2P">
                <line-comment>From record mixing.</line-comment>
                <array-rank extent="FRONTIER_LVL_MODE_COUNT" />
                <array-rank extent="HALL_RECORDS_COUNT" />
@@ -275,7 +275,7 @@
                <array-rank extent="CONTESTANT_COUNT" />
             </field>
             
-            <field name="frontier" c-type="BattleFrontier" c-type-decl="struct" />
+            <field name="frontier" c-type="BattleFrontier" />
          </fields>
       </struct>
    </types>

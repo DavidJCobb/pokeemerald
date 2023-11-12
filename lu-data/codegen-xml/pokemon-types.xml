@@ -8,7 +8,6 @@
       </header>
    </constants>
    <types>
-      <!-- old man in Mauville City (e.g. bard, hipster, etc.) -->
       <union name="PokemonSubstruct" header="pokemon.h"
          do-not-codegen="true"
          sizeof="NUM_SUBSTRUCT_BYTES"

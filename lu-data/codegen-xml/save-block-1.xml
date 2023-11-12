@@ -113,7 +113,7 @@
       </struct>
       <struct name="LinkBattleRecords" header="global.h">
          <fields>
-            <field name="entries" c-type="LinkBattleRecord" c-type-decl="struct">
+            <field name="entries" c-type="LinkBattleRecord">
                <array-rank extent="LINK_B_RECORDS_COUNT" />
             </field>
             <u8 name="languages" inherit="$game-language">
@@ -134,7 +134,7 @@
       <struct name="RecordMixingGift" header="global.h">
          <fields>
             <int name="checksum" is-checksum="true" />
-            <field name="data" c-type="RecordMixingGiftData" c-type-decl="struct" />
+            <field name="data" c-type="RecordMixingGiftData" />
          </fields>
       </struct>
       
@@ -238,14 +238,14 @@
       <!-- This struct is best understood as "world state." SaveBlock2 is best understood as "character state." -->
       <struct name="SaveBlock1" header="global.h">
          <fields>
-            <field name="pos" c-type="Coords16" c-type-decl="struct" />
-            <field name="location" c-type="WarpData" c-type-decl="struct" />
-            <field name="continueGameWarp" c-type="WarpData" c-type-decl="struct" />
-            <field name="dynamicWarp" c-type="WarpData" c-type-decl="struct" />
-            <field name="lastHealLocation" c-type="WarpData" c-type-decl="struct">
+            <field name="pos" c-type="Coords16" />
+            <field name="location" c-type="WarpData" />
+            <field name="continueGameWarp" c-type="WarpData" />
+            <field name="dynamicWarp" c-type="WarpData" />
+            <field name="lastHealLocation" c-type="WarpData">
                <line-comment>used by white-out and teleport</line-comment>
             </field>
-            <field name="escapeWarp" c-type="WarpData" c-type-decl="struct">
+            <field name="escapeWarp" c-type="WarpData">
                <line-comment>used by Dig and Escape Rope</line-comment>
             </field>
             <u16 name="savedMusic" />
@@ -272,7 +272,7 @@
             </u16>
             
             <u8 name="playerPartyCount" min="0" max="PARTY_SIZE" />
-            <field name="playerParty" c-type="Pokemon" c-type-decl="struct">
+            <field name="playerParty" c-type="Pokemon">
                <array-rank extent="PARTY_SIZE" />
             </field>
             
@@ -283,25 +283,25 @@
                <line-comment>Encrypted using SaveBlock2::encryptionKey; see `ApplyNewEncryptionKeyToAllEncryptedData` in `load_save.c`</line-comment>
             </u16>
             <u16 name="registeredItem" inherit="$global-item-id" />
-            <field name="pcItems" c-type="ItemSlot" c-type-decl="struct">
+            <field name="pcItems" c-type="ItemSlot">
                <array-rank extent="PC_ITEMS_COUNT" />
             </field>
-            <field name="bagPocket_Items" c-type="ItemSlot" c-type-decl="struct">
+            <field name="bagPocket_Items" c-type="ItemSlot">
                <array-rank extent="BAG_ITEMS_COUNT" />
             </field>
-            <field name="bagPocket_KeyItems" c-type="ItemSlot" c-type-decl="struct">
+            <field name="bagPocket_KeyItems" c-type="ItemSlot">
                <array-rank extent="BAG_KEYITEMS_COUNT" />
             </field>
-            <field name="bagPocket_PokeBalls" c-type="ItemSlot" c-type-decl="struct">
+            <field name="bagPocket_PokeBalls" c-type="ItemSlot">
                <array-rank extent="BAG_POKEBALLS_COUNT" />
             </field>
-            <field name="bagPocket_TMHM" c-type="ItemSlot" c-type-decl="struct">
+            <field name="bagPocket_TMHM" c-type="ItemSlot">
                <array-rank extent="BAG_TMHM_COUNT" />
             </field>
-            <field name="bagPocket_Berries" c-type="ItemSlot" c-type-decl="struct">
+            <field name="bagPocket_Berries" c-type="ItemSlot">
                <array-rank extent="BAG_BERRIES_COUNT" />
             </field>
-            <field name="pokeblocks" c-type="Pokeblock" c-type-decl="struct">
+            <field name="pokeblocks" c-type="Pokeblock">
                <array-rank extent="POKEBLOCKS_COUNT" />
             </field>
             
@@ -320,10 +320,10 @@
                <array-rank extent="MAX_REMATCH_ENTRIES" />
             </u8>
             
-            <field name="objectEvents" c-type="ObjectEvent" c-type-decl="struct">
+            <field name="objectEvents" c-type="ObjectEvent">
                <array-rank extent="OBJECT_EVENTS_COUNT" />
             </field>
-            <field name="objectEventTemplates" c-type="ObjectEventTemplate" c-type-decl="struct">
+            <field name="objectEventTemplates" c-type="ObjectEventTemplate">
                <array-rank extent="OBJECT_EVENT_TEMPLATES_COUNT" />
             </field>
             <u8 name="flags">
@@ -337,11 +337,11 @@
                <array-rank extent="NUM_GAME_STATS" />
             </u32>
             
-            <field name="berryTrees" c-type="BerryTree" c-type-decl="struct">
+            <field name="berryTrees" c-type="BerryTree">
                <array-rank extent="BERRY_TREES_COUNT" />
             </field>
             
-            <field name="secretBases" c-type="SecretBase" c-type-decl="struct">
+            <field name="secretBases" c-type="SecretBase">
                <array-rank extent="SECRET_BASES_COUNT" />
             </field>
             <u8 name="playerRoomDecorations">
@@ -375,10 +375,10 @@
                <array-rank extent="10" />
             </u8>
             
-            <field name="tvShows" c-type="TVShow" c-type-decl="">
+            <field name="tvShows" c-type="TVShow">
                <array-rank extent="TV_SHOWS_COUNT" />
             </field>
-            <field name="pokeNews" c-type="PokeNews" c-type-decl="">
+            <field name="pokeNews" c-type="PokeNews">
                <array-rank extent="POKE_NEWS_COUNT" />
             </field>
             <u16 name="outbreakPokemonSpecies" inherit="$pokemon-species-id" />
@@ -393,7 +393,7 @@
             <u8 name="outbreakUnused3" />
             <u8 name="outbreakPokemonProbability" />
             <u16 name="outbreakDaysLeft" />
-            <field name="gabbyAndTyData" c-type="GabbyAndTyData" c-type-decl="struct" />
+            <field name="gabbyAndTyData" c-type="GabbyAndTyData" />
             
             <u16 name="easyChatProfile" inherit="$easy-chat-word">
                <array-rank extent="EASY_CHAT_BATTLE_WORDS_COUNT" />
@@ -408,7 +408,7 @@
                <array-rank extent="EASY_CHAT_BATTLE_WORDS_COUNT" />
             </u16>
             
-            <field name="mail" c-type="Mail" c-type-decl="struct">
+            <field name="mail" c-type="Mail">
                <array-rank extent="MAIL_COUNT" />
             </field>
             
@@ -417,39 +417,39 @@
                <array-rank extent="NUM_TRENDY_SAYING_BYTES" />
             </u8>
             
-            <field name="oldMan" c-type="OldMan" c-type-decl="" />
-            <field name="dewfordTrends" c-type="DewfordTrend" c-type-decl="struct">
+            <field name="oldMan" c-type="OldMan" />
+            <field name="dewfordTrends" c-type="DewfordTrend">
                <array-rank extent="SAVED_TRENDS_COUNT" />
             </field>
-            <field name="contestWinners" c-type="ContestWinner" c-type-decl="struct">
+            <field name="contestWinners" c-type="ContestWinner">
                <array-rank extent="NUM_CONTEST_WINNERS" />
             </field>
-            <field name="daycare" c-type="DayCare" c-type-decl="struct" />
-            <field name="linkBattleRecords" c-type="LinkBattleRecords" c-type-decl="struct" />
+            <field name="daycare" c-type="DayCare" />
+            <field name="linkBattleRecords" c-type="LinkBattleRecords" />
             <u8 name="giftRibbons">
                <array-rank extent="GIFT_RIBBONS_COUNT" />
             </u8>
-            <field name="externalEventData" c-type="ExternalEventData" c-type-decl="struct" />
-            <field name="externalEventFlags" c-type="ExternalEventFlags" c-type-decl="struct" />
-            <field name="roamer" c-type="Roamer" c-type-decl="struct" />
-            <field name="enigmaBerry" c-type="EnigmaBerry" c-type-decl="struct" />
-            <field name="mysteryGift" c-type="MysteryGiftSave" c-type-decl="struct" />
+            <field name="externalEventData" c-type="ExternalEventData" />
+            <field name="externalEventFlags" c-type="ExternalEventFlags" />
+            <field name="roamer" c-type="Roamer" />
+            <field name="enigmaBerry" c-type="EnigmaBerry" />
+            <field name="mysteryGift" c-type="MysteryGiftSave" />
             <u8 name="unused_3598" do-not-serialize="true">
                <array-rank extent="384" extent-expr="0x180" />
             </u8>
             <u32 name="trainerHillTimes">
                <array-rank extent="NUM_TRAINER_HILL_MODES" />
             </u32>
-            <field name="ramScript" c-type="RamScript" c-type-decl="struct" />
-            <field name="recordMixingGift" c-type="RecordMixingGift" c-type-decl="struct" />
+            <field name="ramScript" c-type="RamScript" />
+            <field name="recordMixingGift" c-type="RecordMixingGift" />
             
             <u8 name="seen2">
                <array-rank extent="NUM_DEX_FLAG_BYTES" />
             </u8>
             
-            <field name="lilycoveLady" c-type="LilycoveLady" c-type-decl="" />
+            <field name="lilycoveLady" c-type="LilycoveLady" />
             
-            <field name="trainerNameRecords" c-type="TrainerNameRecord" c-type-decl="struct">
+            <field name="trainerNameRecords" c-type="TrainerNameRecord">
                <array-rank extent="20" />
             </field>
             <u8 name="registeredTexts">
@@ -460,8 +460,8 @@
                <array-rank extent="10" />
             </u8>
             
-            <field name="trainerHill" c-type="TrainerHillSave" c-type-decl="struct" />
-            <field name="waldaPhrase" c-type="WaldaPhrase" c-type-decl="struct" />
+            <field name="trainerHill" c-type="TrainerHillSave" />
+            <field name="waldaPhrase" c-type="WaldaPhrase" />
          </fields>
       </struct>
    </types>

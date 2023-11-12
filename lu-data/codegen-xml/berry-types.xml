@@ -8,7 +8,7 @@
    <types>
       <struct name="Berry2" header="global.berry.h">
          <fields>
-            <string name="name" char-type="u8" length="BERRY_NAME_LENGTH" />
+            <string name="name" length="BERRY_NAME_LENGTH" />
             <u8 name="firmness" />
             <u16 name="size" />
             <u8 name="maxYield" />
@@ -42,7 +42,7 @@
       
       <struct name="EnigmaBerry" header="global.berry.h">
          <fields>
-            <field name="berry" c-type="Berry2" c-type-decl="struct" />
+            <field name="berry" c-type="Berry2" />
             <u8 name="itemEffect">
                <array-rank extent="BERRY_ITEM_EFFECT_COUNT" />
             </u8>

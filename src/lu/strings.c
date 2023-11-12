@@ -94,3 +94,4 @@ const u8 gText_lu_CGOptionValues_common_Default[] = _("Default");
 const u8 gText_lu_CGOptionValues_common_Disabled[] = _("Disabled");
 const u8 gText_lu_CGOptionValues_common_Enabled[]  = _("Enabled");
 const u8 gText_lu_CGOptionValues_common_None[]  = _("None");
+const u8 gText_lu_CGOptionValues_common_Random[]  = _("Random");

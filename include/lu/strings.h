@@ -86,5 +86,6 @@ extern const u8 gText_lu_CGOptionValues_common_Default[];
 extern const u8 gText_lu_CGOptionValues_common_Disabled[];
 extern const u8 gText_lu_CGOptionValues_common_Enabled[];
 extern const u8 gText_lu_CGOptionValues_common_None[];
+extern const u8 gText_lu_CGOptionValues_common_Random[];
 
 #endif

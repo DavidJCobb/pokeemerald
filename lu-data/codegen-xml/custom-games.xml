@@ -23,7 +23,7 @@
             <u16 name="scale_wild_encounter_rate" min="0" max="5000" /> <!-- unimplemented -->
             
             <!-- Enable XP gain when catching Wild Pokemon. -->
-            <bool8 name="enable_catch_exp" /> <!-- untested -->
+            <bool8 name="enable_catch_exp" />
             
             <u16 name="catch_rate_scale" min="0" max="5000"> <!-- untested -->
                <line-comment>applies to final computed catch rate</line-comment>
@@ -42,13 +42,13 @@
             <u16 name="scale_battle_accuracy_enemy"  min="0" max="5000" />
             <u16 name="scale_battle_accuracy_ally"   min="0" max="5000" /> <!-- untested -->
             
-            <u16 name="scale_exp_gains_normal" min="0" max="5000" /> <!-- untested -->
+            <u16 name="scale_exp_gains_normal" min="0" max="5000" />
             <u16 name="scale_exp_gains_traded" min="0" max="5000" /> <!-- untested -->
             
             <u16 name="scale_player_money_gain_on_victory" min="0" max="5000">
                <line-comment>Does not scale Pay Day gains, which are applied at the end of a victory and lost if you lose the battle.</line-comment>
             </u16>
-            <bool8 name="modern_calc_player_money_loss_on_defeat"> <!-- untested -->
+            <bool8 name="modern_calc_player_money_loss_on_defeat">
                <line-comment>enabled: FR/LG and Gen IV+ calc; disabled: half your cash</line-comment>
             </bool8>
             

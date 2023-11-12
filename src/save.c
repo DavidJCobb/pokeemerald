@@ -70,7 +70,7 @@ static void WriteHallOfFame();
 #define SAVEBLOCK_LAYOUT_ITEM(index, name)  {  index, &ReadSector_##name , &WriteSector_##name  }
 
 static const struct SaveblockLayoutItem sSaveSlotLayout[NUM_SECTORS_PER_SLOT] = {
-#include "lu/generated/save-functors/save_functor_table.inl"
+#include "lu/generated/save-functors/save_functor_table.h"
 };
 
 u16 gLastWrittenSector;

@@ -34,8 +34,8 @@
       <number name="$pokemon-move-id" min="0" />
       <number name="$pokemon-species-id" min="0" max="1024" />
       
-      <string name="$player-name"      char-type="u8" length="PLAYER_NAME_LENGTH" />
-      <string name="$pokemon-nickname" char-type="u8" length="POKEMON_NAME_LENGTH" />
+      <string name="$player-name"      length="PLAYER_NAME_LENGTH" />
+      <string name="$pokemon-nickname" length="POKEMON_NAME_LENGTH" />
       
       <number name="$pokemon-nature" min="0" max="24" />
       

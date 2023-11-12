@@ -1,4 +1,4 @@
-#include "lu/generated/struct-serialize//serialize_ObjectEvent.h"
+#include "lu/generated/struct-serialize/serialize_ObjectEvent.h"
 
 #include "global.h"
 #include "global.fieldmap.h" // struct definition
@@ -6,9 +6,9 @@
 #include "lu/bitstreams.h"
 
 // dependencies
-#include "lu/generated/struct-serialize//serialize_Coords16.h"
-#include "lu/generated/struct-serialize//serialize_Coords16.h"
-#include "lu/generated/struct-serialize//serialize_Coords16.h"
+#include "lu/generated/struct-serialize/serialize_Coords16.h"
+#include "lu/generated/struct-serialize/serialize_Coords16.h"
+#include "lu/generated/struct-serialize/serialize_Coords16.h"
 
 void lu_BitstreamRead_ObjectEvent(struct lu_BitstreamState* state, struct ObjectEvent* v) {
    v->active = lu_BitstreamRead_bool(state);

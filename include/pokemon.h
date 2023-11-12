@@ -195,12 +195,12 @@ union PokemonSubstruct
 
 struct BoxPokemon
 {
-#include "lu/generated/struct-members/BoxPokemon.members.inl"
+#include "lu/generated/struct-members/BoxPokemon.members.h"
 };
 
 struct Pokemon
 {
-#include "lu/generated/struct-members/Pokemon.members.inl"
+#include "lu/generated/struct-members/Pokemon.members.h"
 };
 
 struct MonSpritesGfxManager

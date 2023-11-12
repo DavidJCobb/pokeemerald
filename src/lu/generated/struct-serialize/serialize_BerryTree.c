@@ -1,4 +1,4 @@
-#include "lu/generated/struct-serialize//serialize_BerryTree.h"
+#include "lu/generated/struct-serialize/serialize_BerryTree.h"
 
 #include "global.h"
 #include "global.berry.h" // struct definition

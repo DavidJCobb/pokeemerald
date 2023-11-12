@@ -1,54 +1,54 @@
-#include "lu/generated/struct-serialize//serialize_SaveBlock2.h"
+#include "lu/generated/struct-serialize/serialize_SaveBlock2.h"
 
 #include "global.h"
 
 #include "lu/bitstreams.h"
 
 // dependencies
-#include "lu/generated/struct-serialize//serialize_Pokedex.h"
-#include "lu/generated/struct-serialize//serialize_Time.h"
-#include "lu/generated/struct-serialize//serialize_Time.h"
-#include "lu/generated/struct-serialize//serialize_PlayersApprentice.h"
-#include "lu/generated/struct-serialize//serialize_Apprentice.h"
-#include "lu/generated/struct-serialize//serialize_BerryCrush.h"
-#include "lu/generated/struct-serialize//serialize_PokemonJumpRecords.h"
-#include "lu/generated/struct-serialize//serialize_BerryPickingResults.h"
-#include "lu/generated/struct-serialize//serialize_RankingHall1P.h"
-#include "lu/generated/struct-serialize//serialize_RankingHall2P.h"
-#include "lu/generated/struct-serialize//serialize_BattleFrontier.h"
+#include "lu/generated/struct-serialize/serialize_Pokedex.h"
+#include "lu/generated/struct-serialize/serialize_Time.h"
+#include "lu/generated/struct-serialize/serialize_Time.h"
+#include "lu/generated/struct-serialize/serialize_PlayersApprentice.h"
+#include "lu/generated/struct-serialize/serialize_Apprentice.h"
+#include "lu/generated/struct-serialize/serialize_BerryCrush.h"
+#include "lu/generated/struct-serialize/serialize_PokemonJumpRecords.h"
+#include "lu/generated/struct-serialize/serialize_BerryPickingResults.h"
+#include "lu/generated/struct-serialize/serialize_RankingHall1P.h"
+#include "lu/generated/struct-serialize/serialize_RankingHall2P.h"
+#include "lu/generated/struct-serialize/serialize_BattleFrontier.h"
 
 #include "string_util.h" // gflib; for StringLength
 
 // check constants:
 #if PLAYER_NAME_LENGTH != 7
-   #error Constant `PLAYER_NAME_LENGTH` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `PLAYER_NAME_LENGTH` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if TRAINER_ID_LENGTH != 4
-   #error Constant `TRAINER_ID_LENGTH` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `TRAINER_ID_LENGTH` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if APPRENTICE_COUNT != 4
-   #error Constant `APPRENTICE_COUNT` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `APPRENTICE_COUNT` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if HALL_FACILITIES_COUNT != 9
-   #error Constant `HALL_FACILITIES_COUNT` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `HALL_FACILITIES_COUNT` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if FRONTIER_LVL_MODE_COUNT != 2
-   #error Constant `FRONTIER_LVL_MODE_COUNT` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `FRONTIER_LVL_MODE_COUNT` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if HALL_RECORDS_COUNT != 3
-   #error Constant `HALL_RECORDS_COUNT` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `HALL_RECORDS_COUNT` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if FRONTIER_LVL_MODE_COUNT != 2
-   #error Constant `FRONTIER_LVL_MODE_COUNT` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `FRONTIER_LVL_MODE_COUNT` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if HALL_RECORDS_COUNT != 3
-   #error Constant `HALL_RECORDS_COUNT` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `HALL_RECORDS_COUNT` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if CONTEST_CATEGORIES_COUNT != 5
-   #error Constant `CONTEST_CATEGORIES_COUNT` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `CONTEST_CATEGORIES_COUNT` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if CONTESTANT_COUNT != 4
-   #error Constant `CONTESTANT_COUNT` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `CONTESTANT_COUNT` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 
 void lu_BitstreamRead_SaveBlock2(struct lu_BitstreamState* state, struct SaveBlock2* v) {

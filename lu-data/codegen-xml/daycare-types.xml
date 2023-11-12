@@ -25,7 +25,7 @@
       </struct>
       <struct name="DaycareMail" header="global.h">
          <fields>
-            <field name="message" c-type="Mail" c-type-decl="struct" />
+            <field name="message" c-type="Mail" />
             <field name="otName" inherit="$player-name" />
             <field name="monName" inherit="$pokemon-nickname" />
             <u8 name="gameLanguage" c-bitfield="4" inherit="$game-language" />
@@ -34,8 +34,8 @@
       </struct>
       <struct name="DaycareMon" header="global.h">
          <fields>
-            <field name="mon"  c-type="BoxPokemon"  c-type-decl="struct" />
-            <field name="mail" c-type="DaycareMail" c-type-decl="struct" />
+            <field name="mon"  c-type="BoxPokemon"  />
+            <field name="mail" c-type="DaycareMail" />
             
             <!--
                Used to track XP gain while at daycare, and to potentially lay an egg (whenever the 
@@ -47,7 +47,7 @@
       
       <struct name="DayCare" header="global.h">
          <fields>
-            <field name="mons" c-type="DaycareMon" c-type-decl="struct">
+            <field name="mons" c-type="DaycareMon">
                <array-rank extent="DAYCARE_MON_COUNT" />
             </field>
             <u32 name="offspringPersonality" />

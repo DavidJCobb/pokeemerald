@@ -183,80 +183,80 @@ struct UCoords32
 
 struct Time
 {
-#include "lu/generated/struct-members/Time.members.inl"
+#include "lu/generated/struct-members/Time.members.h"
 };
 
 struct Pokedex
 {
-#include "lu/generated/struct-members/Pokedex.members.inl"
+#include "lu/generated/struct-members/Pokedex.members.h"
 };
 
 struct PokemonJumpRecords
 {
-#include "lu/generated/struct-members/PokemonJumpRecords.members.inl"
+#include "lu/generated/struct-members/PokemonJumpRecords.members.h"
 };
 
 struct BerryPickingResults
 {
-#include "lu/generated/struct-members/BerryPickingResults.members.inl"
+#include "lu/generated/struct-members/BerryPickingResults.members.h"
 };
 
 struct PyramidBag
 {
-#include "lu/generated/struct-members/PyramidBag.members.inl"
+#include "lu/generated/struct-members/PyramidBag.members.h"
 };
 
 struct BerryCrush
 {
-#include "lu/generated/struct-members/BerryCrush.members.inl"
+#include "lu/generated/struct-members/BerryCrush.members.h"
 };
 
 struct ApprenticeMon
 {
-#include "lu/generated/struct-members/ApprenticeMon.members.inl"
+#include "lu/generated/struct-members/ApprenticeMon.members.h"
 };
 
 // This is for past players Apprentices or Apprentices received via Record Mix.
 // For the current Apprentice, see struct PlayersApprentice
 struct Apprentice
 {
-#include "lu/generated/struct-members/Apprentice.members.inl"
+#include "lu/generated/struct-members/Apprentice.members.h"
 };
 
 struct BattleTowerPokemon
 {
-#include "lu/generated/struct-members/BattleTowerPokemon.members.inl"
+#include "lu/generated/struct-members/BattleTowerPokemon.members.h"
 };
 
 struct EmeraldBattleTowerRecord
 {
-#include "lu/generated/struct-members/EmeraldBattleTowerRecord.members.inl"
+#include "lu/generated/struct-members/EmeraldBattleTowerRecord.members.h"
 };
 
 struct BattleTowerInterview
 {
-#include "lu/generated/struct-members/BattleTowerInterview.members.inl"
+#include "lu/generated/struct-members/BattleTowerInterview.members.h"
 };
 
 struct BattleTowerEReaderTrainer
 {
-#include "lu/generated/struct-members/BattleTowerEReaderTrainer.members.inl"
+#include "lu/generated/struct-members/BattleTowerEReaderTrainer.members.h"
 };
 
 // For displaying party information on the player's Battle Dome tourney page
 struct DomeMonData
 {
-#include "lu/generated/struct-members/DomeMonData.members.inl"
+#include "lu/generated/struct-members/DomeMonData.members.h"
 };
 
 struct RentalMon
 {
-#include "lu/generated/struct-members/RentalMon.members.inl"
+#include "lu/generated/struct-members/RentalMon.members.h"
 };
 
 struct BattleDomeTrainer
 {
-#include "lu/generated/struct-members/BattleDomeTrainer.members.inl"
+#include "lu/generated/struct-members/BattleDomeTrainer.members.h"
 };
 
 #define DOME_TOURNAMENT_TRAINERS_COUNT 16
@@ -264,44 +264,44 @@ struct BattleDomeTrainer
 
 struct BattleFrontier
 {
-#include "lu/generated/struct-members/BattleFrontier.members.inl"
+#include "lu/generated/struct-members/BattleFrontier.members.h"
 };
 
 struct ApprenticeQuestion
 {
-#include "lu/generated/struct-members/ApprenticeQuestion.members.inl"
+#include "lu/generated/struct-members/ApprenticeQuestion.members.h"
 };
 
 struct PlayersApprentice
 {
-#include "lu/generated/struct-members/PlayersApprentice.members.inl"
+#include "lu/generated/struct-members/PlayersApprentice.members.h"
 };
 
 struct RankingHall1P
 {
-#include "lu/generated/struct-members/RankingHall1P.members.inl"
+#include "lu/generated/struct-members/RankingHall1P.members.h"
 };
 
 struct RankingHall2P
 {
-#include "lu/generated/struct-members/RankingHall2P.members.inl"
+#include "lu/generated/struct-members/RankingHall2P.members.h"
 };
 
 struct SaveBlock2
 {
-#include "lu/generated/struct-members/SaveBlock2.members.inl"
+#include "lu/generated/struct-members/SaveBlock2.members.h"
 }; // sizeof=0xF2C
 
 extern struct SaveBlock2 *gSaveBlock2Ptr;
 
 struct SecretBaseParty
 {
-#include "lu/generated/struct-members/SecretBaseParty.members.inl"
+#include "lu/generated/struct-members/SecretBaseParty.members.h"
 };
 
 struct SecretBase
 {
-#include "lu/generated/struct-members/SecretBase.members.inl"
+#include "lu/generated/struct-members/SecretBase.members.h"
 };
 
 #include "constants/game_stat.h"
@@ -312,38 +312,38 @@ struct SecretBase
 
 struct WarpData
 {
-#include "lu/generated/struct-members/WarpData.members.inl"
+#include "lu/generated/struct-members/WarpData.members.h"
 };
 
 struct ItemSlot
 {
-#include "lu/generated/struct-members/ItemSlot.members.inl"
+#include "lu/generated/struct-members/ItemSlot.members.h"
 };
 
 struct Pokeblock
 {
-#include "lu/generated/struct-members/Pokeblock.members.inl"
+#include "lu/generated/struct-members/Pokeblock.members.h"
 };
 
 struct Roamer
 {
-#include "lu/generated/struct-members/Roamer.members.inl"
+#include "lu/generated/struct-members/Roamer.members.h"
 };
 
 struct RamScriptData
 {
-#include "lu/generated/struct-members/RamScriptData.members.inl"
+#include "lu/generated/struct-members/RamScriptData.members.h"
 };
 
 struct RamScript
 {
-#include "lu/generated/struct-members/RamScript.members.inl"
+#include "lu/generated/struct-members/RamScript.members.h"
 };
 
 // See dewford_trend.c
 struct DewfordTrend
 {
-#include "lu/generated/struct-members/DewfordTrend.members.inl"
+#include "lu/generated/struct-members/DewfordTrend.members.h"
 }; /*size = 0x8*/
 
 struct MauvilleManCommon
@@ -419,47 +419,47 @@ typedef union OldMan
 
 struct LinkBattleRecord
 {
-#include "lu/generated/struct-members/LinkBattleRecord.members.inl"
+#include "lu/generated/struct-members/LinkBattleRecord.members.h"
 };
 
 struct LinkBattleRecords
 {
-#include "lu/generated/struct-members/LinkBattleRecords.members.inl"
+#include "lu/generated/struct-members/LinkBattleRecords.members.h"
 };
 
 struct RecordMixingGiftData
 {
-#include "lu/generated/struct-members/RecordMixingGiftData.members.inl"
+#include "lu/generated/struct-members/RecordMixingGiftData.members.h"
 };
 
 struct RecordMixingGift
 {
-#include "lu/generated/struct-members/RecordMixingGift.members.inl"
+#include "lu/generated/struct-members/RecordMixingGift.members.h"
 };
 
 struct ContestWinner
 {
-#include "lu/generated/struct-members/ContestWinner.members.inl"
+#include "lu/generated/struct-members/ContestWinner.members.h"
 };
 
 struct Mail
 {
-#include "lu/generated/struct-members/Mail.members.inl"
+#include "lu/generated/struct-members/Mail.members.h"
 };
 
 struct DaycareMail
 {
-#include "lu/generated/struct-members/DaycareMail.members.inl"
+#include "lu/generated/struct-members/DaycareMail.members.h"
 };
 
 struct DaycareMon
 {
-#include "lu/generated/struct-members/DaycareMon.members.inl"
+#include "lu/generated/struct-members/DaycareMon.members.h"
 };
 
 struct DayCare
 {
-#include "lu/generated/struct-members/DayCare.members.inl"
+#include "lu/generated/struct-members/DayCare.members.h"
 };
 
 struct LilycoveLadyQuiz
@@ -516,61 +516,61 @@ typedef union // 3b58
 
 struct WaldaPhrase
 {
-#include "lu/generated/struct-members/WaldaPhrase.members.inl"
+#include "lu/generated/struct-members/WaldaPhrase.members.h"
 };
 
 struct TrainerNameRecord
 {
-#include "lu/generated/struct-members/TrainerNameRecord.members.inl"
+#include "lu/generated/struct-members/TrainerNameRecord.members.h"
 };
 
 struct TrainerHillSave
 {
-#include "lu/generated/struct-members/TrainerHillSave.members.inl"
+#include "lu/generated/struct-members/TrainerHillSave.members.h"
 };
 
 struct WonderNewsMetadata
 {
-#include "lu/generated/struct-members/WonderNewsMetadata.members.inl"
+#include "lu/generated/struct-members/WonderNewsMetadata.members.h"
 };
 
 struct WonderNews
 {
-#include "lu/generated/struct-members/WonderNews.members.inl"
+#include "lu/generated/struct-members/WonderNews.members.h"
 };
 
 struct WonderCard
 {
-#include "lu/generated/struct-members/WonderCard.members.inl"
+#include "lu/generated/struct-members/WonderCard.members.h"
 };
 
 struct WonderCardMetadata
 {
-#include "lu/generated/struct-members/WonderCardMetadata.members.inl"
+#include "lu/generated/struct-members/WonderCardMetadata.members.h"
 };
 
 struct MysteryGiftSave
 {
-#include "lu/generated/struct-members/MysteryGiftSave.members.inl"
+#include "lu/generated/struct-members/MysteryGiftSave.members.h"
 }; // 0x36C 0x3598
 
 // For external event data storage. The majority of these may have never been used.
 // In Emerald, the only known used fields are the PokeCoupon and BoxRS ones, but hacking the distribution discs allows Emerald to receive events and set the others
 struct ExternalEventData
 {
-#include "lu/generated/struct-members/ExternalEventData.members.inl"
+#include "lu/generated/struct-members/ExternalEventData.members.h"
 } __attribute__((packed)); /*size = 0x14*/
 
 // For external event flags. The majority of these may have never been used.
 // In Emerald, Jirachi cannot normally be received, but hacking the distribution discs allows Emerald to receive Jirachi and set the flag
 struct ExternalEventFlags
 {
-#include "lu/generated/struct-members/ExternalEventFlags.members.inl"
+#include "lu/generated/struct-members/ExternalEventFlags.members.h"
 } __attribute__((packed));/*size = 0x15*/
 
 struct SaveBlock1
 {
-#include "lu/generated/struct-members/SaveBlock1.members.inl"
+#include "lu/generated/struct-members/SaveBlock1.members.h"
 };
 
 extern struct SaveBlock1* gSaveBlock1Ptr;

@@ -20,8 +20,8 @@
                <line-comment>SEND_TYPE_*</line-comment>
             </u8>
             <u8 name="bgType" />
-            <string name="titleText" char-type="u8" length="WONDER_NEWS_TEXT_LENGTH" only-early-terminator="true" />
-            <string name="bodyText"  char-type="u8" length="WONDER_NEWS_TEXT_LENGTH" only-early-terminator="true">
+            <string name="titleText" length="WONDER_NEWS_TEXT_LENGTH" only-early-terminator="true" />
+            <string name="bodyText"  length="WONDER_NEWS_TEXT_LENGTH" only-early-terminator="true">
                <array-rank extent="WONDER_NEWS_BODY_TEXT_LINES" />
             </string>
          </fields>
@@ -50,13 +50,13 @@
                <line-comment>SEND_TYPE_*</line-comment>
             </u8>
             <u8 name="maxStamps" />
-            <string name="titleText"    char-type="u8" length="WONDER_CARD_TEXT_LENGTH" only-early-terminator="true" />
-            <string name="subtitleText" char-type="u8" length="WONDER_CARD_TEXT_LENGTH" only-early-terminator="true" />
-            <string name="bodyText"     char-type="u8" length="WONDER_CARD_TEXT_LENGTH" only-early-terminator="true">
+            <string name="titleText"    length="WONDER_CARD_TEXT_LENGTH" only-early-terminator="true" />
+            <string name="subtitleText" length="WONDER_CARD_TEXT_LENGTH" only-early-terminator="true" />
+            <string name="bodyText"     length="WONDER_CARD_TEXT_LENGTH" only-early-terminator="true">
                <array-rank extent="WONDER_CARD_BODY_TEXT_LINES" />
             </string>
-            <string name="footerLine1Text" char-type="u8" length="WONDER_CARD_TEXT_LENGTH" only-early-terminator="true" />
-            <string name="footerLine2Text" char-type="u8" length="WONDER_CARD_TEXT_LENGTH" only-early-terminator="true" />
+            <string name="footerLine1Text" length="WONDER_CARD_TEXT_LENGTH" only-early-terminator="true" />
+            <string name="footerLine2Text" length="WONDER_CARD_TEXT_LENGTH" only-early-terminator="true" />
          </fields>
       </struct>
       <struct name="WonderCardMetadata" header="global.h">
@@ -76,15 +76,15 @@
       <struct name="MysteryGiftSave" header="global.h">
          <fields>
             <u32 name="newsCrc" />
-            <field name="news" c-type="WonderNews" c-type-decl="struct" />
+            <field name="news" c-type="WonderNews" />
             <u32 name="cardCrc" />
-            <field name="card" c-type="WonderCard" c-type-decl="struct" />
+            <field name="card" c-type="WonderCard" />
             <u32 name="cardMetadataCrc" />
-            <field name="cardMetadata" c-type="WonderCardMetadata" c-type-decl="struct" />
+            <field name="cardMetadata" c-type="WonderCardMetadata" />
             <u16 name="questionnaireWords" inherit="$easy-chat-word">
                <array-rank extent="NUM_QUESTIONNAIRE_WORDS" />
             </u16>
-            <field name="newsMetadata" c-type="WonderNewsMetadata" c-type-decl="struct" />
+            <field name="newsMetadata" c-type="WonderNewsMetadata" />
             <u32 name="trainerIds">
                <line-comment>Saved ids for 10 trainers, 5 each for battles and trades</line-comment>
                <array-rank extent="2" />

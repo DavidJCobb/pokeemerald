@@ -1,4 +1,4 @@
-#include "lu/generated/struct-serialize//serialize_RankingHall1P.h"
+#include "lu/generated/struct-serialize/serialize_RankingHall1P.h"
 
 #include "global.h"
 
@@ -8,10 +8,10 @@
 
 // check constants:
 #if TRAINER_ID_LENGTH != 4
-   #error Constant `TRAINER_ID_LENGTH` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `TRAINER_ID_LENGTH` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if PLAYER_NAME_LENGTH != 7
-   #error Constant `PLAYER_NAME_LENGTH` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `PLAYER_NAME_LENGTH` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 
 void lu_BitstreamRead_RankingHall1P(struct lu_BitstreamState* state, struct RankingHall1P* v) {

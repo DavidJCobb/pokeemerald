@@ -1,4 +1,4 @@
-#include "lu/generated/struct-serialize//serialize_DomeMonData.h"
+#include "lu/generated/struct-serialize/serialize_DomeMonData.h"
 
 #include "global.h"
 
@@ -6,10 +6,10 @@
 
 // check constants:
 #if MAX_MON_MOVES != 4
-   #error Constant `MAX_MON_MOVES` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `MAX_MON_MOVES` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if NUM_STATS != 6
-   #error Constant `NUM_STATS` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `NUM_STATS` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 
 void lu_BitstreamRead_DomeMonData(struct lu_BitstreamState* state, struct DomeMonData* v) {

@@ -55,9 +55,9 @@
             <u8 name="mapGroup" />
             <u8 name="currentElevation" c-bitfield="4" />
             <u8 name="previousElevation" c-bitfield="4" />
-            <field name="initialCoords" c-type="Coords16" c-type-decl="struct" />
-            <field name="currentCoords" c-type="Coords16" c-type-decl="struct" />
-            <field name="previousCoords" c-type="Coords16" c-type-decl="struct" />
+            <field name="initialCoords" c-type="Coords16" />
+            <field name="currentCoords" c-type="Coords16" />
+            <field name="previousCoords" c-type="Coords16" />
             <u16 name="facingDirection" c-bitfield="4">
                <line-comment>current direction?</line-comment>
             </u16>
@@ -111,7 +111,7 @@
       <struct name="RamScript" header="global.h">
          <fields>
             <u32 name="checksum" is-checksum="true" />
-            <field name="data" c-type="RamScriptData" c-type-decl="struct" />
+            <field name="data" c-type="RamScriptData" />
          </fields>
       </struct>
    </types>

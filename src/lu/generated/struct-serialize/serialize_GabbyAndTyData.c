@@ -1,4 +1,4 @@
-#include "lu/generated/struct-serialize//serialize_GabbyAndTyData.h"
+#include "lu/generated/struct-serialize/serialize_GabbyAndTyData.h"
 
 #include "global.h"
 #include "global.tv.h" // struct definition

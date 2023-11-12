@@ -15,11 +15,11 @@
       <struct name="PokemonStorage" header="pokemon_storage_system.h">
          <fields>
             <u8 name="currentBox" max="TOTAL_BOXES_COUNT" />
-            <field name="boxes" c-type="BoxPokemon" c-type-decl="struct">
+            <field name="boxes" c-type="BoxPokemon">
                <array-rank extent="TOTAL_BOXES_COUNT" />
                <array-rank extent="IN_BOX_COUNT" />
             </field>
-            <string name="boxNames" char-type="u8" length="BOX_NAME_LENGTH">
+            <string name="boxNames" length="BOX_NAME_LENGTH">
                <array-rank extent="TOTAL_BOXES_COUNT" />
             </string>
             <u8 name="boxWallpapers">

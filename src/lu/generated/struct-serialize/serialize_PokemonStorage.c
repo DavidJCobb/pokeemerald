@@ -1,4 +1,4 @@
-#include "lu/generated/struct-serialize//serialize_PokemonStorage.h"
+#include "lu/generated/struct-serialize/serialize_PokemonStorage.h"
 
 #include "global.h"
 #include "pokemon_storage_system.h" // struct definition
@@ -6,22 +6,22 @@
 #include "lu/bitstreams.h"
 
 // dependencies
-#include "lu/generated/struct-serialize//serialize_BoxPokemon.h"
+#include "lu/generated/struct-serialize/serialize_BoxPokemon.h"
 
 #include "string_util.h" // gflib; for StringLength
 
 // check constants:
 #if TOTAL_BOXES_COUNT != 14
-   #error Constant `TOTAL_BOXES_COUNT` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `TOTAL_BOXES_COUNT` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if IN_BOX_COUNT != 30
-   #error Constant `IN_BOX_COUNT` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `IN_BOX_COUNT` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if BOX_NAME_LENGTH != 8
-   #error Constant `BOX_NAME_LENGTH` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `BOX_NAME_LENGTH` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if TOTAL_BOXES_COUNT != 14
-   #error Constant `TOTAL_BOXES_COUNT` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `TOTAL_BOXES_COUNT` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 
 void lu_BitstreamRead_PokemonStorage(struct lu_BitstreamState* state, struct PokemonStorage* v) {

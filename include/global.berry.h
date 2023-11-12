@@ -26,12 +26,12 @@ struct Berry
 
 struct Berry2
 {
-#include "lu/generated/struct-members/Berry2.members.inl"
+#include "lu/generated/struct-members/Berry2.members.h"
 };
 
 struct EnigmaBerry
 {
-#include "lu/generated/struct-members/EnigmaBerry.members.inl"
+#include "lu/generated/struct-members/EnigmaBerry.members.h"
 };
 
 struct BattleEnigmaBerry
@@ -44,7 +44,7 @@ struct BattleEnigmaBerry
 
 struct BerryTree
 {
-#include "lu/generated/struct-members/BerryTree.members.inl"
+#include "lu/generated/struct-members/BerryTree.members.h"
 };
 
 #endif // GUARD_GLOBAL_BERRY_H

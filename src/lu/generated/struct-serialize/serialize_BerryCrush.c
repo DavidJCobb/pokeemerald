@@ -1,4 +1,4 @@
-#include "lu/generated/struct-serialize//serialize_BerryCrush.h"
+#include "lu/generated/struct-serialize/serialize_BerryCrush.h"
 
 #include "global.h"
 

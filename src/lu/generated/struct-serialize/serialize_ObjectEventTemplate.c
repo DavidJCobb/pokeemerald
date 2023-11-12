@@ -1,4 +1,4 @@
-#include "lu/generated/struct-serialize//serialize_ObjectEventTemplate.h"
+#include "lu/generated/struct-serialize/serialize_ObjectEventTemplate.h"
 
 #include "global.h"
 #include "global.fieldmap.h" // struct definition
@@ -17,7 +17,7 @@ void lu_BitstreamRead_ObjectEventTemplate(struct lu_BitstreamState* state, struc
    v->movementRangeY = lu_BitstreamRead_u8(state, 4);
    v->trainerType = lu_BitstreamRead_u16(state, 16);
    v->trainerRange_berryTreeId = lu_BitstreamRead_u16(state, 16);
-   v->script = (u8*) lu_BitstreamRead_u32(state, 32);
+   v->script = (const u8*) lu_BitstreamRead_u32(state, 32);
    v->flagId = lu_BitstreamRead_u16(state, 16);
 }
 

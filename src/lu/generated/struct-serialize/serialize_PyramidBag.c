@@ -1,4 +1,4 @@
-#include "lu/generated/struct-serialize//serialize_PyramidBag.h"
+#include "lu/generated/struct-serialize/serialize_PyramidBag.h"
 
 #include "global.h"
 
@@ -6,16 +6,16 @@
 
 // check constants:
 #if FRONTIER_LVL_MODE_COUNT != 2
-   #error Constant `FRONTIER_LVL_MODE_COUNT` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `FRONTIER_LVL_MODE_COUNT` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if PYRAMID_BAG_ITEMS_COUNT != 10
-   #error Constant `PYRAMID_BAG_ITEMS_COUNT` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `PYRAMID_BAG_ITEMS_COUNT` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if FRONTIER_LVL_MODE_COUNT != 2
-   #error Constant `FRONTIER_LVL_MODE_COUNT` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `FRONTIER_LVL_MODE_COUNT` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if PYRAMID_BAG_ITEMS_COUNT != 10
-   #error Constant `PYRAMID_BAG_ITEMS_COUNT` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `PYRAMID_BAG_ITEMS_COUNT` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 
 void lu_BitstreamRead_PyramidBag(struct lu_BitstreamState* state, struct PyramidBag* v) {

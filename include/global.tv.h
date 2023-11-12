@@ -494,12 +494,12 @@ typedef union // size = 0x24
 
 typedef struct
 {
-#include "lu/generated/struct-members/PokeNews.members.inl"
+#include "lu/generated/struct-members/PokeNews.members.h"
 } PokeNews;
 
 struct GabbyAndTyData
 {
-#include "lu/generated/struct-members/GabbyAndTyData.members.inl"
+#include "lu/generated/struct-members/GabbyAndTyData.members.h"
 };
 
 #endif //GUARD_GLOBAL_TV_H

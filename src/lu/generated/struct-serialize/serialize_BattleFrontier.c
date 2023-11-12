@@ -1,60 +1,60 @@
-#include "lu/generated/struct-serialize//serialize_BattleFrontier.h"
+#include "lu/generated/struct-serialize/serialize_BattleFrontier.h"
 
 #include "global.h"
 
 #include "lu/bitstreams.h"
 
 // dependencies
-#include "lu/generated/struct-serialize//serialize_EmeraldBattleTowerRecord.h"
-#include "lu/generated/struct-serialize//serialize_EmeraldBattleTowerRecord.h"
-#include "lu/generated/struct-serialize//serialize_BattleTowerInterview.h"
-#include "lu/generated/struct-serialize//serialize_BattleTowerEReaderTrainer.h"
-#include "lu/generated/struct-serialize//serialize_BattleDomeTrainer.h"
-#include "lu/generated/struct-serialize//serialize_PyramidBag.h"
-#include "lu/generated/struct-serialize//serialize_RentalMon.h"
-#include "lu/generated/struct-serialize//serialize_DomeMonData.h"
+#include "lu/generated/struct-serialize/serialize_EmeraldBattleTowerRecord.h"
+#include "lu/generated/struct-serialize/serialize_EmeraldBattleTowerRecord.h"
+#include "lu/generated/struct-serialize/serialize_BattleTowerInterview.h"
+#include "lu/generated/struct-serialize/serialize_BattleTowerEReaderTrainer.h"
+#include "lu/generated/struct-serialize/serialize_BattleDomeTrainer.h"
+#include "lu/generated/struct-serialize/serialize_PyramidBag.h"
+#include "lu/generated/struct-serialize/serialize_RentalMon.h"
+#include "lu/generated/struct-serialize/serialize_DomeMonData.h"
 
 #include "string_util.h" // gflib; for StringLength
 
 // check constants:
 #if BATTLE_TOWER_RECORD_COUNT != 5
-   #error Constant `BATTLE_TOWER_RECORD_COUNT` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `BATTLE_TOWER_RECORD_COUNT` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if MAX_FRONTIER_PARTY_SIZE != 4
-   #error Constant `MAX_FRONTIER_PARTY_SIZE` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `MAX_FRONTIER_PARTY_SIZE` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if FRONTIER_LVL_MODE_COUNT != 2
-   #error Constant `FRONTIER_LVL_MODE_COUNT` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `FRONTIER_LVL_MODE_COUNT` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if DOME_TOURNAMENT_TRAINERS_COUNT != 16
-   #error Constant `DOME_TOURNAMENT_TRAINERS_COUNT` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `DOME_TOURNAMENT_TRAINERS_COUNT` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if FRONTIER_PARTY_SIZE != 3
-   #error Constant `FRONTIER_PARTY_SIZE` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `FRONTIER_PARTY_SIZE` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if FRONTIER_LVL_MODE_COUNT != 2
-   #error Constant `FRONTIER_LVL_MODE_COUNT` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `FRONTIER_LVL_MODE_COUNT` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if FRONTIER_PARTY_SIZE != 3
-   #error Constant `FRONTIER_PARTY_SIZE` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `FRONTIER_PARTY_SIZE` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if FRONTIER_LVL_MODE_COUNT != 2
-   #error Constant `FRONTIER_LVL_MODE_COUNT` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `FRONTIER_LVL_MODE_COUNT` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if DOME_TOURNAMENT_TRAINERS_COUNT != 16
-   #error Constant `DOME_TOURNAMENT_TRAINERS_COUNT` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `DOME_TOURNAMENT_TRAINERS_COUNT` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if PLAYER_NAME_LENGTH != 7
-   #error Constant `PLAYER_NAME_LENGTH` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `PLAYER_NAME_LENGTH` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if FRONTIER_LVL_MODE_COUNT != 2
-   #error Constant `FRONTIER_LVL_MODE_COUNT` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `FRONTIER_LVL_MODE_COUNT` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if TRAINER_ID_LENGTH != 4
-   #error Constant `TRAINER_ID_LENGTH` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `TRAINER_ID_LENGTH` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if FRONTIER_PARTY_SIZE != 3
-   #error Constant `FRONTIER_PARTY_SIZE` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `FRONTIER_PARTY_SIZE` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 
 void lu_BitstreamRead_BattleFrontier(struct lu_BitstreamState* state, struct BattleFrontier* v) {

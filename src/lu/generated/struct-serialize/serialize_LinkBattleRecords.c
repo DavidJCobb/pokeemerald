@@ -1,15 +1,15 @@
-#include "lu/generated/struct-serialize//serialize_LinkBattleRecords.h"
+#include "lu/generated/struct-serialize/serialize_LinkBattleRecords.h"
 
 #include "global.h"
 
 #include "lu/bitstreams.h"
 
 // dependencies
-#include "lu/generated/struct-serialize//serialize_LinkBattleRecord.h"
+#include "lu/generated/struct-serialize/serialize_LinkBattleRecord.h"
 
 // check constants:
 #if LINK_B_RECORDS_COUNT != 5
-   #error Constant `LINK_B_RECORDS_COUNT` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `LINK_B_RECORDS_COUNT` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 
 void lu_BitstreamRead_LinkBattleRecords(struct lu_BitstreamState* state, struct LinkBattleRecords* v) {

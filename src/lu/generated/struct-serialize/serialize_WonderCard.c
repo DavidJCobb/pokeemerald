@@ -1,4 +1,4 @@
-#include "lu/generated/struct-serialize//serialize_WonderCard.h"
+#include "lu/generated/struct-serialize/serialize_WonderCard.h"
 
 #include "global.h"
 
@@ -8,13 +8,13 @@
 
 // check constants:
 #if WONDER_CARD_TEXT_LENGTH != 40
-   #error Constant `WONDER_CARD_TEXT_LENGTH` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `WONDER_CARD_TEXT_LENGTH` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if WONDER_CARD_BODY_TEXT_LINES != 4
-   #error Constant `WONDER_CARD_BODY_TEXT_LINES` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `WONDER_CARD_BODY_TEXT_LINES` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if WONDER_CARD_TEXT_LENGTH != 40
-   #error Constant `WONDER_CARD_TEXT_LENGTH` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `WONDER_CARD_TEXT_LENGTH` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 
 void lu_BitstreamRead_WonderCard(struct lu_BitstreamState* state, struct WonderCard* v) {

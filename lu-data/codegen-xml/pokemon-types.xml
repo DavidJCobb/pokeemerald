@@ -8,6 +8,11 @@
       </header>
    </constants>
    <types>
+      <union name="PokemonSubstruct"
+         do-not-codegen="true"
+         sizeof="NUM_SUBSTRUCT_BYTES"
+      />
+   
       <struct name="BoxPokemon" header="pokemon.h">
          <fields>
             <u32 name="personality" />
@@ -36,7 +41,7 @@
                   <line-comment>*4 because there are 4 substructs, /4 because it's u32, not u8</line-comment>
                   <array-rank extent="12" extent-expr="(NUM_SUBSTRUCT_BYTES * 4) / 4" />
                </u32>
-               <field name="substructs" c-type="PokemonSubstruct" c-type-decl="union">
+               <field name="substructs" c-type="PokemonSubstruct">
                   <array-rank extent="4" />
                </field>
             </union>
@@ -44,7 +49,7 @@
       </struct>
       <struct name="Pokemon" header="pokemon.h">
          <fields>
-            <field name="box" c-type="BoxPokemon" c-type-decl="struct" />
+            <field name="box" c-type="BoxPokemon" />
             <u32 name="status" />
             <u8 name="level" min="0" max="100"  />
             <u8  name="mail" />

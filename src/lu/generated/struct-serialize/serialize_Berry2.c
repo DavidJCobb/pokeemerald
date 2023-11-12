@@ -1,4 +1,4 @@
-#include "lu/generated/struct-serialize//serialize_Berry2.h"
+#include "lu/generated/struct-serialize/serialize_Berry2.h"
 
 #include "global.h"
 #include "global.berry.h" // struct definition
@@ -9,7 +9,7 @@
 
 // check constants:
 #if BERRY_NAME_LENGTH != 6
-   #error Constant `BERRY_NAME_LENGTH` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `BERRY_NAME_LENGTH` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 
 void lu_BitstreamRead_Berry2(struct lu_BitstreamState* state, struct Berry2* v) {

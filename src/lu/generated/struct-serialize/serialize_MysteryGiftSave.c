@@ -1,18 +1,18 @@
-#include "lu/generated/struct-serialize//serialize_MysteryGiftSave.h"
+#include "lu/generated/struct-serialize/serialize_MysteryGiftSave.h"
 
 #include "global.h"
 
 #include "lu/bitstreams.h"
 
 // dependencies
-#include "lu/generated/struct-serialize//serialize_WonderNews.h"
-#include "lu/generated/struct-serialize//serialize_WonderCard.h"
-#include "lu/generated/struct-serialize//serialize_WonderCardMetadata.h"
-#include "lu/generated/struct-serialize//serialize_WonderNewsMetadata.h"
+#include "lu/generated/struct-serialize/serialize_WonderNews.h"
+#include "lu/generated/struct-serialize/serialize_WonderCard.h"
+#include "lu/generated/struct-serialize/serialize_WonderCardMetadata.h"
+#include "lu/generated/struct-serialize/serialize_WonderNewsMetadata.h"
 
 // check constants:
 #if NUM_QUESTIONNAIRE_WORDS != 4
-   #error Constant `NUM_QUESTIONNAIRE_WORDS` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `NUM_QUESTIONNAIRE_WORDS` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 
 void lu_BitstreamRead_MysteryGiftSave(struct lu_BitstreamState* state, struct MysteryGiftSave* v) {

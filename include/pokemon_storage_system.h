@@ -18,7 +18,7 @@ ROWS        0   1   2   3   4   5
 
 struct PokemonStorage
 {
-#include "lu/generated/struct-members/PokemonStorage.members.inl"
+#include "lu/generated/struct-members/PokemonStorage.members.h"
 };
 
 extern struct PokemonStorage *gPokemonStoragePtr;

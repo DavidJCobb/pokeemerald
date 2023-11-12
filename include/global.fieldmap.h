@@ -65,7 +65,7 @@ struct BackupMapLayout
 
 struct ObjectEventTemplate
 {
-#include "lu/generated/struct-members/ObjectEventTemplate.members.inl"
+#include "lu/generated/struct-members/ObjectEventTemplate.members.h"
 };
 
 struct WarpEvent
@@ -152,7 +152,7 @@ struct MapHeader
 
 struct ObjectEvent
 {
-#include "lu/generated/struct-members/ObjectEvent.members.inl"
+#include "lu/generated/struct-members/ObjectEvent.members.h"
 };
 
 struct ObjectEventGraphicsInfo

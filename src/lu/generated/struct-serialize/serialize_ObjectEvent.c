@@ -1,4 +1,4 @@
-#include "lu/generated/struct-serialize//serialize_ObjectEvent.h"
+#include "lu/generated/struct-serialize/serialize_ObjectEvent.h"
 
 #include "global.h"
 #include "global.fieldmap.h" // struct definition

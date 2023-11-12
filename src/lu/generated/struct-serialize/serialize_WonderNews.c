@@ -1,4 +1,4 @@
-#include "lu/generated/struct-serialize//serialize_WonderNews.h"
+#include "lu/generated/struct-serialize/serialize_WonderNews.h"
 
 #include "global.h"
 
@@ -8,10 +8,10 @@
 
 // check constants:
 #if WONDER_NEWS_TEXT_LENGTH != 40
-   #error Constant `WONDER_NEWS_TEXT_LENGTH` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `WONDER_NEWS_TEXT_LENGTH` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if WONDER_NEWS_BODY_TEXT_LINES != 10
-   #error Constant `WONDER_NEWS_BODY_TEXT_LINES` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `WONDER_NEWS_BODY_TEXT_LINES` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 
 void lu_BitstreamRead_WonderNews(struct lu_BitstreamState* state, struct WonderNews* v) {

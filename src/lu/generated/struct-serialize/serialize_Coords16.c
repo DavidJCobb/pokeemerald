@@ -1,4 +1,4 @@
-#include "lu/generated/struct-serialize//serialize_Coords16.h"
+#include "lu/generated/struct-serialize/serialize_Coords16.h"
 
 #include "global.h"
 

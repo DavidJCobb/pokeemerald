@@ -1,4 +1,4 @@
-#include "lu/generated/struct-serialize//serialize_PlayersApprentice.h"
+#include "lu/generated/struct-serialize/serialize_PlayersApprentice.h"
 
 #include "global.h"
 
@@ -9,10 +9,10 @@
 
 // check constants:
 #if MULTI_PARTY_SIZE != 3
-   #error Constant `MULTI_PARTY_SIZE` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `MULTI_PARTY_SIZE` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if APPRENTICE_MAX_QUESTIONS != 9
-   #error Constant `APPRENTICE_MAX_QUESTIONS` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `APPRENTICE_MAX_QUESTIONS` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 
 void lu_BitstreamRead_PlayersApprentice(struct lu_BitstreamState* state, struct PlayersApprentice* v) {

@@ -1,4 +1,4 @@
-#include "lu/generated/struct-serialize//serialize_Pokeblock.h"
+#include "lu/generated/struct-serialize/serialize_Pokeblock.h"
 
 #include "global.h"
 

@@ -1,4 +1,4 @@
-#include "lu/generated/struct-serialize//serialize_DewfordTrend.h"
+#include "lu/generated/struct-serialize/serialize_DewfordTrend.h"
 
 #include "global.h"
 

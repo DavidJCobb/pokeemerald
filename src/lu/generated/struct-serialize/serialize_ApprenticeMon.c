@@ -1,4 +1,4 @@
-#include "lu/generated/struct-serialize//serialize_ApprenticeMon.h"
+#include "lu/generated/struct-serialize/serialize_ApprenticeMon.h"
 
 #include "global.h"
 
@@ -6,7 +6,7 @@
 
 // check constants:
 #if MAX_MON_MOVES != 4
-   #error Constant `MAX_MON_MOVES` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `MAX_MON_MOVES` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 
 void lu_BitstreamRead_ApprenticeMon(struct lu_BitstreamState* state, struct ApprenticeMon* v) {

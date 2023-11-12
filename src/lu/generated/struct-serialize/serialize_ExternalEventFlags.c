@@ -1,4 +1,4 @@
-#include "lu/generated/struct-serialize//serialize_ExternalEventFlags.h"
+#include "lu/generated/struct-serialize/serialize_ExternalEventFlags.h"
 
 #include "global.h"
 

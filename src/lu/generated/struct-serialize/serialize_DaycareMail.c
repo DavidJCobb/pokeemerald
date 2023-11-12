@@ -1,4 +1,4 @@
-#include "lu/generated/struct-serialize//serialize_DaycareMail.h"
+#include "lu/generated/struct-serialize/serialize_DaycareMail.h"
 
 #include "global.h"
 
@@ -11,10 +11,10 @@
 
 // check constants:
 #if PLAYER_NAME_LENGTH != 7
-   #error Constant `PLAYER_NAME_LENGTH` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `PLAYER_NAME_LENGTH` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if POKEMON_NAME_LENGTH != 10
-   #error Constant `POKEMON_NAME_LENGTH` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `POKEMON_NAME_LENGTH` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 
 void lu_BitstreamRead_DaycareMail(struct lu_BitstreamState* state, struct DaycareMail* v) {

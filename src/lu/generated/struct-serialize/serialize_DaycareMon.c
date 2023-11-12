@@ -1,4 +1,4 @@
-#include "lu/generated/struct-serialize//serialize_DaycareMon.h"
+#include "lu/generated/struct-serialize/serialize_DaycareMon.h"
 
 #include "global.h"
 

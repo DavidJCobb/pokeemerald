@@ -1,4 +1,4 @@
-#include "lu/generated/struct-serialize//serialize_BattleDomeTrainer.h"
+#include "lu/generated/struct-serialize/serialize_BattleDomeTrainer.h"
 
 #include "global.h"
 

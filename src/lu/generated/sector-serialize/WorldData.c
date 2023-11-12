@@ -114,7 +114,7 @@ void lu_ReadSaveSector_WorldData01(const u8* src, struct SaveBlock1* p_SaveBlock
    lu_BitstreamInitialize(&state, (u8*)src); // need to cast away constness to store it here
 
    p_SaveBlock1->objectEventTemplates[62].trainerRange_berryTreeId = lu_BitstreamRead_u16(&state, 16);
-   p_SaveBlock1->objectEventTemplates[62].script = (u8*) lu_BitstreamRead_u32(&state, 32);
+   p_SaveBlock1->objectEventTemplates[62].script = (const u8*) lu_BitstreamRead_u32(&state, 32);
    p_SaveBlock1->objectEventTemplates[62].flagId = lu_BitstreamRead_u16(&state, 16);
    lu_BitstreamRead_ObjectEventTemplate(&state, &p_SaveBlock1->objectEventTemplates[63]);
    for (i = 0; i < NUM_FLAG_BYTES; ++i) {

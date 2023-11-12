@@ -1,4 +1,4 @@
-#include "lu/generated/struct-serialize//serialize_SecretBaseParty.h"
+#include "lu/generated/struct-serialize/serialize_SecretBaseParty.h"
 
 #include "global.h"
 
@@ -6,7 +6,7 @@
 
 // check constants:
 #if PARTY_SIZE != 6
-   #error Constant `PARTY_SIZE` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `PARTY_SIZE` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 
 void lu_BitstreamRead_SecretBaseParty(struct lu_BitstreamState* state, struct SecretBaseParty* v) {

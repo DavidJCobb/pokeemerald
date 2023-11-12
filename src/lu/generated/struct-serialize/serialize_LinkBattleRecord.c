@@ -1,4 +1,4 @@
-#include "lu/generated/struct-serialize//serialize_LinkBattleRecord.h"
+#include "lu/generated/struct-serialize/serialize_LinkBattleRecord.h"
 
 #include "global.h"
 
@@ -8,7 +8,7 @@
 
 // check constants:
 #if PLAYER_NAME_LENGTH != 7
-   #error Constant `PLAYER_NAME_LENGTH` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `PLAYER_NAME_LENGTH` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 
 void lu_BitstreamRead_LinkBattleRecord(struct lu_BitstreamState* state, struct LinkBattleRecord* v) {

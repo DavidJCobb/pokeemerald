@@ -1,4 +1,4 @@
-#include "lu/generated/struct-serialize//serialize_Mail.h"
+#include "lu/generated/struct-serialize/serialize_Mail.h"
 
 #include "global.h"
 
@@ -8,13 +8,13 @@
 
 // check constants:
 #if MAIL_WORDS_COUNT != 9
-   #error Constant `MAIL_WORDS_COUNT` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `MAIL_WORDS_COUNT` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if PLAYER_NAME_LENGTH != 7
-   #error Constant `PLAYER_NAME_LENGTH` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `PLAYER_NAME_LENGTH` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if TRAINER_ID_LENGTH != 4
-   #error Constant `TRAINER_ID_LENGTH` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `TRAINER_ID_LENGTH` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 
 void lu_BitstreamRead_Mail(struct lu_BitstreamState* state, struct Mail* v) {

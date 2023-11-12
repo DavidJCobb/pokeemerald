@@ -1,4 +1,4 @@
-#include "lu/generated/struct-serialize//serialize_PokeNews.h"
+#include "lu/generated/struct-serialize/serialize_PokeNews.h"
 
 #include "global.h"
 #include "global.tv.h" // struct definition

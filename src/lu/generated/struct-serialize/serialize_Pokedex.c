@@ -1,4 +1,4 @@
-#include "lu/generated/struct-serialize//serialize_Pokedex.h"
+#include "lu/generated/struct-serialize/serialize_Pokedex.h"
 
 #include "global.h"
 
@@ -6,7 +6,7 @@
 
 // check constants:
 #if NUM_DEX_FLAG_BYTES != 52
-   #error Constant `NUM_DEX_FLAG_BYTES` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `NUM_DEX_FLAG_BYTES` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 
 void lu_BitstreamRead_Pokedex(struct lu_BitstreamState* state, struct Pokedex* v) {

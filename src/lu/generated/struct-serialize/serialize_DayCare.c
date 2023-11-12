@@ -1,4 +1,4 @@
-#include "lu/generated/struct-serialize//serialize_DayCare.h"
+#include "lu/generated/struct-serialize/serialize_DayCare.h"
 
 #include "global.h"
 
@@ -9,7 +9,7 @@
 
 // check constants:
 #if DAYCARE_MON_COUNT != 2
-   #error Constant `DAYCARE_MON_COUNT` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `DAYCARE_MON_COUNT` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 
 void lu_BitstreamRead_DayCare(struct lu_BitstreamState* state, struct DayCare* v) {

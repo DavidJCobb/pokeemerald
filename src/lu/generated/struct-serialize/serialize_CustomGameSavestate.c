@@ -1,4 +1,4 @@
-#include "lu/generated/struct-serialize//serialize_CustomGameSavestate.h"
+#include "lu/generated/struct-serialize/serialize_CustomGameSavestate.h"
 
 #include "global.h"
 #include "lu/custom_game_options.h" // struct definition

@@ -1,4 +1,4 @@
-#include "lu/generated/struct-serialize//serialize_SecretBase.h"
+#include "lu/generated/struct-serialize/serialize_SecretBase.h"
 
 #include "global.h"
 
@@ -11,13 +11,13 @@
 
 // check constants:
 #if PLAYER_NAME_LENGTH != 7
-   #error Constant `PLAYER_NAME_LENGTH` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `PLAYER_NAME_LENGTH` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if TRAINER_ID_LENGTH != 4
-   #error Constant `TRAINER_ID_LENGTH` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `TRAINER_ID_LENGTH` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if DECOR_MAX_SECRET_BASE != 16
-   #error Constant `DECOR_MAX_SECRET_BASE` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `DECOR_MAX_SECRET_BASE` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 
 void lu_BitstreamRead_SecretBase(struct lu_BitstreamState* state, struct SecretBase* v) {

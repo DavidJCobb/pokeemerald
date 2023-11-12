@@ -1,4 +1,4 @@
-#include "lu/generated/struct-serialize//serialize_EnigmaBerry.h"
+#include "lu/generated/struct-serialize/serialize_EnigmaBerry.h"
 
 #include "global.h"
 #include "global.berry.h" // struct definition
@@ -10,7 +10,7 @@
 
 // check constants:
 #if BERRY_ITEM_EFFECT_COUNT != 18
-   #error Constant `BERRY_ITEM_EFFECT_COUNT` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `BERRY_ITEM_EFFECT_COUNT` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 
 void lu_BitstreamRead_EnigmaBerry(struct lu_BitstreamState* state, struct EnigmaBerry* v) {

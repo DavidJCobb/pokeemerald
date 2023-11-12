@@ -1,4 +1,4 @@
-#include "lu/generated/struct-serialize//serialize_SaveBlock1.h"
+#include "lu/generated/struct-serialize/serialize_SaveBlock1.h"
 
 #include "global.h"
 
@@ -43,94 +43,94 @@
 
 // check constants:
 #if PARTY_SIZE != 6
-   #error Constant `PARTY_SIZE` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `PARTY_SIZE` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if PC_ITEMS_COUNT != 50
-   #error Constant `PC_ITEMS_COUNT` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `PC_ITEMS_COUNT` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if BAG_ITEMS_COUNT != 30
-   #error Constant `BAG_ITEMS_COUNT` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `BAG_ITEMS_COUNT` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if BAG_KEYITEMS_COUNT != 30
-   #error Constant `BAG_KEYITEMS_COUNT` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `BAG_KEYITEMS_COUNT` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if BAG_POKEBALLS_COUNT != 16
-   #error Constant `BAG_POKEBALLS_COUNT` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `BAG_POKEBALLS_COUNT` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if BAG_TMHM_COUNT != 64
-   #error Constant `BAG_TMHM_COUNT` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `BAG_TMHM_COUNT` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if BAG_BERRIES_COUNT != 46
-   #error Constant `BAG_BERRIES_COUNT` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `BAG_BERRIES_COUNT` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if POKEBLOCKS_COUNT != 40
-   #error Constant `POKEBLOCKS_COUNT` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `POKEBLOCKS_COUNT` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if NUM_DEX_FLAG_BYTES != 52
-   #error Constant `NUM_DEX_FLAG_BYTES` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `NUM_DEX_FLAG_BYTES` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if MAX_REMATCH_ENTRIES != 100
-   #error Constant `MAX_REMATCH_ENTRIES` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `MAX_REMATCH_ENTRIES` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if OBJECT_EVENTS_COUNT != 16
-   #error Constant `OBJECT_EVENTS_COUNT` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `OBJECT_EVENTS_COUNT` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if OBJECT_EVENT_TEMPLATES_COUNT != 64
-   #error Constant `OBJECT_EVENT_TEMPLATES_COUNT` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `OBJECT_EVENT_TEMPLATES_COUNT` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if NUM_FLAG_BYTES != 300
-   #error Constant `NUM_FLAG_BYTES` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `NUM_FLAG_BYTES` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if VARS_COUNT != 256
-   #error Constant `VARS_COUNT` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `VARS_COUNT` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if NUM_GAME_STATS != 64
-   #error Constant `NUM_GAME_STATS` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `NUM_GAME_STATS` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if BERRY_TREES_COUNT != 128
-   #error Constant `BERRY_TREES_COUNT` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `BERRY_TREES_COUNT` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if SECRET_BASES_COUNT != 20
-   #error Constant `SECRET_BASES_COUNT` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `SECRET_BASES_COUNT` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if DECOR_MAX_PLAYERS_HOUSE != 12
-   #error Constant `DECOR_MAX_PLAYERS_HOUSE` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `DECOR_MAX_PLAYERS_HOUSE` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if TV_SHOWS_COUNT != 25
-   #error Constant `TV_SHOWS_COUNT` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `TV_SHOWS_COUNT` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if POKE_NEWS_COUNT != 16
-   #error Constant `POKE_NEWS_COUNT` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `POKE_NEWS_COUNT` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if MAX_MON_MOVES != 4
-   #error Constant `MAX_MON_MOVES` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `MAX_MON_MOVES` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if EASY_CHAT_BATTLE_WORDS_COUNT != 6
-   #error Constant `EASY_CHAT_BATTLE_WORDS_COUNT` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `EASY_CHAT_BATTLE_WORDS_COUNT` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if MAIL_COUNT != 16
-   #error Constant `MAIL_COUNT` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `MAIL_COUNT` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if NUM_TRENDY_SAYING_BYTES != 5
-   #error Constant `NUM_TRENDY_SAYING_BYTES` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `NUM_TRENDY_SAYING_BYTES` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if SAVED_TRENDS_COUNT != 5
-   #error Constant `SAVED_TRENDS_COUNT` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `SAVED_TRENDS_COUNT` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if NUM_CONTEST_WINNERS != 13
-   #error Constant `NUM_CONTEST_WINNERS` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `NUM_CONTEST_WINNERS` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if GIFT_RIBBONS_COUNT != 11
-   #error Constant `GIFT_RIBBONS_COUNT` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `GIFT_RIBBONS_COUNT` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if NUM_TRAINER_HILL_MODES != 4
-   #error Constant `NUM_TRAINER_HILL_MODES` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `NUM_TRAINER_HILL_MODES` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if NUM_DEX_FLAG_BYTES != 52
-   #error Constant `NUM_DEX_FLAG_BYTES` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `NUM_DEX_FLAG_BYTES` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if UNION_ROOM_KB_ROW_COUNT != 10
-   #error Constant `UNION_ROOM_KB_ROW_COUNT` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `UNION_ROOM_KB_ROW_COUNT` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 
 void lu_BitstreamRead_SaveBlock1(struct lu_BitstreamState* state, struct SaveBlock1* v) {

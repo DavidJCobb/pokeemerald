@@ -1,4 +1,4 @@
-#include "lu/generated/struct-serialize//serialize_EmeraldBattleTowerRecord.h"
+#include "lu/generated/struct-serialize/serialize_EmeraldBattleTowerRecord.h"
 
 #include "global.h"
 
@@ -11,16 +11,16 @@
 
 // check constants:
 #if PLAYER_NAME_LENGTH != 7
-   #error Constant `PLAYER_NAME_LENGTH` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `PLAYER_NAME_LENGTH` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if TRAINER_ID_LENGTH != 4
-   #error Constant `TRAINER_ID_LENGTH` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `TRAINER_ID_LENGTH` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if EASY_CHAT_BATTLE_WORDS_COUNT != 6
-   #error Constant `EASY_CHAT_BATTLE_WORDS_COUNT` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `EASY_CHAT_BATTLE_WORDS_COUNT` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 #if MAX_FRONTIER_PARTY_SIZE != 4
-   #error Constant `MAX_FRONTIER_PARTY_SIZE` changed in C, but XML not updated or codegen not re-run!
+   #error Constant `MAX_FRONTIER_PARTY_SIZE` has been changed in C, but XML not updated or codegen not re-run!
 #endif
 
 void lu_BitstreamRead_EmeraldBattleTowerRecord(struct lu_BitstreamState* state, struct EmeraldBattleTowerRecord* v) {

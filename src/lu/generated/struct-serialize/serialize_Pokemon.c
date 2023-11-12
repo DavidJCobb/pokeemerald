@@ -1,4 +1,4 @@
-#include "lu/generated/struct-serialize//serialize_Pokemon.h"
+#include "lu/generated/struct-serialize/serialize_Pokemon.h"
 
 #include "global.h"
 #include "pokemon.h" // struct definition

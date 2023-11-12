@@ -1,6 +1,0 @@
-
-This folder is a dumping ground for quick-and-dirty code tests, when I want to prove out the behavior of some function in isolation without having to compile and run the entire ROM. I'm still getting my bearings as to how to properly test and debug the ROM &mdash; I only just found the linker map ten minutes ago as I write this, for example; and part of the reason I even made this folder is because I was on WSL2 at first and it took ten minutes to build the ROM &mdash; so this dumping ground has been helping me get started.
-
-Be warned: this is super scuffed. All of the `pokeemerald` source files are meant for GCC compiling C89, with a particular Makefile, whereas these experiments use MSVC and basic MSBuild configs for quick-and-dirty testing. This means that 90% of the game's codebase is not compatible out of the box; if a test needs game constants or structs, I have to copy that all manually. I used the term "dumping ground" above very deliberately. Everything in here is going to be messy.
-
-I will probably delete this entirely once I have any real clue what I'm doing

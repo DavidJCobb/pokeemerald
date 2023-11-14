@@ -59,7 +59,7 @@ const u8 gText_lu_CGOptionCategoryName_Battles[] = _("Battle options");
 const u8 gText_lu_CGOptionName_BattlesScaleDamagePlayer[] = _("Scale damage by player");
 const u8 gText_lu_CGOptionHelp_BattlesScaleDamagePlayer[] = _("Applies a percentage multiplier to damage dealt by the player. This multiplier is applied after all other damage calculations, and does not affect NPC AI decision-making.");
 const u8 gText_lu_CGOptionName_BattlesScaleDamageEnemy[] = _("Scale damage by enemies");
-const u8 gText_lu_CGOptionHelp_BattlesScaleDamageEnemy[] = _("Applies a percentage multiplier to damage dealt by the player's opponents. This multiplier is applied after all other damage calculation, and does not affect NPC AI decision-makings.");
+const u8 gText_lu_CGOptionHelp_BattlesScaleDamageEnemy[] = _("Applies a percentage multiplier to damage dealt by the player's opponents. This multiplier is applied after all other damage calculation, and does not affect NPC AI decision-making.");
 const u8 gText_lu_CGOptionName_BattlesScaleDamageAlly[] = _("Scale damage by allies");
 const u8 gText_lu_CGOptionHelp_BattlesScaleDamageAlly[] = _("Applies a percentage multiplier to damage dealt by the player's NPC allies, like Steven in Mossdeep City. This multiplier is applied after all other damage calculations, and does not affect NPC AI decision-making.");
 
@@ -79,7 +79,7 @@ const u8 gText_lu_CGOptionName_BattlesScaleVictoryPayout[] = _("Scale payout aft
 const u8 gText_lu_CGOptionHelp_BattlesScaleVictoryPayout[] = _("Applies a percentage multiplier to the money the player earns after winning a battle. This only affects the payout received from the opposing trainer; it doesn't affect other income, such as the results of using Pay Day.");
 
 const u8 gText_lu_CGOptionName_ModernMoneyLossOnDefeat[] = _("Modern money loss on defeat");
-const u8 gText_lu_CGOptionHelp_ModernMoneyLossOnDefeat[] = _("In the classic Pokémon games, losing a battle would cost the player exactly half of all the money they were carrying. In FireRed, LeafGreen, and all newer games (from Gen IV onward), the player's money loss is calculated similarly to NPCs' money loss, while factoring in the player's badge count and the highest level amongst their party Pokémon.\n\nDefault: Disabled; Emerald uses the classic rules.");
+const u8 gText_lu_CGOptionHelp_ModernMoneyLossOnDefeat[] = _("In the classic Pokémon games, losing a battle would cost the player exactly half of all the money they were carrying. In FireRed, LeafGreen, and from Gen IV onward, the player's money loss is calculated similarly to NPCs.\n\nDefault: Disabled.");
 
 const u8 gText_lu_CGOptionCategoryName_OverworldPoison[] = _("Overworld poison damage");
 const u8 gText_lu_CGOptionCategoryHelp_OverworldPoison[] = _("On the overworld, poisoned Pokémon take damage after every few steps you take. You can change the number of steps and amount of damage dealt, or disable poison damage on the overworld entirely.");

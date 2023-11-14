@@ -20,4 +20,20 @@ void LuUI_DrawWindowFrame(
    u8  inner_h  // measured in tiles, not pixels
 );
 
+// Draws a simple scrollbar onto the background layer. Assumes 4-bit color depth. 
+// Does not bounds-check.
+void LuUI_DrawBGScrollbarVert(
+   u8 window_id,
+   u8 pal_index_track,
+   u8 pal_index_thumb,
+   u8 pal_index_back,
+   u8 x,          // pixels
+   u8 width,      // pixels
+   u8 inset_top,  // pixels
+   u8 inset_btm,  // pixels
+   u8 scroll_pos, // items
+   u8 item_count, // items
+   u8 max_visible_items // max number of items visible at a time, in the list pane
+);
+
 #endif

@@ -27,6 +27,7 @@
 #include "string_util.h"
 #include "lu/string_wrap.h"
 #include "lu/strings.h"
+#include "lu/ui_helpers.h"
 
 /*//
 
@@ -127,9 +128,6 @@ enum {
    //
    WIN_COUNT
 };
-
-#define OPTION_VALUE_COLUMN_X     128
-#define OPTION_VALUE_COLUMN_WIDTH  94
 
 #define SOUND_EFFECT_MENU_SCROLL   SE_SELECT
 #define SOUND_EFFECT_VALUE_SCROLL  SE_SELECT
@@ -293,15 +291,23 @@ static void TryDisplayHelp(const struct CGOptionMenuItem* item);
 static void UpdateDisplayedMenuName(void);
 static void DrawMenuItem(const struct CGOptionMenuItem* item, u8 row, bool8 is_single_update);
 static void UpdateDisplayedMenuItems(void);
+static void RepaintScrollbar(void);
 static void UpdateDisplayedControls(void);
 
-static const u16 sOptionMenuText_Pal[] = INCBIN_U16("graphics/interface/option_menu_text.gbapal");
 // note: this is only used in the Japanese release
 static const u8 sEqualSignGfx[] = INCBIN_U8("graphics/interface/option_menu_equals_sign.4bpp");
 
-static const u8 sTextColor_OptionNames[] = {TEXT_COLOR_WHITE, 6, 7};
-static const u8 sTextColor_OptionValues[] = {TEXT_COLOR_WHITE, TEXT_COLOR_RED, TEXT_COLOR_LIGHT_RED};
-static const u8 sTextColor_HelpBodyText[] = {TEXT_COLOR_WHITE, 6, 7};
+static const u16 sOptionsListingPalette[] = INCBIN_U16("graphics/lu/cgo_menu/option_listing.gbapal");
+//
+// Background, foreground, shadow:
+//
+static const u8 sTextColor_OptionNames[] = {1, 2, 3};
+static const u8 sTextColor_OptionValues[] = {1, 4, 5};
+static const u8 sTextColor_HelpBodyText[] = {1, 2, 3};
+//
+#define SCROLLBAR_PALETTE_INDEX_BLANK 1
+#define SCROLLBAR_PALETTE_INDEX_TRACK 14
+#define SCROLLBAR_PALETTE_INDEX_THUMB 15
 
 #define BACKGROUND_LAYER_NORMAL  0
 #define BACKGROUND_LAYER_OPTIONS 1
@@ -330,6 +336,12 @@ static const u8 sTextColor_HelpBodyText[] = {TEXT_COLOR_WHITE, 6, 7};
 #define MAX_MENU_ITEMS_VISIBLE_AT_ONCE   OPTIONS_LIST_TILE_HEIGHT / 2
 #define MENU_ITEM_HALFWAY_ROW            (MAX_MENU_ITEMS_VISIBLE_AT_ONCE / 2)
 
+#define OPTIONS_LIST_INSET_LEFT  (3 * TILE_WIDTH)
+#define OPTIONS_LIST_INSET_RIGHT (2 * TILE_WIDTH)
+//
+#define OPTION_VALUE_COLUMN_WIDTH  48
+#define OPTION_VALUE_COLUMN_X      (DISPLAY_WIDTH - OPTIONS_LIST_INSET_RIGHT - OPTION_VALUE_COLUMN_WIDTH)
+
 #define SCROLLBAR_X     230
 #define SCROLLBAR_WIDTH   3
 #define SCROLLBAR_TRACK_HEIGHT   OPTIONS_LIST_PIXEL_HEIGHT
@@ -355,9 +367,9 @@ static const struct WindowTemplate sOptionMenuWinTemplates[] = {
     },
     [WIN_OPTIONS] = {
         .bg          = BACKGROUND_LAYER_OPTIONS,
-        .tilemapLeft = 2,
+        .tilemapLeft = 0,
         .tilemapTop  = 3,
-        .width       = 26,
+        .width       = DISPLAY_TILE_WIDTH,
         .height      = OPTIONS_LIST_TILE_HEIGHT,
         .paletteNum  = BACKGROUND_PALETTE_ID_TEXT,
         .baseBlock   = 1 + (DISPLAY_TILE_WIDTH * 4)
@@ -379,22 +391,22 @@ static const struct BgTemplate sOptionMenuBgTemplates[] = {
    {
       .bg = BACKGROUND_LAYER_NORMAL,
       //
-      .charBaseIndex = 1,
+      .charBaseIndex = 0,
       .mapBaseIndex  = 31,
       .screenSize    = 0,
       .paletteMode   = 0,
       .priority      = 2,
-      .baseTile      = 0
+      .baseTile      = 160
    },
    {
       .bg = BACKGROUND_LAYER_OPTIONS,
       //
-      .charBaseIndex = 1,
+      .charBaseIndex = 0,
       .mapBaseIndex  = 30,
       .screenSize    = 0,
       .paletteMode   = 0,
       .priority      = 1,
-      .baseTile      = 0
+      .baseTile      = 160
    },
    {
       .bg = BACKGROUND_LAYER_HELP,
@@ -404,58 +416,11 @@ static const struct BgTemplate sOptionMenuBgTemplates[] = {
       .screenSize    = 0,
       .paletteMode   = 0,
       .priority      = 0,
-      .baseTile      = 0
+      .baseTile      = 1
    },
 };
 
 static const u16 sOptionMenuBg_Pal[] = {RGB(17, 18, 31)};
-
-#define SPRITE_TAG_COALESCED_INTERFACE 0x1000 // Tile and pal tag used for all interface sprites.
-
-static const struct CompressedSpriteSheet sInterfaceSpriteSheet = {
-   gLuCGOMenuInterface_Gfx,
-   8*8 / 2, // uncompressed size of pixel data (width times height), divided by two
-   SPRITE_TAG_COALESCED_INTERFACE
-};
-static const struct SpritePalette sInterfaceSpritePalette[] = {
-   {gLuCGOMenuInterface_Pal, SPRITE_TAG_COALESCED_INTERFACE},
-   {0}
-};
-
-#define SCROLLBAR_THUMB_OAM_MATRIX_INDEX 0
-
-static const struct OamData sOamData_ScrollbarThumb = {
-   .y           = DISPLAY_HEIGHT,
-   .affineMode  = ST_OAM_AFFINE_NORMAL,
-   .objMode     = ST_OAM_OBJ_NORMAL,
-   .mosaic      = FALSE,
-   .bpp         = ST_OAM_4BPP,
-   .shape       = SPRITE_SHAPE(8x8),
-   .x           = 0,
-   .matrixNum   = SCROLLBAR_THUMB_OAM_MATRIX_INDEX, // relevant for calls to SetOamMatrix
-   .size        = SPRITE_SIZE(8x8),
-   .tileNum     = 0,
-   .priority    = 1,
-   .paletteNum  = 0,
-   .affineParam = 0
-};
-static const union AnimCmd sSpriteAnim_ScrollbarThumb[] = {
-   ANIMCMD_FRAME(0, 30),
-   ANIMCMD_END
-};
-static const union AnimCmd* const sSpriteAnimTable_ScrollbarThumb[] = {
-   sSpriteAnim_ScrollbarThumb
-};
-static const struct SpriteTemplate sScrollbarThumbSpriteTemplate = {
-   .tileTag     = SPRITE_TAG_COALESCED_INTERFACE,
-   .paletteTag  = SPRITE_TAG_COALESCED_INTERFACE,
-   .oam         = &sOamData_ScrollbarThumb,
-   .anims       = sSpriteAnimTable_ScrollbarThumb,
-   .images      = NULL,
-   .affineAnims = gDummySpriteAffineAnimTable,
-   .callback    = SpriteCB_ScrollbarThumb,
-};
-
 
 static void MainCB2(void) {
    RunTasks();
@@ -496,8 +461,6 @@ static void SetUpHighlightEffect(void) {
    SetGpuReg(REG_OFFSET_BLDALPHA, 0);
    SetGpuReg(REG_OFFSET_BLDY, 4);
    SetGpuReg(REG_OFFSET_DISPCNT, DISPCNT_WIN0_ON | DISPCNT_OBJ_ON | DISPCNT_OBJ_1D_MAP);
-   
-   #undef _ALL_BG_FLAGS
 }
 
 void CB2_InitCustomGameOptionMenu(void) {
@@ -553,11 +516,6 @@ void CB2_InitCustomGameOptionMenu(void) {
          ResetTasks();
          ResetSpriteData();
          FreeAllSpritePalettes();
-         {
-            LoadCompressedSpriteSheet(&sInterfaceSpriteSheet);
-            LoadSpritePalettes(sInterfaceSpritePalette);
-            CreateSprite(&sScrollbarThumbSpriteTemplate, SCROLLBAR_X, (sOptionMenuWinTemplates[WIN_OPTIONS].tilemapTop * TILE_HEIGHT), 0);
-         }
          gMain.state++;
          break;
        case 3:
@@ -570,7 +528,7 @@ void CB2_InitCustomGameOptionMenu(void) {
          gMain.state++;
          break;
        case 5:
-         LoadPalette(sOptionMenuText_Pal, BG_PLTT_ID(BACKGROUND_PALETTE_ID_TEXT), sizeof(sOptionMenuText_Pal));
+         LoadPalette(sOptionsListingPalette, BG_PLTT_ID(BACKGROUND_PALETTE_ID_TEXT), sizeof(sOptionsListingPalette));
          LoadPalette(GetTextWindowPalette(2), BG_PLTT_ID(BACKGROUND_PALETTE_ID_CONTROLS), PLTT_SIZE_4BPP);
          gMain.state++;
          break;
@@ -797,14 +755,24 @@ static void DrawMenuItem(const struct CGOptionMenuItem* item, u8 row, bool8 is_s
    const u8* value_text;
    
    if (is_single_update) {
-      FillWindowPixelRect(WIN_OPTIONS, PIXEL_FILL(1), 0, (row * 16) + 1, sOptionMenuWinTemplates[WIN_OPTIONS].width * TILE_WIDTH, 16);
+      FillWindowPixelRect(
+         WIN_OPTIONS,
+         PIXEL_FILL(1),
+         0,
+         (row * 16) + 1,
+         
+         // Don't paint over the righthand inset, or we'll clobber bits of the scrollbar
+         (sOptionMenuWinTemplates[WIN_OPTIONS].width * TILE_WIDTH) - OPTIONS_LIST_INSET_RIGHT,
+         
+         16
+      );
    }
    
    // Name
    AddTextPrinterParameterized3(
       WIN_OPTIONS,
       FONT_NORMAL,
-      8,              // x
+      OPTIONS_LIST_INSET_LEFT, // x
       (row * 16) + 1, // y
       sTextColor_OptionNames,
       TEXT_SKIP_DRAW,
@@ -819,7 +787,7 @@ static void DrawMenuItem(const struct CGOptionMenuItem* item, u8 row, bool8 is_s
       //
       // let's center the option value within the available space, for now
       // (it'll look neater once we display left/right arrows next to it)
-      x_offset = (OPTION_VALUE_COLUMN_WIDTH - text_width) / 2 + OPTION_VALUE_COLUMN_X;
+      x_offset = ((s16)OPTION_VALUE_COLUMN_WIDTH - text_width) / 2 + OPTION_VALUE_COLUMN_X;
       //
       AddTextPrinterParameterized3(
          WIN_OPTIONS,
@@ -858,7 +826,7 @@ static void DrawMenuItem(const struct CGOptionMenuItem* item, u8 row, bool8 is_s
       }
       
       text_width = GetStringWidth(FONT_NORMAL, text, 0);
-      x_offset   = (OPTION_VALUE_COLUMN_WIDTH - text_width) / 2 + OPTION_VALUE_COLUMN_X;
+      x_offset   = ((s16)OPTION_VALUE_COLUMN_WIDTH - text_width) / 2 + OPTION_VALUE_COLUMN_X;
       //
       AddTextPrinterParameterized3(
          WIN_OPTIONS,
@@ -939,63 +907,29 @@ static void UpdateDisplayedMenuItems(void) {
       DrawMenuItem(&items[i + scroll], i, FALSE);
    }
    
+   RepaintScrollbar();
+   
    CopyWindowToVram(WIN_OPTIONS, COPYWIN_GFX);
 }
-
-static void SpriteCB_ScrollbarThumb(struct Sprite* sprite) {
-   u8 scroll;
+static void RepaintScrollbar(void) {
    u8 count;
+   u8 scroll;
    GetScrollInformation(&scroll, &count);
    
-   if (count <= MAX_MENU_ITEMS_VISIBLE_AT_ONCE) {
-      sprite->invisible = TRUE;
-      return;
-   }
-   sprite->invisible = FALSE;
-   
-   {
-      // thumb size / scroll bar size = page size / scroll bar range
-      //    ergo
-      // thumb size = scroll bar size * page size / scroll bar range
-      s16 scale;
-      
-      u8 offset = SCROLLBAR_TRACK_HEIGHT * scroll / count;
-      
-      //
-      // Fun fact: OAM matrices are the inverse of standard transformation matrices!
-      // Where an intuitive matrix would map texels to screen pixels, OAM matrices 
-      // instead map screen pixels to texels!
-      //
-      // The scale we want is:
-      //
-      //    SCROLLBAR_TRACK_HEIGHT * (MAX_MENU_ITEMS_VISIBLE_AT_ONCE / count)
-      //
-      // If OAM matrices were, uh, sane, then we'd do:
-      //
-      //    (SCROLLBAR_TRACK_HEIGHT * (MAX_MENU_ITEMS_VISIBLE_AT_ONCE / count)) * 0x100
-      //
-      // So what we actually need to do is (1/N)*0x100, i.e.
-      //
-      //    0x100 * count / SCROLLBAR_TRACK_HEIGHT / MAX_MENU_ITEMS_VISIBLE_AT_ONCE
-      //
-      // And that would work with a 1px image, except that it wouldn't be granular 
-      // enough. If we use an 8px-tall thumb sprite, then we can multiply this whole 
-      // value by 8 to gain more range.
-      //
-      
-      scale = 0x800 * count / (SCROLLBAR_TRACK_HEIGHT * MAX_MENU_ITEMS_VISIBLE_AT_ONCE);
-      if (scale > 0x800) // similarly, because these matrices are inverted, we want to enforce a maximum
-         scale = 0x800;
-      if (scale <= 0) // but we still need to guard against zero-or-negative values
-         scale = 0x800;
-scale = 0x10; // TEST
-      
-      SetOamMatrix(SCROLLBAR_THUMB_OAM_MATRIX_INDEX, 0x100, 0, 0, scale);
-      
-      sprite->y2 = offset;
-   }
+   LuUI_DrawBGScrollbarVert(
+      WIN_OPTIONS,
+      SCROLLBAR_PALETTE_INDEX_TRACK,
+      SCROLLBAR_PALETTE_INDEX_THUMB,
+      SCROLLBAR_PALETTE_INDEX_BLANK,
+      SCROLLBAR_X,
+      SCROLLBAR_WIDTH,
+      0,
+      0,
+      scroll,
+      count,
+      MAX_MENU_ITEMS_VISIBLE_AT_ONCE
+   );
 }
-
 static void UpdateDisplayedControls(void) {
    bool8 draw_help_option;
    //

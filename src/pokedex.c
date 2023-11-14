@@ -29,6 +29,40 @@
 #include "constants/rgb.h"
 #include "constants/songs.h"
 
+/*
+
+   GRAPHICAL INFORMATION:
+   
+   MAIN VIEW:
+    - BG 0 is the menu openable via the Start button, with options like 
+      "Back to List", "List Top", "List Bottom", and "Close Pokedex". 
+      The menu is always on this layer; they just show or hide the entire 
+      layer.
+      
+    - BG 1 is the "chrome" for the Pokedex: it's the header, most of the 
+      Poke Ball logo on the side, the frames for the sprite view and the 
+      list view, and the scrollbar track for the list view.
+      
+    - BG 2 is the text-content of the list view. They shift the background 
+      layer during scrolling and only repaint when you're scrolling to a 
+      list item that didn't fit on the background.
+      
+    - BG 3 holds the backgrounds for the sprite pane and list pane. It also 
+      has a copy of the green-pinstripe background shown on the chrome.
+      
+    - SPRITES
+    
+       - All Pokemon sprites shown in the sprite pane are... sprites. As 
+         you'd expect, really.
+         
+       - The Poke Ball icon on the side rotates as you scroll. They did this 
+         by having the background layer feature a fully-black circle, and 
+         placing two "cutout" sprites which are rotated.
+         
+       - The scrollbar thumb is a sprite.
+
+*/
+
 enum
 {
     PAGE_MAIN,

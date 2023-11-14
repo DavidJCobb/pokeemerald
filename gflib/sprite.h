@@ -240,6 +240,10 @@ struct Sprite
     /*0x43*/ u8 subpriority;
 };
 
+// row-major. 0x100 = 100%, so the identity matrix would be [0x100, 0, 0, 0x100].
+// note also that these are the INVERSE of traditional transformation matrices.
+// that is: they map screen pixels to sprite texels, not texels to screen pixels.
+// to scale a sprite by N, you'd use [(1/N)*0x100, 0, 0, (1/N)*0x100].
 struct OamMatrix
 {
     s16 a;

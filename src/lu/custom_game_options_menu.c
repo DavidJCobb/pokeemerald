@@ -3,6 +3,7 @@
 #include "lu/custom_game_options.h"
 
 #include "bg.h"
+#include "decompress.h" // LoadCompressedSpriteSheet
 #include "gpu_regs.h"
 #include "main.h"
 #include "malloc.h" // AllocZeroed, Free
@@ -19,6 +20,8 @@
 #include "gba/m4a_internal.h"
 #include "constants/rgb.h"
 #include "constants/songs.h" // SE_SELECT and other sound effect constants
+
+#include "graphics.h" // interface sprites
 
 #include "characters.h"
 #include "string_util.h"
@@ -124,10 +127,6 @@ enum {
    //
    WIN_COUNT
 };
-
-#define MAX_MENU_ITEMS_VISIBLE_AT_ONCE 7
-//
-#define MENU_ITEM_HALFWAY_ROW (MAX_MENU_ITEMS_VISIBLE_AT_ONCE / 2)
 
 #define OPTION_VALUE_COLUMN_X     128
 #define OPTION_VALUE_COLUMN_WIDTH  94
@@ -287,7 +286,7 @@ static void Task_CGOptionMenuSave(u8 taskId);
 static void Task_CGOptionMenuFadeOut(u8 taskId);
 static void HighlightCGOptionMenuItem();
 
-static void DrawBgWindowFrames(void);
+static void SpriteCB_ScrollbarThumb(struct Sprite*);
 
 static void TryDisplayHelp(const struct CGOptionMenuItem* item);
 
@@ -325,6 +324,16 @@ static const u8 sTextColor_HelpBodyText[] = {TEXT_COLOR_WHITE, 6, 7};
 #define DIALOG_FRAME_TILE_BOT_EDGE     (DIALOG_FRAME_FIRST_TILE_ID + 7)
 #define DIALOG_FRAME_TILE_BOT_CORNER_R (DIALOG_FRAME_FIRST_TILE_ID + 8)
 
+#define OPTIONS_LIST_TILE_HEIGHT    14
+#define OPTIONS_LIST_PIXEL_HEIGHT   (OPTIONS_LIST_TILE_HEIGHT * TILE_HEIGHT)
+//
+#define MAX_MENU_ITEMS_VISIBLE_AT_ONCE   OPTIONS_LIST_TILE_HEIGHT / 2
+#define MENU_ITEM_HALFWAY_ROW            (MAX_MENU_ITEMS_VISIBLE_AT_ONCE / 2)
+
+#define SCROLLBAR_X     230
+#define SCROLLBAR_WIDTH   3
+#define SCROLLBAR_TRACK_HEIGHT   OPTIONS_LIST_PIXEL_HEIGHT
+
 static const struct WindowTemplate sOptionMenuWinTemplates[] = {
     [WIN_HEADER] = {
         .bg          = BACKGROUND_LAYER_NORMAL,
@@ -349,7 +358,7 @@ static const struct WindowTemplate sOptionMenuWinTemplates[] = {
         .tilemapLeft = 2,
         .tilemapTop  = 3,
         .width       = 26,
-        .height      = 14,
+        .height      = OPTIONS_LIST_TILE_HEIGHT,
         .paletteNum  = BACKGROUND_PALETTE_ID_TEXT,
         .baseBlock   = 1 + (DISPLAY_TILE_WIDTH * 4)
     },
@@ -401,6 +410,53 @@ static const struct BgTemplate sOptionMenuBgTemplates[] = {
 
 static const u16 sOptionMenuBg_Pal[] = {RGB(17, 18, 31)};
 
+#define SPRITE_TAG_COALESCED_INTERFACE 0x1000 // Tile and pal tag used for all interface sprites.
+
+static const struct CompressedSpriteSheet sInterfaceSpriteSheet = {
+   gLuCGOMenuInterface_Gfx,
+   8*8 / 2, // uncompressed size of pixel data (width times height), divided by two
+   SPRITE_TAG_COALESCED_INTERFACE
+};
+static const struct SpritePalette sInterfaceSpritePalette[] = {
+   {gLuCGOMenuInterface_Pal, SPRITE_TAG_COALESCED_INTERFACE},
+   {0}
+};
+
+#define SCROLLBAR_THUMB_OAM_MATRIX_INDEX 0
+
+static const struct OamData sOamData_ScrollbarThumb = {
+   .y           = DISPLAY_HEIGHT,
+   .affineMode  = ST_OAM_AFFINE_NORMAL,
+   .objMode     = ST_OAM_OBJ_NORMAL,
+   .mosaic      = FALSE,
+   .bpp         = ST_OAM_4BPP,
+   .shape       = SPRITE_SHAPE(8x8),
+   .x           = 0,
+   .matrixNum   = SCROLLBAR_THUMB_OAM_MATRIX_INDEX, // relevant for calls to SetOamMatrix
+   .size        = SPRITE_SIZE(8x8),
+   .tileNum     = 0,
+   .priority    = 1,
+   .paletteNum  = 0,
+   .affineParam = 0
+};
+static const union AnimCmd sSpriteAnim_ScrollbarThumb[] = {
+   ANIMCMD_FRAME(0, 30),
+   ANIMCMD_END
+};
+static const union AnimCmd* const sSpriteAnimTable_ScrollbarThumb[] = {
+   sSpriteAnim_ScrollbarThumb
+};
+static const struct SpriteTemplate sScrollbarThumbSpriteTemplate = {
+   .tileTag     = SPRITE_TAG_COALESCED_INTERFACE,
+   .paletteTag  = SPRITE_TAG_COALESCED_INTERFACE,
+   .oam         = &sOamData_ScrollbarThumb,
+   .anims       = sSpriteAnimTable_ScrollbarThumb,
+   .images      = NULL,
+   .affineAnims = gDummySpriteAffineAnimTable,
+   .callback    = SpriteCB_ScrollbarThumb,
+};
+
+
 static void MainCB2(void) {
    RunTasks();
    AnimateSprites();
@@ -428,13 +484,14 @@ static void SetUpHighlightEffect(void) {
    // Once we enable an LCD I/O window region, we have to explicitly define which 
    // background layers render in which regions, no matter what else we've done to 
    // enable a background layer. In this case, we want all layers visible; the only 
-   // difference between regions is whether they have the GBA color effect applied.
-   #define _ALL_BG_FLAGS (1 << BACKGROUND_LAYER_NORMAL) | (1 << BACKGROUND_LAYER_OPTIONS) | (1 << BACKGROUND_LAYER_HELP)
+   // difference between regions is whether they have the GBA color effect applied.\
+   //
+   // Oh -- we also have to enable the object layer, too!
    
    SetGpuReg(REG_OFFSET_WIN0H,  0);
    SetGpuReg(REG_OFFSET_WIN0V,  0);
-   SetGpuReg(REG_OFFSET_WININ,  _ALL_BG_FLAGS);
-   SetGpuReg(REG_OFFSET_WINOUT, _ALL_BG_FLAGS | WINOUT_WIN01_CLR);
+   SetGpuReg(REG_OFFSET_WININ,  WINOUT_WIN01_BG_ALL);
+   SetGpuReg(REG_OFFSET_WINOUT, WINOUT_WIN01_ALL);
    SetGpuReg(REG_OFFSET_BLDCNT, (1 << BACKGROUND_LAYER_OPTIONS) | BLDCNT_EFFECT_DARKEN);
    SetGpuReg(REG_OFFSET_BLDALPHA, 0);
    SetGpuReg(REG_OFFSET_BLDY, 4);
@@ -495,6 +552,12 @@ void CB2_InitCustomGameOptionMenu(void) {
          ScanlineEffect_Stop();
          ResetTasks();
          ResetSpriteData();
+         FreeAllSpritePalettes();
+         {
+            LoadCompressedSpriteSheet(&sInterfaceSpriteSheet);
+            LoadSpritePalettes(sInterfaceSpritePalette);
+            CreateSprite(&sScrollbarThumbSpriteTemplate, SCROLLBAR_X, (sOptionMenuWinTemplates[WIN_OPTIONS].tilemapTop * TILE_HEIGHT), 0);
+         }
          gMain.state++;
          break;
        case 3:
@@ -527,7 +590,6 @@ void CB2_InitCustomGameOptionMenu(void) {
          break;
        case 9:
          PutWindowTilemap(WIN_KEYBINDS_STRIP);
-         DrawBgWindowFrames();
          gMain.state++;
          break;
        case 10:
@@ -817,20 +879,27 @@ static void DrawMenuItem(const struct CGOptionMenuItem* item, u8 row, bool8 is_s
    }
 }
 
-static u8 GetScrollPosition() {
-   u8 count;
-   u8 scroll = sMenuState->cursor_pos;
+static void GetScrollInformation(u8* pos, u8* count) {
+   u8 l_count;
+   u8 l_scroll = sMenuState->cursor_pos;
    
-   count = GetMenuItemListCount(GetCurrentMenuItemList());
+   l_count = GetMenuItemListCount(GetCurrentMenuItemList());
+   *count = l_count;
    
-   if (scroll <= MENU_ITEM_HALFWAY_ROW || count <= MAX_MENU_ITEMS_VISIBLE_AT_ONCE) {
-      scroll = 0;
+   if (l_scroll <= MENU_ITEM_HALFWAY_ROW || l_count <= MAX_MENU_ITEMS_VISIBLE_AT_ONCE) {
+      l_scroll = 0;
    } else {
-      scroll -= MENU_ITEM_HALFWAY_ROW;
-      if (scroll + MAX_MENU_ITEMS_VISIBLE_AT_ONCE > count) {
-         scroll = count - MAX_MENU_ITEMS_VISIBLE_AT_ONCE;
+      l_scroll -= MENU_ITEM_HALFWAY_ROW;
+      if (l_scroll + MAX_MENU_ITEMS_VISIBLE_AT_ONCE > l_count) {
+         l_scroll = l_count - MAX_MENU_ITEMS_VISIBLE_AT_ONCE;
       }
    }
+   *pos = l_scroll;
+}
+static u8 GetScrollPosition() {
+   u8 count;
+   u8 scroll;
+   GetScrollInformation(&scroll, &count);
    return scroll;
 }
 static u8 GetScreenRowForCursorPos(void) {
@@ -873,30 +942,58 @@ static void UpdateDisplayedMenuItems(void) {
    CopyWindowToVram(WIN_OPTIONS, COPYWIN_GFX);
 }
 
-static void DrawWindowFrame(u8 inner_x, u8 inner_y, u8 inner_w, u8 inner_h) {
-   u8 l = inner_x - 1;
-   u8 r = inner_x + inner_w;
-   u8 t = inner_y - 1;
-   u8 b = inner_y + inner_h;
+static void SpriteCB_ScrollbarThumb(struct Sprite* sprite) {
+   u8 scroll;
+   u8 count;
+   GetScrollInformation(&scroll, &count);
    
-   FillBgTilemapBufferRect(BACKGROUND_LAYER_NORMAL, DIALOG_FRAME_TILE_TOP_CORNER_L, l,     t,      1,        1,  BACKGROUND_PALETTE_BOX_FRAME);
-   FillBgTilemapBufferRect(BACKGROUND_LAYER_NORMAL, DIALOG_FRAME_TILE_TOP_EDGE,     l + 1, t,      inner_w,  1,  BACKGROUND_PALETTE_BOX_FRAME);
-   FillBgTilemapBufferRect(BACKGROUND_LAYER_NORMAL, DIALOG_FRAME_TILE_TOP_CORNER_R, r,     t,      1,        1,  BACKGROUND_PALETTE_BOX_FRAME);
-   FillBgTilemapBufferRect(BACKGROUND_LAYER_NORMAL, DIALOG_FRAME_TILE_LEFT_EDGE,    l,     t + 1,  1,  inner_h,  BACKGROUND_PALETTE_BOX_FRAME);
-   FillBgTilemapBufferRect(BACKGROUND_LAYER_NORMAL, DIALOG_FRAME_TILE_RIGHT_EDGE,   r,     t + 1,  1,  inner_h,  BACKGROUND_PALETTE_BOX_FRAME);
-   FillBgTilemapBufferRect(BACKGROUND_LAYER_NORMAL, DIALOG_FRAME_TILE_BOT_CORNER_L, l,     b,      1,        1,  BACKGROUND_PALETTE_BOX_FRAME);
-   FillBgTilemapBufferRect(BACKGROUND_LAYER_NORMAL, DIALOG_FRAME_TILE_BOT_EDGE,     l + 1, b,      inner_w,  1,  BACKGROUND_PALETTE_BOX_FRAME);
-   FillBgTilemapBufferRect(BACKGROUND_LAYER_NORMAL, DIALOG_FRAME_TILE_BOT_CORNER_R, r,     b,      1,        1,  BACKGROUND_PALETTE_BOX_FRAME);
-}
-
-static void DrawBgWindowFrames(void) {
-   DrawWindowFrame(
-      sOptionMenuWinTemplates[WIN_OPTIONS].tilemapLeft,
-      sOptionMenuWinTemplates[WIN_OPTIONS].tilemapTop,
-      sOptionMenuWinTemplates[WIN_OPTIONS].width,
-      sOptionMenuWinTemplates[WIN_OPTIONS].height
-   );
-   CopyBgTilemapBufferToVram(BACKGROUND_LAYER_NORMAL);
+   if (count <= MAX_MENU_ITEMS_VISIBLE_AT_ONCE) {
+      sprite->invisible = TRUE;
+      return;
+   }
+   sprite->invisible = FALSE;
+   
+   {
+      // thumb size / scroll bar size = page size / scroll bar range
+      //    ergo
+      // thumb size = scroll bar size * page size / scroll bar range
+      s16 scale;
+      
+      u8 offset = SCROLLBAR_TRACK_HEIGHT * scroll / count;
+      
+      //
+      // Fun fact: OAM matrices are the inverse of standard transformation matrices!
+      // Where an intuitive matrix would map texels to screen pixels, OAM matrices 
+      // instead map screen pixels to texels!
+      //
+      // The scale we want is:
+      //
+      //    SCROLLBAR_TRACK_HEIGHT * (MAX_MENU_ITEMS_VISIBLE_AT_ONCE / count)
+      //
+      // If OAM matrices were, uh, sane, then we'd do:
+      //
+      //    (SCROLLBAR_TRACK_HEIGHT * (MAX_MENU_ITEMS_VISIBLE_AT_ONCE / count)) * 0x100
+      //
+      // So what we actually need to do is (1/N)*0x100, i.e.
+      //
+      //    0x100 * count / SCROLLBAR_TRACK_HEIGHT / MAX_MENU_ITEMS_VISIBLE_AT_ONCE
+      //
+      // And that would work with a 1px image, except that it wouldn't be granular 
+      // enough. If we use an 8px-tall thumb sprite, then we can multiply this whole 
+      // value by 8 to gain more range.
+      //
+      
+      scale = 0x800 * count / (SCROLLBAR_TRACK_HEIGHT * MAX_MENU_ITEMS_VISIBLE_AT_ONCE);
+      if (scale > 0x800) // similarly, because these matrices are inverted, we want to enforce a maximum
+         scale = 0x800;
+      if (scale <= 0) // but we still need to guard against zero-or-negative values
+         scale = 0x800;
+scale = 0x10; // TEST
+      
+      SetOamMatrix(SCROLLBAR_THUMB_OAM_MATRIX_INDEX, 0x100, 0, 0, scale);
+      
+      sprite->y2 = offset;
+   }
 }
 
 static void UpdateDisplayedControls(void) {

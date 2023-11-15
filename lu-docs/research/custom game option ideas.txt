@@ -136,7 +136,8 @@ principles:
        - Permissive
           = You can enter Double Battles even if you only have one Pokemon.
        - Forced
-          = All battles are Double Battles.
+          = All battles are Double Battles. Implies Permissive (otherwise you could literally 
+            walk past every trainer if you have just one party member).
        - Disabled
           = All battles are Single Battles.
     - Enable/disable player item use during battles

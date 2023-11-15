@@ -53,7 +53,34 @@ static const struct CGOptionMenuItem sCatchingOptions[] = {
    END_OF_LIST_SENTINEL,
 };
 
+static const u8* const sOption_ItemUseInBattles_ValueNameStrings[] = {
+   gText_lu_CGOptionValues_common_Enabled,
+   gText_lu_CGOptionValueName_ItemUseInBattles_NoBackfield,
+   gText_lu_CGOptionValues_common_Disabled,
+};   
+static const u8* const sOption_ItemUseInBattles_ValueHelpStrings[] = {
+   NULL,
+   gText_lu_CGOptionValueHelp_ItemUseInBattles_NoBackfield,
+   NULL,
+};
+//
 static const struct CGOptionMenuItem sBattleOptions[] = {
+   {  // Item use
+      .name        = gText_lu_CGOptionName_ItemUseInBattles,
+      .help_string = gText_lu_CGOptionHelp_ItemUseInBattles,
+      .flags       = (1 << MENUITEM_FLAG_IS_ENUM),
+      .value_type = VALUE_TYPE_U8,
+      .values = {
+         .named = {
+            .name_strings = sOption_ItemUseInBattles_ValueNameStrings,
+            .help_strings = sOption_ItemUseInBattles_ValueHelpStrings,
+            .count = 3,
+         }
+      },
+      .target = {
+         .as_u8 = &sTempOptions.battle_item_usage
+      }
+   },
    {  // Scale accuracy by player
       .name        = gText_lu_CGOptionName_BattlesScaleAccuracyPlayer,
       .help_string = gText_lu_CGOptionHelp_BattlesScaleAccuracyPlayer,

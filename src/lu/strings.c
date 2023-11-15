@@ -56,6 +56,11 @@ const u8 gText_lu_CGOptionHelp_CatchRateScale[] = _("Multiply the computed catch
 
 const u8 gText_lu_CGOptionCategoryName_Battles[] = _("Battle options");
 
+const u8 gText_lu_CGOptionName_ItemUseInBattles[] = _("Item use");
+const u8 gText_lu_CGOptionHelp_ItemUseInBattles[] = _("Control whether the player is allowed to use items while in battle.");
+const u8 gText_lu_CGOptionValueName_ItemUseInBattles_NoBackfield[] = _("No Backfield");
+const u8 gText_lu_CGOptionValueHelp_ItemUseInBattles_NoBackfield[] = _("Control whether the player is allowed to use items while in battle. The “No Backfield” option limits players to using items on Pokémon that are currently in battle; this is the same limit that NPCs have.");
+
 const u8 gText_lu_CGOptionName_BattlesScaleDamagePlayer[] = _("Scale damage by player");
 const u8 gText_lu_CGOptionHelp_BattlesScaleDamagePlayer[] = _("Applies a percentage multiplier to damage dealt by the player. This multiplier is applied after all other damage calculations, and does not affect NPC AI decision-making.");
 const u8 gText_lu_CGOptionName_BattlesScaleDamageEnemy[] = _("Scale damage by enemies");

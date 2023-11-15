@@ -3,6 +3,12 @@
 #include "lu/bitstreams.h"
 
 enum {
+   CustomGame_ItemUseInBattles_Enabled,
+   CustomGame_ItemUseInBattles_NoBackfield,
+   CustomGame_ItemUseInBattles_Disabled,
+};
+
+enum {
    CustomGame_SingleSpeciesRun_CatchMode_OnlyCatchTargetSpecies,
    CustomGame_SingleSpeciesRun_CatchMode_PolymorphAllCaught,
 };

@@ -101,6 +101,9 @@ u16 GetOptionValueCount(const struct CGOptionMenuItem* item) {
    return 0;
 }
 u16 GetOptionMinValue(const struct CGOptionMenuItem* item) {
+   if (item->flags & (1 << MENUITEM_FLAG_IS_ENUM)) {
+      return 0;
+   }
    if (item->value_type == VALUE_TYPE_POKEMON_SPECIES) {
       if (item->flags & (1 << MENUITEM_FLAG_POKEMON_SPECIES_ALLOW_0)) {
          return 0;
@@ -152,7 +155,7 @@ void CycleOptionSelectedValue(const struct CGOptionMenuItem* item, s8 by) {
 const u8* GetRelevantHelpText(const struct CGOptionMenuItem* item) {
    const u8* text = NULL;
    
-   if ((item->flags & MENUITEM_FLAG_IS_ENUM) != 0) {
+   if (item->flags & (1 << MENUITEM_FLAG_IS_ENUM)) {
       u8 value;
       u8 value_count;
       

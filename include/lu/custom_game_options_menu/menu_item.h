@@ -9,7 +9,7 @@ enum { // CGOptionMenuItem::value_type
    VALUE_TYPE_U16,
    VALUE_TYPE_BOOL8,
    
-   VALUE_TYPE_POKEMON_SPECIES,
+   VALUE_TYPE_POKEMON_SPECIES, // Do not use the "is enum" flag with this type.
 };
 
 enum { // CGOptionMenuItem::flags
@@ -30,8 +30,8 @@ struct CGOptionMenuItem {
    u8 value_type;
    union {
       struct {
-         const u8** name_strings;
-         const u8** help_strings;
+         const u8* const * name_strings;
+         const u8* const * help_strings;
          u8 count;
       } named; // used if MENUITEM_FLAG_IS_ENUM is set
       struct {

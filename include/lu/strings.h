@@ -48,6 +48,11 @@ extern const u8 gText_lu_CGOptionHelp_CatchRateScale[];
 
 extern const u8 gText_lu_CGOptionCategoryName_Battles[];
 
+extern const u8 gText_lu_CGOptionName_ItemUseInBattles[];
+extern const u8 gText_lu_CGOptionHelp_ItemUseInBattles[];
+extern const u8 gText_lu_CGOptionValueName_ItemUseInBattles_NoBackfield[];
+extern const u8 gText_lu_CGOptionValueHelp_ItemUseInBattles_NoBackfield[];
+
 extern const u8 gText_lu_CGOptionName_BattlesScaleDamagePlayer[];
 extern const u8 gText_lu_CGOptionHelp_BattlesScaleDamagePlayer[];
 extern const u8 gText_lu_CGOptionName_BattlesScaleDamageEnemy[];

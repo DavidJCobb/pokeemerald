@@ -58,6 +58,8 @@ void ResetCustomGameOptions(void) {
    gCustomGameOptions.catch_rate_scale = 100;
    gCustomGameOptions.catch_rate_increase_base = 0;
    
+   gCustomGameOptions.battle_item_usage = CustomGame_ItemUseInBattles_Enabled;
+   
    gCustomGameOptions.scale_battle_damage_dealt_by_player = 100;
    gCustomGameOptions.scale_battle_damage_dealt_by_enemy  = 100;
    gCustomGameOptions.scale_battle_damage_dealt_by_ally   = 100;

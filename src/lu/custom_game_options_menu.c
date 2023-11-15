@@ -41,6 +41,8 @@
       It's set up in `SetUpHighlightEffect`, and the non-darkened area is positioned 
       in `HighlightCGOptionMenuItem`.
       
+       - The scrollbar paints to this layer, too.
+      
     - The help text is on its own background layer as well, set to display overtop 
       all others. The help text window is sized so that it doesn't cover the menu 
       header or keybind strip, so those always show through.
@@ -71,25 +73,8 @@
     - Submenus should have some kind of icon like ">>" shown where a value would 
       be.
       
-    - We should show a scrollbar on the righthand side of the options list. In 
-      general, we should eschew the current window frame in favor of custom tiles 
-      and palettes. The scrollbar thumb could be drawn as a sprite, potentially 
-      with non-uniform scaling if that's supported, to make it easier to animate 
-      compared to updating the background layer. Ideally, the scrollbar would 
-      only display when the list is long enough to be scrolled.
-      
-      At present, there's no indicator as to whether the list is scrollable.
-      
-       - Game Freak has a scrollbar widget like the one we want built into the 
-         Pokedex. Could be a good idea to look at it and see how it's coded.
-         
-          - Things like this make me wonder how many common UI widgets and 
-            dialogs could be factored out into reusable functions. Given how 
-            low-level a lot of GBA graphics code needs to be, I'm not sure we 
-            could do a *ton* with that, but it's worth thinking about. In 
-            particular, I'm sure that once we're done with QOL stuff and we 
-            start thinking about doing a custom region/story, we'll come up 
-            with UI designs that have a lot of shared elements.
+    - We should find an alternate way to indicate the current menu item, as the 
+      dimming effect currently dims the scrollbar, too.
       
     - We need theming in general but especially for the Help page.
       
@@ -117,6 +102,11 @@
          just how they implemented generating the list of species to display. 
          Their actual search form, however, isn't worth copying; we should design 
          our own.
+         
+          - Since they use a heap-allocated struct for the Pokedex UI state, they 
+            literally just have an array of dex list items (dex number, seen flag, 
+            and owned flag) as a member, with extent `NATIONAL_DEX_COUNT + 1`. 
+            Guess we'll do the same, then.
 
 //*/
 
@@ -319,16 +309,6 @@ static const u8 sTextColor_HelpBodyText[] = {1, 2, 3};
 #define BACKGROUND_PALETTE_BOX_FRAME   7
 
 #define DIALOG_FRAME_FIRST_TILE_ID 485
-//
-#define DIALOG_FRAME_TILE_TOP_CORNER_L (DIALOG_FRAME_FIRST_TILE_ID)
-#define DIALOG_FRAME_TILE_TOP_EDGE     (DIALOG_FRAME_FIRST_TILE_ID + 1)
-#define DIALOG_FRAME_TILE_TOP_CORNER_R (DIALOG_FRAME_FIRST_TILE_ID + 2)
-#define DIALOG_FRAME_TILE_LEFT_EDGE    (DIALOG_FRAME_FIRST_TILE_ID + 3)
-#define DIALOG_FRAME_TILE_CENTER       (DIALOG_FRAME_FIRST_TILE_ID + 4)
-#define DIALOG_FRAME_TILE_RIGHT_EDGE   (DIALOG_FRAME_FIRST_TILE_ID + 5)
-#define DIALOG_FRAME_TILE_BOT_CORNER_L (DIALOG_FRAME_FIRST_TILE_ID + 6)
-#define DIALOG_FRAME_TILE_BOT_EDGE     (DIALOG_FRAME_FIRST_TILE_ID + 7)
-#define DIALOG_FRAME_TILE_BOT_CORNER_R (DIALOG_FRAME_FIRST_TILE_ID + 8)
 
 #define OPTIONS_LIST_TILE_HEIGHT    14
 #define OPTIONS_LIST_PIXEL_HEIGHT   (OPTIONS_LIST_TILE_HEIGHT * TILE_HEIGHT)
@@ -336,10 +316,10 @@ static const u8 sTextColor_HelpBodyText[] = {1, 2, 3};
 #define MAX_MENU_ITEMS_VISIBLE_AT_ONCE   OPTIONS_LIST_TILE_HEIGHT / 2
 #define MENU_ITEM_HALFWAY_ROW            (MAX_MENU_ITEMS_VISIBLE_AT_ONCE / 2)
 
-#define OPTIONS_LIST_INSET_LEFT  (3 * TILE_WIDTH)
+#define OPTIONS_LIST_INSET_LEFT  (1 * TILE_WIDTH)
 #define OPTIONS_LIST_INSET_RIGHT (2 * TILE_WIDTH)
 //
-#define OPTION_VALUE_COLUMN_WIDTH  48
+#define OPTION_VALUE_COLUMN_WIDTH  64
 #define OPTION_VALUE_COLUMN_X      (DISPLAY_WIDTH - OPTIONS_LIST_INSET_RIGHT - OPTION_VALUE_COLUMN_WIDTH)
 
 #define SCROLLBAR_X     230
@@ -615,7 +595,11 @@ static void Task_CGOptionMenuProcessInput(u8 taskId) {
       }
       
       //
-      // TODO: For Pokemon species, show a special screen to select them
+      // TODO: For integral options, pop a number entry box (i.e. let the user type in a number).
+      //
+      
+      //
+      // TODO: For Pokemon species, show a special screen to select them.
       //
       return;
    }

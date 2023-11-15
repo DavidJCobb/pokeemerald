@@ -32,6 +32,10 @@
                <line-comment>percentage, where 100% = guaranteed catch</line-comment>
             </u8>
             
+            <u8 name="battle_item_usage" min="0" max="2"> <!-- untested -->
+               <line-comment>Enabled, No Backfield, Disabled</line-comment>
+            </u8>
+            
             <!-- Scale damage dealt by different participants in a battle. -->
             <u16 name="scale_battle_damage_dealt_by_player" min="0" max="5000" />
             <u16 name="scale_battle_damage_dealt_by_enemy"  min="0" max="5000" />

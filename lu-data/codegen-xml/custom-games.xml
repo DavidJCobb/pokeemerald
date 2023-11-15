@@ -32,7 +32,7 @@
                <line-comment>percentage, where 100% = guaranteed catch</line-comment>
             </u8>
             
-            <u8 name="battle_item_usage" min="0" max="2"> <!-- untested -->
+            <u8 name="battle_item_usage" min="0" max="2">
                <line-comment>Enabled, No Backfield, Disabled</line-comment>
             </u8>
             

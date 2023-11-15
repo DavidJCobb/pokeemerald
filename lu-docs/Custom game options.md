@@ -22,6 +22,14 @@ Allows you to use your bike inside of maps that have biking disabled via their m
 
 ### Battle options
 
+#### Item use
+
+Allows you to enable or disable the player's ability to use items while in battle. You can also set this to "No Backfield," which only allows the player to use items on their currently deployed Pokémon, the same limitation that NPC trainers have when using items; as a side effect, this inherently disallows reviving fallen Pokémon during a battle (since by definition they can't ever be on the field).
+
+When this option is set to "Disabled," attempting to select the "Bag" option in battle will immediately display an error message, as is done in link battles. When this option is set to "No Backfield," backfield Pokémon display the text "NOT ABLE" when using items in battle, and they cannot be selected for item use.
+
+As a side note, the "No Backfield" option was inspired by [a collaboration between Pokémon Challenges and SmallAnt](https://www.youtube.com/watch?v=_3VwGkml-nk) wherein the latter ran a Nuzlocke while the former gained control of all NPC trainers and tried to stop him. Unlike a typical NPC trainer, PChal could sacrifice weaker Pokémon to withdraw his heavy hitters and heal them in safety, and he was ruthless in taking advantage of this.
+
 #### Scale accuracy
 
 Allows you to scale the accuracy of your attacks, your NPC allies' attacks, and enemy attacks These options are percentages in the range [0%, 5000%]. Scaling is applied after all other accuracy calculations, and intentionally isn't accounted for by NPC AI.

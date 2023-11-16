@@ -151,14 +151,14 @@ The "Savings" columns are measured in bytes. The percentage in the "Savings per"
 
 | Name | Uses in CharacterData | Uses in WorldData | Uses in PokemonStorage | Total uses |
 | - | -:  | -:  | -:  | -: |
-| $player-name | 80 | 86 | 420 | 586 |
 | $game-language | 71 | 33 | 420 | 524 |
-| $item-quantity | 1 | 0 | 0 | 1 |
 | $global-item-id | 41 | 276 | 0 | 317 |
-| $pokemon-nature | 3 | 0 | 0 | 3 |
+| $item-quantity | 1 | 0 | 0 | 1 |
 | $pokemon-move-id | 43 | 22 | 0 | 65 |
-| $pokemon-nickname | 28 | 23 | 420 | 471 |
 | $pokemon-species-id | 49 | 57 | 0 | 106 |
+| $player-name | 80 | 86 | 420 | 586 |
+| $pokemon-nickname | 28 | 23 | 420 | 471 |
+| $pokemon-nature | 3 | 0 | 0 | 3 |
 | $easy-chat-word | 25 | 28 | 0 | 53 |
 | $contest-rank | 0 | 13 | 0 | 13 |
 | $trainer-hill-mode | 0 | 1 | 0 | 1 |

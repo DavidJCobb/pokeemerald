@@ -32,7 +32,7 @@
       <number name="$item-quantity" min="0" max="999" />
       
       <number name="$pokemon-move-id" min="0" />
-      <number name="$pokemon-species-id" min="0" max="1024" />
+      <number name="$pokemon-species-id" min="0" max="2047" />
       
       <string name="$player-name"      length="PLAYER_NAME_LENGTH" />
       <string name="$pokemon-nickname" length="POKEMON_NAME_LENGTH" />

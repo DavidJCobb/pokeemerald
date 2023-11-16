@@ -32,6 +32,8 @@ u8 Lu_GetItemTMNumber(u16 global_item_id) {
 }
 
 #include "constants/item_effects.h"
+#include "battle.h" // gEnigmaBerries
+#include "main.h" // gMain
 #include "pokemon.h"
 
 static const u8* GetEffectsOfItem(u16 global_item_id) {
@@ -44,7 +46,7 @@ static const u8* GetEffectsOfItem(u16 global_item_id) {
       return gSaveBlock1Ptr->enigmaBerry.itemEffect;
    }
    
-   return gItemEffectTable[item - ITEM_POTION];
+   return gItemEffectTable[global_item_id - ITEM_POTION];
 }
 
 bool8 Lu_ItemIsARevive(u16 global_item_id) {

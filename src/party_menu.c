@@ -6512,7 +6512,7 @@ static bool8 IsBackfieldSlot(u8 slot) {
       // slots. However, if the player has 5/6 Pokemon fainted, then either 
       // slot could be.
       //
-      const struct Pokemon* mon = &gPlayerParty[slot];
+      struct Pokemon* mon = &gPlayerParty[slot];
       if (GetMonAilment(mon) == AILMENT_FNT)
          return TRUE;
    }
@@ -6525,7 +6525,7 @@ static bool8 ItemUseWouldBeIllegalRevive(s8 slot) {
    }
    if (Lu_ItemIsARevive(gPartyMenu.bagItem)) {
       if (slot >= 0 && slot < PARTY_SIZE) {
-         const struct Pokemon* mon = &gPlayerParty[slot];
+         struct Pokemon* mon = &gPlayerParty[slot];
          if (GetMonAilment(mon) == AILMENT_FNT)
             return TRUE;
       }

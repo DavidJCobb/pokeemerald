@@ -42,6 +42,10 @@
 #include "constants/items.h"
 #include "constants/songs.h"
 
+#include "lu/custom_game_option_handlers/battle.h"
+#include "lu/utils_item.h"
+#include "lu/strings.h"
+
 static void SetUpItemUseCallback(u8);
 static void FieldCB_UseItemOnField(void);
 static void Task_CallItemUseOnFieldCallback(u8);

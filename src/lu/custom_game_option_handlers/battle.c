@@ -87,7 +87,7 @@ u32 ApplyCustomGameBattleMoneyVictoryScaling(u32 reward) {
 }
 
 bool8 CustomGamesAllowBattleBackfieldHealing() {
-   switch (gCustomGameOptions.battle_item_use) {
+   switch (gCustomGameOptions.battle_item_usage) {
       case CustomGame_ItemUseInBattles_NoBackfield:
       case CustomGame_ItemUseInBattles_NoBackfieldAndNoRevives:
          return FALSE;
@@ -96,7 +96,7 @@ bool8 CustomGamesAllowBattleBackfieldHealing() {
 }
 
 bool8 CustomGamesAllowRevivesInBattle() {
-   switch (gCustomGameOptions.battle_item_use) {
+   switch (gCustomGameOptions.battle_item_usage) {
       case CustomGame_ItemUseInBattles_NoRevives:
       case CustomGame_ItemUseInBattles_NoBackfieldAndNoRevives:
          return FALSE;

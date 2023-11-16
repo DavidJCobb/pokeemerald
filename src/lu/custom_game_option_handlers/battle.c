@@ -85,3 +85,21 @@ void ApplyCustomGameBattleDamageScaling(void) {
 u32 ApplyCustomGameBattleMoneyVictoryScaling(u32 reward) {
    return ApplyCustomGameScale_u32(reward, gCustomGameOptions.scale_player_money_gain_on_victory);
 }
+
+bool8 CustomGamesAllowBattleBackfieldHealing() {
+   switch (gCustomGameOptions.battle_item_use) {
+      case CustomGame_ItemUseInBattles_NoBackfield:
+      case CustomGame_ItemUseInBattles_NoBackfieldAndNoRevives:
+         return FALSE;
+   }
+   return TRUE;
+}
+
+bool8 CustomGamesAllowRevivesInBattle() {
+   switch (gCustomGameOptions.battle_item_use) {
+      case CustomGame_ItemUseInBattles_NoRevives:
+      case CustomGame_ItemUseInBattles_NoBackfieldAndNoRevives:
+         return FALSE;
+   }
+   return TRUE;
+}

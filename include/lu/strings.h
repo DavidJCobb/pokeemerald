@@ -18,6 +18,12 @@ extern const u8 gText_lu_NewGame_Enhanced[];
 extern const u8 gText_lu_NewGame_CustomGame[];
 
 //
+// MESSAGES
+//
+
+extern const u8 gText_lu_CGRevivesNotAllowedInBattle[];
+
+//
 // CUSTOM GAME OPTIONS MENU
 //
 
@@ -52,6 +58,10 @@ extern const u8 gText_lu_CGOptionName_ItemUseInBattles[];
 extern const u8 gText_lu_CGOptionHelp_ItemUseInBattles[];
 extern const u8 gText_lu_CGOptionValueName_ItemUseInBattles_NoBackfield[];
 extern const u8 gText_lu_CGOptionValueHelp_ItemUseInBattles_NoBackfield[];
+extern const u8 gText_lu_CGOptionValueName_ItemUseInBattles_NoRevives[];
+extern const u8 gText_lu_CGOptionValueHelp_ItemUseInBattles_NoRevives[];
+extern const u8 gText_lu_CGOptionValueName_ItemUseInBattles_NoBackfieldAndNoRevives[];
+extern const u8 gText_lu_CGOptionValueHelp_ItemUseInBattles_NoBackfieldAndNoRevives[];
 
 extern const u8 gText_lu_CGOptionName_BattlesScaleDamagePlayer[];
 extern const u8 gText_lu_CGOptionHelp_BattlesScaleDamagePlayer[];

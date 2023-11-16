@@ -24,7 +24,11 @@ Allows you to use your bike inside of maps that have biking disabled via their m
 
 #### Item use
 
-Allows you to enable or disable the player's ability to use items while in battle. You can also set this to "No Backfield," which only allows the player to use items on their currently deployed Pokémon, the same limitation that NPC trainers have when using items; as a side effect, this inherently disallows reviving fallen Pokémon during a battle (since by definition they can't ever be on the field).
+Allows you to enable or disable the player's ability to use items while in battle.
+
+* You can also set this to "No Backfield," which only allows the player to use items on their currently deployed Pokémon, the same limitation that NPC trainers have when using items. Revives are exempt from this limitation.
+* The "No Revives" option allows backfield item use, but doesn't allow reviving a fainted Pokemon while in battle.
+* The "NB+NR" option combines the above two options' effects.
 
 When this option is set to "Disabled," attempting to select the "Bag" option in battle will immediately display an error message, as is done in link battles. When this option is set to "No Backfield," backfield Pokémon display the text "NOT ABLE" when using items in battle, and they cannot be selected for item use.
 

@@ -13,7 +13,7 @@ void lu_BitstreamRead_CustomGameOptions(struct lu_BitstreamState* state, struct 
    v->enable_catch_exp = lu_BitstreamRead_bool(state);
    v->catch_rate_scale = lu_BitstreamRead_u16(state, 13);
    v->catch_rate_increase_base = lu_BitstreamRead_u8(state, 7);
-   v->battle_item_usage = lu_BitstreamRead_u8(state, 2);
+   v->battle_item_usage = lu_BitstreamRead_u8(state, 3);
    v->scale_battle_damage_dealt_by_player = lu_BitstreamRead_u16(state, 13);
    v->scale_battle_damage_dealt_by_enemy = lu_BitstreamRead_u16(state, 13);
    v->scale_battle_damage_dealt_by_ally = lu_BitstreamRead_u16(state, 13);
@@ -40,7 +40,7 @@ void lu_BitstreamWrite_CustomGameOptions(struct lu_BitstreamState* state, const 
    lu_BitstreamWrite_bool(state, v->enable_catch_exp);
    lu_BitstreamWrite_u16(state, v->catch_rate_scale, 13);
    lu_BitstreamWrite_u8(state, v->catch_rate_increase_base, 7);
-   lu_BitstreamWrite_u8(state, v->battle_item_usage, 2);
+   lu_BitstreamWrite_u8(state, v->battle_item_usage, 3);
    lu_BitstreamWrite_u16(state, v->scale_battle_damage_dealt_by_player, 13);
    lu_BitstreamWrite_u16(state, v->scale_battle_damage_dealt_by_enemy, 13);
    lu_BitstreamWrite_u16(state, v->scale_battle_damage_dealt_by_ally, 13);

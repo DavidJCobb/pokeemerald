@@ -7,7 +7,7 @@
    bool8 enable_catch_exp;
    u16 catch_rate_scale; // applies to final computed catch rate
    u8 catch_rate_increase_base; // percentage, where 100% = guaranteed catch
-   u8 battle_item_usage; // Enabled, No Backfield, Disabled
+   u8 battle_item_usage; // Enabled, No Backfield, No Revives, NB+NR, Disabled
    u16 scale_battle_damage_dealt_by_player;
    u16 scale_battle_damage_dealt_by_enemy;
    u16 scale_battle_damage_dealt_by_ally;

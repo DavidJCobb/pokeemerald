@@ -26,6 +26,12 @@ const u8 gText_lu_NewGame_Enhanced[] = _("Enhanced Options");
 const u8 gText_lu_NewGame_CustomGame[] = _("Custom Game");
 
 //
+// MESSAGES
+//
+
+const u8 gText_lu_CGRevivesNotAllowedInBattle[] = ("Can't use revives in battle.");
+
+//
 // CUSTOM GAME OPTIONS MENU
 //
 
@@ -58,8 +64,13 @@ const u8 gText_lu_CGOptionCategoryName_Battles[] = _("Battle options");
 
 const u8 gText_lu_CGOptionName_ItemUseInBattles[] = _("Item use");
 const u8 gText_lu_CGOptionHelp_ItemUseInBattles[] = _("Control whether the player is allowed to use items while in battle.");
+//
 const u8 gText_lu_CGOptionValueName_ItemUseInBattles_NoBackfield[] = _("No Backfield");
-const u8 gText_lu_CGOptionValueHelp_ItemUseInBattles_NoBackfield[] = _("Control whether the player is allowed to use items while in battle. The “No Backfield” option limits players to using items on Pokémon that are currently in battle; this is the same limit that NPCs have.");
+const u8 gText_lu_CGOptionValueHelp_ItemUseInBattles_NoBackfield[] = _("Control whether the player is allowed to use items while in battle. The “No Backfield” option limits players to using items on Pokémon that are currently in battle; this is the same limit that NPCs have. This limit does not apply to items that can revive a fainted Pokémon; to disable those too, choose “NB + NR”.");
+const u8 gText_lu_CGOptionValueName_ItemUseInBattles_NoRevives[] = _("No Revives");
+const u8 gText_lu_CGOptionValueHelp_ItemUseInBattles_NoRevives[] = _("Control whether the player is allowed to use items while in battle. The “No Revives” option disallows reviving a fainted Pokémon.");
+const u8 gText_lu_CGOptionValueName_ItemUseInBattles_NoBackfieldAndNoRevives[] = _("NB + NR");
+const u8 gText_lu_CGOptionValueHelp_ItemUseInBattles_NoBackfieldAndNoRevives[] = _("Control whether the player is allowed to use items while in battle. The “NB + NR” option doesn't allow the player to use items on Pokémon that aren't on the field, even revives.");
 
 const u8 gText_lu_CGOptionName_BattlesScaleDamagePlayer[] = _("Scale damage by player");
 const u8 gText_lu_CGOptionHelp_BattlesScaleDamagePlayer[] = _("Applies a percentage multiplier to damage dealt by the player. This multiplier is applied after all other damage calculations, and does not affect NPC AI decision-making.");

@@ -56,11 +56,15 @@ static const struct CGOptionMenuItem sCatchingOptions[] = {
 static const u8* const sOption_ItemUseInBattles_ValueNameStrings[] = {
    gText_lu_CGOptionValues_common_Enabled,
    gText_lu_CGOptionValueName_ItemUseInBattles_NoBackfield,
+   gText_lu_CGOptionValueName_ItemUseInBattles_NoRevives,
+   gText_lu_CGOptionValueName_ItemUseInBattles_NoBackfieldAndNoRevives,
    gText_lu_CGOptionValues_common_Disabled,
 };   
 static const u8* const sOption_ItemUseInBattles_ValueHelpStrings[] = {
    NULL,
    gText_lu_CGOptionValueHelp_ItemUseInBattles_NoBackfield,
+   gText_lu_CGOptionValueHelp_ItemUseInBattles_NoRevives,
+   gText_lu_CGOptionValueHelp_ItemUseInBattles_NoBackfieldAndNoRevives,
    NULL,
 };
 //

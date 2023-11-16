@@ -1016,6 +1016,15 @@ static void ItemUseInBattle_ShowPartyMenu(u8 taskId)
 
 void ItemUseInBattle_Medicine(u8 taskId)
 {
+    #ifndef LU_DISABLE_CUSTOM_GAME_OPTIONS
+    if (!CustomGamesAllowRevivesInBattle() && Lu_ItemIsOnlyARevive(gSpecialVar_ItemId)) {
+       if (!InBattlePyramid())
+          DisplayItemMessage(taskId, FONT_NORMAL, gText_lu_CGRevivesNotAllowedInBattle, CloseItemMessage);
+       else
+          DisplayItemMessageInBattlePyramid(taskId, gText_lu_CGRevivesNotAllowedInBattle, Task_CloseBattlePyramidBagMessage);
+       return;
+    }
+    #endif
     gItemUseCB = ItemUseCB_Medicine;
     ItemUseInBattle_ShowPartyMenu(taskId);
 }

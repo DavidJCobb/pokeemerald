@@ -5,6 +5,8 @@
 enum {
    CustomGame_ItemUseInBattles_Enabled,
    CustomGame_ItemUseInBattles_NoBackfield,
+   CustomGame_ItemUseInBattles_NoRevives,
+   CustomGame_ItemUseInBattles_NoBackfieldAndNoRevives,
    CustomGame_ItemUseInBattles_Disabled,
 };
 

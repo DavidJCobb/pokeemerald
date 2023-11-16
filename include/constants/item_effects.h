@@ -32,9 +32,9 @@
 #define ITEM4_EV_ATK            0x2
 #define ITEM4_HEAL_HP           0x4
 #define ITEM4_HEAL_PP           0x8
-#define ITEM4_HEAL_PP_ONE       0x10
+#define ITEM4_HEAL_PP_ONE       0x10 // modifies behavior of `ITEM4_HEAL_PP`; no effect on its own
 #define ITEM4_PP_UP             0x20
-#define ITEM4_REVIVE            0x40
+#define ITEM4_REVIVE            0x40 // modifies behavior of `ITEM4_HEAL_HP`; no effect on its own
 #define ITEM4_EVO_STONE         0x80
 
 // field 5 masks

@@ -5,18 +5,18 @@ In vanilla `pokeemerald`, the `SaveBlock1` (world state) and `SaveBlock2` (chara
 
 ## Overall stats
 53424 bytes in RAM / 55552 bytes available across 14 sectors (96% space usage)  
-406698 packed bits = 50838 packed bytes (91% space usage)  
+406699 packed bits = 50838 packed bytes (91% space usage)  
 
 
 ## Struct stats
 | Name | Bytes in RAM | Packed bits | Packed bytes | Savings |
 | - | -: | -: | -: | -: |
 | SaveBlock2 | 3884 | 27439 |3430 | 454 (11%) |
-| CustomGameOptions | 40 | 178 |23 | 17 (42%) |
+| CustomGameOptions | 40 | 179 |23 | 17 (42%) |
 | CustomGameSavestate | 4 | 1 |1 | 3 (75%) |
 | SaveBlock1 | 15752 | 111368 |13921 | 1831 (11%) |
 | PokemonStorage | 33744 | 267712 |33464 | 280 (0%) |
-| **Total** | 53424 | 406698 |50838 | 2586 (4%) |
+| **Total** | 53424 | 406699 |50838 | 2586 (4%) |
 
 
 ## Sector group: CharacterData
@@ -25,8 +25,8 @@ In vanilla `pokeemerald`, the `SaveBlock1` (world state) and `SaveBlock2` (chara
 
 | Sector # | Bits used | Bits available | % |
 | - | -: | -: |
-| 0 | 27618 | 31744 | 87% |
-| Total | 27618 | 31744 | 87% |
+| 0 | 27619 | 31744 | 87% |
+| Total | 27619 | 31744 | 87% |
 
 ### Member info
 * Last field serialized to sector 0: `p_CustomGameSavestate`
@@ -96,7 +96,7 @@ The "Savings" columns are measured in bytes. The percentage in the "Savings per"
 | BoxPokemon | 80 | 635 | 80 | 0 (0%) | 428 | 0 (64%) |
 | ContestWinner | 32 | 222 | 28 | 4 (12%) | 13 | 52 (0%) |
 | Coords16 | 4 | 32 | 4 | 0 (0%) | 49 | 0 (0%) |
-| CustomGameOptions | 40 | 178 | 23 | 17 (42%) | 1 | 17 (0%) |
+| CustomGameOptions | 40 | 179 | 23 | 17 (42%) | 1 | 17 (0%) |
 | CustomGameSavestate | 4 | 1 | 1 | 3 (75%) | 1 | 3 (0%) |
 | DayCare | 288 | 2162 | 271 | 17 (5%) | 1 | 17 (0%) |
 | DaycareMail | 56 | 394 | 50 | 6 (10%) | 2 | 12 (0%) |

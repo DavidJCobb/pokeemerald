@@ -7,4 +7,7 @@ void ApplyCustomGameBattleDamageScaling(void); // modifies gBattleMoveDamage
 
 u32 ApplyCustomGameBattleMoneyVictoryScaling(u32);
 
+bool8 CustomGamesAllowBattleBackfieldHealing();
+bool8 CustomGamesAllowRevivesInBattle();
+
 #endif

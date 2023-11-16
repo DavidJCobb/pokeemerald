@@ -9978,8 +9978,6 @@ static void Cmd_handleballthrow(void)
                 gBattleCommunication[MULTISTRING_CHOOSER] = 0;
             else
                 gBattleCommunication[MULTISTRING_CHOOSER] = 1;
-    
-            DebugPrintf("handleballthrow: successful catch, right off rip", 0);
         }
         else // mon may be caught, calculate shakes
         {
@@ -10005,22 +10003,6 @@ static void Cmd_handleballthrow(void)
                     gBattleCommunication[MULTISTRING_CHOOSER] = 0;
                 else
                     gBattleCommunication[MULTISTRING_CHOOSER] = 1;
-    
-                DebugPrintf("handleballthrow: successful catch", 0);
-                
-                // The `getexp` command computes and grants earned EXP. It also plays the wild battle 
-                // victory theme if the current battle is a wild battle. (So much for separation of 
-                // concerns, lmao.) The successful capture theme, however, is played via control codes 
-                // in the "Congratulations!" message.
-                //
-                // If we allow the victory theme to play, it'll cut off the capture theme. Luckily, 
-                // Game Freak uses a counter (as a flag...) to check if they've already forcibly 
-                // overridden the music. So, we can just increment that here.
-                //
-                //gBattleStruct->wildVictorySong++;
-                //
-                // But that's pretty spaghetti, so instead, we'll modify the code that plays the 
-                // victory fanfare to be more robust.
             }
             else // not caught
             {

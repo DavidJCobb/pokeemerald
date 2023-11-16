@@ -44,7 +44,6 @@ functions instead of at the top of the file with the other declarations.
 */
 
 extern const u8 *const gBattleScriptsForMoveEffects[];
-extern const u8 *const gBattlescriptsForBallThrow[];
 extern const u8 *const gBattlescriptsForRunningByItem[];
 extern const u8 *const gBattlescriptsForUsingItem[];
 extern const u8 *const gBattlescriptsForSafariActions[];
@@ -324,7 +323,9 @@ void HandleAction_UseItem(void)
         // but the `handleballthrow` script command sets it for us, so we don't need 
         // to worry about it being equal to gBattlerAttacker right here and now.
         //
-        gBattlescriptCurrInstr = gBattlescriptsForBallThrow[gLastUsedItem];
+        gBattlescriptCurrInstr = BattleScript_BallThrow;
+        if (gLastUsedItem == ITEM_SAFARI_BALL)
+           gBattlescriptCurrInstr = BattleScript_SafariBallThrow;
     }
     else if (gLastUsedItem == ITEM_POKE_DOLL || gLastUsedItem == ITEM_FLUFFY_TAIL)
     {
@@ -559,7 +560,7 @@ void HandleAction_SafariZoneBallThrow(void)
     gBattle_BG0_Y = 0;
     gNumSafariBalls--;
     gLastUsedItem = ITEM_SAFARI_BALL;
-    gBattlescriptCurrInstr = gBattlescriptsForBallThrow[ITEM_SAFARI_BALL];
+    gBattlescriptCurrInstr = BattleScript_SafariBallThrow;
     gCurrentActionFuncId = B_ACTION_EXEC_SCRIPT;
 }
 

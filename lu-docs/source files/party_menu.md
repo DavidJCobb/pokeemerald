@@ -140,7 +140,7 @@ The function `HandleChooseMonSelection` *basically* handles what happens when yo
       <dd>
          <p>The task ID being used to draw the menu.</p>
          <p>
-            Most menu screens in Emerald will reset all tasks (which don't have a destructor system, so teardown code is not automatically run &mdash; yikes!), and then use tasks to manage their own behaviors and execution flow: generally a primary task for the menu flow, and secondary tasks for things like managing scroll indicators. However, since the Party Menu is meant to be invoked from a wide variety of different places, each of which need to maintain their own context and state even after the menu has closed, it can't do that. Instead, it co-opts a task supplied by its caller. This is the ID of that task.
+            Most menu screens in Emerald will reset all tasks (which don't have a destructor system, so teardown code is not automatically run &mdash; yikes!), and then use tasks to manage their own behaviors and execution flow: generally a primary task for the menu flow, and secondary tasks for things like managing scroll indicators. The Party Menu can't reset tasks since it's invoked from a variety of other screens, which need their state to remain intact. However, it does create one single task, and pass the task ID down via call arguments. This is that task ID. 
          </p>
       </dd>
    <dt><code>s8* slotPtr</code></dt>

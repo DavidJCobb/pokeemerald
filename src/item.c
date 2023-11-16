@@ -25,7 +25,15 @@ EWRAM_DATA struct BagPocket gBagPockets[POCKETS_COUNT] = {0};
 
 static u16 GetBagItemQuantity(u16 *quantity)
 {
-    return gSaveBlock2Ptr->encryptionKey ^ *quantity;
+    //
+    // We only serialize 10 bits (since the quantity is capped at 999) to savedata. 
+    // We need to make sure that after loading, no bits above that get set to 1 
+    // by the encryption. We adjust this when changing the encryption key, but I 
+    // think technically the quantity would still be garbled for a very short 
+    // window of time after loading (perhaps not even long enough for the player 
+    // to ever see it, but still).
+    //
+    return (gSaveBlock2Ptr->encryptionKey ^ *quantity) & 0x3FF;
 }
 
 static void SetBagItemQuantity(u16 *quantity, u16 newValue)

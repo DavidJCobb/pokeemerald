@@ -8,18 +8,34 @@ typedef struct {
 } ALIGNED(TILE_SIZE_4BPP) VRAMTile;
 
 typedef struct {
-   u8 bytes[BG_SCREEN_SIZE / TILE_SIZE_4BPP];
-} ALIGNED(BG_SCREEN_SIZE / TILE_SIZE_4BPP) VRAMTilemap;
+   u8 bytes[BG_SCREEN_SIZE];
+} ALIGNED(BG_SCREEN_SIZE) VRAMTilemap;
 
-#define VRAM_BG_MapBaseIndex(layout, member)   (offsetof((layout), (member)) / (BG_SCREEN_SIZE / TILE_SIZE_4BPP))
+#define VRAM_BG_MapBaseIndex(layout, member)   (offsetof(layout, member) / BG_SCREEN_SIZE)
 
-#define VRAM_BG_TileID(layout, member)   (offsetof((layout), (member)) / TILE_SIZE_4BPP)
+#define VRAM_BG_TileID(layout, member)   (offsetof(layout, member) / TILE_SIZE_4BPP)
+
+#define VRAM_BG_TileCount(layout, member)   (sizeof((( layout *)NULL)-> member ) / TILE_SIZE_4BPP)
 
 #define VRAM_BG_CharBaseIndexToTileID(charBaseIndex)   (charBaseIndex * 512)
 
 #define VRAM_BG_AT_CHAR_BASE_INDEX(charBaseIndex)   ALIGNED(sizeof(VRAMTile) * VRAM_BG_CharBaseIndexToTileID(charBaseIndex))
 
-#define VRAM_BG_CharBasedTileID(charBaseIndex, layout, member)   ((offsetof((layout), (member)) / TILE_SIZE_4BPP) - VRAM_BG_CharBaseIndexToTileID(charBaseIndex))
+#define VRAM_BG_CharBasedTileID(charBaseIndex, layout, member)   ((offsetof(layout, member) / TILE_SIZE_4BPP) - VRAM_BG_CharBaseIndexToTileID(charBaseIndex))
+
+#if MODERN
+   // modern version is untested
+   #define VRAM_BG_LoadTiles(layout, member, bg, source) \
+      do { \
+         _Static_assert(sizeof(source) == sizeof((( layout *)NULL)-> member ), "size of tile source data doesn't match size allotted in your VRAM layout"); \
+         LoadBgTiles(bg, source, sizeof((( layout *)NULL)-> member ), VRAM_BG_TileID( layout , member )); \
+      } while (0)
+#else
+   #define VRAM_BG_LoadTiles(layout, member, bg, source) \
+      do { \
+         LoadBgTiles(bg, source, sizeof((( layout *)NULL)-> member ), VRAM_BG_TileID( layout , member )); \
+      } while (0)
+#endif
 
 /*
 

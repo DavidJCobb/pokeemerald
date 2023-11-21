@@ -9,7 +9,7 @@ enum { // CGOptionMenuItem::value_type
    VALUE_TYPE_U16,
    VALUE_TYPE_BOOL8,
    
-   VALUE_TYPE_POKEMON_SPECIES, // Do not use the "is enum" flag with this type.
+   VALUE_TYPE_POKEMON_SPECIES, // 0 = None; defined species start at 1. Do not use the "is enum" flag with this type.
 };
 
 enum { // CGOptionMenuItem::flags

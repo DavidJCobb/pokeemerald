@@ -50,6 +50,9 @@ const u8* GetOptionValueName(const struct CGOptionMenuItem* item, u16 value) {
       return NULL;
    }
    if (item->flags & (1 << MENUITEM_FLAG_IS_ENUM)) {
+      if (value > item->values.named.count) { // sanity check
+         return NULL;
+      }
       return item->values.named.name_strings[value];
    }
    
@@ -70,9 +73,12 @@ const u8* GetOptionValueName(const struct CGOptionMenuItem* item, u16 value) {
    }
    if (item->value_type == VALUE_TYPE_POKEMON_SPECIES) {
       u16 species = GetOptionValue(item);
+      
       if (species == 0) {
          return gText_lu_CGOptionValues_common_None;
       }
+      --species;
+      
       if (species >= NUM_SPECIES) {
          return gSpeciesNames[0];
       }
@@ -117,8 +123,9 @@ u16 GetOptionMinValue(const struct CGOptionMenuItem* item) {
    }
    return 0;
 }
+
 void CycleOptionSelectedValue(const struct CGOptionMenuItem* item, s8 by) {
-   u16 selection;
+   s32 selection;
    
    selection = GetOptionValue(item);
    if (item->value_type == VALUE_TYPE_BOOL8) {
@@ -128,15 +135,16 @@ void CycleOptionSelectedValue(const struct CGOptionMenuItem* item, s8 by) {
    } else {
       u16 value_count;
       u16 minimum;
+      u16 maximum;
       
       value_count = GetOptionValueCount(item);
       minimum     = GetOptionMinValue(item);
       
       if (by < 0) {
-         if (selection - minimum < -by) {
+         if (selection + by < minimum) {
             u16 skipped = selection - minimum;
             
-            selection = item->values.integral.max - ((u16)-by - skipped - 1);
+            selection = (minimum + value_count - 1) - ((u16)-by - skipped - 1);
          } else {
             selection += by;
          }
@@ -156,13 +164,11 @@ const u8* GetRelevantHelpText(const struct CGOptionMenuItem* item) {
    const u8* text = NULL;
    
    if (item->flags & (1 << MENUITEM_FLAG_IS_ENUM)) {
-      u8 value;
-      u8 value_count;
-      
-      value_count = item->values.named.count;
-      value       = GetOptionValue(item);
-      if (value < value_count) {
-         return item->values.named.help_strings[value];
+      u8 value = GetOptionValue(item);
+      if (value < item->values.named.count) {
+         text = item->values.named.help_strings[value];
+         if (text != NULL)
+            return text;
       }
    }
    

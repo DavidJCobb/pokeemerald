@@ -146,6 +146,8 @@ struct MenuState {
    struct MenuStackFrame breadcrumbs[MAX_MENU_TRAVERSAL_DEPTH];
    u8    cursor_pos;
    bool8 is_in_help;
+   u8    sprite_id_value_arrow_l;
+   u8    sprite_id_value_arrow_r;
 };
 
 static EWRAM_DATA struct MenuState* sMenuState = NULL;
@@ -265,6 +267,64 @@ static void TryMoveMenuCursor(s8 by) {
 }
 
 //
+// Sprites:
+//
+
+#define SPRITE_TAG_VALUE_ARROW 4096
+
+static void SpriteCB_ValueArrow(struct Sprite*);
+
+static const struct OamData sOamData_ValueArrow = {
+    .y           = 0,
+    .affineMode  = ST_OAM_AFFINE_OFF,
+    .objMode     = ST_OAM_OBJ_NORMAL,
+    .mosaic      = FALSE,
+    .bpp         = ST_OAM_4BPP,
+    .shape       = SPRITE_SHAPE(8x8),
+    .x           = 0,
+    .matrixNum   = 0,
+    .size        = SPRITE_SIZE(8x8),
+    .tileNum     = 0,
+    .priority    = 1,
+    .paletteNum  = 0,
+    .affineParam = 0
+};
+
+static const union AnimCmd sSpriteAnim_ValueArrow[] = {
+   ANIMCMD_FRAME(0, 0),
+   ANIMCMD_END
+};
+//
+static const union AnimCmd* const sSpriteAnimTable_ValueArrow[] = {
+   sSpriteAnim_ValueArrow
+};
+
+static const struct SpriteTemplate sSpriteTemplate_ValueArrow = {
+    .tileTag     = SPRITE_TAG_VALUE_ARROW,
+    .paletteTag  = SPRITE_TAG_VALUE_ARROW,
+    .oam         = &sOamData_ValueArrow,
+    .anims       = sSpriteAnimTable_ValueArrow,
+    .images      = NULL,
+    .affineAnims = gDummySpriteAffineAnimTable,
+    .callback    = SpriteCB_ValueArrow,
+};
+
+static const u32 sInterfaceSpriteGfx[] = INCBIN_U32("graphics/lu/cgo_menu/interface-sprites.4bpp.lz");
+static const u16 sInterfaceSpritePal[] = INCBIN_U16("graphics/lu/cgo_menu/interface-sprites.gbapal");
+
+static const struct CompressedSpriteSheet sInterfaceSpriteSheet[] = {
+   {sInterfaceSpriteGfx, 0x2000, SPRITE_TAG_VALUE_ARROW},
+   {0}
+};
+static const struct SpritePalette sInterfaceSpritePalette[] = {
+   {sInterfaceSpritePal, SPRITE_TAG_VALUE_ARROW},
+   {0}
+};
+
+static void CreateInterfaceSprites(void);
+static void PositionValueArrowsAtRow(u8 screen_row);
+
+//
 // Task and drawing stuff:
 //
 
@@ -285,7 +345,8 @@ static void RepaintScrollbar(void);
 static void UpdateDisplayedControls(void);
 
 // note: this is only used in the Japanese release
-static const u8 sEqualSignGfx[] = INCBIN_U8("graphics/interface/option_menu_equals_sign.4bpp");
+static const u8 sMenuCursorBGTiles[] = INCBIN_U8("graphics/lu/cgo_menu/bg-tiles-cursor.4bpp");
+static const u8 sBlankBGTile[] = INCBIN_U8("graphics/lu/cgo_menu/bg-tile-blank.4bpp"); // color 1
 
 static const u16 sOptionsListingPalette[] = INCBIN_U16("graphics/lu/cgo_menu/option_listing.gbapal");
 //
@@ -294,7 +355,20 @@ static const u16 sOptionsListingPalette[] = INCBIN_U16("graphics/lu/cgo_menu/opt
 static const u8 sTextColor_OptionNames[] = {1, 2, 3};
 static const u8 sTextColor_OptionValues[] = {1, 4, 5};
 static const u8 sTextColor_HelpBodyText[] = {1, 2, 3};
-//
+
+// BG palette for options window area:
+//  0 transparent
+//  1 background color (white)
+//  2 option name text
+//  3 option name shadow
+//  4 option value text
+//  5 option value shadow
+//  6 ?
+//  7 ?
+//  8 ?
+//  9 ?
+// 14 scrollbar track
+// 15 scrollbar thumb
 #define SCROLLBAR_PALETTE_INDEX_BLANK 1
 #define SCROLLBAR_PALETTE_INDEX_TRACK 14
 #define SCROLLBAR_PALETTE_INDEX_THUMB 15
@@ -308,96 +382,139 @@ static const u8 sTextColor_HelpBodyText[] = {1, 2, 3};
 #define BACKGROUND_PALETTE_ID_CONTROLS 2
 #define BACKGROUND_PALETTE_BOX_FRAME   7
 
-#define DIALOG_FRAME_FIRST_TILE_ID 485
+#define TEXT_ROW_HEIGHT_IN_TILES   2
 
-#define OPTIONS_LIST_TILE_HEIGHT    14
-#define OPTIONS_LIST_PIXEL_HEIGHT   (OPTIONS_LIST_TILE_HEIGHT * TILE_HEIGHT)
+#define WIN_HEADER_TILE_WIDTH    DISPLAY_TILE_WIDTH
+#define WIN_HEADER_TILE_HEIGHT   TEXT_ROW_HEIGHT_IN_TILES
 //
-#define MAX_MENU_ITEMS_VISIBLE_AT_ONCE   OPTIONS_LIST_TILE_HEIGHT / 2
+#define WIN_KEYBIND_STRIP_TILE_WIDTH    DISPLAY_TILE_WIDTH
+#define WIN_KEYBIND_STRIP_TILE_HEIGHT   TEXT_ROW_HEIGHT_IN_TILES
+//
+#define WIN_OPTIONS_X_TILES             3
+#define WIN_OPTIONS_Y_TILES             WIN_HEADER_TILE_HEIGHT + 1
+#define OPTIONS_INSET_RIGHT_TILES       2
+#define OPTIONS_LIST_INSET_RIGHT        (OPTIONS_INSET_RIGHT_TILES * TILE_WIDTH)
+#define OPTIONS_LIST_ROW_HEIGHT         7
+//
+#define WIN_OPTIONS_TILE_WIDTH    (DISPLAY_TILE_WIDTH - WIN_OPTIONS_X_TILES)
+#define WIN_OPTIONS_TILE_HEIGHT   (OPTIONS_LIST_ROW_HEIGHT * TEXT_ROW_HEIGHT_IN_TILES)
+//
+#define WIN_HELP_TILE_WIDTH    DISPLAY_TILE_WIDTH
+#define WIN_HELP_TILE_HEIGHT   (DISPLAY_TILE_HEIGHT - WIN_HEADER_TILE_HEIGHT - WIN_KEYBIND_STRIP_TILE_HEIGHT)
+//
+#define MAX_MENU_ITEMS_VISIBLE_AT_ONCE   OPTIONS_LIST_ROW_HEIGHT
 #define MENU_ITEM_HALFWAY_ROW            (MAX_MENU_ITEMS_VISIBLE_AT_ONCE / 2)
 
-#define OPTIONS_LIST_INSET_LEFT  (1 * TILE_WIDTH)
-#define OPTIONS_LIST_INSET_RIGHT (2 * TILE_WIDTH)
-//
-#define OPTION_VALUE_COLUMN_WIDTH  64
+#define OPTION_VALUE_COLUMN_WIDTH  80
 #define OPTION_VALUE_COLUMN_X      (DISPLAY_WIDTH - OPTIONS_LIST_INSET_RIGHT - OPTION_VALUE_COLUMN_WIDTH)
 
 #define SCROLLBAR_X     230
 #define SCROLLBAR_WIDTH   3
-#define SCROLLBAR_TRACK_HEIGHT   OPTIONS_LIST_PIXEL_HEIGHT
+#define SCROLLBAR_TRACK_HEIGHT   (WIN_OPTIONS_TILE_HEIGHT * TILE_HEIGHT)
+
+
+
+#define BACKGROUND_LAYER_NORMAL_TILESET    0 // Start from Tile ID 0.
+#define BACKGROUND_LAYER_OPTIONS_TILESET   0 // Start from Tile ID 0.
+#define BACKGROUND_LAYER_HELP_TILESET      2 // Start from Tile ID 512.
+
+// Never instantiated. Just a marginally less hideous way to manage all this 
+// compared to preprocessor macros. Unit of measurement is 4bpp tile IDs.
+typedef struct {
+   u8 transparent_tile;
+   u8 blank_tile;
+   u8 selection_cursor_tiles[2];
+   u8 user_window_frame[9];
+   
+   u8 ALIGNED(BG_SCREEN_SIZE / TILE_SIZE_4BPP) tilemaps[4][BG_SCREEN_SIZE / TILE_SIZE_4BPP];
+   
+   u8 win_tiles_for_header[WIN_HEADER_TILE_WIDTH * WIN_HEADER_TILE_HEIGHT];
+   u8 win_tiles_for_keybinds[WIN_KEYBIND_STRIP_TILE_WIDTH * WIN_KEYBIND_STRIP_TILE_HEIGHT];
+   u8 win_tiles_for_options[WIN_OPTIONS_TILE_WIDTH * WIN_OPTIONS_TILE_HEIGHT];
+   
+   // We have the help screen set to use Tileset 2, so it can address tiles in the range [1536, 2047].
+   // We want to skip a tile so that we have a blank/transparent tile we can display.
+   u8 ALIGNED(1024) blank_tile_for_help;
+   u8 win_tiles_for_help[WIN_HELP_TILE_WIDTH * WIN_HELP_TILE_HEIGHT];
+} VRamTileLayout;
+
+// ensure we fit within 64KB VRAM limit.
+STATIC_ASSERT(sizeof(VRamTileLayout) <= (BG_VRAM_SIZE / TILE_SIZE_4BPP), sCGOMenuStaticAssertion01_VramUsage);
+
+#define DIALOG_FRAME_FIRST_TILE_ID    offsetof(VRamTileLayout, user_window_frame)
+
+static const struct BgTemplate sOptionMenuBgTemplates[] = {
+   {
+      .bg = BACKGROUND_LAYER_NORMAL,
+      //
+      .charBaseIndex = BACKGROUND_LAYER_NORMAL_TILESET,
+      .mapBaseIndex  = offsetof(VRamTileLayout, tilemaps[BACKGROUND_LAYER_NORMAL]) / 64,
+      .screenSize    = 0,
+      .paletteMode   = 0,
+      .priority      = 2,
+      .baseTile      = 0
+   },
+   {
+      .bg = BACKGROUND_LAYER_OPTIONS,
+      //
+      .charBaseIndex = BACKGROUND_LAYER_OPTIONS_TILESET,
+      .mapBaseIndex  = offsetof(VRamTileLayout, tilemaps[BACKGROUND_LAYER_OPTIONS]) / 64,
+      .screenSize    = 0,
+      .paletteMode   = 0,
+      .priority      = 1,
+      .baseTile      = 0
+   },
+   {
+      .bg = BACKGROUND_LAYER_HELP,
+      //
+      .charBaseIndex = BACKGROUND_LAYER_HELP_TILESET,
+      .mapBaseIndex  = offsetof(VRamTileLayout, tilemaps[BACKGROUND_LAYER_HELP]) / 64,
+      .screenSize    = 0,
+      .paletteMode   = 0,
+      .priority      = 0,
+      .baseTile      = 0
+   },
+};
 
 static const struct WindowTemplate sOptionMenuWinTemplates[] = {
     [WIN_HEADER] = {
         .bg          = BACKGROUND_LAYER_NORMAL,
         .tilemapLeft = 0,
         .tilemapTop  = 0,
-        .width       = DISPLAY_TILE_WIDTH,
-        .height      = 2,
+        .width       = WIN_HEADER_TILE_WIDTH,
+        .height      = WIN_HEADER_TILE_HEIGHT,
         .paletteNum  = BACKGROUND_PALETTE_ID_CONTROLS,
-        .baseBlock   = 1
+        .baseBlock   = offsetof(VRamTileLayout, win_tiles_for_header) - (BACKGROUND_LAYER_NORMAL_TILESET * 512)
     },
     [WIN_KEYBINDS_STRIP] = {
         .bg          = BACKGROUND_LAYER_NORMAL,
         .tilemapLeft = 0,
         .tilemapTop  = DISPLAY_TILE_HEIGHT - 2,
-        .width       = DISPLAY_TILE_WIDTH,
-        .height      = 2,
+        .width       = WIN_KEYBIND_STRIP_TILE_WIDTH,
+        .height      = WIN_KEYBIND_STRIP_TILE_HEIGHT,
         .paletteNum  = BACKGROUND_PALETTE_ID_CONTROLS,
-        .baseBlock   = 1 + (DISPLAY_TILE_WIDTH * 2)
+        .baseBlock   = offsetof(VRamTileLayout, win_tiles_for_keybinds) - (BACKGROUND_LAYER_NORMAL_TILESET * 512)
     },
     [WIN_OPTIONS] = {
         .bg          = BACKGROUND_LAYER_OPTIONS,
-        .tilemapLeft = 0,
-        .tilemapTop  = 3,
-        .width       = DISPLAY_TILE_WIDTH,
-        .height      = OPTIONS_LIST_TILE_HEIGHT,
+        .tilemapLeft = WIN_OPTIONS_X_TILES,
+        .tilemapTop  = WIN_OPTIONS_Y_TILES,
+        .width       = WIN_OPTIONS_TILE_WIDTH,
+        .height      = WIN_OPTIONS_TILE_HEIGHT,
         .paletteNum  = BACKGROUND_PALETTE_ID_TEXT,
-        .baseBlock   = 1 + (DISPLAY_TILE_WIDTH * 4)
+        .baseBlock   = offsetof(VRamTileLayout, win_tiles_for_options) - (BACKGROUND_LAYER_OPTIONS_TILESET * 512)
     },
     [WIN_HELP] = {
         .bg          = BACKGROUND_LAYER_HELP,
         .tilemapLeft = 0,
         .tilemapTop  = 2,
-        .width       = DISPLAY_TILE_WIDTH,
-        .height      = DISPLAY_TILE_HEIGHT - 4,
+        .width       = WIN_HELP_TILE_WIDTH,
+        .height      = WIN_HELP_TILE_HEIGHT,
         .paletteNum  = BACKGROUND_PALETTE_ID_TEXT,
-        .baseBlock   = 1 // this is in its own background with its own tiles, so it can use the same number as other windows
+        .baseBlock   = offsetof(VRamTileLayout, win_tiles_for_help) - (BACKGROUND_LAYER_HELP_TILESET * 512)
     },
     //
     [WIN_COUNT] = DUMMY_WIN_TEMPLATE
-};
-
-static const struct BgTemplate sOptionMenuBgTemplates[] = {
-   {
-      .bg = BACKGROUND_LAYER_NORMAL,
-      //
-      .charBaseIndex = 0,
-      .mapBaseIndex  = 31,
-      .screenSize    = 0,
-      .paletteMode   = 0,
-      .priority      = 2,
-      .baseTile      = 160
-   },
-   {
-      .bg = BACKGROUND_LAYER_OPTIONS,
-      //
-      .charBaseIndex = 0,
-      .mapBaseIndex  = 30,
-      .screenSize    = 0,
-      .paletteMode   = 0,
-      .priority      = 1,
-      .baseTile      = 160
-   },
-   {
-      .bg = BACKGROUND_LAYER_HELP,
-      //
-      .charBaseIndex = 2,
-      .mapBaseIndex  = 32,
-      .screenSize    = 0,
-      .paletteMode   = 0,
-      .priority      = 0,
-      .baseTile      = 1
-   },
 };
 
 static const u16 sOptionMenuBg_Pal[] = {RGB(17, 18, 31)};
@@ -426,21 +543,9 @@ static void SetUpHighlightEffect(void) {
    // darkened.
    //
    
-   // Once we enable an LCD I/O window region, we have to explicitly define which 
-   // background layers render in which regions, no matter what else we've done to 
-   // enable a background layer. In this case, we want all layers visible; the only 
-   // difference between regions is whether they have the GBA color effect applied.\
-   //
-   // Oh -- we also have to enable the object layer, too!
-   
-   SetGpuReg(REG_OFFSET_WIN0H,  0);
-   SetGpuReg(REG_OFFSET_WIN0V,  0);
-   SetGpuReg(REG_OFFSET_WININ,  WINOUT_WIN01_BG_ALL);
-   SetGpuReg(REG_OFFSET_WINOUT, WINOUT_WIN01_ALL);
-   SetGpuReg(REG_OFFSET_BLDCNT, (1 << BACKGROUND_LAYER_OPTIONS) | BLDCNT_EFFECT_DARKEN);
-   SetGpuReg(REG_OFFSET_BLDALPHA, 0);
-   SetGpuReg(REG_OFFSET_BLDY, 4);
-   SetGpuReg(REG_OFFSET_DISPCNT, DISPCNT_WIN0_ON | DISPCNT_OBJ_ON | DISPCNT_OBJ_1D_MAP);
+   /*//
+   LuUI_SetupDarkenAllExceptRect(BACKGROUND_LAYER_OPTIONS);
+   //*/
 }
 
 void CB2_InitCustomGameOptionMenu(void) {
@@ -451,26 +556,8 @@ void CB2_InitCustomGameOptionMenu(void) {
          gMain.state++;
          break;
       case 1:
-         //
-         // Clear VRAM, OAM, and palettes, and reset some VRAM data.
-         //
-         DmaClearLarge16(3, (void *)(VRAM), VRAM_SIZE, 0x1000);
-         DmaClear32(3, OAM, OAM_SIZE);
-         DmaClear16(3, PLTT, PLTT_SIZE);
-         SetGpuReg(REG_OFFSET_DISPCNT, 0);
-         ResetBgsAndClearDma3BusyFlags(0);
-         //
-         // Load our backgrounds, and reset all four background layers' positions.
-         //
+         LuUI_ResetBackgroundsAndVRAM();
          InitBgsFromTemplates(0, sOptionMenuBgTemplates, ARRAY_COUNT(sOptionMenuBgTemplates));
-         ChangeBgX(0, 0, BG_COORD_SET);
-         ChangeBgY(0, 0, BG_COORD_SET);
-         ChangeBgX(1, 0, BG_COORD_SET);
-         ChangeBgY(1, 0, BG_COORD_SET);
-         ChangeBgX(2, 0, BG_COORD_SET);
-         ChangeBgY(2, 0, BG_COORD_SET);
-         ChangeBgX(3, 0, BG_COORD_SET);
-         ChangeBgY(3, 0, BG_COORD_SET);
            
          InitWindows(sOptionMenuWinTemplates);
          DeactivateAllTextPrinters();
@@ -479,7 +566,10 @@ void CB2_InitCustomGameOptionMenu(void) {
          
          ShowBg(BACKGROUND_LAYER_NORMAL);
          ShowBg(BACKGROUND_LAYER_OPTIONS);
-         HideBg(BACKGROUND_LAYER_HELP);
+         //HideBg(BACKGROUND_LAYER_HELP); // done by `LuUI_ResetBackgroundsAndVRAM`
+         
+         // Enable sprite layer:
+         SetGpuReg(REG_OFFSET_DISPCNT, GetGpuReg(REG_OFFSET_DISPCNT) | DISPCNT_OBJ_ON);
          
          gMain.state++;
          break;
@@ -491,20 +581,26 @@ void CB2_InitCustomGameOptionMenu(void) {
          // Custom Game Options window only be run under controlled conditions. (The Options 
          // window and some other Game Freak UI does this, too.)
          //
-         ResetPaletteFade();
-         ScanlineEffect_Stop();
+         LuUI_ResetSpritesAndEffects();
          ResetTasks();
-         ResetSpriteData();
-         FreeAllSpritePalettes();
+         LoadCompressedSpriteSheet(&sInterfaceSpriteSheet[0]);
+         LoadSpritePalettes(sInterfaceSpritePalette);
+         {
+            LoadBgTiles(BACKGROUND_LAYER_OPTIONS, sBlankBGTile, TILE_SIZE_4BPP, offsetof(VRamTileLayout, blank_tile));
+            LoadBgTiles(BACKGROUND_LAYER_OPTIONS, sMenuCursorBGTiles, TILE_SIZE_4BPP * 2, offsetof(VRamTileLayout, selection_cursor_tiles));
+         }
          gMain.state++;
          break;
        case 3:
-         LoadBgTiles(1, GetWindowFrameTilesPal(gSaveBlock2Ptr->optionsWindowFrameType)->tiles, 0x120, DIALOG_FRAME_FIRST_TILE_ID);
+         LuUI_LoadPlayerWindowFrame(
+            BACKGROUND_LAYER_OPTIONS,
+            BACKGROUND_PALETTE_BOX_FRAME,
+            DIALOG_FRAME_FIRST_TILE_ID
+         );
          gMain.state++;
          break;
        case 4:
          LoadPalette(sOptionMenuBg_Pal, BG_PLTT_ID(BACKGROUND_PALETTE_ID_MENU), sizeof(sOptionMenuBg_Pal));
-         LoadPalette(GetWindowFrameTilesPal(gSaveBlock2Ptr->optionsWindowFrameType)->pal, BG_PLTT_ID(BACKGROUND_PALETTE_BOX_FRAME), PLTT_SIZE_4BPP);
          gMain.state++;
          break;
        case 5:
@@ -536,6 +632,7 @@ void CB2_InitCustomGameOptionMenu(void) {
             {
                sMenuState = AllocZeroed(sizeof(struct MenuState));
                ResetMenuState();
+               CreateInterfaceSprites();
             }
             sTempOptions = gCustomGameOptions;
             UpdateDisplayedMenuName();
@@ -554,6 +651,69 @@ void CB2_InitCustomGameOptionMenu(void) {
          return;
    }
 }
+
+
+#define sDirectionX data[0]
+#define sMoving     data[1]
+
+// Ideally 5, as that's the default `gKeyRepeatContinueDelay`.
+#define VALUE_ARROW_MOVE_DISTANCE 5
+
+static void CreateInterfaceSprites(void) {
+   u8 id_l;
+   u8 id_r;
+   u8 x;
+   
+   sMenuState->sprite_id_value_arrow_l = id_l = CreateSprite(&sSpriteTemplate_ValueArrow, 0, 0, 0);
+   sMenuState->sprite_id_value_arrow_r = id_r = CreateSprite(&sSpriteTemplate_ValueArrow, 0, 0, 0);
+   
+   gSprites[id_r].hFlip = TRUE;
+   
+   gSprites[id_l].sDirectionX = -1;
+   gSprites[id_r].sDirectionX =  1;
+   //
+   gSprites[id_l].sMoving = 0;
+   gSprites[id_r].sMoving = 0;
+   
+   x = (sOptionMenuWinTemplates[WIN_OPTIONS].tilemapLeft * TILE_WIDTH);
+   
+   gSprites[id_l].x = x + OPTION_VALUE_COLUMN_X;
+   gSprites[id_r].x = x + OPTION_VALUE_COLUMN_X + OPTION_VALUE_COLUMN_WIDTH;
+}
+static void PositionValueArrowsAtRow(u8 screen_row) {
+   u8 y = (WIN_OPTIONS_Y_TILES * TILE_HEIGHT) + (screen_row * 16) + 6 + (TILE_HEIGHT * 2);
+   // 6 == offset to center-align with text
+   // extra tiles = unknown. compensates for a compiler bug?
+   
+   gSprites[sMenuState->sprite_id_value_arrow_l].y = y;
+   gSprites[sMenuState->sprite_id_value_arrow_r].y = y;
+}
+static void SetValueArrowVisibility(bool8 visible) {
+   gSprites[sMenuState->sprite_id_value_arrow_l].invisible = !visible;
+   gSprites[sMenuState->sprite_id_value_arrow_r].invisible = !visible;
+}
+static void AnimateValueArrows(s8 by) {
+   if (by < 0) {
+      gSprites[sMenuState->sprite_id_value_arrow_l].sMoving = 1;
+   } else {
+      gSprites[sMenuState->sprite_id_value_arrow_r].sMoving = 1;
+   }
+}
+//
+static void SpriteCB_ValueArrow(struct Sprite* sprite) {
+   if (sprite->sMoving) {
+      if (++sprite->x2 > VALUE_ARROW_MOVE_DISTANCE) {
+         sprite->sMoving = 0;
+         sprite->x2      = 0;
+      }
+   }
+}
+
+#undef sDirectionX
+#undef sMoving
+
+#undef VALUE_ARROW_MOVE_DISTANCE
+
 
 static void Task_CGOptionMenuFadeIn(u8 taskId) {
    if (!gPaletteFade.active)
@@ -648,6 +808,8 @@ static void Task_CGOptionMenuProcessInput(u8 taskId) {
          CycleOptionSelectedValue(&items[sMenuState->cursor_pos], by);
          DrawMenuItem(&items[sMenuState->cursor_pos], row, TRUE);
          
+         AnimateValueArrows(by);
+         
          PlaySE(SOUND_EFFECT_VALUE_SCROLL);
          
          return;
@@ -702,16 +864,62 @@ static void TryDisplayHelp(const struct CGOptionMenuItem* item) {
 
 
 static void HighlightCGOptionMenuItem() {
+   const struct CGOptionMenuItem* item;
+   const struct CGOptionMenuItem* items = GetCurrentMenuItemList();
+   //
    u8 index = GetScreenRowForCursorPos();
    
-   SetGpuReg(REG_OFFSET_WIN0H, WIN_RANGE(16, DISPLAY_WIDTH - 16));
-   SetGpuReg(REG_OFFSET_WIN0V, WIN_RANGE(index * 16 + 24, index * 16 + 40));
+   // Draw the cursor indicating the currently focused menu item.
+   // (Yes, the black selection indicator in list menus is a text glyph.)
+   FillBgTilemapBufferRect(
+      BACKGROUND_LAYER_NORMAL,
+      offsetof(VRamTileLayout, blank_tile),
+      0,
+      WIN_OPTIONS_Y_TILES,
+      WIN_OPTIONS_X_TILES, // width to paint over
+      WIN_OPTIONS_TILE_HEIGHT,
+      BACKGROUND_PALETTE_ID_TEXT
+   );
+   FillBgTilemapBufferRect(
+      BACKGROUND_LAYER_NORMAL,
+      offsetof(VRamTileLayout, selection_cursor_tiles[0]),
+      (WIN_OPTIONS_X_TILES ? WIN_OPTIONS_X_TILES - 1 : 0) / 2,
+      WIN_OPTIONS_Y_TILES + (index * 2),
+      1,
+      1,
+      BACKGROUND_PALETTE_ID_TEXT
+   );
+   FillBgTilemapBufferRect(
+      BACKGROUND_LAYER_NORMAL,
+      offsetof(VRamTileLayout, selection_cursor_tiles[1]),
+      (WIN_OPTIONS_X_TILES ? WIN_OPTIONS_X_TILES - 1 : 0) / 2,
+      WIN_OPTIONS_Y_TILES + (index * 2) + 1,
+      1,
+      1,
+      BACKGROUND_PALETTE_ID_TEXT
+   );
+   CopyBgTilemapBufferToVram(BACKGROUND_LAYER_NORMAL);
    
-   //
-   // TODO: Show left/right arrows around option value
-   // TODO: Change left/right arrow icons depending on user is at minimum value
-   //        - Don't grey them out, because they wrap around. Maybe shrink them?
-   //
+   // For options (i.e. not submenus, etc.), position arrow indicators around the value. 
+   // We'll animate them when the player changes the value, for flavor.
+   PositionValueArrowsAtRow(index);
+   
+   // Of course, for non-options, we need to *hide* those arrows...
+   
+   item = NULL;
+   if (items) {
+      item = &items[sMenuState->cursor_pos];
+   }
+   
+   if (item == NULL) {
+      SetValueArrowVisibility(FALSE);
+      return;
+   }
+   if ((item->flags & (1 << MENUITEM_FLAG_IS_SUBMENU)) == 0) {
+      SetValueArrowVisibility(TRUE);
+   } else {
+      SetValueArrowVisibility(FALSE);
+   }
 }
 
 static void UpdateDisplayedMenuName(void) {
@@ -756,7 +964,7 @@ static void DrawMenuItem(const struct CGOptionMenuItem* item, u8 row, bool8 is_s
    AddTextPrinterParameterized3(
       WIN_OPTIONS,
       FONT_NORMAL,
-      OPTIONS_LIST_INSET_LEFT, // x
+      0, // x
       (row * 16) + 1, // y
       sTextColor_OptionNames,
       TEXT_SKIP_DRAW,
@@ -905,7 +1113,7 @@ static void RepaintScrollbar(void) {
       SCROLLBAR_PALETTE_INDEX_TRACK,
       SCROLLBAR_PALETTE_INDEX_THUMB,
       SCROLLBAR_PALETTE_INDEX_BLANK,
-      SCROLLBAR_X,
+      SCROLLBAR_X - (WIN_OPTIONS_X_TILES * TILE_WIDTH),
       SCROLLBAR_WIDTH,
       0,
       0,

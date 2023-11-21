@@ -85,8 +85,10 @@ extern const u8 gText_lu_CGOptionHelp_BattlesScaleEXPTraded[];
 extern const u8 gText_lu_CGOptionName_BattlesScaleVictoryPayout[];
 extern const u8 gText_lu_CGOptionHelp_BattlesScaleVictoryPayout[];
 
-extern const u8 gText_lu_CGOptionName_ModernMoneyLossOnDefeat[];
-extern const u8 gText_lu_CGOptionHelp_ModernMoneyLossOnDefeat[];
+extern const u8 gText_lu_CGOptionName_MoneyLossOnDefeat[];
+extern const u8 gText_lu_CGOptionHelp_MoneyLossOnDefeat[];
+extern const u8 gText_lu_CGOptionValueName_MoneyLossOnDefeat_Classic[];
+extern const u8 gText_lu_CGOptionValueName_MoneyLossOnDefeat_Modern[];
 
 extern const u8 gText_lu_CGOptionCategoryName_OverworldPoison[];
 extern const u8 gText_lu_CGOptionCategoryHelp_OverworldPoison[];

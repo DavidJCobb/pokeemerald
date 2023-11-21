@@ -68,6 +68,16 @@ static const u8* const sOption_ItemUseInBattles_ValueHelpStrings[] = {
    NULL,
 };
 //
+static const u8* const sOption_MoneyLossOnDefeat_ValueNameStrings[] = {
+   gText_lu_CGOptionValueName_MoneyLossOnDefeat_Classic,
+   gText_lu_CGOptionValueName_MoneyLossOnDefeat_Modern,
+};   
+static const u8* const sOption_MoneyLossOnDefeat_ValueHelpStrings[] = {
+   NULL,
+   NULL,
+};
+//
+//
 static const struct CGOptionMenuItem sBattleOptions[] = {
    {  // Item use
       .name        = gText_lu_CGOptionName_ItemUseInBattles,
@@ -78,7 +88,7 @@ static const struct CGOptionMenuItem sBattleOptions[] = {
          .named = {
             .name_strings = sOption_ItemUseInBattles_ValueNameStrings,
             .help_strings = sOption_ItemUseInBattles_ValueHelpStrings,
-            .count = 3,
+            .count = 5,
          }
       },
       .target = {
@@ -221,9 +231,17 @@ static const struct CGOptionMenuItem sBattleOptions[] = {
       }
    },
    {  // Use modern calc for money loss on defeat
-      .name        = gText_lu_CGOptionName_ModernMoneyLossOnDefeat,
-      .help_string = gText_lu_CGOptionHelp_ModernMoneyLossOnDefeat,
+      .name        = gText_lu_CGOptionName_MoneyLossOnDefeat,
+      .help_string = gText_lu_CGOptionHelp_MoneyLossOnDefeat,
+      .flags       = (1 << MENUITEM_FLAG_IS_ENUM),
       .value_type = VALUE_TYPE_BOOL8,
+      .values = {
+         .named = {
+            .name_strings = sOption_MoneyLossOnDefeat_ValueNameStrings,
+            .help_strings = sOption_MoneyLossOnDefeat_ValueHelpStrings,
+            .count = 2,
+         }
+      },
       .target = {
          .as_bool8 = &sTempOptions.modern_calc_player_money_loss_on_defeat
       }

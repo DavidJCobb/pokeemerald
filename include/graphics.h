@@ -5070,8 +5070,4 @@ extern const u8 gMailTilemap_Retro[];
 extern const u8 gMonMarkingsMenu_Gfx[];
 extern const u16 gMonMarkingsMenu_Pal[];
 
-// Custom Game Options menu
-extern const u32 gLuCGOMenuInterface_Gfx[];
-extern const u16 gLuCGOMenuInterface_Pal[];
-
 #endif //GUARD_GRAPHICS_H

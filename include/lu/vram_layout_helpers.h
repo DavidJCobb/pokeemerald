@@ -19,9 +19,13 @@ typedef struct {
 
 #define VRAM_BG_CharBaseIndexToTileID(charBaseIndex)   (charBaseIndex * 512)
 
+// TODO: BROKEN: ALIGNED(...) only permits powers of 2, so e.g. (512 * 3) would fail.
 #define VRAM_BG_AT_CHAR_BASE_INDEX(charBaseIndex)   ALIGNED(sizeof(VRAMTile) * VRAM_BG_CharBaseIndexToTileID(charBaseIndex))
 
 #define VRAM_BG_CharBasedTileID(charBaseIndex, layout, member)   ((offsetof(layout, member) / TILE_SIZE_4BPP) - VRAM_BG_CharBaseIndexToTileID(charBaseIndex))
+
+// If this is ever FALSE for a set of tiles, then you'll need to use a higher `charBaseIndex` to address it. This may require moving the tiles themselves via `VRAM_BG_AT_CHAR_BASE_INDEX` so that they're positioned within the tileset that the higher `charBaseIndex` refers to.
+#define VRAM_BG_TilesAreAddressableFromTileset(charBaseIndex, layout, member)   (VRAM_BG_TileID(layout, member) >= (charBaseIndex * 512) && VRAM_BG_TileID(layout, member) + VRAM_BG_TileCount(layout, member) < 1024)
 
 #if MODERN
    // modern version is untested

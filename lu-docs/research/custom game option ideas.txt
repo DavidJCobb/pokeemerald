@@ -97,6 +97,14 @@ principles:
     - Overworld poison damage rates
        - Steps taken
        - Damage dealt
+    - Levels
+       - Player starter initial level
+       - Min, max, and multiplier by subject
+          - Wild Pokemon
+          - Rival
+          - Enemy trainer
+          - Ally trainer
+       - Bool: Force evolution to match levels?
  
  = Various
     - Allow editing options after starting the playthrough

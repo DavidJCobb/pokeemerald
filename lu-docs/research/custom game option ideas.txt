@@ -193,7 +193,7 @@ principles:
           - Free; Doesn't Count
           - Counts as Encounter
           - Disable All Gifts
-       - Shiny Exception              // 1 bit
+       - Shiny Exception              // 2 bits
           - No Exception
           - Replace Prior from Same Route
           - Always Allow

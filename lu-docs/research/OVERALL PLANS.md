@@ -1,5 +1,7 @@
 
-Current long-term goals:
+# Code generation plans
+
+## The basic goal
 
 The way we handle bitpacked data in some of my experimental work isn't really viable. Currently, we generate data definitions and C struct definitions from XML files, but we have to work to keep those XML files in synch with the rest of the codebase (e.g. by duplicating preprocessor macro definitions into them). Plus, the tooling is compiled for Windows and therefore can't be incorporated into the build process.
 
@@ -62,3 +64,142 @@ A system like this could generate the appropriate data definitions we need in XM
 [^2]: We should try to detect when people use GameShark or Action Replay cheats, show a warning screen, and direct them to a safe menu of in-game cheats for things like walking through walls or editing items. Ideally we'd eventually reproduce all the popular codes that are floating around.
 
 There are benefits to a lot of this even beyond savedata bitpacking and updating. Potentially, we could set up codegen for things like menu GUI VRAM layouts that are tricky to manage in C alone.
+
+## Specific proposal: make a GCC plug-in
+
+Actually writing a custom C parser would be very, very difficult and time-consuming. What if we could leverage one that's been written for us? In fact, what if we could leverage the very same one we're using to compile the program?
+
+GCC supports a plug-in system which, among other things, can be used to add new attributes (of the `__attribute((hello_world))` kind, which can also go in all the places we'd want to use them in). Depending on which compiler pass(es) your plug-in watch(es), you can scan over the input code after GCC has processed it into a simplified IR (theirs is called GIMPLE), and do things like emitting warnings and whatnot. Moreover, plug-ins can be [loaded from arbitrary paths](https://gcc.gnu.org/onlinedocs/gccint/Plugins-loading.html), so our plug-in could be kept with the game's source, same as the other tools currently used in the ROM's build process.
+
+Guides and other relevant findings:
+
+* GCC plug-ins must use a GPL-compatible license. Like, literally, GCC requires all loaded plug-ins to [say they're GPL-compatibly licensed](https://gcc.gnu.org/onlinedocs/gccint/Plugin-API.html#Plugin-license-check) or the compiler will just straight-up abort.
+
+* Think In Geek has a [three-part series](https://thinkingeek.com/2015/08/16/a-simple-plugin-for-gcc-part-1/) from 2015 which walks you through implementing `__attribute__((warn_unused_result))` for C++ (this was before we had `[[nodiscard]]`). Part 1 focuses on just getting *a plug-in* that will compile; Part 2 focuses on scrubbing through the GIMPLE data for a function being compiled, with a demonstration of rendering a 2D flowchart of the function via a plug-in; and Part 3 focuses on actually implementing the desired functionality.
+
+* According to [this 2015 Stack Overflow answer](https://stackoverflow.com/a/29805513), it's possible to register an attribute that is applied to class declarations along with a callback that is invoked when the attribute is applied.
+
+  * By contrast, [this lad](https://stackoverflow.com/a/57242241) used a `PLUGIN_FINISH_PARSE_FUNCTION` callback to react to when *any* function is finished parsing, and then checked if the given function was annotated as desired. His specific use case was flipping GCC's "instrumentation" on its head: GCC has a feature to inject calls (to functions that you specify) into the start and end of every function in your source save for those you blacklist with an attribute, and this lad wanted to whitelist instead.
+
+* For actually injecting code, in 2013 Basile Starynkevitch [recommended adding a custom `#pragma` directive](https://stackoverflow.com/a/19716417), though he offers few details on how to actually do so. He's the author of [GCC MELT](http://starynkevitch.net/Basile/gcc-melt/), a now-abandoned framework for writing GCC plug-ins in LISP; he's clearly knowledgeable on plug-ins, but most of his Stack Overflow content related to them consists of high-level concepts and plugging MELT.
+
+Potentially helpful snippets:
+
+* [Retrieving the arguments to a function (in Java only?).](https://stackoverflow.com/questions/42576844/retrieve-function-arguments-from-gcc-function-tree-node)
+* Defining a new global variable in the compiled code, from a plug-in: ["high-level concepts" answer](https://stackoverflow.com/a/26029693) and [dirty implementation-level answer](https://stackoverflow.com/a/30943300). I assume the variable wouldn't be referencable from the already-parsed code, but could be referenced from anything else you're injecting.
+* [This StackOverflow question from 2014](https://stackoverflow.com/questions/25775292/inserting-function-calls-in-the-gimple) was asked by someone who wanted to inject, into an already-parsed C function, a call to some other function. They succeeded in that endeavor (and provided the code they used!), but where they stumbled was in supply a *definition* for the callee: they say they're getting a compiler error but I suspect it's actually a linker error. So the code in this question will tell you how to: inform the compiler that a function exists, taking given args and returning a given type; and inject a call to said function into already-parsed code in GIMPLE form; but getting the compiler (and eventually the linker) to actually find the callee (i.e. its code) is still up to you.
+  * If you sustain a hard enough head injury to forget how this all works then [here's a guide](https://stackoverflow.com/a/42609869); just mentally substitute the word "prototype" for "declaration."
+* Given a GIMPLE function call, [here's how to get the callee's name](https://stackoverflow.com/a/29348185). Another answer on the same page offers [some more options](https://stackoverflow.com/a/30717006).
+
+Things to look into:
+
+* Examples of generating GIMPLE or C code from a GCC plug-in based on seen pragmas, attributes, and so on
+
+### My guess as to an initial approach
+
+We'll want to [register custom attributes and pragmas in the appropriate plug-in callbacks](https://gcc.gnu.org/onlinedocs/gccint/Plugins-attr.html#Plugins-attr).
+
+Then, we can use a `PLUGIN_FINISH_TYPE` callback to scan over struct/union definitions and see if the type has any of our bitpacking specifiers on its members.
+
+Finally, we can use a `PLUGIN_FINISH_PARSE_FUNCTION` callback to handle when any function is fully parsed. We can check whether the function invokes a pragma and use that for codegen.
+
+Basically, here's what has to change in terms of our thinking. Our current "not a GCC plug-in" approach is to do everything top-down: we scan over all of our relevant types and constants and whatnot in advance, and generate our savedata format XML and code and whatnot from "outside," and then we leave that for GCC to handle. The process with a GCC plug-in would be bottom-up instead: we'd write C code like this --
+
+```c
+// Tell the plug-in to actually pay attention to bitpacking annotations on types; we will be 
+// making use of them within this file. We want to ignore bitpacking attributes on types 
+// otherwise, so that we aren't wasting processing power on them for every single translation 
+// unit.
+//
+#pragma lu-codegen enable-bitpacking
+
+// Set the serialization version number. This will be written as a prefix into the user's 
+// savedata, and can be used to upgrade their savedata (either with an external tool, or 
+// perhaps by checking version numbers during load and having upgrade handlers) so that 
+// players can update the ROM mid-playthrough.
+//
+#pragma lu-codegen pkmn-save serialization-version:0
+
+// various includes from the game source, including the structs we'll be bitpacking...
+//
+#include "pokemon_storage_system.h"
+//
+// ...so by now, all such structs should be directly or transitively included: when we 
+// actually start generating code, we should have all the info we need.
+
+extern bool8 lu_ReadSaveSector_CharacterData00(const u8* src) {
+   //
+   // We're inside of the function we want to write code for; the pragma below will emit 
+   // the needed GIMPLE for this savedata slice.
+   //
+   #pragma lu-codegen pkmn-save op:read data:character slice:0 src-var:src dst-var:gSaveBlock2Ptr
+}
+extern bool8 lu_WriteSaveSector_CharacterData00(u8* dst) {
+   #pragma lu-codegen pkmn-save op:write data:character slice:0 dst-var:dst src-var:gSaveBlock2Ptr
+}
+
+//
+// That's a simple example that would have us generate GIMPLE into one function at a time. 
+// Depending on how good I can get at writing a GCC plug-in, I could potentially move the 
+// codegen up to a higher level, generating multiple functions from whole cloth to slice 
+// the to-be-saved data structures apart automatically. I could potentially even have a 
+// single slice be shared by multiple such data structures, with the codegen just figuring 
+// it all out for me.
+//
+```
+
+-- and we'd do what we need to do *during compilation*, when those pragmas are encountered. *That's* when we'd start generating both the code to read and save, and XML files representing the savedata format. Then, as a post-build step, we could take those XML files and collate them somewhere, and then external tools could use that to diff the formats and allow for updating old savedata to new formats. (In the future, we could extend the plug-in even further: if we can supply prior XMLs as input, perhaps with additional pragma directives, then we could find some way to check version numbers in the ROM when reading old savedata.)
+
+The hard part, it seems, is this: I'm struggling to find literature on inserting C-language code into a program mid-compilation via a GCC plug-in. We might have to actually programmatically generate stuff directly as GIMPLE instead.
+
+#### Pragmas to use
+
+* **`lu-codegen` ...**
+  * **... `enable-bitpacking`:** Tells the plug-in that we're actually going to be generating bitpacking code for this compiler invocation, so it should pay attention to bitpacking-related annotations in structs.
+  * **... `pkmn-save` ...:** Generates bitpacking code. Arguments are separated with spaces and take the form *key:value*:
+    * **`op`:** Either `read` or `write`.
+    * **`data`:** The data to serialize: `character`, `world`, `custom-game`, or `pokemon-storage`.
+    * **`slice`:** We're serializing the *n*-th slice of the given data.
+    * **`src-var`:** Variable name to pull data from.
+    * **`dst-var`:** Variable name to push data to.
+    If not enough slice functions have been generated for a given piece of data, or if they aren't symmetric (e.g. 3 read slices; 5 write slices), then the build should fail.
+* **`lu-bitpack` ...**
+  * **... `define-heritable`:** Defines a heritable set of bitpacking options, e.g. for things like "player-name" or "global-item-ID." Data members in a struct definition can refer to these to pull a quick, common set of bitpacking options, and additionally, the save file format XML we generate will refer to these (which among other things means you can count how many times they appear in savedata &mdash; good for knowing the potential gains or costs of changing a given field somehow).
+  
+  Options are space-separated and first list the heritable name, and then take the form *key:value* (e.g. `define-heritable player-name string`). They are generally analogous to any similarly-named attributes with which you can annotate data members in structs.
+    * **`string`:** Indicates that data members of this type are strings. You can optionally specify `string(with_terminator)` and/or `string(length=7)` to indicate the maximum serialized length.
+    * **<code>bitcount(<var>n</var>)</code>**
+    * **<code>range(<var>a</var>, <var>b</var>)</code>**
+
+#### Attributes to use
+
+Data members in a struct can be annotated with the following attributes, which (except for the "omit" attribute) indicate that they are to be bitpacked when serialized.
+
+* <code>lu_bitpack_omit</code>: Indicates that the annotated data member should not be written to the savegame, and should be zeroed when loading saved data.
+  * Our intention is to warn during serialization codegen if a to-be-serialized struct has any data members that lack bitpacking annotations. If a member is irrelevant, use this annotation to omit it.
+* <code>lu_bitpack_bitcount(<var>n</var>)</code>: Indicates that the annotated data member should be serialized using <var>n</var> bits.
+* <code>lu_bitpack_range(<var>a</var>, <var>b</var>)</code>: Indicates that the annotated data member is an integral, and that its values will always be in the range [<var>a</var>, <var>b</var>]. The needed bitcount will be computed automatically based on that range: we'll serialize (<var>value</var> - <var>a</var>) with enough bits to hold (<var>b</var> - <var>a</var>), and when loading we'll add <var>a</var>, back.
+* <code>lu_bitpack_string</code>: Indicates that the annotated data member is a string. The data member must be a <code>char</code> array; the array length will be taken as the max length.
+  * Optional arguments:
+    * `with-terminator` indicates that the in-memory string has a null terminator (such that the max string length is the size of the char array *minus one*).
+    * `length=7` indicates that the maximum length is 7. The data member's array length must be at least 7 (or 8 if the member is kept in memory `with-terminator`), or a compile error will occur.
+* <code>lu_bitpack_funcs(pre_pack=<var>a</var>, post_unpack=<var>b</var>)</code>: Indicates that the annotated data member will not be serialized directly. Rather, during save, it will be passed as an argument to <var>a</var>, and the result will be written to the bitstream; and during read, the read raw value or struct will be passed as an argument to <var>b</var>, and the result will be retained.
+  * If the data member is a primitive type, then <var>a</var> and <var>b</var> should receive the original value as an argument and return a value of the same primitive type, with their return values being considered their results.
+  * If the data member is a struct or union type, then <var>a</var> and <var>b</var> should return void, accept a const-pointer-type argument to the original value, and accept a pointer-type argument through which their results will be assigned.
+  * If you specify either function, you must specify the other, and they must be symmetric: each function's input type must be the other function's result type. For struct types, I may try to actually have the plug-in check this.
+* <code>lu_bitpack_inherit(<var>n</var>)</code>: Indicates that the annotated data member should inherit bitpacking options from a heritable set of options previously defined via <code>#pragma lu-bitpacking define-heritable <var>n</var> ...</code>. Any options not specified via attributes on the data member will be pulled from the heritable. If the heritable specifies an integral type, then the data member must be an integral; if the heritable is a string, then the data member must be a string.
+
+#### Other use cases to explore doing once we have savedata codegen implemented
+
+* Item ID space mapping.[^1] A GCC plug-in should be able to read the items array and its data, and generate the mappings we need.
+
+* Helpers for managing VRAM layouts for GUIs. A while back, I hit upon the trick of using dummy struct definitions (alongside macros that abuse `offsetof`) to lay out VRAM tilemaps for menus, with the structs representing the entire VRAM layout. (See: `include/lu/vram_layout_helpers.h`.) There's a problem, though: some VRAM data has to be aligned to non-power-of-two thresholds (e.g. 512 * 3). We could look into creating a "pad data member to offset" attribute to work around this limitation, but we could also look into creating attributes, pragmas, and the like which have the effect of handling most of this VRAM layout trickery for us.
+
+* Generating a function to check if a given global item ID is a Poke Ball. Currently, the game relies on Poke Balls falling in the range [`FIRST_BALL`, `LAST_BALL`] and forming a contiguous sub-range of item IDs. This makes it harder to add new Poke Balls: we have to shift all item IDs in order to maintain that contiguous sub-range.
+
+  For ease of maintenance and modding, and in particular to make it easier to update savedata from playthroughs of older versions of the mod, I want to be able to add Poke Balls anywhere in the item list: I want to get rid of the requirement that their item IDs all form a contiguous range. The same item ID space mapping that we use to serialize Poke Balls can also potentially be used to remap Poke Balls for things like `MON_DATA_POKEBALL` and for any other vanilla code that checks whether a global item ID represents a Poke Ball.
+  
+  * Berries behave similarly, with [`FIRST_BERRY_INDEX`, `LAST_BERRY_INDEX`].
+  * TMs have `NUM_TECHNICAL_MACHINES` and `NUM_HIDDEN_MACHINES` and I've no doubt these get added to `ITEM_TM01` and `ITEM_HM01` in plenty of places. However, we at least benefit from TMs and HMs being real late in the item list, though adding more while keeping them contiguous would still require the ability to remap values when loading from older savedata format versions. (The same "pre-pack" and "post-unpack" handlers that we have in mind for inventory pockets could also help here, perhaps.)
+
+* Cheat detection[^2]. In `ROADMAP RESEARCH.md` somewhere in this repo, I discuss the possibility of having the linker copy bytes that we know will end up in specific places so we can use run-time comparisons to detect cheats ("like creating a control group to which we can compare an experimental group"). I don't know if the linker alone can do this. Could a GCC plug-in aid in the process?

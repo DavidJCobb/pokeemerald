@@ -2305,3 +2305,35 @@ bool8 ScrCmd_warpwhitefade(struct ScriptContext *ctx)
     ResetInitialPlayerAvatarState();
     return TRUE;
 }
+
+
+
+
+#include "lu/string_wrap.h"
+
+enum {
+   Lu_Subinstruction_NoOp = 0,
+   Lu_Subinstruction_MessageWrapped = 1, // <pointer:message>
+};
+
+bool8 ScrCmd_LuExt(struct ScriptContext* ctx) {
+   u8 sub_instruction = ScriptReadByte(ctx);
+   
+   switch (sub_instruction) {
+      case Lu_Subinstruction_NoOp:
+         break;
+      case Lu_Subinstruction_MessageWrapped:
+         {
+            const u8* msg = (const u8*)ScriptReadWord(ctx);
+            if (msg == NULL)
+               msg = (const u8*)ctx->data[0];
+            
+            StringExpandPlaceholders(gStringVar4, msg);
+            lu_PrepStringWrap_Normal();
+            lu_StringWrap(gStringVar4);
+            ShowFieldMessageFromBuffer();
+         }
+         break;
+   }
+   return FALSE;
+}

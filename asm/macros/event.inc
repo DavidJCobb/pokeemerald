@@ -1939,3 +1939,22 @@
 	setvar VAR_0x8006, \item
 	special CreateEnemyEventMon
 	.endm
+   
+   @ ADDED:
+   
+   @ The same as the `message` command, but with automatic word-wrapping.
+   .macro lu_message_wordwrapped text:req
+   .byte 0xE3
+   .byte 0x01
+   .4byte \text
+   .endm
+   
+   @ The same as the `msgbox <text> MSGBOX_DEFAULT` command, but with automatic word-wrapping. 
+   @ That command works by calling one of the standard scripts (callstd), which basically keeps 
+   @ ROM size down despite it being used in several places. Here, for now, we're just inlining 
+   @ everything.
+   .macro lu_msgbox_default_wordwrapped text:req
+   lu_message_wordwrapped \text
+   waitmessage
+   waitbuttonpress
+   .endm

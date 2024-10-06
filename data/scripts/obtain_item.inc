@@ -68,6 +68,8 @@ EventScript_PlayFanfareObtainedTMHM::
 	playfanfare MUS_OBTAIN_TMHM
 	return
 
+@@@@@@@@ OBTAINING A DECORATION @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
 Std_ObtainDecoration::
 	adddecoration ITEMID
 	copyvar VAR_0x8007, VAR_RESULT
@@ -92,6 +94,18 @@ EventScript_NoRoomForDecor::
 	setvar VAR_RESULT, FALSE
 	return
 
+@@@@@@@@ FINDING AN ITEM @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@
+@ Std_FindItem
+@  - EventScript_BufferPocketNameAndTryFanfare
+@  = branch
+@     - EventScript_PickUpItem
+@        = branch
+@           - EventScript_FoundTMHM
+@           - EventScript_FoundItem
+@     - EventScript_NoRoomToPickUpItem
+@
+
 Std_FindItem::
 	lock
 	faceplayer
@@ -111,36 +125,56 @@ Std_FindItem::
 EventScript_PickUpItem::
 	removeobject VAR_LAST_TALKED
 	additem VAR_0x8004, VAR_0x8005
+   
+   @
+   @ Try to buffer the item's TM/HM move name. If it works, then 
+   @ the name will be written to STR_VAR_2 and VAR_RESULT will be 
+   @ set to 1. Otherwise, the item isn't a TM, and STR_VAR_2 will 
+   @ be unchanged from its previous value (the pluralized item 
+   @ name).
+   @
 	specialvar VAR_RESULT, BufferTMHMMoveName
 	copyvar VAR_0x8008, VAR_RESULT
+   
 	call_if_eq VAR_0x8008, TRUE, EventScript_FoundTMHM
 	call_if_eq VAR_0x8008, FALSE, EventScript_FoundItem
 	waitfanfare
 	waitmessage
-	bufferitemnameplural STR_VAR_2, VAR_0x8004, VAR_0x8005
-	pyramid_inchallenge
-	goto_if_eq VAR_RESULT, TRUE, EventScript_PutBattlePyramidItemInBag
-	msgbox gText_PutItemInPocket, MSGBOX_DEFAULT
-	return
-
-EventScript_PutBattlePyramidItemInBag::
-	msgbox gText_PlayerPutItemInBag, MSGBOX_DEFAULT
+   waitbuttonpress
 	return
 
 EventScript_FoundTMHM::
 	bufferitemnameplural STR_VAR_1, VAR_0x8004, VAR_0x8005
-	message gText_PlayerFoundOneTMHM
+   @ STR_VAR_2: the move name
+   @ STR_VAR_3: the bag pocket name
+   @
+   loadword 0, gText_lu_FoundAndPocketedOneTMHM
+	pyramid_inchallenge
+   call_if_eq VAR_RESULT, TRUE, EventScript_FoundTMHM_PrepTextIfBattlePyramid
+   lu_message_wordwrapped 0
 	return
+
+EventScript_FoundTMHM_PrepTextIfBattlePyramid::
+   loadword 0, gText_lu_FoundAndBaggedOneTMHM
+   return
 
 EventScript_FoundItem::
-	message gText_PlayerFoundOneItem
+   loadword 0, gText_lu_FoundAndPocketedOneItem
+	pyramid_inchallenge
+   call_if_eq VAR_RESULT, TRUE, EventScript_FoundItem_PrepTextIfBattlePyramid
+   lu_message_wordwrapped 0
 	return
 
+EventScript_FoundItem_PrepTextIfBattlePyramid::
+   loadword 0, gText_lu_FoundAndBaggedOneItem
+   return
+
 EventScript_NoRoomToPickUpItem::
-	msgbox gText_ObtainedTheItem, MSGBOX_DEFAULT
-	msgbox gText_TooBadBagIsFull, MSGBOX_DEFAULT
+   lu_msgbox_default_wordwrapped gText_lu_FoundOneItemButBagFull
 	setvar VAR_RESULT, FALSE
 	return
+
+@@@@@@@@ FINDING A HIDDEN ITEM @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 EventScript_HiddenItemScript::
 	lockall
@@ -158,35 +192,31 @@ EventScript_PickUpHiddenItem::
 	copyvar VAR_0x8008, VAR_0x8004
 	copyvar VAR_0x8004, VAR_0x8005
 	specialvar VAR_RESULT, BufferTMHMMoveName
-	goto_if_eq VAR_RESULT, TRUE, EventScript_FoundHiddenTMHM
-	goto_if_eq VAR_RESULT, FALSE, EventScript_FoundHiddenItem
+	call_if_eq VAR_RESULT, TRUE, EventScript_FoundHiddenTMHM
+	call_if_eq VAR_RESULT, FALSE, EventScript_FoundHiddenItem
+   goto EventScript_PutHiddenItemInPocket
 	end
 
 EventScript_FoundHiddenTMHM::
 	bufferitemnameplural STR_VAR_1, VAR_0x8004, 1
-	message gText_PlayerFoundOneTMHM
-	goto EventScript_PutHiddenItemInPocket
-	end
+   lu_message_wordwrapped gText_lu_FoundAndPocketedOneTMHM
+	return
 
 EventScript_FoundHiddenItem::
-	message gText_PlayerFoundOneItem
-	goto EventScript_PutHiddenItemInPocket
-	end
+   lu_message_wordwrapped gText_lu_FoundAndPocketedOneItem
+	return
 
 EventScript_PutHiddenItemInPocket::
 	waitmessage
 	waitfanfare
-	bufferitemnameplural STR_VAR_2, VAR_0x8004, 1
 	copyvar VAR_0x8004, VAR_0x8008
-	msgbox gText_PutItemInPocket, MSGBOX_DEFAULT
 	special TryPutTreasureInvestigatorsOnAir
 	special SetHiddenItemFlag
 	releaseall
 	end
 
 EventScript_NoRoomForHiddenItem::
-	msgbox gText_PlayerFoundOneItem, MSGBOX_DEFAULT
-	msgbox gText_TooBadBagIsFull, MSGBOX_DEFAULT
+   lu_msgbox_default_wordwrapped gText_lu_FoundOneItemButBagFull
 	setvar VAR_RESULT, 0
 	releaseall
 	end

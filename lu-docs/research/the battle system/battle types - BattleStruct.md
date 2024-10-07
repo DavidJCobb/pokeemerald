@@ -112,6 +112,8 @@ A castform form value (`CASTFORM_`) as defined in [`constants/battle.h`](/includ
 
 The value is first set up in `AbilityBattleEffects` (in [`battle_util.c`](/src/battle_util.c)) by the handlers for the Forecast and Air Lock abilities, which also queue the `BattleScript_CastformChange` battle script to run. Then, the `docastformchangeanimation` [battle script command](/src/battle_script_commands.c) adds the Substitute flag if necessary, and passes the value as an argument to `BtlController_EmitBattleAnimation`.
 
+In short: this variable is only here so it can be briefly juggled across different execution contexts.
+
 
 ### `moneyMultiplier`
 

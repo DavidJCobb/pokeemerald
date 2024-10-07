@@ -181,7 +181,7 @@ Pokemon that attain these status conditions will lose them after switching out, 
 | `STATUS2_RAGE`              | 1 | `0b00000000100000000000000000000000` |
 | `STATUS2_SUBSTITUTE`        | 1 | `0b00000001000000000000000000000000` |
 | `STATUS2_DESTINY_BOND`      | 1 | `0b00000010000000000000000000000000` |
-| `STATUS2_ESCAPE_PREVENTION` | 1 | `0b00000100000000000000000000000000` | Indicates that this Pokemon is being prevented from leaving the battlefield by another battler. Refer to [`gDisableStructs[this_battler].battlerPreventingEscape`](./battle globals.md#gdisablestructs) for that battler's identity. |
+| `STATUS2_ESCAPE_PREVENTION` | 1 | `0b00000100000000000000000000000000` | Indicates that this Pokemon is being prevented from leaving the battlefield by another battler. Refer to [`gDisableStructs[this_battler].battlerPreventingEscape`](./battle%20globals.md#gdisablestructs) for that battler's identity. |
 | `STATUS2_NIGHTMARE`         | 1 | `0b00001000000000000000000000000000` |
 | `STATUS2_CURSED`            | 1 | `0b00010000000000000000000000000000` |
 | `STATUS2_FORESIGHT`         | 1 | `0b00100000000000000000000000000000` |
@@ -199,7 +199,7 @@ Given that they're stored differently than the other status data, and they refer
 | :- | -: | -: | :- |
 | `STATUS3_LEECHSEED_BATTLER` | 2 | `0b000000000000000000011` | Two bits identifying the battler whose HP will be absorbed by this battler. |
 | `STATUS3_LEECHSEED`         | 1 | `0b000000000000000000100` |
-| `STATUS3_ALWAYS_HITS`       | 2 | `0b000000000000000011000` | A countdown to an imminent attack which will be guaranteed to hit this battler. Refer to [`gDisableStructs[this_battler].battlerWithSureHit`](./battle globals.md#gdisablestructs) for the attacker's identity. |
+| `STATUS3_ALWAYS_HITS`       | 2 | `0b000000000000000011000` | A countdown to an imminent attack which will be guaranteed to hit this battler. Refer to [`gDisableStructs[this_battler].battlerWithSureHit`](./battle%20globals.md#gdisablestructs) for the attacker's identity. |
 | `STATUS3_PERISH_SONG`       | 1 | `0b000000000000000100000` |
 | `STATUS3_ON_AIR`            | 1 | `0b000000000000001000000` | Indicates that this Pokemon is high in the air (e.g. from using Fly) and cannot be hit by conventional attacks. |
 | `STATUS3_UNDERGROUND`       | 1 | `0b000000000000010000000` | Indicates that this Pokemon is underground (e.g. from using Dig) and cannot be hit by conventional attacks. |

@@ -26,15 +26,15 @@ This data structure holds the bulk of all state related to battles. Its sole ins
 | `u8` | `switchInAbilitiesCounter` |
 | `u8` | `faintedActionsState` |
 | `u8` | `faintedActionsBattlerId` |
-| `u16` | `expValue` | State for the [amortized](./battle concepts.md#amortized) `getexp` script command: the amount of EXP currently being earned by a Pokemon. |
-| `u8` | [`scriptPartyIdx`](#scriptpartyidx) | A [battler ID](./battle concepts.md#battler-id) used when printing a battler's (nick)name, to tell whether they should be described as "Wild"/"Foe" or not. |
+| `u16` | `expValue` | State for the [amortized](./battle%20concepts.md#amortized) `getexp` script command: the amount of EXP currently being earned by a Pokemon. |
+| `u8` | [`scriptPartyIdx`](#scriptpartyidx) | A [battler ID](./battle%20concepts.md#battler-id) used when printing a battler's (nick)name, to tell whether they should be described as "Wild"/"Foe" or not. |
 | `u8` | `sentInPokes` |
 | `bool8[]` | `selectionScriptFinished` |
 | `u8[]` | `battlerPartyIndexes` |
 | `u8[]` | `monToSwitchIntoId` |
 | `u8[]` | `battlerPartyOrders` |
 | `u8` | `runTries` | The number of times the player has tried to run from the current battle (`TryRunFromBattle`). Influences escape odds. Can overflow. |
-| `u8[]` | `caughtMonNick` | State for the [amortized](./battle concepts.md#amortized) `trygivecaughtmonnick` function: the nickname the player is currently assigning to a caught Wild Pokemon. |
+| `u8[]` | `caughtMonNick` | State for the [amortized](./battle%20concepts.md#amortized) `trygivecaughtmonnick` function: the nickname the player is currently assigning to a caught Wild Pokemon. |
 | `u8` | `unused_2` |
 | `u8` | `safariGoNearCounter` |
 | `u8` | `safariPkblThrowCounter` |
@@ -49,7 +49,7 @@ This data structure holds the bulk of all state related to battles. Its sole ins
 | `u8` | `prevSelectedPartySlot` |
 | `u8[]` | `unused_4` |
 | `u8` | `stringMoveType` | Global state relied upon by `BufferStringBattle(u16 stringID)` in [`battle_message.c`](/src/battle_message.c): a type value (e.g. `TYPE_PSYCHIC`). |
-| `u8` | `expGetterBattlerId` | State for the [amortized](./battle concepts.md#amortized) `getexp` script command: the [battler ID](./battle concepts.md#battler-id) of the Pokemon currently earning EXP. |
+| `u8` | `expGetterBattlerId` | State for the [amortized](./battle%20concepts.md#amortized) `getexp` script command: the [battler ID](./battle%20concepts.md#battler-id) of the Pokemon currently earning EXP. |
 | `u8` | `unused_5` |
 | `u8` | `absentBattlerFlags` |
 | `u8` | `palaceFlags` | "First 4 bits are 'is <= 50% HP and not asleep' for each battler, last 4 bits are selected moves to pass to AI" |
@@ -72,7 +72,7 @@ This data structure holds the bulk of all state related to battles. Its sole ins
 | `u8[]` | `AI_itemFlags` |
 | `u16[]` | `choicedMove` |
 | `u16[]` | `changedItems` |
-| `u8` | `intimidateBattler` | The [battler ID](./battle concepts.md#battler-id) of the Pokemon whose Intimidate ability effect is currently activating. This is set by the handlers for `ABILITYEFFECT_INTIMIDATE1` and `ABILITYEFFECT_INTIMIDATE2`, and influences the behavior of the `trygetintimidatetarget` script command. |
+| `u8` | `intimidateBattler` | The [battler ID](./battle%20concepts.md#battler-id) of the Pokemon whose Intimidate ability effect is currently activating. This is set by the handlers for `ABILITYEFFECT_INTIMIDATE1` and `ABILITYEFFECT_INTIMIDATE2`, and influences the behavior of the `trygetintimidatetarget` script command. |
 | `u8` | `switchInItemsCounter` |
 | `u8` | `arenaTurnCounter` |
 | `u8` | `turnSideTracker` |
@@ -147,7 +147,7 @@ This variable is reset to `FALSE` whenever any player is introduced (i.e. sendin
 
 ### `scriptPartyIdx`
 
-This is a [battler ID](./battle concepts.md#battler-id) used when printing a Pokemon's (nick)name, to tell whether it should be prefixed with "Wild"/"Foe" or not.
+This is a [battler ID](./battle%20concepts.md#battler-id) used when printing a Pokemon's (nick)name, to tell whether it should be prefixed with "Wild"/"Foe" or not.
 
 The `BattleStringExpandPlaceholders` function (defined in [`src/battle_message.c`](/src/battle_message.c)) takes two arguments, both strings: a source and a destination. It doesn't have access to any of the contextual information that gets passed around by other text-related functions in the battle engine, so it has to rely on global state instead. `gBattleStruct->scriptPartyIndex` is one such piece of global state.
 
@@ -156,15 +156,15 @@ The `BattleStringExpandPlaceholders` function (defined in [`src/battle_message.c
 
 Reset to 0 at the start of the battle by `BattleStartClearSetData`, and then managed by the `getexp` [battle script command](/src/battle_script_commands.c).
 
-The `getexp` command is a state machine: it relies on a counter (stored in `gBattleScripting.getexpState`) to amortize its work across multiple frames. On frame 2, it checks if the current battle is a Wild battle, if [battler ID](./battle concepts.md#battler-id) 0 isn't fainted, and if `wildVictorySong` is false. If so, then it calls `BattleStopLowHPSound()`, sets the current background music to `MUS_VICTORY_WILD`, and increments `wildVictorySong` to true.
+The `getexp` command is a state machine: it relies on a counter (stored in `gBattleScripting.getexpState`) to amortize its work across multiple frames. On frame 2, it checks if the current battle is a Wild battle, if [battler ID](./battle%20concepts.md#battler-id) 0 isn't fainted, and if `wildVictorySong` is false. If so, then it calls `BattleStopLowHPSound()`, sets the current background music to `MUS_VICTORY_WILD`, and increments `wildVictorySong` to true.
 
 It shouldn't be possible for `getexp` state 2 to run a second time except in a Double Battle, but Wild Double Battles aren't implemented. If hypothetically they were, then the `wildVictorySong` variable would prevent `getexp` from accidentally restarting the music when you faint the second Wild Pokemon. Someone at Game Freak may have been planning ahead.
 
 
 ### `wrappedBy`
 
-An array where both the keys and values are [battler IDs](./battle concepts.md#battler-id), used to indicate which Pokemon are victims of the move Wrap, and whom their attackers are.
+An array where both the keys and values are [battler IDs](./battle%20concepts.md#battler-id), used to indicate which Pokemon are victims of the move Wrap, and whom their attackers are.
 
-The relationship between key-battler and value-battler is as such: the key-battler is being wrapped by the value-battler. Additionally, the key-battler will have [`STATUS2_WRAPPED`](./battle concepts.md#status2).
+The relationship between key-battler and value-battler is as such: the key-battler is being wrapped by the value-battler. Additionally, the key-battler will have [`STATUS2_WRAPPED`](./battle%20concepts.md#status2).
 
 

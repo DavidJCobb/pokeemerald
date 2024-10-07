@@ -234,24 +234,24 @@ During a link battle, you can tell if the local player is the link master by che
 
 ## General concepts
 
-### Work amortized over multiple frames
-<a name="amortized"></a>
+### Latent functions
+<a name="latent"></a>
 
 Several hardcoded tasks and script commands distribute their computation over multiple frames, instead of running start-to-finish in one shot. Sometimes, this is done because a function or process must wait on events occurring elsewhere, such as UI interactions or link connectivity. Other times, though, code that could easily just run start-to-finish is instead built to distribute its computation across frames, presumably to avoid potential performance issues &mdash; frame rate lag, audio stutters, and the like.
 
-The general pattern is this: the amortized function is built as a switch-case statement, switching on a "state" variable of some sort. The variable is typically a counter, being incremented at the end of each case, though this won't be the case when branching execution is needed. The amortized function, then, is called once per frame until its work completes. Any variables that are needed across multiple stages of computation (including the "state" variable itself) can't be local (because they'll be lost at the end of each frame) and must be stored elsewhere.
+The general pattern is this: the latent function is built as a switch-case statement, switching on a "state" variable of some sort. The variable is typically a counter, being incremented at the end of each case, though this won't be the case when branching execution is needed. The latent function, then, is called once per frame until its work completes. Any variables that are needed across multiple stages of computation (including the "state" variable itself) can't be local (because they'll be lost at the end of each frame) and must be stored elsewhere.
 
 As for *how* a function gets itself to be called once per frame, there are two common cases:
 
 * Some processes are implemented as frame callback handlers (the functions whose names are prefixed with `CB2`).
 * For battle scripts, the script instruction pointer doesn't advance automatically; battle script commands must advance it manually. If they don't advance the instruction pointer, then they'll just run again on the next frame.
 
-It's useful to have a piece of jargon that instantly refers to this one specific pattern and not anything else in the codebase, so I've personally chosen to use the word <dfn>amortize</dfn> to refer to this it: "to reduce a debt or cost by paying small regular amounts," defined in contrast to paying a large lump sum. In this case, Game Freak often appears to be "amortizing" the performance costs of long computations and processes, preferring "small regular amounts" of computation across multiple frames.
+It's useful to have a piece of jargon that instantly refers to this one specific pattern and not anything else in the codebase, and as it happens, there's a term from other game engines (such as Unreal and the Creation Engine) that maps nicely: <dfn>latent functions</dfn>. Latent functions don't run start-to-finish immediately, but rather may perform operations over time before eventually returning to whatever could be considered their "caller" (e.g. the containing script, if the latent function is a script command).
 
 Examples include but are most certainly not limited to...
 
 * There are several functions that set up the initial state for battles, depending on the battle type (Link Battle, Multi Battle, etc.). These amortize their work over multiple frames and generally use `gBattleCommunication[MULTIUSE_STATE]` as their state variable.
-* The `getexp` battle script command amortizes its work over multiple frames. It uses `gBattleScripting.getexpState` as its state variable, and uses `gBattleStruct->expValue` and `gBattleStruct->expGetterBattlerId` to track data that gets used across multiple stages of computation.
-* The `trygivecaughtmonnick` battle script command amortizes its work over multiple frames, because it has to wait on GUI events and interactions. It uses `gBattleCommunication[MULTIUSE_STATE]` as its state variable, and relies on `gBattleStruct->caughtMonNick` to hold the player's chosen nickname for a caught Wild Pokemon.
+* The `getexp` battle script command amortizes its work over multiple frames, possibly to avoid lag. It uses `gBattleScripting.getexpState` as its state variable, and uses `gBattleStruct->expValue` and `gBattleStruct->expGetterBattlerId` to track data that gets used across multiple stages of computation.
+* The `trygivecaughtmonnick` battle script command does its work over multiple frames, because it has to wait on GUI events and interactions. It uses `gBattleCommunication[MULTIUSE_STATE]` as its state variable, and relies on `gBattleStruct->caughtMonNick` to hold the player's chosen nickname for a caught Wild Pokemon.
 
 

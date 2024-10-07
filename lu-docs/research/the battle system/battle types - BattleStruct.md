@@ -26,7 +26,7 @@ This data structure holds the bulk of all state related to battles. Its sole ins
 | `u8` | `switchInAbilitiesCounter` |
 | `u8` | `faintedActionsState` |
 | `u8` | `faintedActionsBattlerId` |
-| `u16` | `expValue` | State for the [amortized](./battle%20concepts.md#amortized) `getexp` script command: the amount of EXP currently being earned by a Pokemon. |
+| `u16` | `expValue` | State for the [latent](./battle%20concepts.md#latent) `getexp` script command: the amount of EXP currently being earned by a Pokemon. |
 | `u8` | [`scriptPartyIdx`](#scriptpartyidx) | A [battler ID](./battle%20concepts.md#battler-id) used when printing a battler's (nick)name, to tell whether they should be described as "Wild"/"Foe" or not. |
 | `u8` | `sentInPokes` |
 | `bool8[]` | `selectionScriptFinished` |
@@ -34,7 +34,7 @@ This data structure holds the bulk of all state related to battles. Its sole ins
 | `u8[]` | `monToSwitchIntoId` |
 | `u8[]` | `battlerPartyOrders` |
 | `u8` | `runTries` | The number of times the player has tried to run from the current battle (`TryRunFromBattle`). Influences escape odds. Can overflow. |
-| `u8[]` | `caughtMonNick` | State for the [amortized](./battle%20concepts.md#amortized) `trygivecaughtmonnick` function: the nickname the player is currently assigning to a caught Wild Pokemon. |
+| `u8[]` | `caughtMonNick` | State for the [latent](./battle%20concepts.md#latent) `trygivecaughtmonnick` function: the nickname the player is currently assigning to a caught Wild Pokemon. |
 | `u8` | `unused_2` |
 | `u8` | `safariGoNearCounter` |
 | `u8` | `safariPkblThrowCounter` |
@@ -49,7 +49,7 @@ This data structure holds the bulk of all state related to battles. Its sole ins
 | `u8` | `prevSelectedPartySlot` |
 | `u8[]` | `unused_4` |
 | `u8` | `stringMoveType` | Global state relied upon by `BufferStringBattle(u16 stringID)` in [`battle_message.c`](/src/battle_message.c): a type value (e.g. `TYPE_PSYCHIC`). |
-| `u8` | `expGetterBattlerId` | State for the [amortized](./battle%20concepts.md#amortized) `getexp` script command: the [battler ID](./battle%20concepts.md#battler-id) of the Pokemon currently earning EXP. |
+| `u8` | `expGetterBattlerId` | State for the [latent](./battle%20concepts.md#latent) `getexp` script command: the [battler ID](./battle%20concepts.md#battler-id) of the Pokemon currently earning EXP. |
 | `u8` | `unused_5` |
 | `u8` | `absentBattlerFlags` |
 | `u8` | `palaceFlags` | "First 4 bits are 'is <= 50% HP and not asleep' for each battler, last 4 bits are selected moves to pass to AI" |
@@ -158,7 +158,7 @@ The `BattleStringExpandPlaceholders` function (defined in [`src/battle_message.c
 
 Reset to 0 at the start of the battle by `BattleStartClearSetData`, and then managed by the `getexp` [battle script command](/src/battle_script_commands.c).
 
-The `getexp` command is a state machine: it relies on a counter (stored in `gBattleScripting.getexpState`) to amortize its work across multiple frames. On frame 2, it checks if the current battle is a Wild battle, if [battler ID](./battle%20concepts.md#battler-id) 0 isn't fainted, and if `wildVictorySong` is false. If so, then it calls `BattleStopLowHPSound()`, sets the current background music to `MUS_VICTORY_WILD`, and increments `wildVictorySong` to true.
+The `getexp` command is a [latent function](./battle%20concepts.md#latent): it relies on a counter (stored in `gBattleScripting.getexpState`) to spread its work across multiple frames. On frame 2, it checks if the current battle is a Wild battle, if [battler ID](./battle%20concepts.md#battler-id) 0 isn't fainted, and if `wildVictorySong` is false. If so, then it calls `BattleStopLowHPSound()`, sets the current background music to `MUS_VICTORY_WILD`, and increments `wildVictorySong` to true.
 
 It shouldn't be possible for `getexp` state 2 to run a second time except in a Double Battle, but Wild Double Battles aren't implemented. If hypothetically they were, then the `wildVictorySong` variable would prevent `getexp` from accidentally restarting the music when you faint the second Wild Pokemon. Someone at Game Freak may have been planning ahead.
 

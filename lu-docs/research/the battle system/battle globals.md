@@ -1,18 +1,18 @@
 
 ## `gActionSelectionCursor`
 
-This array's indices are [battler IDs](battle concepts.md#battler-id).
+This array's indices are [battler IDs](./battle%20concepts.md#battler-id).
 
 
 ## `gActiveBattler`
 
-A [battler ID](battle concepts.md#battler-id).
+A [battler ID](./battle%20concepts.md#battler-id).
 
 
 ## `gBattleBufferA` and `gBattleBufferB`
 <a name="gbattlebuffera"></a><a name="gbattlebufferb"></a>
 
-Two data buffers used to transfer commands that are being emitted to [battle controllers](battle concepts.md#battle-controller). Each buffer is divided into one slot per [battler ID](battle concepts.md#battle-id), with each slot able to hold 512 bytes of data.
+Two data buffers used to transfer commands that are being emitted to [battle controllers](./battle%20concepts.md#battle-controller). Each buffer is divided into one slot per [battler ID](./battle%20concepts.md#battle-id), with each slot able to hold 512 bytes of data.
 
 Known uses for these slots include:
 
@@ -107,13 +107,13 @@ Defined in `battle.h`, this is a raw buffer of size `BATTLE_COMMUNICATION_ENTRIE
 
 ## `gBattleControllerExecFlags`
 
-State flags for the [battle controller](battle concepts.md#battle-controller) system.
+State flags for the [battle controller](./battle%20concepts.md#battle-controller) system.
 
 | Bit indices | Total count | Meaning |
 | - | -: | :- |
-| *y* | 4 | The current battle is not a link battle, and [battler ID](battle concepts.md#battler-id) *y* has been marked for controller exec[^MarkBattlerForControllerExec] |
-| 4*x* + *y* | 16  | Player *x* has received[^MarkBattlerReceivedLinkData] link data for [battler ID](battle concepts.md#battler-id) *y* |
-| 28 + *y* | 4 | A link battle is ongoing, [battler ID](battle concepts.md#battler-id) *y* has been marked for controller exec[^MarkBattlerForControllerExec], and link data for that battler has not yet been synchronized[^MarkBattlerReceivedLinkData] |
+| *y* | 4 | The current battle is not a link battle, and [battler ID](./battle%20concepts.md#battler-id) *y* has been marked for controller exec[^MarkBattlerForControllerExec] |
+| 4*x* + *y* | 16  | Player *x* has received[^MarkBattlerReceivedLinkData] link data for [battler ID](./battle%20concepts.md#battler-id) *y* |
+| 28 + *y* | 4 | A link battle is ongoing, [battler ID](./battle%20concepts.md#battler-id) *y* has been marked for controller exec[^MarkBattlerForControllerExec], and link data for that battler has not yet been synchronized[^MarkBattlerReceivedLinkData] |
 
 [^MarkBattlerForControllerExec]: See `MarkBattlerForControllerExec` in [`battle_util.c`](/src/battle_util.c).
 
@@ -122,22 +122,22 @@ State flags for the [battle controller](battle concepts.md#battle-controller) sy
 
 ## `gBattleMons`
 
-An array of `BattlePokemon` (type defined in [`pokemon.h`](/include/pokemon.h)), one per [position on the battlefield](battle concepts.md#battler-position). [Battler IDs](battle concepts.md#battler-id) are indices into this array.
+An array of `BattlePokemon` (type defined in [`pokemon.h`](/include/pokemon.h)), one per [position on the battlefield](./battle%20concepts.md#battler-position). [Battler IDs](./battle%20concepts.md#battler-id) are indices into this array.
 
 
 ## `gBattlerControllerFuncs`
 
-An array where the indices are [battler IDs](battle concepts.md#battler-id) and the values are function pointers to be invoked (to run a [battle controller](battle concepts.md#battle-controller) for that battler) by the battle system.
+An array where the indices are [battler IDs](./battle%20concepts.md#battler-id) and the values are function pointers to be invoked (to run a [battle controller](./battle%20concepts.md#battle-controller) for that battler) by the battle system.
 
 
 ## `gBattlerPositions`
 
-An array of battlers' positions on the field; indices are [battler IDs](battle concepts.md#battler-id).
+An array of battlers' positions on the field; indices are [battler IDs](./battle%20concepts.md#battler-id).
 
 
 ## `gDisableStructs`
 
-An array of `DisableStruct` instances; indices are [battler IDs](battle concepts.md#battler-id).
+An array of `DisableStruct` instances; indices are [battler IDs](./battle%20concepts.md#battler-id).
 
 Members:
 
@@ -164,8 +164,8 @@ Members:
 | `u8:4` | `chargeTimerStartValue` |
 | `u8:4` | `tauntTimer` |
 | `u8:4` | `tauntTimer2` |
-| `u8` | `battlerPreventingEscape` | The [ID](battle concepts.md#battler-id) of an opposing battler, set in conjunction with `STATUS2_ESCAPE_PREVENTION` by the handler for `MOVE_EFFECT_PREVENT_ESCAPE`. These values together are used to ensure that the battler to which this struct belongs is unable to switch out or escape battle unless and until the battler to which this field refers is taken off the battlefield. This field is preserved when a Pokemon switches in via Baton Pass. |
-| `u8` | `battlerWithSureHit` | The [ID](battle concepts.md#battler-id) of an opposing battler, set in conjunction with `STATUS3_ALWAYS_HITS` by the battle script command `Cmd_setalwayshitflag`. These values together allow the referred-to attacker to always hit the battler to which this struct belongs. This field is preserved when a Pokemon switches in via Baton Pass. |
+| `u8` | `battlerPreventingEscape` | The [ID](./battle%20concepts.md#battler-id) of an opposing battler, set in conjunction with `STATUS2_ESCAPE_PREVENTION` by the handler for `MOVE_EFFECT_PREVENT_ESCAPE`. These values together are used to ensure that the battler to which this struct belongs is unable to switch out or escape battle unless and until the battler to which this field refers is taken off the battlefield. This field is preserved when a Pokemon switches in via Baton Pass. |
+| `u8` | `battlerWithSureHit` | The [ID](./battle%20concepts.md#battler-id) of an opposing battler, set in conjunction with `STATUS3_ALWAYS_HITS` by the battle script command `Cmd_setalwayshitflag`. These values together allow the referred-to attacker to always hit the battler to which this struct belongs. This field is preserved when a Pokemon switches in via Baton Pass. |
 | `u8` | `isFirstTurn` | <p>This field's value is non-zero during the first potentially actionable turn that a Pokemon spends on the battlefield. The reason it's a `u8` and not a `bool8` is because it gets set to 2 when a Pokemon switches in, presumably because the function[^TurnValuesCleanUp] that decrements non-zero values at the end of each turn hasn't run yet.</p><p>Battle AI script commands can query this value[^Cmd_is_first_turn_for], and it also influences hardcoded AI actions, preventing NPCs[^ShouldUseItem] from using X-Items or Guard Spec on a Pokemon they've only just switched in.</p> |
 | `u8` | `filler_17` | Unused field. |
 | `u8:1` | `truantCounter` | A cycling counter used to track when this battler's actions should be blocked by the Truant ability, should it have said ability. |
@@ -191,7 +191,7 @@ Presumably, the last item used by any participant in the battle.
 
 The `ItemBattleEffects`[^ItemBattleEffects] function is responsible for checking for and executing hold items' effects for any given battler. When invoked, the function immediately sets `gLastUsedItem` to the battler's held item, even if no effect ends up being executed.
 
-[^ItemBattleEffects]: `ItemBattleEffects` is defined in `battle_util.c`, and is responsible for checking for and executing hold items' effects for any given battler. The function is invoked with an item effect event (e.g. "on switch in"), a [battler ID](battle concepts.md#battler-id), and a boolean indicating whether we're in a part of the current turn where moves are being processed (basically). Item effect events use the `ITEMEFFECT_` enum defined in `battle_util.h`.
+[^ItemBattleEffects]: `ItemBattleEffects` is defined in `battle_util.c`, and is responsible for checking for and executing hold items' effects for any given battler. The function is invoked with an item effect event (e.g. "on switch in"), a [battler ID](./battle%20concepts.md#battler-id), and a boolean indicating whether we're in a part of the current turn where moves are being processed (basically). Item effect events use the `ITEMEFFECT_` enum defined in `battle_util.h`.
 
 
 ## `gLinkBattleSendBuffer`
@@ -240,7 +240,7 @@ The "send" task has the following behavior, using task-data fields. Task-data fi
 
 ## `gMoveSelectionCursor`
 
-This array's indices are [battler IDs](battle concepts.md#battler-id).
+This array's indices are [battler IDs](./battle%20concepts.md#battler-id).
 
 
 ## `gMoveToLearn`

@@ -99,7 +99,7 @@ The controller responded to `CHOOSEACTION` by deciding to fight, so now it has t
 The `gBattleBufferA[gActiveBattler]` buffer is laid out as follows:
 
 | Offset | Type | Description |
-| -: | :-: | :-: |
+| -: | :-: | :- |
 | 0 | `u8` | Command ID: `CONTROLLER_CHOOSEMOVE`. |
 | 1 | `bool8` | Indicates that this battle is a Double Battle. |
 | 2 | `bool8` | In single battles, indicates that the controller should not be allowed to choose the target of a `MOVE_TARGET_USER_OR_SELECTED` move (as they would normally be able to). Whether it indicates anything else, I don't know. |

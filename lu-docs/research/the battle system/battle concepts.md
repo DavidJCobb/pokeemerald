@@ -125,7 +125,7 @@ Generally speaking, `0xFF` is used to indicate "none" wherever "no battler" is a
 The battlefield is divided into four total positions for combatants:
 
 | Constant | Value | Value (binary) |
-| - | -: |
+| :-: | -: | -: |
 | `B_POSITION_PLAYER_LEFT` | 0 | `0b00` |
 | `B_POSITION_OPPONENT_LEFT` | 1 | `0b01` |
 | `B_POSITION_PLAYER_RIGHT` | 2 | `0b10` |
@@ -148,7 +148,7 @@ There are three different status enums, all defined in [`constants/battle.h`](/i
 Pokemon that attain these status conditions will continue to possess them in some form after switching out, and after the battle ends. During battle, they're stored in `BattlePokemon::status1`.
 
 | Constant | Bitcount | Bits | Description |
-| :- | -: | - | :- |
+| :- | -: | -: | :- |
 | `STATUS1_NONE`          | 0 | `0b000000000000` | Indicates the absence of any status-1. |
 | `STATUS1_SLEEP`         | 3 | `0b000000000111` | Indicates that the Pokemon is asleep, and acts as a counter denoting how many turns they will remain asleep for. |
 | `STATUS1_POISON`        | 1 | `0b000000001000` | Indicates that the Pokemon is poisoned. |

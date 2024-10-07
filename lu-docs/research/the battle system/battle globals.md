@@ -191,6 +191,8 @@ Presumably, the last item used by any participant in the battle.
 
 The `ItemBattleEffects`[^ItemBattleEffects] function is responsible for checking for and executing hold items' effects for any given battler. When invoked, the function immediately sets `gLastUsedItem` to the battler's held item, even if no effect ends up being executed.
 
+When a [battle controller](./battle%20controllers.md) chooses an item to use, their selection is written to `gLastUsedItem` by the absolutely massive `HandleTurnActionSelectionState` function in [`battle_main.c`](/src/battle_main.c) &mdash; specifically, action state `STATE_WAIT_ACTION_CASE_CHOSEN`, action `B_ACTION_USE_ITEM`.
+
 [^ItemBattleEffects]: `ItemBattleEffects` is defined in `battle_util.c`, and is responsible for checking for and executing hold items' effects for any given battler. The function is invoked with an item effect event (e.g. "on switch in"), a [battler ID](./battle%20concepts.md#battler-id), and a boolean indicating whether we're in a part of the current turn where moves are being processed (basically). Item effect events use the `ITEMEFFECT_` enum defined in `battle_util.h`.
 
 

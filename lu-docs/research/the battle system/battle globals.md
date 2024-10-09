@@ -25,8 +25,8 @@ Known uses for these slots include:
 
 For the battle controller system:
 
-* `gBattleBufferA` is used to hold inbound [messages][link-battle-controller].
-* `gBattleBufferB` is used to hold outbound messages.
+* `gBattleBufferA` is used to hold one inbound [messages][link-battle-controller] for each battle controller, for the controllers to read and act on.
+* `gBattleBufferB` is used to hold one outbound message from each battle controller, for the battle engine to read and act on.
 
 For link battles, data may be copied from `gLinkBattleRecvBuffer` into either of the two battle buffers by `Task_HandleCopyReceivedLinkBuffersData` in [`battle_controllers.c`](/src/battle_controllers.c).
 

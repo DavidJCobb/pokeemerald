@@ -35,7 +35,7 @@ Note that "left" and "right" are described relative to each side. The opponent i
 
 ### Hit markers
 
-A set of flags that are maintained globally, with some being scoped to the current turn; others, the current action; others, the rest of a battle.
+A set of flags that are maintained globally, with some being scoped to the current turn; others, the current action; others, the rest of a battle. As of this writing, every hitmarker that I've checked so far has been meant to influence the operation of the battle script engine in some way (e.g. altering the behavior of commands, or controlling whether certain scripts are invoked from hardcoded C functions), so these may be "battle script flags."
 
 All hitmarkers are cleared at the start of a battle.
 

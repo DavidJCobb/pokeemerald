@@ -1,5 +1,6 @@
 
 [link-battle-controller]: ./battle%20controllers.md
+[link-battle-controller-emit]: ./battle%20controllers.md#emit
 [link-battler-id]: ./battle%20concepts.md#battler-id
 [link-latent-functions]: ./battle%20concepts.md#latent
 
@@ -15,7 +16,7 @@ This means, then, that up to five latent functions may be running simultaneously
 * Latent function for battler 2's battle controller
 * Latent function for battler 3's battle controller
 
-The `gBattleControllerExecFlags` bitmask indicates when a battle controller has work to do. The controller callbacks are always invoked, but will generally return immediately if the flag for `gActiveBattler` isn't set. When the battle engine wants to send messages to the controllers, it'll generally [emit](./battle%20controllers.md#emit) the message to `BUFFER_A` and call `MarkBattlerForControllerExec(gActiveBattler)`. When the battle engine wants to wait until all outstanding messages to controllers have been processed, it'll wait (`return`) until `gBattleControllerExecFlags` is all zeroes.
+The `gBattleControllerExecFlags` bitmask indicates when a battle controller has work to do. The controller callbacks are always invoked, but will generally return immediately if the flag for `gActiveBattler` isn't set. When the battle engine wants to send messages to the controllers, it'll generally [emit][link-battle-controller-emit] the message to `BUFFER_A` and call `MarkBattlerForControllerExec(gActiveBattler)`. When the battle engine wants to wait until all outstanding messages to controllers have been processed, it'll wait (`return`) until `gBattleControllerExecFlags` is all zeroes.
 
 During local battles, controllers clear the controller-exec flag for a battler when they've finished processing inbound messages for it. During link battles, however, they do something different: they send their player ID over the link[^sending-player-id], and then overwrite the last received message's identifier with `CONTROLLER_TERMINATOR_NOP`. (Overwriting the command with a nop means that until the controller-exec flag is cleared, the controller will just keep sending their player ID over the link as a completion signal, on every frame.)
 
@@ -27,11 +28,11 @@ The bits in `gBattleControllerExecFlags` have the following meaning:
 
 | Set | Bit indices | Total count | Summary | Meaning |
 | :-: | :-: | -: | :- | :- |
-| A | <var>y</var> | 4 | Local-exec flag | **The current battle is not a link battle, and [battler ID][link-battler-id] <var>y</var> has been marked for controller exec.** During local battles, the flag is set by `MarkBattlerForControllerExec` and manually cleared by the battler's controller when the controller has finished processing an inbound message. |
+| A | <var>y</var> | 4 | Local-exec flag | **The current battle is not a link battle, and [battler ID][link-battler-id] <var>y</var> has been marked for controller exec.** During local battles, the flag is set by `MarkBattlerForControllerExec` and manually cleared by the battler's controller when the controller has finished processing an inbound message. These are the flags that battle controllers react to &mdash; the flags that tell their callback, "Hey, there's an inbound message that you need to handle." |
 | ABCD | 4<var>x</var> + <var>y</var> | 16 | Message-available flag | <p>**We have received inbound message data for [battler ID][link-battler-id] <var>y</var>'s battle controller, and this data is yet to be processed on player <var>x</var>'s machine.** The flags for battler <var>y</var> (all players) are set[^MarkBattlerReceivedLinkData] when we receive data destined for `BUFFER_A`, at the time the data is copied to <code>gBattleBufferA[<var>y</var>]</code>. The flag for player <var>x</var> battler <var>y</var> cleared when the battle controller running for that battler on that machine finishes processing the inbound message (it will at that point send a message for buffer ID 2 containing the multiplayer ID for player <var>x</var>, and receipt of this message clears the flag).</p><p>Note that the message-available flags for player 0 overlap the local-exec flags; this means that battle controllers will run locally whenever inbound message data is received. This isn't a problem: battle controllers for link participants are designed as no-ops. When Alice and Bob battle, the link-opponent controller on Alice's machine does nothing, while the local-player controller on Bob's machine sends his commands via `BUFFER_B`, to be acted on by the battle engine both locally and on Alice's machine.</p> |
 | WXYZ | 28 + <var>y</var> | 4 | Link-exec flag | A link battle is ongoing and [battler ID][link-battler-id] <var>y</var> has been marked for controller exec[^MarkBattlerForControllerExec], but inbound message data for that battler has not yet been synchronized[^MarkBattlerReceivedLinkData]. During link battles, this flag is set by `MarkBattlerForControllerExec` (instead of the local-exec flag), and cleared[^MarkBattlerReceivedLinkData] when we receive an inbound message for this battler. |
 
-The `MarkBattlerForControllerExec` function is used to indicate that a battler's controller should respond to an inbound message, though during link battles, it won't immediately take effect until the inbound message data is actually received. During link battles, `Task_HandleCopyReceivedLinkBuffersData` is responsible for receiving battle controller communications &mdash; specifically, inbound message data (`BUFFER_A`), outbound message data (`BUFFER_B`), and the completion signals (buffer ID 2) for each player's battle controllers. It updates the exec-flags in response to this received data.
+The `MarkBattlerForControllerExec` function is called after [emitting][link-battle-controller-emit] a message to a battle controller, and used to indicate that the controller should respond to an inbound message, though during link battles, it won't immediately take effect until the inbound message data is actually received. During link battles, `Task_HandleCopyReceivedLinkBuffersData` is responsible for receiving battle controller communications &mdash; specifically, inbound message data (`BUFFER_A`), outbound message data (`BUFFER_B`), and the completion signals (buffer ID 2) for each player's battle controllers. It updates the exec-flags in response to this received data, in such a manner that the battle controller then responds.
 
 [^MarkBattlerForControllerExec]: See `MarkBattlerForControllerExec`, which sets either a local-exec flag or a link-exec flag depending on whether the battle is a link battle. Even the controllers for the local player will use the link-exec flags in link battles.
 
@@ -39,20 +40,67 @@ The `MarkBattlerForControllerExec` function is used to indicate that a battler's
 
 ## Battle engine latent functions
 
-The `gBattleMainFunc` pointer may be set to any of the following functions:
+The `gBattleMainFunc` pointer can be set to a variety of latent functions. Several functions are set as part of a chain &mdash; long-running processes like "set up the start of a battle" are split into multiple latent functions in order to keep them manageable.
+
+The "top-level" latent functions are:
 
 | Function | File | Explanation |
 | :- | :- | :- |
-| `BattleIntroGetMonsData` | [`battle_main.c`](/src/battle_main.c) | Written by `BattleBeginIntro`. |
-| `BattleIntroPrepareBackgroundSlide` | [`battle_main.c`](/src/battle_main.c) | Written by `BattleIntroGetMonsData`. |
-| `BattleIntroDrawTrainersOrMonsSprites` | [`battle_main.c`](/src/battle_main.c) | Written by `BattleIntroPrepareBackgroundSlide`. |
+| `BattleIntroGetMonsData` | [`battle_main.c`](/src/battle_main.c) | Written by `BattleBeginIntro`, the function to call when the battle needs to start up. |
+| `HandleTurnActionSelectionState` | [`battle_main.c`](/src/battle_main.c) | First written by the end of the battle intro process. |
+| `RunBattleScriptCommands_PopCallbacksStack` | [`battle_main.c`](/src/battle_main.c) | Written by `BattleScriptExecute`, the typical entry point used to execute battle scripts, which also pushes the previous `gBattleMainFunc` onto a stack within the battle script engine; when script execution finishes, that callback will be automatically restored. |
+
+Latent function sequences:
+
+* Battle intro (triggered by [`BeginBattleIntro`](#BeginBattleIntro)
+  * `BattleIntroGetMonsData`
+  * `BattleIntroPrepareBackgroundSlide`
+  * `BattleIntroDrawTrainersOrMonsSprites`
+  * `BattleIntroDrawPartySummaryScreens`
+  * If trainer battle:
+    * `BattleIntroPrintTrainerWantsToBattle`
+    * `BattleIntroPrintOpponentSendsOut`
+    * `BattleIntroOpponent1SendsOutMonAnimation`
+    * If Multi Battle or 1v2 Battle: `BattleIntroOpponent2SendsOutMonAnimation`
+    * `BattleIntroRecordMonsToDex`
+  * If wild battle:
+    * `BattleIntroPrintWildMonAttacked`
+  * `BattleIntroPrintPlayerSendsOut`
+  * `BattleIntroPlayer1SendsOutMonAnimation`
+  * If Mutli Battle: `BattleIntroPlayer2SendsOutMonAnimation`
+  * `TryDoEventsBeforeFirstTurn`
+    * If Battle Arena, invoke battle script `BattleScript_ArenaTurnBeginning`
+  * Advance to handling turn actions
+* Handling turn actions
+  * [`HandleTurnActionSelectionState`](#HandleTurnActionSelectionState)
+  * [`SetActionsAndBattlersTurnOrder`](#SetActionsAndBattlersTurnOrder)
+  * `CheckFocusPunch_ClearVarsBeforeTurnStarts`
+    * Potentially invoke a battle script via `BattleScriptExecute`
+  * `RunTurnActionsFunctions`
+  * `sEndTurnFuncsTable[gBattleOutcome & 0x7F]`
+    * One of:
+      * `HandleEndTurn_ContinueBattle`
+        * `BattleTurnPassed`
+        * `HandleTurnActionSelectionState` (return to handling turn actions)
+      * `HandleEndTurn_BattleWon`, ...`_BattleLost`, ...`_RanFromBattle`, or ...`_MonFled`
+        * Clear `gCurrentActionFuncId` and set the battle script instruction pointer
+        * Fall through to `HandleEndTurn_FinishBattle`
+      * `HandleEndTurn_FinishBattle`
+        * Run the battle script manually until it sets `gCurrentActionFuncId` to `B_ACTION_TRY_FINISH` or `B_ACTION_FINISHED`
+        * `FreeResetData_ReturnToOvOrDoEvolutions`
+          * If a Pokemon leveled up during the battle and the outcome is `B_OUTCOME_WON`: `TryEvolvePokemon`
+            * If a Pokemon is going to evolve: `WaitForEvoSceneToFinish`
+          * `ReturnFromBattleToOverworld`
+* [Battle script execution](#execution-of-a-battle-script) (triggered by `BattleScriptExecute`)
+  * `RunBattleScriptCommands_PopCallbacksStack`
+  * Return to previous latent function (as stored by `BattleScriptExecute`)
 
 ### `BeginBattleIntro`
 
-* Set callback to latent function `BattleIntroGetMonsData`. That function sends `CONTROLLER_GETMONDATA` messages to all battle controllers, and advances to `BattleIntroPrepareBackgroundSlide` after all battle controllers have responded. The responses will be present in `gBattleBufferB`, but they won't be read immediately; a later function will read them.
-* Latent function `BattleIntroPrepareBackgroundSlide` sends `CONTROLLER_INTROSLIDE` to the battle controller for battler 0, and advances to `BattleIntroDrawTrainersOrMonsSprites` after the battle controller has responded.
+* Set callback to latent function `BattleIntroGetMonsData`. That function [emits][link-battle-controller-emit] `CONTROLLER_GETMONDATA` messages to all battle controllers, and advances to `BattleIntroPrepareBackgroundSlide` after all battle controllers have responded. The responses will be present in `gBattleBufferB`, but they won't be read immediately; a later function will read them.
+* Latent function `BattleIntroPrepareBackgroundSlide` emits `CONTROLLER_INTROSLIDE` to the battle controller for battler 0, and advances to `BattleIntroDrawTrainersOrMonsSprites` after the battle controller has responded.
 * Latent function `BattleIntroDrawTrainersOrMonsSprites` runs code for each battler on the field...
-  * For Safari Zone battles, it zeroes the `gBattleMons` structs for all Pokemon on `B_SIDE_PLAYER`.
+  * For Safari Zone battles, it zeroes the `gBattleMons` structs for all Pokemon on `B_SIDE_PLAYER`, but doesn't set the absent-battler flags, such that the player has two ?????????? deployed onto the battlefield. This means that the player can still select actions as normal, but their Pokemon's abilities (e.g. Intimidate) and hold items won't activate.
   * For all other battle types, `gBattleMons` is initialized as appropriate, extracting from `gBattleBufferB` the data that the battle controllers previously sent in response to `CONTROLLER_GETMONDATA`.
   * For the battler at `B_POSITION_PLAYER_LEFT`, we emit a `CONTROLLER_DRAWTRAINERPIC` message.
   * For the battler at `B_POSITION_OPPONENT_LEFT`...
@@ -67,7 +115,7 @@ The `gBattleMainFunc` pointer may be set to any of the following functions:
     * Latent function `BattleIntroPrintOpponentSendsOut` emits a `CONTROLLER_PRINTSTRING` message to one of the controllers &mdash; usually the one for `B_POSITION_OPPONENT_LEFT`, but for recorded link battles where the recording player isn't the [Link Master](./battle%20concepts.md#link-master), for `B_POSITION_PLAYER_LEFT` instead. We then advance immediately to `BattleIntroOpponent1SendsOutMonAnimation`.
     * Latent function `BattleIntroOpponent1SendsOutMonAnimation` (redundantly?) waits until all extant battle controllers are quiet, and then plays the send-out animation for the lefthand-side opponent, by emitting a `CONTROLLER_INTROTRAINERBALLTHROW` message to the appropriate battle controller (same logic as previous). It then advances immediately &mdash; either to `BattleIntroOpponent2SendsOutMonAnimation`, for Multi Battles or 1v2 Battles; or to `BattleIntroRecordMonsToDex`.
       * Latent function `BattleIntroOpponent2SendsOutMonAnimation` emits `CONTROLLER_INTROTRAINERBALLTHROW` for the righthand-side opponent (picking the controller similarly to the above) and then advances immediately to `BattleIntroRecordMonsToDex`.
-    * Latelt function `BattleIntroRecordMonsToDex` waits until all controllers are quiet, and then loops over each battler. If the current battle isn't recorded, in the Battle Frontier, in Trainer Hill, a link battle, or an eReader battle, then it sets the "seen" flag for the battlers on `B_SIDE_OPPONENT`. Once its work is done, it advances to `BattleIntroPrintPlayerSendsOut`.
+    * Latent function `BattleIntroRecordMonsToDex` waits until all controllers are quiet, and then loops over each battler. If the current battle isn't recorded, in the Battle Frontier, in Trainer Hill, a link battle, or an eReader battle, then it sets the "seen" flag for the battlers on `B_SIDE_OPPONENT`. Once its work is done, it advances to `BattleIntroPrintPlayerSendsOut`.
   * Wild branch:
     * Latent function `BattleIntroPrintWildMonAttacked` waits until all extant battle controllers are quiet, and then emits a `CONTROLLER_PRINTSTRING` message to `B_POSITION_OPPONENT_LEFT` and advances immediately to `BattleIntroPrintPlayerSendsOut`.
 * Latent function `BattleIntroPrintPlayerSendsOut` emits a `CONTROLLER_PRINTSTRING` message to one of the controllers &mdash; usually the one for `B_POSITION_PLAYER_LEFT`, but for recorded link battles where the recording player isn't the [Link Master](./battle%20concepts.md#link-master), for `B_POSITION_OPPONENT_LEFT` instead. We then advance immediately to `BattleIntroPlayer1SendsOutMonAnimation`.
@@ -100,6 +148,8 @@ The `gBattleMainFunc` pointer may be set to any of the following functions:
 #### `HandleTurnActionSelectionState`
 Each battler must select an action. Once all battlers have selected an action, we advance to `SetActionsAndBattlersTurnOrder`. We track the number of battlers who have selected an action in `gBattleCommunication[ACTIONS_CONFIRMED_COUNT]`, comparing it to `gBattlersCount`.
 
+This function coordinates the entire process of a battler committing to an action, [emitting][link-battle-controller-emit] the appropriate messages to the battler's [battle controller][link-battle-controller] and dealing with the replies.
+
 The overall action states are:
 
 <table>
@@ -126,14 +176,14 @@ The overall action states are:
          <td><code>STATE_WAIT_ACTION_CHOSEN</code></td>
          <td>
             <p>The battler's battle controller has been asked to select an action, and we are now waiting for a response. We wait until all of the <code>gBattleControllerExecFlags</code> for this battler are cleared, and until the link-exec flags for all battlers are cleared. Then, we assume that a response is available in <code>gBattleBufferB</code>.</p>
-            <p>Once that response is received, we check the action it contains. For actions with a sub-case, we emit the appropriate battle controller commands (e.g. if the player chose to use a move, we emit <code>CONTORLLER_CHOOSEMOVE</code>), and for actions without, we just carry the action out. By default, actions will advance us to <code>STATE_WAIT_ACTION_CONFIRMED_STANDBY</code> (not directly, but rather by incrementing the state variable).</p>
+            <p>Once that response is received, we check the action it contains. For actions with a sub-case, we emit the appropriate battle controller commands (e.g. if the player chose to use a move, we emit <code>CONTROLLER_CHOOSEMOVE</code>), and for actions without, we just carry the action out. By default, actions will advance us to <code>STATE_WAIT_ACTION_CASE_CHOSEN</code> (not directly, but rather by incrementing the state variable).</p>
          </td>
       </tr>
       <tr>
          <td><code>STATE_WAIT_ACTION_CASE_CHOSEN</code></td>
          <td>
             <p>The battler's battle controller selected an action, and has since been asked to select a sub-case of that action (e.g. a specific move after selecting the use-move action). We need to wait until they give a response, and then handle it.</p>
-            <p>First, we wait until all of the <code>gBattleControllerExecFlags</code> for this battler are cleared, and until the link-exec flags for all battlers are cleared. Then, we respond to <code>gBattleBufferB[gActiveBattler]</code>'s contents differently depending on the action. Nearly all actions advance to <code>STATE_WAIT_ACTION_CONFIRMED_STANDBY</code> when finished, save for a few that kick the battler back to <code>STATE_BEFORE_ACTION_CHOSEN</code> if the controller's choice is invalid, and a few cases where picking a move that isn't allowed (e.g. due to Disable) leads to <code>STATE_SELECTION_SCRIPT</code>.</p>
+            <p>First, we wait until all of the <code>gBattleControllerExecFlags</code> for this battler are cleared, and until the link-exec flags for all battlers are cleared. Then, we respond to <code>gBattleBufferB[gActiveBattler]</code>'s contents differently depending on the action. Nearly all actions advance to <code>STATE_WAIT_ACTION_CONFIRMED_STANDBY</code> (by incrementing the state variable) when finished, save for a few that kick the battler back to <code>STATE_BEFORE_ACTION_CHOSEN</code> if the controller's choice is invalid, and a few cases dealt with by <code>TrySetCantSelectMoveBattleScript()</code> where picking a move that isn't allowed (e.g. due to Disable) leads through <code>STATE_SELECTION_SCRIPT</code> to <code>STATE_WAIT_ACTION_CHOSEN</code>.</p>
          </td>
       </tr>
       <tr>
@@ -175,7 +225,7 @@ The overall action states are:
 
 Further information on `STATE_WAIT_ACTION_CONFIRMED_STANDBY` can be found at this footnote. I can't put it in the table because Markdown doesn't work inside of more complex HTML structures, but paragraphs don't work (well) in GitHub Markdown tables.[^STATE_WAIT_ACTION_CONFIRMED_STANDBY]
 
-[^STATE_WAIT_ACTION_CONFIRMED_STANDBY]: <p>We wait until all of the `gBattleControllerExecFlags` for this battler are cleared, and until the link-exec flags for all battlers are cleared. Then, we emit a `CONTROLLER_LINKSTANDBYMSG` message (even in local battles) and advance to `STATE_WAIT_ACTION_CONFIRMED`.</p><p>The <code>CONTROLLER_LINKSTANDBYMSG</code> message implies the behavior of <code>CONTROLLER_ENDBOUNCE</code>, is only meant to be acted on by the local player controller, and only displays a "Link standby..." textbox when specific parameters are sent. Here, we'll send those parameters to the controller if: this is a Multi Battle or isn't a Double Battle (i.e. is a Single Battle); or the current battler is on the righthand flank; or the current battler is absent. These are the conditions in which a player may finish making all of their selections and now potentially have to wait on other players:</p><ul><li>The player can only end up in control of the right flank if they're in a Double Battle, or if they're in a Link Multi Battle and they aren't the <a href="./battle concepts.md#link-master">link master</a>. Either way, when they commit to a right-flank action, that's the last decision they get to make until the next turn.</li><li>The player can only have a Pokemon absent on the field if: they're in a Double Battle, and all but one of their Pokemon are fainted or unusable in battle; or they're in a Multi Battle, and all of their Pokemon are fainted but their ally is still standing. Absent Pokemon only lead to <code>STATE_WAIT_ACTION_CONFIRMED_STANDBY</code> in Multi Battles; otherwise they skip to <code>STATE_WAIT_ACTION_CONFIRMED</code>. In a Multi Battle, if all of the player's Pokemon are down, then the player has no choices to make.</li></ul><p>So... why don't we see "Link standby..." in local Double Battles? Well, because <code>PrintLinkStandbyMsg</code> checks if this is a link battle before actually displaying anything.</p>
+[^STATE_WAIT_ACTION_CONFIRMED_STANDBY]: <p>We wait until all of the <code>gBattleControllerExecFlags</code> for this battler are cleared, and until the link-exec flags for all battlers are cleared. Then, we emit a <code>CONTROLLER_LINKSTANDBYMSG</code> message (even in local battles) and advance to <code>STATE_WAIT_ACTION_CONFIRMED</code>.</p><p>The <code>CONTROLLER_LINKSTANDBYMSG</code> message implies the behavior of <code>CONTROLLER_ENDBOUNCE</code>, is only meant to be acted on by the local player controller, and only displays a "Link standby..." textbox when specific parameters are sent. Here, we'll send those parameters to the controller if: this is a Multi Battle or isn't a Double Battle (i.e. is a Single Battle); or the current battler is on the righthand flank; or the current battler is absent. These are the conditions in which a player may finish making all of their selections and now potentially have to wait on other players:</p><ul><li>The player can only end up in control of the right flank if they're in a Double Battle, or if they're in a Link Multi Battle and they aren't the <a href="./battle concepts.md#link-master">link master</a>. Either way, when they commit to a right-flank action, that's the last decision they get to make until the next turn.</li><li>The player can only have a Pokemon absent on the field if: they're in a Double Battle, and all but one of their Pokemon are fainted or unusable in battle; or they're in a Multi Battle, and all of their Pokemon are fainted but their ally is still standing. Absent Pokemon only lead to <code>STATE_WAIT_ACTION_CONFIRMED_STANDBY</code> in Multi Battles; otherwise they skip to <code>STATE_WAIT_ACTION_CONFIRMED</code>. In a Multi Battle, if all of the player's Pokemon are down, then the player has no choices to make.</li></ul><p>So... why don't we see "Link standby..." in local Double Battles? Well, because <code>PrintLinkStandbyMsg</code> checks if this is a link battle before actually displaying anything.</p>
 
 #### `SetActionsAndBattlersTurnOrder`
 This function is responsible for determining the order in which battlers' actions should occur. It runs as one of the `gBattleMainFunc` callbacks, but it always runs start to finish: it's not latent, but it could be made so if desired.
@@ -211,4 +261,4 @@ Battle scripts can be run from multiple places when necessary. The usual entry p
   
 [^B_ACTION_FINISHED]: `B_ACTION_FINISHED` is written to `gCurrentActionFuncId` to indicate that the current turn action is finished. This happens if `gBattleOutcome` is set to a non-zero value (with this potentially being detected at various points during the turn/action logic), or if the `finishaction` or `finishturn` battle script commands run, with the latter also setting `gCurrentTurnActionNumber` to `gBattlersCount`.
 
-[^B_ACTION_TRY_FINISH]: <p>`B_ACTION_TRY_FINISH` is written to `gCurrentActionFuncId` in response to the script commands `end` and `end2`. Additionally, when any Pokemon tries to switch out while an attacker has used Pursuit on it (and is not asleep, frozen, fainted, or blocked by Truant), `jumpifnopursuitswitchdmg` writes `B_ACTION_TRY_FINISH` as the attacker's action. Switch-outs are always processed before most attacks, so this preempts Pursuit's non-boosted damage. The unused `pursuitdoubles` command also writes `B_ACTION_TRY_FINISH`, likely with similar intent.</p><p>The `B_ACTION_TRY_FINISH` action itself just invokes the latent function `HandleFaintedMonActions`, progressing to `B_ACTION_FINISHED` when that function completes.</p>
+[^B_ACTION_TRY_FINISH]: <p><code>B_ACTION_TRY_FINISH</code> is written to <code>gCurrentActionFuncId</code> in response to the script commands <code>end</code> and <code>end2</code>. Additionally, when any Pokemon tries to switch out while an attacker has used Pursuit on it (and is not asleep, frozen, fainted, or blocked by Truant), <code>jumpifnopursuitswitchdmg</code> writes <code>B_ACTION_TRY_FINISH</code> as the attacker's action. Switch-outs are always processed before most attacks, so this preempts Pursuit's non-boosted damage. The unused <code>pursuitdoubles</code> command also writes <code>B_ACTION_TRY_FINISH</code>, likely with similar intent.</p><p>The <code>B_ACTION_TRY_FINISH</code> action itself just invokes the latent function <code>HandleFaintedMonActions</code>, progressing to <code>B_ACTION_FINISHED</code> when that function completes.</p>

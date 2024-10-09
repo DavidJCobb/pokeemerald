@@ -118,8 +118,8 @@ For completeness' sake, here's a list of places that can emit this message:
 
 | Emitter | Source file | Reason |
 | :- | :- | :- |
-| `BattleIntroGetMonsData` | [`battle_main.c`](/src/battle_main.c) | Emits this message using `REQUEST_ALL_BATTLE` to retrieve each Pokemon's data on startup. The caller is latent, retrieving data for one Pokemon per frame. |
-| `PokemonUseItemEffects` | [`pokemon.c`](/src/pokemon.c) | When the player uses a healing item on a Pokemon during a battle, this message is emitted for the target Pokemon. |
+| `BattleIntroGetMonsData` | [`battle_main.c`](/src/battle_main.c) | Emits this message using `REQUEST_ALL_BATTLE` to retrieve each Pokemon's data on startup. The caller is latent, retrieving data for one Pokemon per frame. The controller's response is not read and handled immediately, but rather by `BattleIntroDrawTrainersOrMonsSprites` later in the battle intro process. |
+| `PokemonUseItemEffects` | [`pokemon.c`](/src/pokemon.c) | When the player uses a healing item (`ITEM4_HEAL_HP`) that isn't a Revive on a Pokemon during a battle, `PokemonUseItemEffects` manually updates `gBattleMons[battlerId].hp` and then emits this message for the target battler. It seems like the response is never actually read, however: the player would use items during the local player controller's response to `CONTROLLER_OPENBAG`, so the battle engine would be waiting for a response to that message: it both isn't checking for, and has no way to recognize, a response to `CONTROLLER_GETMONDATA`. The battle engine knows a response to `CONTROLLER_OPENBAG` has been sent when the battle controller clears the relevant exec flag, so in practice, the battle controller's response to `CONTROLLER_OPENBAG` would overwrite the response to `CONTROLLER_GETMONDATA` in this situation. |
 
 ### `CONTROLLER_GETRAWMONDATA`
 An unused and apparently broken command, unless it was meant for debugging, somehow.

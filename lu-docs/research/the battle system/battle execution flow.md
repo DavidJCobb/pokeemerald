@@ -5,7 +5,7 @@
 
 # Battle execution flow
 
-The core frame handler for battles is `BattleMainCB1` in [`battle_main.c`](/src/battle_main.c). This handler calls the `gBattleMainFunc` function pointer, which is likely to be a [latent function][link-latent-functions], before then calling the [battle controller][link-battler-controller] function pointers for each active battler (setting `gActiveBattler` to the [battler ID][link-battler-id] it's invoking the pointer for).
+The core frame handler for battles is `BattleMainCB1` in [`battle_main.c`](/src/battle_main.c). This handler calls the `gBattleMainFunc` function pointer, which is likely to be a [latent function][link-latent-functions], before then calling the [battle controller][link-battle-controller] function pointers for each active battler (setting `gActiveBattler` to the [battler ID][link-battler-id] it's invoking the pointer for).
 
 This means, then, that up to five latent functions may be running simultaneously:
 

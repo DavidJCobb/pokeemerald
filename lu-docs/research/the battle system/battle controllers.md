@@ -5,9 +5,9 @@ A <dfn>battle controller</dfn> is a trainer participating in an ongoing battle. 
 
 Because battle controllers are tied to positions on the battlefield, the abstraction may not work the way you expect. For example, you might expect most player-facing GUI to be displayed by the local-player controller. However, some GUI elements are tied to battlefield positions, such as making a Pokemon's sprite flash when it takes damage, playing a Pokemon's cry when it faints, or even showing a trainer's party summary (the Poke Balls you see telling you how many Pokemon an opponent has); and so these would actually be performed by the NPC-opponent or link-opponent controllers.
 
-Similarly, some battle controller commands may not immediately be intuitive. There are commands which instruct a battle controller to load and display a given battler's sprite, for example. Why are these handled by the controller, and not by the core battle engine? The Safari Zone is one reason. When facing off against Wild Pokemon in the Safari Zone, the player's half of the battlefield uses a special Safari Zone controller. Under the hood, the player sends Pokemon out to battle as normal, but the Safari Zone controller refuses to load or display any of the associated graphics, in order to create the illusion that the player is facing off against the Wild Pokemon alone.
+Similarly, some battle controller commands may not immediately be intuitive. There are commands which instruct a battle controller to load and display a given battler's sprite, for example. Why are these handled by the controller, and not by the core battle engine? The Safari Zone is one reason. When facing off against Wild Pokemon in the Safari Zone, the player's half of the battlefield uses a special Safari Zone controller. Under the hood, the player's side of the field has all-zero Pokemon data (which is not the same as nothing being there), but the Safari Zone controller refuses to load or display any of the associated graphics, in order to create the illusion that the player is facing off against the Wild Pokemon alone.
 
-See, as far as the battle engine is concerned, you are *always* using your Pokemon to battle some opposing Pokemon. If your battle controller chooses to hide that fact from you, while also only ever allowing you to select actions specific to the Safari Zone, that's not the battle system's business. Similarly, if the Wild Pokemon's battle controller checks the current battle type, sees that it's a Safari Zone battle, and chooses never to actually attack your Pokemon (which are there even if you can't see them), then that's all fine and dandy as far as the battle system is concerned, and the system doesn't care why those decisions are being made.
+See, as far as the battle engine is concerned, you are *always* using Pokemon to battle some opposing Pokemon. If your battle controller chooses to hide that fact from you, while also only ever allowing you to select actions specific to the Safari Zone, that's not the battle system's business. Similarly, if the Wild Pokemon's battle controller checks the current battle type, sees that it's a Safari Zone battle, and chooses never to actually attack your (zeroed-out) Pokemon, then that's all fine and dandy as far as the battle system is concerned, and the system doesn't care why those decisions are being made.
 
 
 ## Vanilla battle controllers
@@ -28,24 +28,23 @@ The following battle controllers exist:
 
 ## Control flow
 
-The various `BtlController_Emit<Whatever>` functions in [`battle_controllers.h`](/include/battle_controllers.h)/[`.c`](/src/battle_controllers.c) use `sBattleBuffersTransferData` to build commands and then send them via `PrepareBufferDataTransfer`. When these commands are eventually received, they are then dispatched to the active battle controller, which must obey them. How are they dispatched?
+<a name="emit"></a>The various `BtlController_Emit<Whatever>` functions in [`battle_controllers.h`](/include/battle_controllers.h)/[`.c`](/src/battle_controllers.c) use `sBattleBuffersTransferData` to build commands and then send them via `PrepareBufferDataTransfer`. When these commands are eventually received, they are then dispatched to the active battle controller, which must obey them. How are they dispatched?
 
 Each [battler ID](./battle%20concepts.md#battler-id) has an associated callback function pointer for battle controllers. On every frame, `BattleMainCB1` invokes these functions for every battler, setting `gActiveBattler` to the battler in question.
 
 Generally, when a controller is idle, its callback pointer is set to a function with a name like `<ThisControllerName>BufferRunCommand()`. This function checks whether the `gBattleControllerExecFlags` flag is set for `gActiveBattler`. If the flag is set, then `gBattleBufferA[gActiveBattler][0]` is treated as a [command](#commands) to run, and the appropriate function is called to handle that command. This function may be a [latent function](./battle%20concepts.md#latent), doing its work over multiple frames by overwriting the battler's callback pointer. When the command is finally handled, the controller will call `<ThisControllerName>BufferExecCompleted()`, which will set the battler's callback pointer back to `<ThisControllerName>BufferRunCommand`, before either transmitting data over the link cable (if the current battle is a Link Battle) or clearing the `gBattleControllerExecFlags` flag for `gActiveBattler`.
 
-## Commands
+## Commands/messages
+<a name="commands"></a><a name="messages"></a>
 
-Battle controllers need to be able to handle the following commands. Most commands are "inbound:" they are emitted by various parts of the battle engine, and the controller is expected to react to them in some way. Some commands are "outbound:" the controller itself emits them in response to commands it has received.
-
-(Perhaps "message" would've been a better word than "command.")
+These are best thought of as messages, but are referred to in the codebase as "commands." Most messages are "inbound:" they are emitted by various parts of the battle engine, and the controller is expected to react to them in some way. Some messages are "outbound:" the controller itself emits them in response to messages it has received.
 
 | Command | Direction | Description |
 | :- | :-: | :- |
-| CONTROLLER_GETMONDATA           | Inbound | |
-| CONTROLLER_GETRAWMONDATA        | Inbound | |
-| CONTROLLER_SETMONDATA           | Inbound | |
-| CONTROLLER_SETRAWMONDATA        | Inbound | |
+| [CONTROLLER_GETMONDATA](#CONTROLLER_GETMONDATA) | Inbound | Retrieve and send the data for a Pokemon. |
+| [CONTROLLER_GETRAWMONDATA](#CONTROLLER_GETRAWMONDATA) | Inbound | Unused. Copy raw bytes from a Pokemon data structure (without decrypting them or anything) and respond to them. |
+| CONTROLLER_SETMONDATA           | Inbound | Modify the data for a Pokemon. |
+| CONTROLLER_SETRAWMONDATA        | Inbound | Unused. Overwrite a `BattlePokemon` with raw bytes. |
 | CONTROLLER_LOADMONSPRITE        | Inbound | |
 | CONTROLLER_SWITCHINANIM         | Inbound | |
 | CONTROLLER_RETURNMONTOBALL      | Inbound | Play the animations for returning `gActiveBattler` to its Poke Ball, as part of switching it out of battle. |
@@ -62,9 +61,9 @@ Battle controllers need to be able to handle the following commands. Most comman
 | CONTROLLER_PRINTSTRINGPLAYERONLY | Inbound | Similar to `CONTROLLER_PRINTSTRING`, except the string should only be displayed for the player: if `gActiveBattler` is not on `B_SIDE_PLAYER`, then do nothing. |
 | [CONTROLLER_CHOOSEACTION](#CONTROLLER_CHOOSEACTION) | Inbound | The controller should decide what kind of action they're going to perform &mdash; not the specifics; just what kind. In typical battles, this is the top-level menu (Fight/Pokemon/Bag/Run), but other important actions are available here as well. |
 | CONTROLLER_YESNOBOX | Inbound | The controller should respond to a yes/no dialog box. To make your choice, call `BtlController_EmitTwoReturnValues(BUFFER_B, choice, 0)`, where `choice` is `0xD` for yes or `0xE` for no. |
-| [CONTROLLER_CHOOSEMOVE](#CONTROLLER_CHOOSEMOVE) | Inbound | The controller responded to `CHOOSEACTION` by deciding to fight, so now it has to either pick a move to use and a target to use it on, or back out to the action menu and pick an action again. |
-| [CONTROLLER_OPENBAG](#CONTROLLER_OPENBAG) | Inbound | The controller responded to `CHOOSEACTION` by deciding to use an item, so now it has to either pick an item, or back out to the action menu and pick an action again. |
-| CONTROLLER_CHOOSEPOKEMON            | Inbound | |
+| [CONTROLLER_CHOOSEMOVE](#CONTROLLER_CHOOSEMOVE)           | Inbound | The controller responded to `CHOOSEACTION` by deciding to fight, so now it has to either pick a move to use and a target to use it on, or back out to the action menu and pick an action again. |
+| [CONTROLLER_OPENBAG](#CONTROLLER_OPENBAG)                 | Inbound | The controller responded to `CHOOSEACTION` by deciding to use an item, so now it has to either pick an item, or back out to the action menu and pick an action again. |
+| [CONTROLLER_CHOOSEPOKEMON](#CONTROLLER_CHOOSEPOKEMON)     | Inbound | The controller responded to `CHOOSEACTION` by deciding to switch Pokemon, so now it has to pick a Pokemon or cancel. If it's not currently possible to switch Pokemon, the controller must handle that condition here. |
 | CONTROLLER_23                       | Unknown | Unused. |
 | [CONTROLLER_HEALTHBARUPDATE](#CONTROLLER_HEALTHBARUPDATE) | Inbound | The controller is being told to update the state of a battler's on-screen health bar. |
 | [CONTROLLER_EXPUPDATE](#CONTROLLER_EXPUPDATE)             | Inbound | The controller is being told to award EXP to a Pokemon it owns (which may or may not be on the battlefield right now). |
@@ -95,10 +94,80 @@ Battle controllers need to be able to handle the following commands. Most comman
 | CONTROLLER_ENDBOUNCE                 | Inbound | |
 | CONTROLLER_SPRITEINVISIBILITY        | Inbound | The controller should update the invisibility state for `gActiveBattler`'s sprite, setting it to `gBattleBufferA[gActiveBattler][1]`. The controller should make the appropriate checks to verify that there's even a sprite there to update, first. |
 | CONTROLLER_BATTLEANIMATION           | Inbound | |
-| CONTROLLER_LINKSTANDBYMSG            | Inbound | |
+| [CONTROLLER_LINKSTANDBYMSG](#CONTROLLER_LINKSTANDBYMSG) | Inbound | Sent to this battle controller in all battles (link and local), when the controller is likely to have made the last decision it can during the current turn. |
 | CONTROLLER_RESETACTIONMOVESELECTION  | Inbound | |
 | CONTROLLER_ENDLINKBATTLE             | Inbound | |
 | CONTROLLER_TERMINATOR_NOP            | N/A | A no-op byte used to reset command buffers when they're not in use. Controllers deliberately do nothing in response to this command. |
+
+### `CONTROLLER_GETMONDATA`
+The controller is being directed to retrieve some of the persistent data for a Pokemon via a call to `GetMonData`.
+
+The `gBattleBufferA[gActiveBattler]` buffer is laid out as follows:
+
+| Offset | Type | Description |
+| -: | :-: | :- |
+| 0 | `u8` | Command ID: `CONTROLLER_GETMONDATA`. |
+| 1 | `u8` | A request ID: one of the `REQUEST_` constants in [`battle_controllers.h`](/include/battle_controllers.h). |
+| 2 | `u8` | Either zero, indicating that `gActiveBattler` is the Pokemon to access, or a bitmask indicating which party member(s) of `gActiveBattler`'s party to access. The vanilla implementation will hit a buffer overflow if retrieving data for more than two Pokemon simultaneously. |
+
+Send your response by calling `BtlController_EmitDataTransfer(BUFFER_B, size, data)`. Multi-byte fields are encoded as little-endian. Fields use the smallest number of bytes possible (e.g. three bytes for the Pokemon's OT ID). Use the local-player controller implementation as a reference.[^getmondata-buffer]
+
+[^getmondata-buffer] An oddity in how the local-player controller implementation was reverse-engineered: it allocates exactly 0x100 (256) bytes on the stack, which PRET documented as `sizeof(struct Pokemon) * 2 + 56`. (They seem to think Game Freak consciously made room for two and a half Pokemon structs. I think Game Freak just picked an "easy" buffer size that they'd never overflow under normal circumstances.) When implementing your own battle controllers, you need to allocate enough bytes on the stack to hold a `BattlePokemon` instance; I believe that's the largest struct that might ever be requested.
+
+For completeness' sake, here's a list of places that can emit this message:
+
+| Emitter | Source file | Reason |
+| :- | :- | :- |
+| `BattleIntroGetMonsData` | [`battle_main.c`](/src/battle_main.c) | Emits this message using `REQUEST_ALL_BATTLE` to retrieve each Pokemon's data on startup. The caller is latent, retrieving data for one Pokemon per frame. |
+| `PokemonUseItemEffects` | [`pokemon.c`](/src/pokemon.c) | When the player uses a healing item on a Pokemon during a battle, this message is emitted for the target Pokemon. |
+
+### `CONTROLLER_GETRAWMONDATA`
+An unused and apparently broken command, unless it was meant for debugging, somehow.
+
+The `gBattleBufferA[gActiveBattler]` buffer is laid out as follows:
+
+| Offset | Type | Description |
+| -: | :-: | :- |
+| 0 | `u8` | Command ID: `CONTROLLER_GETRAWMONDATA`. |
+| 1 | `u8` | Byte offset. |
+| 2 | `u8` | Number of bytes to copy. |
+
+The local player controller responds by copying bytes out of a `Pokemon` instance (`gPlayerParty[gBattlerPartyIndices[gActiveBattler]]` and blidnly overwriting bytes in the middle of a stack-allocated `BattlePokemon` instance. It then sends the overwritten portion of that instance as a response using `BtlController_EmitDataTransfer(BUFFER_B, gBattleBufferA[gActiveBattler][2], dst)`.
+
+On the one hand, the source and destination used for the copy operation have incompatible struct layouts. On the other hand, it shouldn't actually matter, because the controller should only be sending the portion of the data that it actually copied; in essence, the local `BattlePokemon` instance is treated like a raw buffer of `sizeof(BattlePokemon)` bytes. But this is all just terribly janky, especially since `Pokemon` instances are packed and encrypted so the data wouldn't even be legible to the recipient.
+
+### `CONTROLLER_SETMONDATA`
+The controller is being directed to modify the persistent data for a Pokemon via a call to `SetMonData`. This message is emitted to handle all changes to a Pokemon, such as changes to its HP as a result of taking damage, and changes to its PP as a result of effects like Pressure.
+
+The `gBattleBufferA[gActiveBattler]` buffer is laid out as follows:
+
+| Offset | Type | Description |
+| -: | :-: | :- |
+| 0 | `u8` | Command ID: `CONTROLLER_SETMONDATA`. |
+| 1 | `u8` | A request ID: one of the `REQUEST_` constants in [`battle_controllers.h`](/include/battle_controllers.h). |
+| 2 | `u8` | Either zero, indicating that `gActiveBattler` is the Pokemon to modify, or a bitmask indicating which party member(s) of `gActiveBattler`'s party to modify. |
+| 3 | varies | The data to write, as a raw buffer. |
+
+For most request types, you can just call `SetMonData` and pass `&gBattleBufferA[gActiveBattler][3]`. However, some types require special handling:
+
+| Response | Data type | Details |
+| :- | :- | :- |
+| `REQUEST_ALL_BATTLE` | `BattlePokemon` | Since `BattlePokemon` and `Pokemon` are laid out differently, and the former contains lots of transient (battle-scoped) state, you'll want to use `SetMonData` for each persistent field individually. |
+| `REQUEST_MOVES_PP_BATTLE` | `MovePpInfo` | Generally invoked as the result of things like Pressure increasing a Pokemon's PP usage. |
+| `REQUEST_PP_DATA_BATTLE` | `u8[5]` | Five bytes. In order: the PP for each of a Pokemon's moves, followed by a single byte representing the PP bonuses (i.e. PP Up and PP Max increases) for all four moves. |
+| `REQUEST_ALL_IVS_BATTLE` | `u8[6]` | Six bytes: the IVs for each stat in this order: HP, Attack, Defense, Speed, Special Attack, and Special Defense. |
+
+For completeness' sake, here's a list of places that can emit this message:
+
+| Emitter | Source file | Reason |
+| :- | :- | :- |
+| `BattlePalace_TryEscapeStatus` | [`battle_util2.c`](/src/battle_util2.c) | In the Battle Palace, your Pokemon act autonomously without your orders. They may escape status effects on their own. |
+| `PressurePPLose` | [`battle_util.c`](/src/battle_util.c) | Checks if an attacker is using a move on a target that has the Pressure ability. If so, the attacker loses 1 more PP than usual. If the move is persistent &mdash; if it wasn't acquired via Mimic, Transform, or a similar effect &mdash; then this message is emitted so that the PP loss applies outside of battle. |
+| `PressurePPLoseOnUsingImprison` | [`battle_util.c`](/src/battle_util.c) | Similar to `PressurePPLose`, but specific to the move Imprison being used. |
+| `PressurePPLoseOnUsingPerishSong` | [`battle_util.c`](/src/battle_util.c) | Similar to `PressurePPLose`, but specific to the move Perish Song being used. |
+| `DoBattlerEndTurnEffects` | [`battle_util.c`](/src/battle_util.c) | The function as a whole loops over all attackers (treating each as `gActiveBattler`) and processes all end-of-turn effects. The `ENDTURN_UPROAR` case handler checks if an attacker is asleep and lacks the Soundproof ability and if so, emits this message to wake them up at the end of a turn. |
+| `DoBattlerEndTurnEffects` | [`battle_util.c`](/src/battle_util.c) | The function as a whole loops over all attackers (treating each as `gActiveBattler`) and processes all end-of-turn effects. The `ENDTURN_YAWN` case handler emits this message to apply the Sleep status to a Pokemon. |
+| `AtkCanceller_UnableToUseMove` | [`battle_util.c`](/src/battle_util.c) | This function handles effects that may "cancel" a Pokemon's usage of a move (e.g. a Pokemon being unable to attack because it is frozen): it handles both cancelling the move use, and checking whether the thing that would cancel it has ended (e.g. thawing a Pokemon when it gets hit by certain moves). When appropriate, the function emits this message to clear a Pokemon's status effect. |
 
 ### `CONTROLLER_FAINTANIMATION`
 The controller is being directed to play the fainting animation for a battler, and wait for the animation to complete.
@@ -117,13 +186,13 @@ To make your choice, call `BtlController_EmitTwoReturnValues(BUFFER_B, choice, 0
 
 | Constant | Meaning |
 | :- | :- |
-| `B_ACTION_USE_MOVE` | Use a move (the "Fight" option in the player-facing top-level menu). After you give this response, you should expect to receive a `CONTROLLER_CHOOSEMOVE` command. |
-| `B_ACTION_USE_ITEM` | Use an item (the "Bag" option in the player-facing top-level menu). |
-| `B_ACTION_SWITCH` | Switch out this battler for a different party member. |
+| `B_ACTION_USE_MOVE` | Use a move (the "Fight" option in the player-facing top-level menu). After you give this response, you should expect to receive a `CONTROLLER_CHOOSEMOVE` command. This response isn't binding: you can change your mind upon receiving `CONTROLLER_CHOOSEMOVE` and ask to choose a different action. |
+| `B_ACTION_USE_ITEM` | Use an item (the "Bag" option in the player-facing top-level menu). After you give this response, you should expect to receive a `CONTROLLER_OPENBAG` command. This response isn't binding: you can change your mind upon receiving `CONTROLLER_OPENBAG` and ask to choose a different action. |
+| `B_ACTION_SWITCH` | <p>Switch out this battler for a different party member. After you give this response, you should expect to receive a `CONTROLLER_CHOOSEPOKEMON` command. This response isn't binding: you can change your mind upon receiving `CONTROLLER_CHOOSEPOKEMON` and ask to choose a different action.</p><p>You can choose this action even if something is preventing `gActiveBattler` from switching out. This is intentional: this action is also used to let the player inspect their own party via the party menu. The `CONTROLLER_CHOOSEPOKEMON` message that you'll receive down the line will tell you whether you're allowed to switch out, and if not, why.</p> |
 | `B_ACTION_RUN` | Attempt to flee. This action is used by both the player and by Wild Pokemon. |
 | `B_ACTION_SAFARI_WATCH_CAREFULLY` | This is the "do nothing" action that Wild Pokemon perform in the Safari Zone. |
 | `B_ACTION_SAFARI_BALL` | Throw a Safari Ball at a Wild Pokemon in the Safari Zone. |
-| `B_ACTION_SAFARI_POKEBLOCK` | Throw a PokeBlock at a Wild Pokemon in the Safari Zone. |
+| `B_ACTION_SAFARI_POKEBLOCK` | Throw a PokeBlock at a Wild Pokemon in the Safari Zone. After you give this response, you should expect to receive a `CONTROLLER_OPENBAG` command. |
 | `B_ACTION_SAFARI_GO_NEAR` | Step closer to a Wild Pokemon in the Safari Zone. |
 | `B_ACTION_SAFARI_RUN` | Flee from a Wild Pokemon in the Safari Zone. |
 | `B_ACTION_WALLY_THROW` | Have Wally throw a Poke Ball at the opposing Wild Pokemon. |
@@ -151,6 +220,20 @@ If it's a controller for the local player, you can allow them to reorder moves h
 
 To choose a move to use, call `BtlController_EmitTwoReturnValues(BUFFER_B, 10, choice | (target << 8))`, where `choice` is the index of the move to use, and `target` is the [battler position](#battler-position) to attack. Alternatively, to back out of the move selection menu (as the player themselves can), call `BtlController_EmitTwoReturnValues(BUFFER_B, 10, 0xFFFF)`.
 
+#### Special cases for NPCs
+
+You can call `BtlController_EmitTwoReturnValues(BUFFER_B, action, 0)` for any of the following actions (but no others), to commit to those actions (instead of using a move) without having to cancel out of move selection and wait for another `CONTROLLER_CHOOSEACTION` message. NPC AI uses this for the "watch carefully" and "run" actions, and Wally's battle controller uses the functionality as well:
+
+* `B_ACTION_RUN`
+* `B_ACTION_SAFARI_WATCH_CAREFULLY`
+* `B_ACTION_SAFARI_BALL`
+* `B_ACTION_SAFARI_POKEBLOCK`
+* `B_ACTION_SAFARI_GO_NEAR`
+* `B_ACTION_SAFARI_RUN`
+* `B_ACTION_WALLY_THROW`
+
+You can also call `BtlController_EmitTwoReturnValues(BUFFER_B, 15, battler)` to make the specified `battler` switch out. This assumes that a switch-in Pokemon has already been written to `gBattleStruct->monToSwitchIntoId[gActiveBattler]`. This functionality is used by NPC AIs, but the function that handles it also checks for Link Multi Battles (strangely, the link battle controllrs don't use it).
+
 ### `CONTROLLER_OPENBAG`
 The controller responded to `CHOOSEACTION` by deciding to use an item, so now it has to pick an item to use and an owned or allied battler to use it on.
 
@@ -162,9 +245,29 @@ Note that the battle engine doesn't appear to be fully responsible for *actually
 
   That said, there are some items that are specifically designed to integrate into the battle system exclusively, such as Poke Balls, Poke Dolls, Fluffy Tails, and so on. These are handled by `HandleAction_UseItem`, defined in [`battle_util.c`](/src/battle_util.c). That function relies on [`gLastUsedItem`](./battle%20globals.md#gLastUsedItem) to know what item the controller chose.
 
-* When an NPC chooses to use an item, it sets flags in `gBattleStruct->AI_itemFlags` indicating the effect that the item will have, and it consumes the item. These flags are then acted upon by `HandleAction_UseItem` in order to actually apply the item's effects... indireectly, of course: it invokes a battle script based on what kind of effect the item will have, and the `useitemonopponent` script command actually applies the item's effects by way of a call to `PokemonUseItemEffects`.
+* When an NPC chooses to use an item, it sets flags in `gBattleStruct->AI_itemFlags` indicating the effect that the item will have, and it consumes the item. These flags are then acted upon by `HandleAction_UseItem` in order to actually apply the item's effects... indirectly, of course: it invokes a battle script based on what kind of effect the item will have, and the `useitemonopponent` script command actually applies the item's effects by way of a call to `PokemonUseItemEffects`.
 
 [^item-use-callback]: An example of an item use callback is `ItemUseCB_Medicine`, defined in [`party_menu.c`](/src/party_menu.c). This callback is invoked as part of the Party Menu's tasks, after `gSpecialVar_ItemId` has already been set to the target item, and is responsible for checking whether a medicine item is usable, for actually executing the item's effect (by way of a call to `ExecuteTableBasedItemEffect`, which wraps `PokemonUseItemEffects`, which is what NPC items ultimately call down into as well), and for removing the item from the player's bag if it's single-use. `ItemUseCB_Medicine` makes no attempt whatsoever to communicate with the battle system, nor to leave any log of what actions it took (i.e. whether it consumed and applied the item).
+
+### `CONTROLLER_CHOOSEPOKEMON`
+The controller responded to `CHOOSEACTION` by deciding to switch Pokemon, so now it has to pick a Pokemon to send out. Alternatively, the controller can cancel and return to choosing an action.
+
+The `gBattleBufferA[gActiveBattler]` buffer is laid out as follows:
+
+| Offset | Type | Description |
+| -: | :-: | :- |
+| 0 | `u8` | Command ID: `CONTROLLER_CHOOSEPOKEMON`. |
+| 1 | `u8:4` | A party action constant (`PARTY_ACTION_`) defined in [`constants/party_menu.h`](/include/constants/party_menu.h). This includes sentinel values indicating when the battler is being prevented from switching out. |
+| 1 | `u8:4` | The [battler ID](./battle%20concepts.md#battler-id) of a Pokemon preventing `gActiveBattler` from switching out. This is an informative value used for printing error messages; prefer the party action constant to know when switchout is being prevented, not this value. |
+| 2 | `u8` | The party slot that the battler is in. The party menu relies on this being copied to `gBattleStruct->prevSelectedPartySlot`, so it can block you from switching a Pokemon out for itself. |
+| 3 | `u8` | If `gActiveBattler` is being prevented from switching out, then this indicates which ability (`ABILITY_` constant in [`constants/abilities.h`](/include/constants/abilities.h)) is preventing switchout. You can write it to `gLastUsedAbility` for printing in battle strings. This is an informative value used for printing error messages; prefer the party action constant to know when switchout is being prevented, not this value. |
+| 4 | `u8[6]` | A mapping between the order of the trainer's party on the overworld, and the current order within battle. |
+
+You'll want to store the party mapping order somewhere, so you can pass it as an argument to `BtlController_EmitChosenMonReturnValue` when choosing to switch Pokemon. The local player controller copies it to `gBattlePartyCurrentOrder`, and the party menu relies on it being copied there.
+
+The local player can choose a Pokemon to send out by calling `BtlController_EmitChosenMonReturnValue(BUFFER_B, index, gBattlePartyCurrentOrder)`. Alternatively, call `BtlController_EmitChosenMonReturnValue(BUFFER_B, PARTY_SIZE, NULL)` to change your mind and ask to perform a different action instead.
+
+The third argument, when giving a response, is a mapping to
 
 ### `CONTROLLER_HEALTHBARUPDATE`
 The controller is being instructed to update `gActiveBattler`'s health bar; it should play the animation if appropriate, and wait for the animation to finish. (The Safari Zone controller is one example of it being inappropriate to play a health bar animation: the player isn't supposed to be using a Pokemon! Under the hood, they have a Pokemon deployed on the battlefield, but the Safari Zone controller refuses to display any of the associated graphics, so the player can't tell.)
@@ -230,7 +333,28 @@ At the start of a battle, the background art slides into view. This command kick
 
 The `gBattleBufferA[gActiveBattler][1]` byte is a terrain ID &mdash; one of the `BATTLE_TERRAIN_` constants from [`constants/battle.h`](/include/constants/battle.h).
 
-All controllers should handle this the same way: pass the terrain ID as an argument to `HandleIntroSlide` (from [`battle_anim.h`](include/battle_anim.h)); then `gIntroSlideFlags |= 1`; then finish handling the command. The battle engine emits this command toward the battler at [position](./battle%20concepts.md#battler-position) 0 on the field without caring what controller will end up receiving it (see `BattleIntroPrepareBackgroundSlide` in [`battle_main.c`](/src/battle_main.c)).
+All controllers should[^introslide-no-data] handle this the same way: pass the terrain ID as an argument to `HandleIntroSlide` (from [`battle_anim.h`](include/battle_anim.h)); then `gIntroSlideFlags |= 1`; then finish handling the command. The battle engine emits this command toward the battler at [position](./battle%20concepts.md#battler-position) 0 on the field without caring what controller will end up receiving it (see `BattleIntroPrepareBackgroundSlide` in [`battle_main.c`](/src/battle_main.c)).
+
+[^introslide-no-data]: If you want to experiment and try to implement something new, then go nuts, but be aware: your controller *must not* respond with any data. The [battle intro](./battle%20execution%20flow.md) uses `CONTROLLER_GETMONDATA` to load data for the four Pokemon initially on the battlefield, but doesn't bother to read that data until after `CONTROLLER_INTROSLIDE` has been handled. Responding to this message will overwrite your prior response to the `CONTROLLER_GETMONDATA` message, causing the battle engine to initialize `gBattleMons` with corrupt data.
 
 It's not clear to me why controllers are tasked with handling this, since it's not per-battler state. Maybe, at one point, Game Freak had intended for each battler to have their own background art? That would've made sense for situations like the player standing on grass and fishing up a Wild Pokemon. Getting that to work would probably require completely retooling how the background terrain art is implemented, though.
+
+### `CONTROLLER_LINKSTANDBYMSG`
+The controller may have made the last decision it can make during this turn, and is now being told to get ready to wait. (For example, in a Double Battle, the local player controller may receive this message after its right-flank Pokemon has committed to an action.) In a Link Battle, this is when you would display the "Link standby..." message, but do be aware that despite its name, this message will be received during local battles as well.
+
+The `gBattleBufferA[gActiveBattler]` buffer is laid out as follows:
+
+| Offset | Type | Endianness | Description |
+| -: | :-: | :-: | :- |
+| 0 | `u8` | --- | Command ID: `CONTROLLER_LINKSTANDBYMSG`. |
+| 1 | `u8` | --- | One of the `LINK_STANDBY_` constants from [`battle_controllers.h`](/include/battle_controllers.h). |
+| 2 | varies | --- | Data to be passed to the battle-recording system. |
+
+Your controller should call `RecordedBattle_RecordAllBattlerData(&gBattleBufferA[gActiveBattler][2])`, and then check the link standby mode and handle it accordingly:
+
+| Mode | Description |
+| :- | :- |
+| `LINK_STANDBY_MSG_ONLY` | Check if the current battle is a Link Battle, and only if so, display the "Link standby..." battle string. |
+| `LINK_STANDBY_STOP_BOUNCE_ONLY` | Perform the same actions as you would for `CONTROLLER_ENDBOUNCE`. |
+| `LINK_STANDBY_MSG_STOP_BOUNCE` | Perform both of the above two actions. |
 

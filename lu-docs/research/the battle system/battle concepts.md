@@ -33,6 +33,43 @@ The next bit of the position represents the left (`B_FLANK_LEFT` == 0) or right 
 Note that "left" and "right" are described relative to each side. The opponent is facing you, so their left-side battler is drawn on the righthand side of the screen, and vice versa.
 
 
+### Hit markers
+
+A set of flags that are maintained globally, with some being scoped to the current turn; others, the current action; others, the rest of a battle.
+
+All hitmarkers are cleared at the start of a battle.
+
+| Constant | Description | Lifecycle |
+| :- | :- | :- |
+| `HITMARKER_WAKE_UP_CLEAR` |
+| `HITMARKER_IGNORE_BIDE` | Prevents the next invocation of the `datahpupdate` script command from recording damage taken by a Pokemon who has used Bide; this prevents that damage from increasing Bide's eventual attack power. | Set at the start of `DoBattlerEndTurnEffects` and cleared at its end; same for `HandleWishPerishSongOnTurnEnd`. Both of these functions may end up executing battle scripts. Cleared after the `datahpupdate` script command checks it, too. |
+| `HITMARKER_DESTINYBOND` |
+| `HITMARKER_NO_ANIMATIONS` |
+| `HITMARKER_IGNORE_SUBSTITUTE` | Forces invocations of the `hitanimation` and `healthbarupdate` script commands to act as though the relevant battler has no Substitute. Forces the next invocation of the `datahpupdate` script command to act as though the target battler has no active Substitute, after which the hitmarker is cleared. | <p>Set by the `setsubstitute` script command at the same time as `STATUS2_SUBSTITUTE`, presumably to ensure that the substitute doesn't absorb the 25% HP sacrificial damage required to create it in the first place.</p><p>Cleared after the `datahpupdate` script command checks it, or else by `HandleAction_NothingIsFainted` and `HandleAction_ActionFinished`.</p> |
+| `HITMARKER_NO_ATTACKSTRING` | | Cleared by `RunTurnActionsFunctions` when an action has finished executing. |
+| `HITMARKER_ATTACKSTRING_PRINTED` |
+| `HITMARKER_NO_PPDEDUCT` |
+| `HITMARKER_SWAP_ATTACKER_TARGET` | Used by the battle script engine to track whether `gBattlerAttacker` and `gBattlerTarget` are currently swapped as a result of running the `swapattackerwithtarget` script command an odd number of times. The hitmarker is checked for and the swap reverted by the `moveend` script command (in the `MOVEEND_UPDATE_LAST_MOVES` step of latent execution). | Set or cleared by the `swapattackerwithtarget` script command, and cleared by the `moveend` script command. |
+| `HITMARKER_STATUS_ABILITY_EFFECT` |
+| `HITMARKER_SYNCHRONIZE_EFFECT` |
+| `HITMARKER_RUN` | Prevents `CheckFocusPunch_ClearVarsBeforeTurnStarts` from executing `BattleScript_FocusPunchSetUp`: battlers who have committed to using Focus Punch will no longer have show the charge-up animation and text at the start of the turn. The hitmarker doesn't seem to be cleared during battle, so this effect is indefinite. | <p>Set on an attempt to run[^hitmarker-run-when], before the battle engine has decided whether the attempt should succeed &mdash; specifically, by `HandleTurnActionSelectionState` when handling `B_ACTION_RUN`, `B_ACTION_SAFARI_RUN`, or a decision to forfeit the match.</p><p>Never cleared during a battle.</p> |
+| `HITMARKER_IGNORE_ON_AIR` | Forces the next invocation of `AccuracyCalcHelper` (helper function for the `accuracycheck` script command) to ignore the fact of an attack's target having [`STATUS3_ON_AIR`](#status3). | <p>Set by move effects' battle scripts as needed (e.g. `BattleScript_EffectTwister`).</p><p>Cleared by `AccuracyCalcHelper` after it's checked, or else by `HandleAction_NothingIsFainted` and `HandleAction_ActionFinished`.</p> |
+| `HITMARKER_IGNORE_UNDERGROUND` | Forces the next invocation of `AccuracyCalcHelper` (helper function for the `accuracycheck` script command) to ignore the fact of an attack's target having [`STATUS3_UNDERGROUND`](#status3). | <p>Set by move effects' battle scripts as needed (e.g. `BattleScript_EffectEarthquake`).</p><p>Cleared by `AccuracyCalcHelper` after it's checked, or else by `HandleAction_NothingIsFainted` and `HandleAction_ActionFinished`.</p> |
+| `HITMARKER_IGNORE_UNDERWATER` | Forces the next invocation of `AccuracyCalcHelper` (helper function for the `accuracycheck` script command) to ignore the fact of an attack's target having [`STATUS3_UNDERWATER`](#status3). | <p>Set by move effects' battle scripts as needed (`BattleScript_EffectHit` handles Surf and `BattleScript_EffectTrap` handles Whirlpool).</p><p>Cleared by `AccuracyCalcHelper` after it's checked, or else by `HandleAction_NothingIsFainted` and `HandleAction_ActionFinished`.</p> |
+| `HITMARKER_UNABLE_TO_USE_MOVE` | One of the conditions that prevents the `moveend` script command from allowing a move to hit multiple opposing Pokemon during a Double Battle (in the `MOVEEND_NEXT_TARGET` step of latent execution). | <p>Set by any of: `AtkCanceller_UnableToUseMove`; the `attackcanceler` script command, if the Pokemon is fainted; or `IsMonDisobedient`, if a traded Pokemon disobeys and hits itself.</p><p>Cleared by `RunTurnActionsFunctions` when an action has finished executing, or by `BattleTurnPassed` at the end of a turn.</p> |
+| `HITMARKER_PASSIVE_DAMAGE` | Prevents the `datahpupdate` script command from recording damage dealt as part of the Shell Bell's hold item effect (which restores an amount of health equal to one eighth the damage dealt by the holder). | <p>Cleared by `HandleAction_NothingIsFainted`, `HandleAction_ActionFinished`, `RunTurnActionsFunctions` when all turn actions have finished executing, and `BattleTurnPassed`. They *really* wanted to be sure they cleared this one, huh?</p> |
+| `HITMARKER_DISOBEDIENT_MOVE` | Never read by anything. Indicates whether any Pokemon disobeyed its trainer during a battle specifically by picking a random move. | <p>Set by `IsMonDisobedient` if it induces a traded Pokemon to disobey by performing a random move.</p><p>Never cleared during a battle.</p> |
+| `HITMARKER_PLAYER_FAINTED` | Never read by anything. Indicates that one of the player's Pokemon fainted during the current turn. | <p>Set as applicable by the `tryfaintmon` script command. Set by the `various` script command (sub-commands `VARIOUS_ARENA_PLAYER_MON_LOST` and `VARIOUS_ARENA_BOTH_MONS_LOST`).</p><p>Cleared by `BattleTurnPassed`, and by the `various` script command (sub-command `VARIOUS_RESET_PLAYER_FAINTED`).</p> |
+| `HITMARKER_ALLOW_NO_PP` |
+| `HITMARKER_GRUDGE` |
+| `HITMARKER_OBEYS` | The `setminimize` script command only applies [`STATUS3_MINIMIZED`](#status3) if this hitmarker is set. `BattleArena_AddSkillPoints` uses this hitmarker to tell whether the battler it's being invoked for should gain skill points. The `moveend` script command uses this hitmarker for various purposes, including as part of `MOVEEND_CHOICE_MOVE` (to update the Choice Band move), `MOVEEND_UPDATE_LAST_MOVES`, and `MOVEEND_MIRROR_MOVE`. | <p>Set by the `attackcanceler` script command if the Pokemon has [`STATUS2_MULTIPLETURNS`](#status2) or else if `IsMonDisobedient()` doesn't cause the Pokemon to disobey.</p><p>Cleared by `HandleAction_NothingIsFainted` and `HandleAction_ActionFinished`.</p> |
+| `HITMARKER_NEVER_SET` | Unused. |
+| `HITMARKER_CHARGING` |
+| `HITMARKER_FAINTED` |
+
+[^hitmarker-run-when]: Notably, `HITMARKER_RUN` is set when any battle controller commits to a decision to run. If, hypothetically, Wild Double Battles existed, it would be possible for the player to order their left-flank Pokemon to run &mdash; setting `HITMARKER_RUN` &mdash; and then cancel that order by backing out with their right-flank Pokemon, without the hitmarker being reset back to its initial state.
+
+
 ### Status
 
 There are three different status enums, all defined in [`constants/battle.h`](/include/constants/battle.h).

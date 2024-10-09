@@ -71,6 +71,8 @@ Actually writing a custom C parser would be very, very difficult and time-consum
 
 GCC supports a plug-in system which, among other things, can be used to add new attributes (of the `__attribute((hello_world))` kind, which can also go in all the places we'd want to use them in). Depending on which compiler pass(es) your plug-in watch(es), you can scan over the input code after GCC has processed it into a simplified IR (theirs is called GIMPLE), and do things like emitting warnings and whatnot. Moreover, plug-ins can be [loaded from arbitrary paths](https://gcc.gnu.org/onlinedocs/gccint/Plugins-loading.html), so our plug-in could be kept with the game's source, same as the other tools currently used in the ROM's build process.
 
+There's one wrinkle that we'll need to be aware of: GCC plug-ins are built for specific versions of GCC, the API is not frozen/stable AFAIK, and I'm not sure whether pokeemerald targets a specific version of GCC or just uses the latest available version. (I also have no idea if ABI-related issues would come into play. Whatever build of GCC we end up relying on... when directed to compile C++, does it use the same ABI that it itself was compiled with?) We could integrate (re)building of the plug-in into the build process itself, if we can detect GCC's version and trigger a rebuild should that change, but we still risk breakage if the API changes out from under us.
+
 Guides and other relevant findings:
 
 * GCC plug-ins must use a GPL-compatible license. Like, literally, GCC requires all loaded plug-ins to [say they're GPL-compatibly licensed](https://gcc.gnu.org/onlinedocs/gccint/Plugin-API.html#Plugin-license-check) or the compiler will just straight-up abort.
@@ -83,6 +85,14 @@ Guides and other relevant findings:
 
 * For actually injecting code, in 2013 Basile Starynkevitch [recommended adding a custom `#pragma` directive](https://stackoverflow.com/a/19716417), though he offers few details on how to actually do so. He's the author of [GCC MELT](http://starynkevitch.net/Basile/gcc-melt/), a now-abandoned framework for writing GCC plug-ins in LISP; he's clearly knowledgeable on plug-ins, but most of his Stack Overflow content related to them consists of high-level concepts and plugging MELT.
 
+* [This guide](https://jongy.github.io/2020/04/25/gcc-assert-introspect.html) by Jongy explains how to create a plug-in that finds uses of the `assert` macro and rewrites them to log the sub-expressions' values on assertion failure. [Part 2](https://jongy.github.io/2020/05/15/gcc-assert-introspect-2.html) is particularly important, as it describes how to find an in-scope function so you can inject a call to that function, as well as how to stringify GIMPLE instructions back to C using `print_generic_expr_to_str` (so you can make sure you're injecting what you *think* you're injecting).
+
+* [This article](https://rwmj.wordpress.com/2016/02/24/playing-with-gcc-plugins/) by Richard W.M. Jones gives examples of reading and processing struct definitions.
+
+* Sample plug-in code can be found [here](https://github.com/wh5a/gcc-plugin) and [here](https://github.com/rofirrim/gcc-plugins).
+
+* Another basic tutorial can be found [here](https://gabrieleserra.ml/blog/2020-08-27-an-introduction-to-gcc-and-gccs-plugins.html).
+
 Potentially helpful snippets:
 
 * [Retrieving the arguments to a function (in Java only?).](https://stackoverflow.com/questions/42576844/retrieve-function-arguments-from-gcc-function-tree-node)
@@ -94,6 +104,12 @@ Potentially helpful snippets:
 Things to look into:
 
 * Examples of generating GIMPLE or C code from a GCC plug-in based on seen pragmas, attributes, and so on
+
+### Quick note about a backup plan
+
+If building a GCC plug-in proves unworkable -- if we can't reliably know which GCC version to target, if we can't integrate compiling the plug-in into the build process, or anything like that -- then there is a backup plan that might allow us to still rely on GCC to do the bulk of the work in parsing C. Run it with the `-fdump-lang-class=destination_file.txt` switch. (There are further options to configure the behavior of the `fdump-lang` command and the format of its output; see [the documentation](https://gcc.gnu.org/onlinedocs/gcc-9.1.0/gcc/Developer-Options.html).)
+
+Potentially, we could modify the makefile to invoke GCC an extra time before the normal build, on a file that includes all necessary headers, to have it dump all structs and their contents to a file. Then, we could run a custom tool that parses this data and generates whatever code we require, in C. Then, finally, we run the full build.
 
 ### My guess as to an initial approach
 

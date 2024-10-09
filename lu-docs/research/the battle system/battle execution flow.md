@@ -6,7 +6,9 @@
 
 # Battle execution flow
 
-The core frame handler for battles is `BattleMainCB1` in [`battle_main.c`](/src/battle_main.c). This handler calls the `gBattleMainFunc` function pointer, which is likely to be a [latent function][link-latent-functions], before then calling the [battle controller][link-battle-controller] function pointers for each active battler (setting `gActiveBattler` to the [battler ID][link-battler-id] it's invoking the pointer for).
+The game runs two callback functions from its main loop: callback 1 and callback 2. When battles are first starting, callback 1 is set to `BattleMainCB1` in [`battle_main.c`](/src/battle_main.c), and callback 2 is set to `CB2_InitBattle`. Callback 2 is initially responsible for performing most of the work for setting battles up &mdash; loading graphics, synchronizing players' parties over a link connection, and so on. Once the battle is actually ready to start, callback 2 will write the appropriate function pointer to `gBattleMainFunc` to be executed by callback 1.
+
+The core frame handler for battles is `BattleMainCB1` as main callback 1. This handler calls the `gBattleMainFunc` function pointer, which is likely to be a [latent function][link-latent-functions], before then calling the [battle controller][link-battle-controller] function pointers for each active battler (setting `gActiveBattler` to the [battler ID][link-battler-id] it's invoking the pointer for).
 
 This means, then, that up to five latent functions may be running simultaneously:
 
@@ -38,7 +40,29 @@ The `MarkBattlerForControllerExec` function is called after [emitting][link-batt
 
 [^MarkBattlerReceivedLinkData]: See `MarkBattlerReceivedLinkData`, which sets the message-available flag and clears the link-exec flag for a given battler ID.
 
-## Battle engine latent functions
+## Battle engine callback-2 functions (`CB2_`...)
+<a name="CB2"></a>
+
+Flow:
+
+* `CB2_InitBattle`
+* One of:
+  * `CB2_PreInitMultiBattle`
+    * Party Menu callbacks for showing the party before the battle
+  * `CB2_PreInitIngamePlayerPartnerBattle`
+    * Party Menu callbacks for showing the party before the battle
+* `CB2_InitBattleInternal`
+* One of:
+  * `CB2_HandleStartMultiPartnerBattle`
+  * `CB2_HandleStartMultiBattle`
+  * `CB2_HandleStartBattle`
+* `BattleMainCB2`
+
+The setup process described above is responsible for preparing graphics, handling initial link communications, and initializing the appropriate battle controllers. Once we reach `BattleMainCB2`, it handles graphics and the task system, along with the functionality for the player pressing B to end playback of a recorded battle. All other battle logic is handled by `BattleMainCB1` &mdash; `gBattleMainFunc` and the battle controller callbacks.
+
+
+## Battle engine latent functions (`gBattleMainFunc`)
+<a name="gBattleMainFunc"></a>
 
 The `gBattleMainFunc` pointer can be set to a variety of latent functions. Several functions are set as part of a chain &mdash; long-running processes like "set up the start of a battle" are split into multiple latent functions in order to keep them manageable.
 
@@ -46,9 +70,11 @@ The "top-level" latent functions are:
 
 | Function | File | Explanation |
 | :- | :- | :- |
+| `BeginBattleIntroDummy` | [`battle_main.c`](/src/battle_main.c) | Written by `SetUpBattleVarsAndBirchZigzagoon`. This latent function does absolutely nothing. That function is called by `CB2_InitBattleInternal`, so the goal here is to ensure that the battle engine does absolutely nothing until some basic setup tasks (graphics, etc.) are complete. Eventually, we'll call `InitBattleControllers`, which will end up calling `BattleBeginIntro`. |
 | `BattleIntroGetMonsData` | [`battle_main.c`](/src/battle_main.c) | Written by `BattleBeginIntro`, the function to call when the battle needs to start up. |
 | `HandleTurnActionSelectionState` | [`battle_main.c`](/src/battle_main.c) | First written by the end of the battle intro process. |
 | `RunBattleScriptCommands_PopCallbacksStack` | [`battle_main.c`](/src/battle_main.c) | Written by `BattleScriptExecute`, the typical entry point used to execute battle scripts, which also pushes the previous `gBattleMainFunc` onto a stack within the battle script engine; when script execution finishes, that callback will be automatically restored. |
+| `RunBattleScriptCommands` | [`battle_main.c`](/src/battle_main.c) | Written by `BattleScriptPushCursorAndCallback`, which is similar to `BattleScriptExecute` except that it leads with a call to `BattleScriptPushCursor`. This latent function doesn't automatically return to the previous `gBattleMainFunc` callback; rather, the battle script must use the `end3` command. |
 
 Latent function sequences:
 
@@ -258,6 +284,8 @@ Battle scripts can be run from multiple places when necessary. The usual entry p
       * Pop the topmost entry.
     * Set `gBattleMainFunc` to the popped entry (or if there isn't one, the zeroth entry) of `gBattleResources->battleCallbackStack`.
   * Else, execute the script (pull the byte at `gBattlescriptCurrInstr`, look it up in the battle script comamnd table, yadda yadda yadda).
+
+The `BattleScriptPushCursorAndCallback` function is similar to `BattleScriptExecute`, except that it calls `BattleScriptPushCursor()` instead, and sets the battle main function to `RunBattleScriptCommands` rather than `RunBattleScriptCommands_PopCallbacksStack`. This alternative latent function doesn't automatically return to the previous callback; rather, the battle script must use the `end3` command.
   
 [^B_ACTION_FINISHED]: `B_ACTION_FINISHED` is written to `gCurrentActionFuncId` to indicate that the current turn action is finished. This happens if `gBattleOutcome` is set to a non-zero value (with this potentially being detected at various points during the turn/action logic), or if the `finishaction` or `finishturn` battle script commands run, with the latter also setting `gCurrentTurnActionNumber` to `gBattlersCount`.
 

@@ -196,7 +196,7 @@ Data members in a struct can be annotated with the following attributes, which (
 * <code>lu_bitpack_bitcount(<var>n</var>)</code>: Indicates that the annotated data member should be serialized using <var>n</var> bits.
 * <code>lu_bitpack_range(<var>a</var>, <var>b</var>)</code>: Indicates that the annotated data member is an integral, and that its values will always be in the range [<var>a</var>, <var>b</var>]. The needed bitcount will be computed automatically based on that range: we'll serialize (<var>value</var> - <var>a</var>) with enough bits to hold (<var>b</var> - <var>a</var>), and when loading we'll add <var>a</var>, back.
 * <code>lu_bitpack_string</code>: Indicates that the annotated data member is a string. The data member must be a <code>char</code> array; the array length will be taken as the max length.
-  * Optional arguments:
+  * Optional arguments (in a string, e.g. <code>lu_bitpack_string(<var>key</var>=<var>value</var>)</code>):
     * `with-terminator` indicates that the in-memory string has a null terminator (such that the max string length is the size of the char array *minus one*).
     * `length=7` indicates that the maximum length is 7. The data member's array length must be at least 7 (or 8 if the member is kept in memory `with-terminator`), or a compile error will occur.
 * <code>lu_bitpack_funcs(pre_pack=<var>a</var>, post_unpack=<var>b</var>)</code>: Indicates that the annotated data member will not be serialized directly. Rather, during save, it will be passed as an argument to <var>a</var>, and the result will be written to the bitstream; and during read, the read raw value or struct will be passed as an argument to <var>b</var>, and the result will be retained.

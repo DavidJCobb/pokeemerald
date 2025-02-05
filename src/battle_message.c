@@ -2152,7 +2152,7 @@ void BufferStringBattle(u16 stringID)
             }
         }
         break;
-    case STRINGID_USEDMOVE: // Pokémon used a move msg
+    case STRINGID_USEDMOVE: // pokemon used a move msg
         ChooseMoveUsedParticle(gBattleTextBuff1); // buff1 doesn't appear in the string, leftover from japanese move names
 
         if (gBattleMsgDataPtr->currentMove >= MOVES_COUNT)
@@ -2313,7 +2313,7 @@ u32 BattleStringExpandPlaceholders(const u8 *src, u8 *dst)
 {
     u32 dstID = 0; // if they used dstID, why not use srcID as well?
     const u8 *toCpy = NULL;
-    // This buffer may hold either the name of a trainer, Pokémon, or item.
+    // This buffer may hold either the name of a trainer, pokemon, or item.
     u8 text[max(max(max(32, TRAINER_NAME_LENGTH + 1), POKEMON_NAME_LENGTH + 1), ITEM_NAME_LENGTH)];
     u8 multiplayerId;
     s32 i;
@@ -2350,9 +2350,7 @@ u32 BattleStringExpandPlaceholders(const u8 *src, u8 *dst)
                     toCpy = gStringVar2;
                 }
                 else
-                {
                     toCpy = gBattleTextBuff2;
-                }
                 break;
             case B_TXT_BUFF3:
                 if (gBattleTextBuff3[0] == B_BUFF_PLACEHOLDER_BEGIN)
@@ -2361,9 +2359,7 @@ u32 BattleStringExpandPlaceholders(const u8 *src, u8 *dst)
                     toCpy = gStringVar3;
                 }
                 else
-                {
                     toCpy = gBattleTextBuff3;
-                }
                 break;
             case B_TXT_COPY_VAR_1:
                 toCpy = gStringVar1;
@@ -2490,9 +2486,7 @@ u32 BattleStringExpandPlaceholders(const u8 *src, u8 *dst)
                                 toCpy = text;
                             }
                             else
-                            {
                                 toCpy = sText_EnigmaBerry;
-                            }
                         }
                     }
                     else

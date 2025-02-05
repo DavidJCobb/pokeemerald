@@ -25,7 +25,7 @@ const u16 gPokedexOrder_Alphabetical[] =
     NATIONAL_DEX_OLD_UNOWN_X,
     NATIONAL_DEX_OLD_UNOWN_Y,
     NATIONAL_DEX_OLD_UNOWN_Z,
-    // Actual Pokémon start here.
+    // Actual pokemon start here.
     NATIONAL_DEX_ABRA,
     NATIONAL_DEX_ABSOL,
     NATIONAL_DEX_AERODACTYL,

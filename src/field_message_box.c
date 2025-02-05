@@ -84,7 +84,7 @@ bool8 ShowPokenavFieldMessage(const u8 *str)
     StringExpandPlaceholders(gStringVar4, str);
     CreateTask(Task_HidePokenavMessageWhenDone, 0);
     StartMatchCallFromScript(str);
-    sFieldMessageBoxMode = FIELD_MESSAGE_BOX_NORMAL;
+    sFieldMessageBoxMode = 2;
     return TRUE;
 }
 

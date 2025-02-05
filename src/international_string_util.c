@@ -76,7 +76,10 @@ int Intl_GetListMenuWidth(const struct ListMenuTemplate *listMenu)
     }
 
     finalWidth = maxWidth + listMenu->item_X + 9;
-    finalWidth /= 8;
+    if (finalWidth < 0)
+        finalWidth += 7;
+
+    finalWidth >>= 3;
     if (finalWidth > 28)
         finalWidth = 28;
 

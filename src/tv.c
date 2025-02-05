@@ -63,14 +63,14 @@ enum {
     ROULETTE,
 };
 
-COMMON_DATA s8 sCurTVShowSlot = 0;
-COMMON_DATA u16 sTV_SecretBaseVisitMovesTemp[8] = {0};
-COMMON_DATA u8 sTV_DecorationsBuffer[DECOR_MAX_SECRET_BASE] = {0};
-COMMON_DATA struct {
+s8 sCurTVShowSlot;
+u16 sTV_SecretBaseVisitMovesTemp[8];
+u8 sTV_DecorationsBuffer[DECOR_MAX_SECRET_BASE];
+struct {
     u8 level;
     u16 species;
     u16 move;
-} sTV_SecretBaseVisitMonsTemp[10] = {0};
+} sTV_SecretBaseVisitMonsTemp[10];
 
 static u8 sTVShowMixingNumPlayers;
 static u8 sTVShowNewsMixingNumPlayers;
@@ -5364,8 +5364,7 @@ static void DoTVShow3CheersForPokeblocks(void)
         if (show->threeCheers.sheen > 24)
         {
             StringCopy(gStringVar2, gText_Excellent);
-        }
-        else if (show->threeCheers.sheen > 22)
+        } else if (show->threeCheers.sheen > 22)
         {
             StringCopy(gStringVar2, gText_VeryGood);
         }
@@ -6242,7 +6241,7 @@ static void DoTVShowSpotTheCuties(void)
         TVShowConvertInternationalString(gStringVar1, show->cuties.playerName, show->cuties.language);
         TVShowConvertInternationalString(gStringVar2, show->cuties.nickname, show->cuties.pokemonNameLanguage);
 
-        // Comments following the intro depend on how many ribbons the Pokémon has
+        // Comments following the intro depend on how many ribbons the pokemon has
         if (show->cuties.nRibbons < 10)
             sTVShowState = SPOTCUTIES_STATE_RIBBONS_LOW;
         else if (show->cuties.nRibbons < 20)

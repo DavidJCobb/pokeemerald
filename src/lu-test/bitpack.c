@@ -118,8 +118,6 @@ extern void generated_save(u8* dst, int sector_id);
 //#pragma lu_bitpack debug_dump_function generated_read
 
 #include <string.h> // memset
-#include <ctype.h>
-#include <stdio.h>
 
 void print_buffer(const char* buffer, int size) {
    DebugPrintf("Buffer:\n   ");
@@ -133,7 +131,7 @@ void print_buffer(const char* buffer, int size) {
 }
 
 void print_char(char c) {
-   if (isprint(c)) {
+   if (c >= '!' && c <= '~') {
       DebugPrintf("'%c'", (uint8_t)(c & 0xFF));
    } else {
       DebugPrintf("0x%02X", c & 0xFF);

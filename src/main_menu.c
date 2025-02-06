@@ -553,8 +553,10 @@ void CB2_ReinitMainMenu(void)
     InitMainMenu(TRUE);
 }
 
+#include "lu-test/bitpack.h" // TEST
 static u32 InitMainMenu(bool8 returningFromOptionsMenu)
 {
+LuBitpack_RunTest(); // TEST
     SetVBlankCallback(NULL);
 
     SetGpuReg(REG_OFFSET_DISPCNT, 0);

@@ -112,6 +112,10 @@ INCLUDE_DIRS := include
 INCLUDE_CPP_ARGS := $(INCLUDE_DIRS:%=-iquote %)
 INCLUDE_SCANINC_ARGS := $(INCLUDE_DIRS:%=-I %)
 
+# Compiler plug-ins (modern builds only)
+include make_plugins.mk
+CC_PLUGIN_LU_BITPACK := $(PLUGINS_DIR)/lu_bitpack/lu_bitpack.so
+
 O_LEVEL ?= 2
 CPPFLAGS := $(INCLUDE_CPP_ARGS) -Wno-trigraphs -DMODERN=$(MODERN)
 ifeq ($(MODERN),0)
@@ -122,9 +126,12 @@ ifeq ($(MODERN),0)
   LIB := $(LIBPATH) -lgcc -lc -L../../libagbsyscall -lagbsyscall
 else
   # Note: The makefile must be set up to not call these if modern == 0
+  
+  CC_PLUGINS := -fplugin=$(CC_PLUGIN_LU_BITPACK) -fplugin-arg-lu_bitpack-xml-out=lu_bitpack_savedata_format.xml
+  
   MODERNCC := $(PREFIX)gcc
   PATH_MODERNCC := PATH="$(PATH)" $(MODERNCC)
-  CC1 := $(shell $(PATH_MODERNCC) --print-prog-name=cc1) -quiet
+  CC1 := $(shell $(PATH_MODERNCC) --print-prog-name=cc1) -quiet $(CC_PLUGINS)
   override CFLAGS += -mthumb -mthumb-interwork -O$(O_LEVEL) -mabi=apcs-gnu -mtune=arm7tdmi -march=armv4t -fno-toplevel-reorder -Wno-pointer-to-int-cast
   LIBPATH := -L "$(dir $(shell $(PATH_MODERNCC) -mthumb -print-file-name=libgcc.a))" -L "$(dir $(shell $(PATH_MODERNCC) -mthumb -print-file-name=libnosys.a))" -L "$(dir $(shell $(PATH_MODERNCC) -mthumb -print-file-name=libc.a))"
   LIB := $(LIBPATH) -lc -lnosys -lgcc -L../../libagbsyscall -lagbsyscall

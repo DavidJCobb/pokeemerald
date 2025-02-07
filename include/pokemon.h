@@ -1,6 +1,8 @@
 #ifndef GUARD_POKEMON_H
 #define GUARD_POKEMON_H
 
+#include "lu/bitpack_options.h"
+#include "lu/game_typedefs.h"
 #include "sprite.h"
 
 // Property labels for Get(Box)MonData / Set(Box)MonData
@@ -98,8 +100,8 @@ enum {
 
 struct PokemonSubstruct0
 {
-    u16 species;
-    u16 heldItem;
+    PokemonSpeciesID species;
+    ItemIDGlobal     heldItem;
     u32 experience;
     u8 ppBonuses;
     u8 friendship;
@@ -108,7 +110,7 @@ struct PokemonSubstruct0
 
 struct PokemonSubstruct1
 {
-    u16 moves[MAX_MON_MOVES];
+    MoveID moves[MAX_MON_MOVES];
     u8 pp[MAX_MON_MOVES];
 };
 
@@ -184,7 +186,7 @@ struct PokemonSubstruct3
                              max(sizeof(struct PokemonSubstruct2),     \
                                  sizeof(struct PokemonSubstruct3)))))
 
-union PokemonSubstruct
+union LU_BP_AS_OPAQUE_BUFFER PokemonSubstruct
 {
     struct PokemonSubstruct0 type0;
     struct PokemonSubstruct1 type1;
@@ -197,19 +199,19 @@ struct BoxPokemon
 {
     u32 personality;
     u32 otId;
-    u8 nickname[POKEMON_NAME_LENGTH];
-    u8 language;
+    PokemonNameNoTerminator nickname;
+    LanguageID language;
     u8 isBadEgg:1;
     u8 hasSpecies:1;
     u8 isEgg:1;
     u8 blockBoxRS:1; // Unused, but Pokémon Box Ruby & Sapphire will refuse to deposit a Pokémon with this flag set
     u8 unused:4;
-    u8 otName[PLAYER_NAME_LENGTH];
+    PlayerNameNoTerminator otName;
     u8 markings;
     u16 checksum;
     u16 unknown;
 
-    union
+    LU_BP_AS_OPAQUE_BUFFER union
     {
         u32 raw[(NUM_SUBSTRUCT_BYTES * 4) / 4]; // *4 because there are 4 substructs, /4 because it's u32, not u8
         union PokemonSubstruct substructs[4];
@@ -259,13 +261,13 @@ enum {
 
 struct BattlePokemon
 {
-    /*0x00*/ u16 species;
+    /*0x00*/ PokemonSpeciesID species;
     /*0x02*/ u16 attack;
     /*0x04*/ u16 defense;
     /*0x06*/ u16 speed;
     /*0x08*/ u16 spAttack;
     /*0x0A*/ u16 spDefense;
-    /*0x0C*/ u16 moves[MAX_MON_MOVES];
+    /*0x0C*/ MoveID moves[MAX_MON_MOVES];
     /*0x14*/ u32 hpIV:5;
     /*0x14*/ u32 attackIV:5;
     /*0x15*/ u32 defenseIV:5;
@@ -284,9 +286,9 @@ struct BattlePokemon
     /*0x2B*/ u8 friendship;
     /*0x2C*/ u16 maxHP;
     /*0x2E*/ u16 item;
-    /*0x30*/ u8 nickname[POKEMON_NAME_LENGTH + 1];
+    /*0x30*/ PokemonName nickname;
     /*0x3B*/ u8 ppBonuses;
-    /*0x3C*/ u8 otName[PLAYER_NAME_LENGTH + 1];
+    /*0x3C*/ PlayerName otName;
     /*0x44*/ u32 experience;
     /*0x48*/ u32 personality;
     /*0x4C*/ u32 status1;
@@ -311,8 +313,8 @@ struct SpeciesInfo
  /* 0x0A */ u16 evYield_Speed:2;
  /* 0x0B */ u16 evYield_SpAttack:2;
  /* 0x0B */ u16 evYield_SpDefense:2;
- /* 0x0C */ u16 itemCommon;
- /* 0x0E */ u16 itemRare;
+ /* 0x0C */ ItemIDGlobal itemCommon;
+ /* 0x0E */ ItemIDGlobal itemRare;
  /* 0x10 */ u8 genderRatio;
  /* 0x11 */ u8 eggCycles;
  /* 0x12 */ u8 friendship;
@@ -348,15 +350,15 @@ struct SpindaSpot
 
 struct __attribute__((packed)) LevelUpMove
 {
-    u16 move:9;
-    u16 level:7;
+    MoveID       move  : 9;
+    PokemonLevel level : 7;
 };
 
 struct Evolution
 {
     u16 method;
     u16 param;
-    u16 targetSpecies;
+    PokemonSpeciesID targetSpecies;
 };
 
 #define NUM_UNOWN_FORMS 28

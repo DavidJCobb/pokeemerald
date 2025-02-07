@@ -700,7 +700,7 @@ struct MauvilleOldManTrader
     LanguageID language[NUM_TRADER_ITEMS];
 };
 
-typedef union OldMan
+LU_BP_AS_OPAQUE_BUFFER typedef union OldMan
 {
     struct MauvilleManCommon common;
     struct MauvilleManBard bard;
@@ -831,22 +831,13 @@ struct LilycoveLadyContest
     /*0x00E*/ LanguageID language;
 };
 
-struct LilycoveLadyBareID {
-    u8 id;
-};
-
-struct LilycoveLadyFiller {
-    u8 id;
-    u8 bytes[0x40 - 1];
-};
-
 LU_BP_UNION_INTERNAL_TAG(id) typedef union // 3b58
 {
     LU_BP_TAGGED_ID(0) struct LilycoveLadyQuiz quiz;
     LU_BP_TAGGED_ID(1) struct LilycoveLadyFavor favor;
     LU_BP_TAGGED_ID(2) struct LilycoveLadyContest contest;
-    LU_BP_OMIT         struct LilycoveLadyBareID bare;
-    LU_BP_OMIT         struct LilycoveLadyFiller filler;
+    LU_BP_OMIT         u8 id;
+    LU_BP_OMIT         u8 bytes[0x40];
 } LilycoveLady;
 
 struct WaldaPhrase

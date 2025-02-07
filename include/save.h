@@ -2,7 +2,7 @@
 #define GUARD_SAVE_H
 
 // Each 4 KiB flash sector contains 3968 bytes of actual data followed by a 128 byte footer.
-// Only 12 bytes of the footer are used.
+// Only 12 bytes of the footer are used in the vanilla game.
 #define SECTOR_DATA_SIZE 3968
 #define SECTOR_FOOTER_SIZE 128
 #define SECTOR_SIZE (SECTOR_DATA_SIZE + SECTOR_FOOTER_SIZE)
@@ -69,7 +69,16 @@ struct SaveSectorLocation
 struct SaveSector
 {
     u8 data[SECTOR_DATA_SIZE];
-    u8 unused[SECTOR_FOOTER_SIZE - 12]; // Unused portion of the footer
+    
+    //
+    // START OF FOOTER
+    //
+    
+    // Unused portion of the footer. Size should be SECTOR_FOOTER_SIZE minus 
+    // the size of the next few fields (accounting for alignments/padding).
+    u8 unused[SECTOR_FOOTER_SIZE - 16]; // Unused portion of the footer
+    
+    u32 saveVersion; // added for external tools wishing to read/convert bitpacked saves
     u16 id;
     u16 checksum;
     u32 signature;

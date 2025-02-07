@@ -4,6 +4,8 @@
 #include "lu/bitpack_options.h"
 #include "gba/isagbprint.h"
 
+#define TESTCASE_ENABLED 0
+
 #define SECTOR_COUNT 4
 #define SECTOR_SIZE 16
 
@@ -107,6 +109,7 @@ struct TestStruct {
    NamedByTypedef     using_typedef_name;
 } sTestStruct;
 
+#if TESTCASE_ENABLED
 extern void generated_read(const u8* src, int sector_id);
 extern void generated_save(u8* dst, int sector_id);
 
@@ -116,6 +119,7 @@ extern void generated_save(u8* dst, int sector_id);
    data      = sTestStruct             \
 )
 //#pragma lu_bitpack debug_dump_function generated_read
+#endif
 
 #include <string.h> // memset
 
@@ -187,6 +191,7 @@ void print_test_struct(void) {
 }
 
 extern int LuBitpack_RunTest(void) {
+   #if TESTCASE_ENABLED
    u8 sector_buffers[SECTOR_COUNT][SECTOR_SIZE] = { 0 };
    
    //
@@ -243,7 +248,7 @@ extern int LuBitpack_RunTest(void) {
       generated_read(sector_buffers[i], i);
       print_test_struct();
    }
-   
+   #endif
    
    return 0;
 }

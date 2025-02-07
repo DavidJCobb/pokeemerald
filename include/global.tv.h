@@ -42,7 +42,7 @@ LU_BP_AS_OPAQUE_BUFFER typedef union // size = 0x24
     struct {
         /*0x00*/ u8 kind;
         /*0x01*/ bool8 active;
-        /*0x02*/ PlayerSpeciesID species;
+        /*0x02*/ PokemonSpeciesID species;
         /*0x04*/ u16 words[6];
         /*0x10*/ PlayerName playerName;
         /*0x18*/ u8 language;
@@ -53,7 +53,7 @@ LU_BP_AS_OPAQUE_BUFFER typedef union // size = 0x24
     struct {
         /*0x00*/ u8 kind;
         /*0x01*/ bool8 active;
-        /*0x02*/ PlayerSpeciesID species;
+        /*0x02*/ PokemonSpeciesID species;
         /*0x04*/ u16 words[6];
         /*0x10*/ PlayerName playerName;
         /*0x18*/ u8 language;
@@ -81,7 +81,7 @@ LU_BP_AS_OPAQUE_BUFFER typedef union // size = 0x24
         /*0x00*/ u8 kind;
         /*0x01*/ bool8 active;
         /*0x02*/ u16 words[2];
-        /*0x06*/ PlayerSpeciesID species;
+        /*0x06*/ PokemonSpeciesID species;
         /*0x08*/ u8 filler_08[3];
         /*0x0B*/ u8 name[12];
         /*0x17*/ u8 language;
@@ -91,13 +91,13 @@ LU_BP_AS_OPAQUE_BUFFER typedef union // size = 0x24
     struct {
         /*0x00*/ u8 kind;
         /*0x01*/ bool8 active;
-        /*0x02*/ PlayerSpeciesID species;
+        /*0x02*/ PokemonSpeciesID species;
         /*0x04*/ PokemonName     pokemonName;
         /*0x0F*/ PlayerName      trainerName;
         /*0x17*/ u8 unused[3];
         /*0x1A*/ u8 random;
         /*0x1B*/ u8 random2;
-        /*0x1C*/ PlayerSpeciesID randomSpecies;
+        /*0x1C*/ PokemonSpeciesID randomSpecies;
         /*0x1E*/ LanguageID language;
         /*0x1F*/ LanguageID pokemonNameLanguage;
     } nameRaterShow;
@@ -106,7 +106,7 @@ LU_BP_AS_OPAQUE_BUFFER typedef union // size = 0x24
     struct {
         /*0x00*/ u8 kind;
         /*0x01*/ bool8 active;
-        /*0x02*/ PlayerSpeciesID species;
+        /*0x02*/ PokemonSpeciesID species;
         /*0x04*/ u16 words[2];
         /*0x08*/ PokemonName pokemonNickname;
         /*0x13*/ u8 contestCategory:3;
@@ -174,11 +174,11 @@ LU_BP_AS_OPAQUE_BUFFER typedef union // size = 0x24
     struct {
         /*0x00*/ u8 kind;
         /*0x01*/ bool8 active;
-        /*0x02*/ PlayerSpeciesID speciesOpponent;
+        /*0x02*/ PokemonSpeciesID speciesOpponent;
         /*0x04*/ PlayerName      playerName;
         /*0x0C*/ PlayerName      linkOpponentName;
         /*0x14*/ MoveID          move;
-        /*0x16*/ PlayerSpeciesID speciesPlayer;
+        /*0x16*/ PokemonSpeciesID speciesPlayer;
         /*0x18*/ u8              battleType;
         /*0x19*/ LanguageID      language;
         /*0x1A*/ LanguageID      linkOpponentLanguage;
@@ -221,7 +221,7 @@ LU_BP_AS_OPAQUE_BUFFER typedef union // size = 0x24
         /*0x03*/ LanguageID  language2;
         /*0x04*/ PokemonName nickname;
         /*0x0F*/ u8 ball;
-        /*0x10*/ PlayerSpeciesID species;
+        /*0x10*/ PokemonSpeciesID species;
         /*0x12*/ u8 nBallsUsed;
         /*0x13*/ PlayerName playerName;
         /*0x1B*/ //u8 padding;
@@ -247,8 +247,8 @@ LU_BP_AS_OPAQUE_BUFFER typedef union // size = 0x24
         /*0x01*/ bool8 active;
         /*0x02*/ LanguageID language;
         /*0x03*/ u8 filler_03[9];
-        /*0x0C*/ PlayerSpeciesID species;
-        /*0x0E*/ PlayerSpeciesID species2;
+        /*0x0C*/ PokemonSpeciesID species;
+        /*0x0E*/ PokemonSpeciesID species2;
         /*0x10*/ u8 nBallsUsed;
         /*0x11*/ u8 outcome;
         /*0x12*/ u8 location;
@@ -262,7 +262,7 @@ LU_BP_AS_OPAQUE_BUFFER typedef union // size = 0x24
         /*0x01*/ bool8 active;
         /*0x02*/ u8 nBites;
         /*0x03*/ u8 nFails;
-        /*0x04*/ PlayerSpeciesID species;
+        /*0x04*/ PokemonSpeciesID species;
         /*0x06*/ LanguageID language;
         /*0x07*/ u8 filler_07[12];
         /*0x13*/ PlayerName playerName;
@@ -276,7 +276,7 @@ LU_BP_AS_OPAQUE_BUFFER typedef union // size = 0x24
         /*0x02*/ u16 numPokeCaught;
         /*0x04*/ u16 caughtPoke;
         /*0x06*/ u16 steps;
-        /*0x08*/ PlayerSpeciesID species;
+        /*0x08*/ PokemonSpeciesID species;
         /*0x0A*/ u8 location;
         /*0x0B*/ LanguageID language;
         /*0x0C*/ u8 filler_0C[7];
@@ -350,7 +350,7 @@ LU_BP_AS_OPAQUE_BUFFER typedef union // size = 0x24
         /*0x05*/ u8 outcome;
         /*0x06*/ u16 caughtMonBall;
         /*0x08*/ u16 balls;
-        /*0x0A*/ PlayerSpeciesID poke1Species;
+        /*0x0A*/ PokemonSpeciesID poke1Species;
         /*0x0C*/ MoveID     lastUsedMove;
         /*0x0E*/ LanguageID language;
         /*0x0F*/ u8 filler_0f[4];
@@ -365,7 +365,7 @@ LU_BP_AS_OPAQUE_BUFFER typedef union // size = 0x24
         /*0x02*/ u8 avgLevel;
         /*0x03*/ u8 numDecorations;
         /*0x04*/ u8 decorations[4];
-        /*0x08*/ PlayerSpeciesID species;
+        /*0x08*/ PokemonSpeciesID species;
         /*0x0A*/ MoveID          move;
         /*0x0C*/ LanguageID      language;
         /*0x0D*/ u8 filler_0d[6];
@@ -390,8 +390,8 @@ LU_BP_AS_OPAQUE_BUFFER typedef union // size = 0x24
         /*0x00*/ u8 kind;
         /*0x01*/ bool8 active;
         /*0x02*/ MoveID move;
-        /*0x04*/ PlayerSpeciesID foeSpecies;
-        /*0x06*/ PlayerSpeciesID species;
+        /*0x04*/ PokemonSpeciesID foeSpecies;
+        /*0x06*/ PokemonSpeciesID species;
         /*0x08*/ MoveID otherMoves[3];
         /*0x0E*/ MoveID betterMove;
         /*0x10*/ u8 nOtherMoves;
@@ -431,10 +431,10 @@ LU_BP_AS_OPAQUE_BUFFER typedef union // size = 0x24
         /*0x00*/ u8 kind;
         /*0x01*/ bool8 active;
         /*0x02*/ u16 winStreak;
-        /*0x04*/ PlayerSpeciesID species1;
-        /*0x06*/ PlayerSpeciesID species2;
-        /*0x08*/ PlayerSpeciesID species3;
-        /*0x0A*/ PlayerSpeciesID species4;
+        /*0x04*/ PokemonSpeciesID species1;
+        /*0x06*/ PokemonSpeciesID species2;
+        /*0x08*/ PokemonSpeciesID species3;
+        /*0x0A*/ PokemonSpeciesID species4;
         /*0x0C*/ LanguageID      language;
         /*0x0D*/ u8 facilityAndMode;
         /*0x0E*/ u8 filler_0e[5];
@@ -488,7 +488,7 @@ LU_BP_AS_OPAQUE_BUFFER typedef union // size = 0x24
         /*0x02*/ u8 unused1;
         /*0x03*/ u8 unused3;
         /*0x04*/ MoveID moves[MAX_MON_MOVES];
-        /*0x0C*/ PlayerSpeciesID species;
+        /*0x0C*/ PokemonSpeciesID species;
         /*0x0E*/ u16 unused2;
         /*0x10*/ u8 locationMapNum;
         /*0x11*/ u8 locationMapGroup;
@@ -511,8 +511,8 @@ typedef struct
 
 struct GabbyAndTyData
 {
-    /*2BA4*/ PlayerSpeciesID mon1;
-    /*2BA6*/ PlayerSpeciesID mon2;
+    /*2BA4*/ PokemonSpeciesID mon1;
+    /*2BA6*/ PokemonSpeciesID mon2;
     /*2BA8*/ MoveID lastMove;
     /*2BAA*/ u16 quote[1];
     /*2BAC*/ u8 mapnum;

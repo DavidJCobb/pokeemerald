@@ -16,8 +16,8 @@
          <counts total="1517">
             <in-sector count="71" index="0" />
             <in-sector count="6" index="1" />
-            <in-sector count="15" index="2" />
-            <in-sector count="1002" index="3" />
+            <in-sector count="13" index="2" />
+            <in-sector count="1004" index="3" />
             <in-sector count="3" index="4" />
             <in-sector count="51" index="5" />
             <in-sector count="50" index="6" />
@@ -67,8 +67,8 @@
          <counts total="2274">
             <in-sector count="59" index="0" />
             <in-sector count="261" index="1" />
-            <in-sector count="84" index="2" />
-            <in-sector count="187" index="3" />
+            <in-sector count="72" index="2" />
+            <in-sector count="199" index="3" />
             <in-sector count="3" index="4" />
             <in-sector count="200" index="5" />
             <in-sector count="200" index="6" />
@@ -89,8 +89,8 @@
          <counts total="7801">
             <in-sector count="168" index="0" />
             <in-sector count="96" index="1" />
-            <in-sector count="336" index="2" />
-            <in-sector count="481" index="3" />
+            <in-sector count="303" index="2" />
+            <in-sector count="514" index="3" />
             <in-sector count="800" index="5" />
             <in-sector count="800" index="6" />
             <in-sector count="800" index="7" />
@@ -109,8 +109,8 @@
          <bitcounts total-packed="1218" total-unpacked="1392" />
          <counts total="174">
             <in-sector count="27" index="0" />
-            <in-sector count="84" index="2" />
-            <in-sector count="63" index="3" />
+            <in-sector count="72" index="2" />
+            <in-sector count="75" index="3" />
             <in-top-level-value count="27" name="gSaveBlock2Ptr" />
             <in-top-level-value count="147" name="gSaveBlock1Ptr" />
          </counts>
@@ -120,9 +120,9 @@
          <counts total="2466">
             <in-sector count="47" index="0" />
             <in-sector count="24" index="1" />
-            <in-sector count="84" index="2" />
-            <in-sector count="630" index="3" />
-            <in-sector count="1" index="4" />
+            <in-sector count="72" index="2" />
+            <in-sector count="641" index="3" />
+            <in-sector count="2" index="4" />
             <in-sector count="200" index="5" />
             <in-sector count="200" index="6" />
             <in-sector count="200" index="7" />
@@ -141,8 +141,8 @@
          <bitcounts total-packed="6320" total-unpacked="6416" />
          <counts total="571">
             <in-sector count="363" index="0" />
-            <in-sector count="60" index="2" />
-            <in-sector count="114" index="3" />
+            <in-sector count="52" index="2" />
+            <in-sector count="122" index="3" />
             <in-sector count="34" index="4" />
             <in-top-level-value count="363" name="gSaveBlock2Ptr" />
             <in-top-level-value count="208" name="gSaveBlock1Ptr" />
@@ -153,8 +153,8 @@
          <counts total="1520">
             <in-sector count="81" index="0" />
             <in-sector count="6" index="1" />
-            <in-sector count="15" index="2" />
-            <in-sector count="975" index="3" />
+            <in-sector count="13" index="2" />
+            <in-sector count="977" index="3" />
             <in-sector count="23" index="4" />
             <in-sector count="51" index="5" />
             <in-sector count="50" index="6" />
@@ -260,33 +260,6 @@
          <instructions>
             <integer min="0" bitcount="32" type="u32" value="checksum" />
             <struct type="RamScriptData" value="data" />
-         </instructions>
-      </struct>
-      <struct c-sizeof="444" c-alignment="4" tag="WonderNews">
-         <members>
-            <integer min="0" bitcount="16" type="u16" name="id" />
-            <integer min="0" bitcount="8" type="u8" name="sendType" />
-            <integer min="0" bitcount="8" type="u8" name="bgType" />
-            <integer min="0" bitcount="8" type="u8[40]" name="titleText">
-               <array-rank extent="40" />
-            </integer>
-            <integer min="0" bitcount="8" type="u8[40][10]" name="bodyText">
-               <array-rank extent="10" />
-               <array-rank extent="40" />
-            </integer>
-         </members>
-         <instructions>
-            <integer min="0" bitcount="16" type="u16" value="id" />
-            <integer min="0" bitcount="8" type="u8" value="sendType" />
-            <integer min="0" bitcount="8" type="u8" value="bgType" />
-            <loop counter-var="__a" count="40" start="0" array="titleText">
-               <integer min="0" bitcount="8" type="u8" value="titleText[__a]" />
-            </loop>
-            <loop counter-var="__b" count="10" start="0" array="bodyText">
-               <loop counter-var="__c" count="40" start="0" array="bodyText[__b]">
-                  <integer min="0" bitcount="8" type="u8" value="bodyText[__b][__c]" />
-               </loop>
-            </loop>
          </instructions>
       </struct>
       <struct c-sizeof="28" c-alignment="4" tag="Roamer">
@@ -471,6 +444,59 @@
             <string nonstring="false" length="10" type="u8[11]" value="monName" />
             <string nonstring="false" length="7" type="u8[8]" value="trainerName" />
             <integer min="0" bitcount="8" type="u8" value="contestRank" />
+         </instructions>
+      </struct>
+      <struct c-sizeof="332" c-alignment="4" tag="WonderCard">
+         <members>
+            <integer min="0" bitcount="16" type="u16" name="flagId" />
+            <integer min="0" bitcount="16" type="PokemonSpeciesID" name="iconSpecies" />
+            <integer min="0" bitcount="32" type="u32" name="idNumber" />
+            <integer min="0" bitcount="2" type="u8" name="type" />
+            <integer min="0" bitcount="4" type="u8" name="bgType" />
+            <integer min="0" bitcount="2" type="u8" name="sendType" />
+            <integer min="0" bitcount="8" type="u8" name="maxStamps" />
+            <integer min="0" bitcount="8" type="u8[40]" name="titleText">
+               <array-rank extent="40" />
+            </integer>
+            <integer min="0" bitcount="8" type="u8[40]" name="subtitleText">
+               <array-rank extent="40" />
+            </integer>
+            <integer min="0" bitcount="8" type="u8[40][4]" name="bodyText">
+               <array-rank extent="4" />
+               <array-rank extent="40" />
+            </integer>
+            <integer min="0" bitcount="8" type="u8[40]" name="footerLine1Text">
+               <array-rank extent="40" />
+            </integer>
+            <integer min="0" bitcount="8" type="u8[40]" name="footerLine2Text">
+               <array-rank extent="40" />
+            </integer>
+         </members>
+         <instructions>
+            <integer min="0" bitcount="16" type="u16" value="flagId" />
+            <integer min="0" bitcount="16" type="PokemonSpeciesID" value="iconSpecies" />
+            <integer min="0" bitcount="32" type="u32" value="idNumber" />
+            <integer min="0" bitcount="2" type="u8" value="type" />
+            <integer min="0" bitcount="4" type="u8" value="bgType" />
+            <integer min="0" bitcount="2" type="u8" value="sendType" />
+            <integer min="0" bitcount="8" type="u8" value="maxStamps" />
+            <loop counter-var="__a" count="40" start="0" array="titleText">
+               <integer min="0" bitcount="8" type="u8" value="titleText[__a]" />
+            </loop>
+            <loop counter-var="__b" count="40" start="0" array="subtitleText">
+               <integer min="0" bitcount="8" type="u8" value="subtitleText[__b]" />
+            </loop>
+            <loop counter-var="__c" count="4" start="0" array="bodyText">
+               <loop counter-var="__d" count="40" start="0" array="bodyText[__c]">
+                  <integer min="0" bitcount="8" type="u8" value="bodyText[__c][__d]" />
+               </loop>
+            </loop>
+            <loop counter-var="__e" count="40" start="0" array="footerLine1Text">
+               <integer min="0" bitcount="8" type="u8" value="footerLine1Text[__e]" />
+            </loop>
+            <loop counter-var="__f" count="40" start="0" array="footerLine2Text">
+               <integer min="0" bitcount="8" type="u8" value="footerLine2Text[__f]" />
+            </loop>
          </instructions>
       </struct>
       <struct c-sizeof="36" c-alignment="4" tag="Mail">
@@ -2072,29 +2098,16 @@
             <integer max="7" min="0" bitcount="4" type="LanguageID" name="language" />
          </members>
       </struct>
-      <struct c-sizeof="332" c-alignment="4" tag="WonderCard">
+      <struct c-sizeof="444" c-alignment="4" tag="WonderNews">
          <members>
-            <integer min="0" bitcount="16" type="u16" name="flagId" />
-            <integer min="0" bitcount="16" type="PokemonSpeciesID" name="iconSpecies" />
-            <integer min="0" bitcount="32" type="u32" name="idNumber" />
-            <integer min="0" bitcount="2" type="u8" name="type" />
-            <integer min="0" bitcount="4" type="u8" name="bgType" />
-            <integer min="0" bitcount="2" type="u8" name="sendType" />
-            <integer min="0" bitcount="8" type="u8" name="maxStamps" />
+            <integer min="0" bitcount="16" type="u16" name="id" />
+            <integer min="0" bitcount="8" type="u8" name="sendType" />
+            <integer min="0" bitcount="8" type="u8" name="bgType" />
             <integer min="0" bitcount="8" type="u8[40]" name="titleText">
                <array-rank extent="40" />
             </integer>
-            <integer min="0" bitcount="8" type="u8[40]" name="subtitleText">
-               <array-rank extent="40" />
-            </integer>
-            <integer min="0" bitcount="8" type="u8[40][4]" name="bodyText">
-               <array-rank extent="4" />
-               <array-rank extent="40" />
-            </integer>
-            <integer min="0" bitcount="8" type="u8[40]" name="footerLine1Text">
-               <array-rank extent="40" />
-            </integer>
-            <integer min="0" bitcount="8" type="u8[40]" name="footerLine2Text">
+            <integer min="0" bitcount="8" type="u8[40][10]" name="bodyText">
+               <array-rank extent="10" />
                <array-rank extent="40" />
             </integer>
          </members>
@@ -3073,7 +3086,7 @@
       </sector>
       <sector>
          <stats>
-            <bitcounts total-packed="31736" />
+            <bitcounts total-packed="31744" />
          </stats>
          <instructions>
             <struct type="Coords16" value="(*gSaveBlock1Ptr).pos" />
@@ -3134,30 +3147,30 @@
             <loop counter-var="__n" count="16" start="0" array="(*gSaveBlock1Ptr).objectEvents">
                <struct type="ObjectEvent" value="(*gSaveBlock1Ptr).objectEvents[__n]" />
             </loop>
-            <loop counter-var="__o" count="54" start="0" array="(*gSaveBlock1Ptr).objectEventTemplates">
+            <loop counter-var="__o" count="43" start="0" array="(*gSaveBlock1Ptr).objectEventTemplates">
                <struct type="ObjectEventTemplate" value="(*gSaveBlock1Ptr).objectEventTemplates[__o]" />
             </loop>
-            <integer min="0" bitcount="8" type="u8" value="(*gSaveBlock1Ptr).objectEventTemplates[54].localId" />
-            <integer min="0" bitcount="8" type="u8" value="(*gSaveBlock1Ptr).objectEventTemplates[54].graphicsId" />
-            <integer min="0" bitcount="8" type="u8" value="(*gSaveBlock1Ptr).objectEventTemplates[54].kind" />
+            <integer min="0" bitcount="8" type="u8" value="(*gSaveBlock1Ptr).objectEventTemplates[43].localId" />
+            <integer min="0" bitcount="8" type="u8" value="(*gSaveBlock1Ptr).objectEventTemplates[43].graphicsId" />
+            <integer min="0" bitcount="8" type="u8" value="(*gSaveBlock1Ptr).objectEventTemplates[43].kind" />
+            <integer min="0" bitcount="16" type="s16" value="(*gSaveBlock1Ptr).objectEventTemplates[43].x" />
+            <integer min="0" bitcount="16" type="s16" value="(*gSaveBlock1Ptr).objectEventTemplates[43].y" />
+            <integer min="0" bitcount="8" type="u8" value="(*gSaveBlock1Ptr).objectEventTemplates[43].elevation" />
          </instructions>
       </sector>
       <sector>
          <stats>
-            <bitcounts total-packed="31736" />
+            <bitcounts total-packed="31739" />
          </stats>
          <instructions>
-            <integer min="0" bitcount="16" type="s16" value="(*gSaveBlock1Ptr).objectEventTemplates[54].x" />
-            <integer min="0" bitcount="16" type="s16" value="(*gSaveBlock1Ptr).objectEventTemplates[54].y" />
-            <integer min="0" bitcount="8" type="u8" value="(*gSaveBlock1Ptr).objectEventTemplates[54].elevation" />
-            <integer min="0" bitcount="8" type="u8" value="(*gSaveBlock1Ptr).objectEventTemplates[54].movementType" />
-            <integer min="0" bitcount="4" type="u16" value="(*gSaveBlock1Ptr).objectEventTemplates[54].movementRangeX" />
-            <integer min="0" bitcount="4" type="u16" value="(*gSaveBlock1Ptr).objectEventTemplates[54].movementRangeY" />
-            <integer min="0" bitcount="16" type="u16" value="(*gSaveBlock1Ptr).objectEventTemplates[54].trainerType" />
-            <integer min="0" bitcount="16" type="u16" value="(*gSaveBlock1Ptr).objectEventTemplates[54].trainerRange_berryTreeId" />
-            <pointer type="const u8*" value="(*gSaveBlock1Ptr).objectEventTemplates[54].script" />
-            <integer min="0" bitcount="16" type="u16" value="(*gSaveBlock1Ptr).objectEventTemplates[54].flagId" />
-            <loop counter-var="__a" count="9" start="55" array="(*gSaveBlock1Ptr).objectEventTemplates">
+            <integer min="0" bitcount="8" type="u8" value="(*gSaveBlock1Ptr).objectEventTemplates[43].movementType" />
+            <integer min="0" bitcount="4" type="u16" value="(*gSaveBlock1Ptr).objectEventTemplates[43].movementRangeX" />
+            <integer min="0" bitcount="4" type="u16" value="(*gSaveBlock1Ptr).objectEventTemplates[43].movementRangeY" />
+            <integer min="0" bitcount="16" type="u16" value="(*gSaveBlock1Ptr).objectEventTemplates[43].trainerType" />
+            <integer min="0" bitcount="16" type="u16" value="(*gSaveBlock1Ptr).objectEventTemplates[43].trainerRange_berryTreeId" />
+            <pointer type="const u8*" value="(*gSaveBlock1Ptr).objectEventTemplates[43].script" />
+            <integer min="0" bitcount="16" type="u16" value="(*gSaveBlock1Ptr).objectEventTemplates[43].flagId" />
+            <loop counter-var="__a" count="20" start="44" array="(*gSaveBlock1Ptr).objectEventTemplates">
                <struct type="ObjectEventTemplate" value="(*gSaveBlock1Ptr).objectEventTemplates[__a]" />
             </loop>
             <loop counter-var="__b" count="300" start="0" array="(*gSaveBlock1Ptr).flags">
@@ -3172,54 +3185,57 @@
             <loop counter-var="__e" count="128" start="0" array="(*gSaveBlock1Ptr).berryTrees">
                <struct type="BerryTree" value="(*gSaveBlock1Ptr).berryTrees[__e]" />
             </loop>
-            <loop counter-var="__f" count="14" start="0" array="(*gSaveBlock1Ptr).secretBases">
+            <loop counter-var="__f" count="12" start="0" array="(*gSaveBlock1Ptr).secretBases">
                <struct type="SecretBase" value="(*gSaveBlock1Ptr).secretBases[__f]" />
             </loop>
-            <integer min="0" bitcount="8" type="u8" value="(*gSaveBlock1Ptr).secretBases[14].secretBaseId" />
-            <integer min="0" bitcount="4" type="bool8" value="(*gSaveBlock1Ptr).secretBases[14].toRegister" />
-            <integer min="0" bitcount="1" type="u8" value="(*gSaveBlock1Ptr).secretBases[14].gender" />
-            <integer min="0" bitcount="1" type="u8" value="(*gSaveBlock1Ptr).secretBases[14].battledOwnerToday" />
-            <integer min="0" bitcount="2" type="u8" value="(*gSaveBlock1Ptr).secretBases[14].registryStatus" />
-            <string nonstring="true" length="7" type="u8[7]" value="(*gSaveBlock1Ptr).secretBases[14].trainerName" />
-            <loop counter-var="__g" count="4" start="0" array="(*gSaveBlock1Ptr).secretBases[14].trainerId">
-               <integer min="0" bitcount="8" type="u8" value="(*gSaveBlock1Ptr).secretBases[14].trainerId[__g]" />
+            <integer min="0" bitcount="8" type="u8" value="(*gSaveBlock1Ptr).secretBases[12].secretBaseId" />
+            <integer min="0" bitcount="4" type="bool8" value="(*gSaveBlock1Ptr).secretBases[12].toRegister" />
+            <integer min="0" bitcount="1" type="u8" value="(*gSaveBlock1Ptr).secretBases[12].gender" />
+            <integer min="0" bitcount="1" type="u8" value="(*gSaveBlock1Ptr).secretBases[12].battledOwnerToday" />
+            <integer min="0" bitcount="2" type="u8" value="(*gSaveBlock1Ptr).secretBases[12].registryStatus" />
+            <string nonstring="true" length="7" type="u8[7]" value="(*gSaveBlock1Ptr).secretBases[12].trainerName" />
+            <loop counter-var="__g" count="4" start="0" array="(*gSaveBlock1Ptr).secretBases[12].trainerId">
+               <integer min="0" bitcount="8" type="u8" value="(*gSaveBlock1Ptr).secretBases[12].trainerId[__g]" />
             </loop>
-            <integer max="7" min="0" bitcount="4" type="LanguageID" value="(*gSaveBlock1Ptr).secretBases[14].language" />
-            <integer min="0" bitcount="16" type="u16" value="(*gSaveBlock1Ptr).secretBases[14].numSecretBasesReceived" />
-            <integer min="0" bitcount="8" type="u8" value="(*gSaveBlock1Ptr).secretBases[14].numTimesEntered" />
-            <integer min="0" bitcount="8" type="u8" value="(*gSaveBlock1Ptr).secretBases[14].unused" />
-            <loop counter-var="__h" count="16" start="0" array="(*gSaveBlock1Ptr).secretBases[14].decorations">
-               <integer min="0" bitcount="8" type="u8" value="(*gSaveBlock1Ptr).secretBases[14].decorations[__h]" />
+            <integer max="7" min="0" bitcount="4" type="LanguageID" value="(*gSaveBlock1Ptr).secretBases[12].language" />
+            <integer min="0" bitcount="16" type="u16" value="(*gSaveBlock1Ptr).secretBases[12].numSecretBasesReceived" />
+            <integer min="0" bitcount="8" type="u8" value="(*gSaveBlock1Ptr).secretBases[12].numTimesEntered" />
+            <integer min="0" bitcount="8" type="u8" value="(*gSaveBlock1Ptr).secretBases[12].unused" />
+            <loop counter-var="__h" count="16" start="0" array="(*gSaveBlock1Ptr).secretBases[12].decorations">
+               <integer min="0" bitcount="8" type="u8" value="(*gSaveBlock1Ptr).secretBases[12].decorations[__h]" />
             </loop>
-            <loop counter-var="__i" count="16" start="0" array="(*gSaveBlock1Ptr).secretBases[14].decorationPositions">
-               <integer min="0" bitcount="8" type="u8" value="(*gSaveBlock1Ptr).secretBases[14].decorationPositions[__i]" />
+            <loop counter-var="__i" count="16" start="0" array="(*gSaveBlock1Ptr).secretBases[12].decorationPositions">
+               <integer min="0" bitcount="8" type="u8" value="(*gSaveBlock1Ptr).secretBases[12].decorationPositions[__i]" />
             </loop>
-            <loop counter-var="__j" count="6" start="0" array="(*gSaveBlock1Ptr).secretBases[14].party.personality">
-               <integer min="0" bitcount="32" type="u32" value="(*gSaveBlock1Ptr).secretBases[14].party.personality[__j]" />
+            <loop counter-var="__j" count="6" start="0" array="(*gSaveBlock1Ptr).secretBases[12].party.personality">
+               <integer min="0" bitcount="32" type="u32" value="(*gSaveBlock1Ptr).secretBases[12].party.personality[__j]" />
+            </loop>
+            <loop counter-var="__k" count="15" start="0" array="(*gSaveBlock1Ptr).secretBases[12].party.moves">
+               <integer min="0" bitcount="9" type="MoveID" value="(*gSaveBlock1Ptr).secretBases[12].party.moves[__k]" />
             </loop>
          </instructions>
       </sector>
       <sector>
          <stats>
-            <bitcounts total-packed="31741" />
+            <bitcounts total-packed="31739" />
          </stats>
          <instructions>
-            <loop counter-var="__loop_var_0" count="24" start="0" array="(*gSaveBlock1Ptr).secretBases[14].party.moves">
-               <integer min="0" bitcount="9" type="MoveID" value="(*gSaveBlock1Ptr).secretBases[14].party.moves[__loop_var_0]" />
+            <loop counter-var="__loop_var_0" count="9" start="15" array="(*gSaveBlock1Ptr).secretBases[12].party.moves">
+               <integer min="0" bitcount="9" type="MoveID" value="(*gSaveBlock1Ptr).secretBases[12].party.moves[__loop_var_0]" />
             </loop>
-            <loop counter-var="__loop_var_1" count="6" start="0" array="(*gSaveBlock1Ptr).secretBases[14].party.species">
-               <integer min="0" bitcount="16" type="PokemonSpeciesID" value="(*gSaveBlock1Ptr).secretBases[14].party.species[__loop_var_1]" />
+            <loop counter-var="__loop_var_1" count="6" start="0" array="(*gSaveBlock1Ptr).secretBases[12].party.species">
+               <integer min="0" bitcount="16" type="PokemonSpeciesID" value="(*gSaveBlock1Ptr).secretBases[12].party.species[__loop_var_1]" />
             </loop>
-            <loop counter-var="__loop_var_2" count="6" start="0" array="(*gSaveBlock1Ptr).secretBases[14].party.heldItems">
-               <integer min="0" bitcount="16" type="ItemIDGlobal" value="(*gSaveBlock1Ptr).secretBases[14].party.heldItems[__loop_var_2]" />
+            <loop counter-var="__loop_var_2" count="6" start="0" array="(*gSaveBlock1Ptr).secretBases[12].party.heldItems">
+               <integer min="0" bitcount="16" type="ItemIDGlobal" value="(*gSaveBlock1Ptr).secretBases[12].party.heldItems[__loop_var_2]" />
             </loop>
-            <loop counter-var="__loop_var_3" count="6" start="0" array="(*gSaveBlock1Ptr).secretBases[14].party.levels">
-               <integer max="100" min="0" bitcount="7" type="PokemonLevel" value="(*gSaveBlock1Ptr).secretBases[14].party.levels[__loop_var_3]" />
+            <loop counter-var="__loop_var_3" count="6" start="0" array="(*gSaveBlock1Ptr).secretBases[12].party.levels">
+               <integer max="100" min="0" bitcount="7" type="PokemonLevel" value="(*gSaveBlock1Ptr).secretBases[12].party.levels[__loop_var_3]" />
             </loop>
-            <loop counter-var="__loop_var_4" count="6" start="0" array="(*gSaveBlock1Ptr).secretBases[14].party.EVs">
-               <integer min="0" bitcount="8" type="u8" value="(*gSaveBlock1Ptr).secretBases[14].party.EVs[__loop_var_4]" />
+            <loop counter-var="__loop_var_4" count="6" start="0" array="(*gSaveBlock1Ptr).secretBases[12].party.EVs">
+               <integer min="0" bitcount="8" type="u8" value="(*gSaveBlock1Ptr).secretBases[12].party.EVs[__loop_var_4]" />
             </loop>
-            <loop counter-var="__loop_var_5" count="5" start="15" array="(*gSaveBlock1Ptr).secretBases">
+            <loop counter-var="__loop_var_5" count="7" start="13" array="(*gSaveBlock1Ptr).secretBases">
                <struct type="SecretBase" value="(*gSaveBlock1Ptr).secretBases[__loop_var_5]" />
             </loop>
             <loop counter-var="__loop_var_6" count="12" start="0" array="(*gSaveBlock1Ptr).playerRoomDecorations">
@@ -3306,63 +3322,58 @@
             <struct type="Roamer" value="(*gSaveBlock1Ptr).roamer" />
             <struct type="EnigmaBerry" value="(*gSaveBlock1Ptr).enigmaBerry" />
             <integer min="0" bitcount="32" type="u32" value="(*gSaveBlock1Ptr).mysteryGift.newsCrc" />
-            <struct type="WonderNews" value="(*gSaveBlock1Ptr).mysteryGift.news" />
-            <integer min="0" bitcount="32" type="u32" value="(*gSaveBlock1Ptr).mysteryGift.cardCrc" />
-            <integer min="0" bitcount="16" type="u16" value="(*gSaveBlock1Ptr).mysteryGift.card.flagId" />
-            <integer min="0" bitcount="16" type="PokemonSpeciesID" value="(*gSaveBlock1Ptr).mysteryGift.card.iconSpecies" />
-            <integer min="0" bitcount="32" type="u32" value="(*gSaveBlock1Ptr).mysteryGift.card.idNumber" />
-            <integer min="0" bitcount="2" type="u8" value="(*gSaveBlock1Ptr).mysteryGift.card.type" />
-            <integer min="0" bitcount="4" type="u8" value="(*gSaveBlock1Ptr).mysteryGift.card.bgType" />
-            <integer min="0" bitcount="2" type="u8" value="(*gSaveBlock1Ptr).mysteryGift.card.sendType" />
-            <integer min="0" bitcount="8" type="u8" value="(*gSaveBlock1Ptr).mysteryGift.card.maxStamps" />
-            <loop counter-var="__loop_var_28" count="40" start="0" array="(*gSaveBlock1Ptr).mysteryGift.card.titleText">
-               <integer min="0" bitcount="8" type="u8" value="(*gSaveBlock1Ptr).mysteryGift.card.titleText[__loop_var_28]" />
+            <integer min="0" bitcount="16" type="u16" value="(*gSaveBlock1Ptr).mysteryGift.news.id" />
+            <integer min="0" bitcount="8" type="u8" value="(*gSaveBlock1Ptr).mysteryGift.news.sendType" />
+            <integer min="0" bitcount="8" type="u8" value="(*gSaveBlock1Ptr).mysteryGift.news.bgType" />
+            <loop counter-var="__loop_var_28" count="40" start="0" array="(*gSaveBlock1Ptr).mysteryGift.news.titleText">
+               <integer min="0" bitcount="8" type="u8" value="(*gSaveBlock1Ptr).mysteryGift.news.titleText[__loop_var_28]" />
             </loop>
-            <loop counter-var="__loop_var_29" count="27" start="0" array="(*gSaveBlock1Ptr).mysteryGift.card.subtitleText">
-               <integer min="0" bitcount="8" type="u8" value="(*gSaveBlock1Ptr).mysteryGift.card.subtitleText[__loop_var_29]" />
+            <loop counter-var="__loop_var_29" count="5" start="0" array="(*gSaveBlock1Ptr).mysteryGift.news.bodyText">
+               <loop counter-var="__loop_var_30" count="40" start="0" array="(*gSaveBlock1Ptr).mysteryGift.news.bodyText[__loop_var_29]">
+                  <integer min="0" bitcount="8" type="u8" value="(*gSaveBlock1Ptr).mysteryGift.news.bodyText[__loop_var_29][__loop_var_30]" />
+               </loop>
+            </loop>
+            <loop counter-var="__loop_var_31" count="18" start="0" array="(*gSaveBlock1Ptr).mysteryGift.news.bodyText[5]">
+               <integer min="0" bitcount="8" type="u8" value="(*gSaveBlock1Ptr).mysteryGift.news.bodyText[5][__loop_var_31]" />
             </loop>
          </instructions>
       </sector>
       <sector>
          <stats>
-            <bitcounts total-packed="18612" />
+            <bitcounts total-packed="20718" />
          </stats>
          <instructions>
-            <loop counter-var="__a" count="13" start="27" array="(*gSaveBlock1Ptr).mysteryGift.card.subtitleText">
-               <integer min="0" bitcount="8" type="u8" value="(*gSaveBlock1Ptr).mysteryGift.card.subtitleText[__a]" />
+            <loop counter-var="__a" count="22" start="18" array="(*gSaveBlock1Ptr).mysteryGift.news.bodyText[5]">
+               <integer min="0" bitcount="8" type="u8" value="(*gSaveBlock1Ptr).mysteryGift.news.bodyText[5][__a]" />
             </loop>
-            <loop counter-var="__b" count="4" start="0" array="(*gSaveBlock1Ptr).mysteryGift.card.bodyText">
-               <loop counter-var="__c" count="40" start="0" array="(*gSaveBlock1Ptr).mysteryGift.card.bodyText[__b]">
-                  <integer min="0" bitcount="8" type="u8" value="(*gSaveBlock1Ptr).mysteryGift.card.bodyText[__b][__c]" />
+            <loop counter-var="__b" count="4" start="6" array="(*gSaveBlock1Ptr).mysteryGift.news.bodyText">
+               <loop counter-var="__c" count="40" start="0" array="(*gSaveBlock1Ptr).mysteryGift.news.bodyText[__b]">
+                  <integer min="0" bitcount="8" type="u8" value="(*gSaveBlock1Ptr).mysteryGift.news.bodyText[__b][__c]" />
                </loop>
             </loop>
-            <loop counter-var="__d" count="40" start="0" array="(*gSaveBlock1Ptr).mysteryGift.card.footerLine1Text">
-               <integer min="0" bitcount="8" type="u8" value="(*gSaveBlock1Ptr).mysteryGift.card.footerLine1Text[__d]" />
-            </loop>
-            <loop counter-var="__e" count="40" start="0" array="(*gSaveBlock1Ptr).mysteryGift.card.footerLine2Text">
-               <integer min="0" bitcount="8" type="u8" value="(*gSaveBlock1Ptr).mysteryGift.card.footerLine2Text[__e]" />
-            </loop>
+            <integer min="0" bitcount="32" type="u32" value="(*gSaveBlock1Ptr).mysteryGift.cardCrc" />
+            <struct type="WonderCard" value="(*gSaveBlock1Ptr).mysteryGift.card" />
             <integer min="0" bitcount="32" type="u32" value="(*gSaveBlock1Ptr).mysteryGift.cardMetadataCrc" />
             <struct type="WonderCardMetadata" value="(*gSaveBlock1Ptr).mysteryGift.cardMetadata" />
-            <loop counter-var="__f" count="4" start="0" array="(*gSaveBlock1Ptr).mysteryGift.questionnaireWords">
-               <integer min="0" bitcount="16" type="u16" value="(*gSaveBlock1Ptr).mysteryGift.questionnaireWords[__f]" />
+            <loop counter-var="__d" count="4" start="0" array="(*gSaveBlock1Ptr).mysteryGift.questionnaireWords">
+               <integer min="0" bitcount="16" type="u16" value="(*gSaveBlock1Ptr).mysteryGift.questionnaireWords[__d]" />
             </loop>
             <struct type="WonderNewsMetadata" value="(*gSaveBlock1Ptr).mysteryGift.newsMetadata" />
-            <loop counter-var="__g" count="2" start="0" array="(*gSaveBlock1Ptr).mysteryGift.trainerIds">
-               <loop counter-var="__h" count="5" start="0" array="(*gSaveBlock1Ptr).mysteryGift.trainerIds[__g]">
-                  <integer min="0" bitcount="32" type="u32" value="(*gSaveBlock1Ptr).mysteryGift.trainerIds[__g][__h]" />
+            <loop counter-var="__e" count="2" start="0" array="(*gSaveBlock1Ptr).mysteryGift.trainerIds">
+               <loop counter-var="__f" count="5" start="0" array="(*gSaveBlock1Ptr).mysteryGift.trainerIds[__e]">
+                  <integer min="0" bitcount="32" type="u32" value="(*gSaveBlock1Ptr).mysteryGift.trainerIds[__e][__f]" />
                </loop>
             </loop>
-            <loop counter-var="__i" count="384" start="0" array="(*gSaveBlock1Ptr).unused_3598">
-               <integer min="0" bitcount="8" type="u8" value="(*gSaveBlock1Ptr).unused_3598[__i]" />
+            <loop counter-var="__g" count="384" start="0" array="(*gSaveBlock1Ptr).unused_3598">
+               <integer min="0" bitcount="8" type="u8" value="(*gSaveBlock1Ptr).unused_3598[__g]" />
             </loop>
-            <loop counter-var="__j" count="4" start="0" array="(*gSaveBlock1Ptr).trainerHillTimes">
-               <integer min="0" bitcount="32" type="u32" value="(*gSaveBlock1Ptr).trainerHillTimes[__j]" />
+            <loop counter-var="__h" count="4" start="0" array="(*gSaveBlock1Ptr).trainerHillTimes">
+               <integer min="0" bitcount="32" type="u32" value="(*gSaveBlock1Ptr).trainerHillTimes[__h]" />
             </loop>
             <struct type="RamScript" value="(*gSaveBlock1Ptr).ramScript" />
             <struct type="RecordMixingGift" value="(*gSaveBlock1Ptr).recordMixingGift" />
-            <loop counter-var="__k" count="52" start="0" array="(*gSaveBlock1Ptr).seen2">
-               <integer min="0" bitcount="8" type="u8" value="(*gSaveBlock1Ptr).seen2[__k]" />
+            <loop counter-var="__i" count="52" start="0" array="(*gSaveBlock1Ptr).seen2">
+               <integer min="0" bitcount="8" type="u8" value="(*gSaveBlock1Ptr).seen2[__i]" />
             </loop>
             <integer min="0" bitcount="8" type="u8" value="(*gSaveBlock1Ptr).lilycoveLady.quiz.id" />
             <switch operand="(*gSaveBlock1Ptr).lilycoveLady.quiz.id">
@@ -3389,14 +3400,14 @@
                </case>
                <case value="0">
                   <integer min="0" bitcount="8" type="u8" value="(*gSaveBlock1Ptr).lilycoveLady.quiz.state" />
-                  <loop counter-var="__l" count="9" start="0" array="(*gSaveBlock1Ptr).lilycoveLady.quiz.question">
-                     <integer min="0" bitcount="16" type="u16" value="(*gSaveBlock1Ptr).lilycoveLady.quiz.question[__l]" />
+                  <loop counter-var="__j" count="9" start="0" array="(*gSaveBlock1Ptr).lilycoveLady.quiz.question">
+                     <integer min="0" bitcount="16" type="u16" value="(*gSaveBlock1Ptr).lilycoveLady.quiz.question[__j]" />
                   </loop>
                   <integer min="0" bitcount="16" type="u16" value="(*gSaveBlock1Ptr).lilycoveLady.quiz.correctAnswer" />
                   <integer min="0" bitcount="16" type="u16" value="(*gSaveBlock1Ptr).lilycoveLady.quiz.playerAnswer" />
                   <string nonstring="false" length="7" type="u8[8]" value="(*gSaveBlock1Ptr).lilycoveLady.quiz.playerName" />
-                  <loop counter-var="__m" count="4" start="0" array="(*gSaveBlock1Ptr).lilycoveLady.quiz.playerTrainerId">
-                     <integer min="0" bitcount="8" type="u8" value="(*gSaveBlock1Ptr).lilycoveLady.quiz.playerTrainerId[__m]" />
+                  <loop counter-var="__k" count="4" start="0" array="(*gSaveBlock1Ptr).lilycoveLady.quiz.playerTrainerId">
+                     <integer min="0" bitcount="8" type="u8" value="(*gSaveBlock1Ptr).lilycoveLady.quiz.playerTrainerId[__k]" />
                   </loop>
                   <integer min="0" bitcount="16" type="u16" value="(*gSaveBlock1Ptr).lilycoveLady.quiz.prize" />
                   <boolean type="bool8" value="(*gSaveBlock1Ptr).lilycoveLady.quiz.waitingForChallenger" />
@@ -3405,16 +3416,16 @@
                   <integer max="7" min="0" bitcount="4" type="LanguageID" value="(*gSaveBlock1Ptr).lilycoveLady.quiz.language" />
                </case>
             </switch>
-            <loop counter-var="__n" count="20" start="0" array="(*gSaveBlock1Ptr).trainerNameRecords">
-               <struct type="TrainerNameRecord" value="(*gSaveBlock1Ptr).trainerNameRecords[__n]" />
+            <loop counter-var="__l" count="20" start="0" array="(*gSaveBlock1Ptr).trainerNameRecords">
+               <struct type="TrainerNameRecord" value="(*gSaveBlock1Ptr).trainerNameRecords[__l]" />
             </loop>
-            <loop counter-var="__o" count="10" start="0" array="(*gSaveBlock1Ptr).registeredTexts">
-               <loop counter-var="__p" count="21" start="0" array="(*gSaveBlock1Ptr).registeredTexts[__o]">
-                  <integer min="0" bitcount="8" type="u8" value="(*gSaveBlock1Ptr).registeredTexts[__o][__p]" />
+            <loop counter-var="__m" count="10" start="0" array="(*gSaveBlock1Ptr).registeredTexts">
+               <loop counter-var="__n" count="21" start="0" array="(*gSaveBlock1Ptr).registeredTexts[__m]">
+                  <integer min="0" bitcount="8" type="u8" value="(*gSaveBlock1Ptr).registeredTexts[__m][__n]" />
                </loop>
             </loop>
-            <loop counter-var="__q" count="10" start="0" array="(*gSaveBlock1Ptr).unused_3D5A">
-               <integer min="0" bitcount="8" type="u8" value="(*gSaveBlock1Ptr).unused_3D5A[__q]" />
+            <loop counter-var="__o" count="10" start="0" array="(*gSaveBlock1Ptr).unused_3D5A">
+               <integer min="0" bitcount="8" type="u8" value="(*gSaveBlock1Ptr).unused_3D5A[__o]" />
             </loop>
             <struct type="TrainerHillSave" value="(*gSaveBlock1Ptr).trainerHill" />
             <struct type="WaldaPhrase" value="(*gSaveBlock1Ptr).waldaPhrase" />

@@ -216,6 +216,11 @@ static u8 GetSaveValidStatus() {
             checksum            = CalculateChecksum(gReadWriteSector->data, SECTOR_DATA_SIZE); // TODO: Could optimize by using only the bytespan of the serialized/bitpacked data.
             if (gReadWriteSector->checksum == checksum) {
                slot_counters[slot_idx] = gReadWriteSector->counter;
+               #ifndef NDEBUG
+                  if (valid_sector_flags & (1 << gReadWriteSector->id)) {
+                     DebugPrintf("Slot %u sector ID %u was seen twice! Last seen at index %u.", slot_idx, gReadWriteSector->id, sector_idx);
+                  }
+               #endif
                valid_sector_flags |= 1 << gReadWriteSector->id;
             } else {
                #ifndef NDEBUG
@@ -439,6 +444,9 @@ static u8 SerializeToSlotOwnedSector(u8 sectorId, bool8 eraseFlashFirst) {
    sectorIndex = sectorId + gLastWrittenSector;
    sectorIndex %= NUM_SECTORS_PER_SLOT;
    sectorIndex += NUM_SECTORS_PER_SLOT * (gSaveCounter % NUM_SAVE_SLOTS);
+   #ifndef NDEBUG
+      DebugPrintf("Saving sector ID %u to sector index %u...", sectorId, sectorIndex);
+   #endif
 
    // Clear temp save sector
    {
@@ -456,6 +464,11 @@ static u8 SerializeToSlotOwnedSector(u8 sectorId, bool8 eraseFlashFirst) {
    // Write current data to temp buffer for writing
    if (sectorId < __lu_bitpack_sector_count) {
       WriteSavegameSector(gReadWriteSector->data, sectorId);
+      #ifndef NDEBUG
+         if (gReadWriteSector->signature != SECTOR_SIGNATURE) {
+            DebugPrintf("Failed to save sector ID %u to sector index %u: something went wrong with the bitpacking code generation, and we ended up overrunning the available space and corrupting the footer!", sectorId, sectorIndex);
+         }
+      #endif
    }
 
    gReadWriteSector->checksum = CalculateChecksum(gReadWriteSector->data, SECTOR_DATA_SIZE); // TODO: Could optimize by using only the bytespan of the serialized/bitpacked data.
@@ -468,6 +481,9 @@ static u8 SerializeToSlotOwnedSector(u8 sectorId, bool8 eraseFlashFirst) {
    }
    status = TryWriteSector(sectorIndex, gReadWriteSector->data);
    if (status == SAVE_STATUS_ERROR) {
+      #ifndef NDEBUG
+         DebugPrintf("Failed to save sector ID %u to sector index %u!", sectorId, sectorIndex);
+      #endif
       return status;
    }
    return TryWriteSectorFooter(sectorIndex, gReadWriteSector);
@@ -496,15 +512,42 @@ static u8 WriteSlot(bool8 cycleSectors, bool8 savePokemonStorage, bool8 eraseFla
    //
    if (savePokemonStorage) {
       // SaveBlock1, SaveBlock2, and PokemonStorage
-      for (i = 0; i < NUM_SECTORS_PER_SLOT; i++)
-         SerializeToSlotOwnedSector(i, eraseFlashFirst);
-      DebugPrintf("Full save done. Don't know if it succeeded or failed.");
+      int slot_status;
+      
+      for (i = 0; i < NUM_SECTORS_PER_SLOT; i++) {
+         slot_status = SerializeToSlotOwnedSector(i, eraseFlashFirst);
+         if (slot_status == SAVE_STATUS_ERROR)
+            status = SAVE_STATUS_ERROR;
+      }
+      
+      #ifndef NDEBUG
+      if (status == SAVE_STATUS_ERROR) {
+         DebugPrintf("Full save done, but a slot failed to save properly.");
+      } else {
+         DebugPrintf("Full save done. No errors detected yet (but we still need to check whether flash memory has an apparent issue).");
+      }
+      #endif
    } else {
       // SaveBlock1, SaveBlock2
-      SerializeToSlotOwnedSector(SECTOR_ID_SAVEBLOCK2, eraseFlashFirst);
-      for (i = SECTOR_ID_SAVEBLOCK1_START; i <= SECTOR_ID_SAVEBLOCK1_END; i++)
-         SerializeToSlotOwnedSector(i, eraseFlashFirst);
-      DebugPrintf("Partial save (no PC; sectors [%u, %u]) done. Don't know if it succeeded or failed.", SECTOR_ID_SAVEBLOCK2, SECTOR_ID_SAVEBLOCK1_END);
+      int slot_status;
+      
+      slot_status = SerializeToSlotOwnedSector(SECTOR_ID_SAVEBLOCK2, eraseFlashFirst);
+      if (slot_status == SAVE_STATUS_ERROR)
+         status = SAVE_STATUS_ERROR;
+      
+      for (i = SECTOR_ID_SAVEBLOCK1_START; i <= SECTOR_ID_SAVEBLOCK1_END; i++) {
+         slot_status = SerializeToSlotOwnedSector(i, eraseFlashFirst);
+         if (slot_status == SAVE_STATUS_ERROR)
+            status = SAVE_STATUS_ERROR;
+      }
+      
+      #ifndef NDEBUG
+      if (status == SAVE_STATUS_ERROR) {
+         DebugPrintf("Partial save (no PC; sectors [%u, %u]) done, but a slot failed to save properly.", SECTOR_ID_SAVEBLOCK2, SECTOR_ID_SAVEBLOCK1_END);
+      } else {
+         DebugPrintf("Partial save (no PC; sectors [%u, %u]) done. No errors detected yet (but we still need to check whether flash memory has an apparent issue).", SECTOR_ID_SAVEBLOCK2, SECTOR_ID_SAVEBLOCK1_END);
+      }
+      #endif
    }
    
    if (gDamagedSaveSectors) {

@@ -107,7 +107,7 @@ static bool32 SetDamagedSectorBits(u8 op, u8 sectorId) {
       case ENABLE:
          #ifndef NDEBUG
          if (!(gDamagedSaveSectors & (1 << sectorId))) {
-            DebugPrintf("Sector ID %u tests as damaged!", sectorId);
+            DebugPrintf("[Savedata] Sector ID %u tests as damaged!", sectorId);
          }
          #endif
          gDamagedSaveSectors |= (1 << sectorId);
@@ -130,7 +130,7 @@ static u8 TryWriteSector(u8 sector, u8 *data) {
       // Failed
       SetDamagedSectorBits(ENABLE, sector);
       #ifndef NDEBUG
-         DebugPrintf("Damage detected at address %08X while writing sector data.", result);
+         DebugPrintf("[Savedata] Damage detected at address %08X while writing sector data.", result);
       #endif
       return SAVE_STATUS_ERROR;
    } else {
@@ -155,7 +155,7 @@ static u8 TryWriteSectorFooter(u8 sector_index, const struct SaveSector* sector_
       // Writing signature/counter failed
       SetDamagedSectorBits(ENABLE, sector_index);
       #ifndef NDEBUG
-         DebugPrintf("Damage detected while writing the sector footer (byte %u).", i);
+         DebugPrintf("[Savedata] Damage detected while writing the sector footer (byte %u).", i);
       #endif
       return SAVE_STATUS_ERROR;
    }
@@ -171,24 +171,59 @@ static u8 TryWriteSectorFooter(u8 sector_index, const struct SaveSector* sector_
 // Game Freak's ASLR code as part of the offset it shifts data by. The reason this has 
 // to read into flash memory (i.e. the reason it exists at all) is because it's run 
 // before you actually load your save file.
+u8 ExtractRawSaveBlockByte(void* buffer, u32 offset) {
+   struct lu_BitstreamState bs_state;
+   lu_BitstreamInitialize(&bs_state, buffer);
+   bs_state.target += offset / 8;
+   bs_state.shift   = offset % 8;
+   return lu_BitstreamRead_u8(&bs_state, 6);
+}
 u16 GetSaveBlocksPointersBaseOffset(void) {
    u16 i, slotOffset;
+   u16 summed_id;
+   u8  found_id_parts;
    struct SaveSector* sector;
+   
+   #pragma lu_bitpack serialized_sector_id_to_constant sector_of_trainer_id_0 gSaveBlock2Ptr->playerTrainerId[0]
+   #pragma lu_bitpack serialized_offset_to_constant    offset_of_trainer_id_0 gSaveBlock2Ptr->playerTrainerId[0]
+   #pragma lu_bitpack serialized_sector_id_to_constant sector_of_trainer_id_1 gSaveBlock2Ptr->playerTrainerId[1]
+   #pragma lu_bitpack serialized_offset_to_constant    offset_of_trainer_id_1 gSaveBlock2Ptr->playerTrainerId[1]
+   #pragma lu_bitpack serialized_sector_id_to_constant sector_of_trainer_id_2 gSaveBlock2Ptr->playerTrainerId[2]
+   #pragma lu_bitpack serialized_offset_to_constant    offset_of_trainer_id_2 gSaveBlock2Ptr->playerTrainerId[2]
+   #pragma lu_bitpack serialized_sector_id_to_constant sector_of_trainer_id_3 gSaveBlock2Ptr->playerTrainerId[3]
+   #pragma lu_bitpack serialized_offset_to_constant    offset_of_trainer_id_3 gSaveBlock2Ptr->playerTrainerId[3]
 
    sector = gReadWriteSector = &gSaveDataBuffer;
    if (gFlashMemoryPresent != TRUE)
       return 0;
-   GetSaveValidStatus();
-   slotOffset = NUM_SECTORS_PER_SLOT * (gSaveCounter % NUM_SAVE_SLOTS);
+   {
+      u8 status = GetSaveValidStatus();
+      if (status == SAVE_STATUS_EMPTY || status == SAVE_STATUS_CORRUPT)
+         return 0;
+   }
+   slotOffset     = NUM_SECTORS_PER_SLOT * (gSaveCounter % NUM_SAVE_SLOTS);
+   summed_id      = 0;
+   found_id_parts = 0;
    for (i = 0; i < NUM_SECTORS_PER_SLOT; i++) {
       ReadFlashSector(i + slotOffset, gReadWriteSector);
-
-      // Base offset for SaveBlock2 is calculated using the trainer id
-      if (gReadWriteSector->id == SECTOR_ID_SAVEBLOCK2)
-         return sector->data[offsetof(struct SaveBlock2, playerTrainerId[0])] +
-                sector->data[offsetof(struct SaveBlock2, playerTrainerId[1])] +
-                sector->data[offsetof(struct SaveBlock2, playerTrainerId[2])] +
-                sector->data[offsetof(struct SaveBlock2, playerTrainerId[3])];
+      
+      if (gReadWriteSector->id == sector_of_trainer_id_0) {
+         found_id_parts |= (1 << 0);
+         summed_id += ExtractRawSaveBlockByte(sector->data, offset_of_trainer_id_0);
+      } else if (gReadWriteSector->id == sector_of_trainer_id_1) {
+         found_id_parts |= (1 << 1);
+         summed_id += ExtractRawSaveBlockByte(sector->data, offset_of_trainer_id_1);
+      } else if (gReadWriteSector->id == sector_of_trainer_id_2) {
+         found_id_parts |= (1 << 2);
+         summed_id += ExtractRawSaveBlockByte(sector->data, offset_of_trainer_id_2);
+      } else if (gReadWriteSector->id == sector_of_trainer_id_3) {
+         found_id_parts |= (1 << 3);
+         summed_id += ExtractRawSaveBlockByte(sector->data, offset_of_trainer_id_3);
+      } else {
+         continue;
+      }
+      if (found_id_parts == 15)
+         return summed_id;
    }
    return 0;
 }
@@ -218,13 +253,13 @@ static u8 GetSaveValidStatus() {
                slot_counters[slot_idx] = gReadWriteSector->counter;
                #ifndef NDEBUG
                   if (valid_sector_flags & (1 << gReadWriteSector->id)) {
-                     DebugPrintf("Slot %u sector ID %u was seen twice! Last seen at index %u.", slot_idx, gReadWriteSector->id, sector_idx);
+                     DebugPrintf("[Savedata][Validating] Slot %u sector ID %u was seen twice! Last seen at index %u.", slot_idx, gReadWriteSector->id, sector_idx);
                   }
                #endif
                valid_sector_flags |= 1 << gReadWriteSector->id;
             } else {
                #ifndef NDEBUG
-                  DebugPrintf("Slot %u sector %u (ID %u) failed validation: checksum %04X differed from expected %04X.", slot_idx, sector_idx, gReadWriteSector->id, gReadWriteSector->checksum, checksum);
+                  DebugPrintf("[Savedata][Validating] Slot %u sector %u (ID %u) failed validation: checksum %04X differed from expected %04X.", slot_idx, sector_idx, gReadWriteSector->id, gReadWriteSector->checksum, checksum);
                #endif
             }
          }
@@ -234,7 +269,7 @@ static u8 GetSaveValidStatus() {
             slot_statuses[slot_idx] = SAVE_STATUS_OK;
          else {
             #ifndef NDEBUG
-               DebugPrintf("Slot %u failed validation: the valid sector mask was %08X. If no sectors failed the checksum check, then perhaps a sector is missing?", slot_idx, valid_sector_flags);
+               DebugPrintf("[Savedata][Validating] Slot %u failed validation: the valid sector mask was %08X. If no sectors failed the checksum check, then perhaps a sector is missing?", slot_idx, valid_sector_flags);
             #endif
             slot_statuses[slot_idx] = SAVE_STATUS_ERROR;
          }
@@ -300,7 +335,7 @@ u8 LoadGameSave(u8 saveType) {
    u8 status;
 
    if (gFlashMemoryPresent != TRUE) {
-      DebugPrintf("Requested savegame load, but there's no flash memory!", 0);
+      DebugPrintf("[Savedata] Requested savegame load, but there's no flash memory!", 0);
       gSaveFileStatus = SAVE_STATUS_NO_FLASH;
       return SAVE_STATUS_ERROR;
    }
@@ -308,12 +343,12 @@ u8 LoadGameSave(u8 saveType) {
    switch (saveType) {
       case SAVE_NORMAL:
       default:
-         DebugPrintf("Performing full savegame load...", 0);
+         DebugPrintf("[Savedata] Performing full savegame load...", 0);
          status = TryLoadSaveSlot();
          CopyPartyAndObjectsFromSave();
          gSaveFileStatus = status;
          gGameContinueCallback = 0;
-         DebugPrintf("Performed full savegame load.", 0);
+         DebugPrintf("[Savedata] Performed full savegame load.", 0);
          break;
       case SAVE_HALL_OF_FAME:
          status = ReadSectorWithSize(SECTOR_ID_HOF_1, gDecompressionBuffer, SECTOR_DATA_SIZE);
@@ -332,9 +367,9 @@ static u8 TryLoadSaveSlot() {
    status = GetSaveValidStatus();
    #ifndef NDEBUG
       if (status == SAVE_STATUS_ERROR) {
-         DebugPrintf("One of the two save slots is corrupt.");
+         DebugPrintf("[Savedata] One of the two save slots is corrupt.");
       } else if (status == SAVE_STATUS_CORRUPT) {
-         DebugPrintf("Both save slots (main and backup) are corrupt.");
+         DebugPrintf("[Savedata] Both save slots (main and backup) are corrupt.");
       }
    #endif
    CopySaveSlotData();
@@ -445,7 +480,7 @@ static u8 SerializeToSlotOwnedSector(u8 sectorId, bool8 eraseFlashFirst) {
    sectorIndex %= NUM_SECTORS_PER_SLOT;
    sectorIndex += NUM_SECTORS_PER_SLOT * (gSaveCounter % NUM_SAVE_SLOTS);
    #ifndef NDEBUG
-      DebugPrintf("Saving sector ID %u to sector index %u...", sectorId, sectorIndex);
+      DebugPrintf("[Savedata] Saving sector ID %u to sector index %u...", sectorId, sectorIndex);
    #endif
 
    // Clear temp save sector
@@ -466,7 +501,7 @@ static u8 SerializeToSlotOwnedSector(u8 sectorId, bool8 eraseFlashFirst) {
       WriteSavegameSector(gReadWriteSector->data, sectorId);
       #ifndef NDEBUG
          if (gReadWriteSector->signature != SECTOR_SIGNATURE) {
-            DebugPrintf("Failed to save sector ID %u to sector index %u: something went wrong with the bitpacking code generation, and we ended up overrunning the available space and corrupting the footer!", sectorId, sectorIndex);
+            DebugPrintf("[Savedata] Failed to save sector ID %u to sector index %u: something went wrong with the bitpacking code generation, and we ended up overrunning the available space and corrupting the footer!", sectorId, sectorIndex);
          }
       #endif
    }
@@ -482,7 +517,7 @@ static u8 SerializeToSlotOwnedSector(u8 sectorId, bool8 eraseFlashFirst) {
    status = TryWriteSector(sectorIndex, gReadWriteSector->data);
    if (status == SAVE_STATUS_ERROR) {
       #ifndef NDEBUG
-         DebugPrintf("Failed to save sector ID %u to sector index %u!", sectorId, sectorIndex);
+         DebugPrintf("[Savedata] Failed to save sector ID %u to sector index %u!", sectorId, sectorIndex);
       #endif
       return status;
    }
@@ -494,22 +529,13 @@ static u8 WriteSlot(bool8 cycleSectors, bool8 savePokemonStorage, bool8 eraseFla
    u8  i;
    u32 status;
    
-   DebugPrintf("Performing full save...", 0);
+   DebugPrintf("[Savedata] Performing full save...", 0);
    
    if (cycleSectors) {
       OnBeginFullSlotSave(FALSE);
    }
    status = SAVE_STATUS_OK;
    
-   #if SECTOR_ID_SAVEBLOCK2 > 0
-      #error Slot sector layout changed! Current code assumes [0, NUM_SECTORS_PER_SLOT) is all slotted.
-   #endif
-   #if (SECTOR_ID_SAVEBLOCK1_START   != SECTOR_ID_SAVEBLOCK2       + 1) \
-    || (SECTOR_ID_PKMN_STORAGE_START != SECTOR_ID_SAVEBLOCK1_END   + 1) \
-    || (NUM_SECTORS_PER_SLOT         != SECTOR_ID_PKMN_STORAGE_END + 1)
-      #error Slot sector layout changed! Current code assumes layout is: SaveBlock2; SaveBlock1; PokemonStorage.
-   #endif
-   //
    if (savePokemonStorage) {
       // SaveBlock1, SaveBlock2, and PokemonStorage
       int slot_status;
@@ -522,30 +548,25 @@ static u8 WriteSlot(bool8 cycleSectors, bool8 savePokemonStorage, bool8 eraseFla
       
       #ifndef NDEBUG
       if (status == SAVE_STATUS_ERROR) {
-         DebugPrintf("Full save done, but a slot failed to save properly.");
+         DebugPrintf("[Savedata] Full save done, but a slot failed to save properly.");
       } else {
-         DebugPrintf("Full save done. No errors detected yet (but we still need to check whether flash memory has an apparent issue).");
+         DebugPrintf("[Savedata] Full save done. No errors detected yet (but we still need to check whether flash memory has an apparent issue).");
       }
       #endif
    } else {
+      #pragma lu_bitpack serialized_sector_id_to_constant sector_start_pc (*gPokemonStoragePtr)
       // SaveBlock1, SaveBlock2
-      int slot_status;
-      
-      slot_status = SerializeToSlotOwnedSector(SECTOR_ID_SAVEBLOCK2, eraseFlashFirst);
-      if (slot_status == SAVE_STATUS_ERROR)
-         status = SAVE_STATUS_ERROR;
-      
-      for (i = SECTOR_ID_SAVEBLOCK1_START; i <= SECTOR_ID_SAVEBLOCK1_END; i++) {
-         slot_status = SerializeToSlotOwnedSector(i, eraseFlashFirst);
+      for (i = 0; i < sector_start_pc; i++) {
+         int slot_status = SerializeToSlotOwnedSector(i, eraseFlashFirst);
          if (slot_status == SAVE_STATUS_ERROR)
             status = SAVE_STATUS_ERROR;
       }
       
       #ifndef NDEBUG
       if (status == SAVE_STATUS_ERROR) {
-         DebugPrintf("Partial save (no PC; sectors [%u, %u]) done, but a slot failed to save properly.", SECTOR_ID_SAVEBLOCK2, SECTOR_ID_SAVEBLOCK1_END);
+         DebugPrintf("[Savedata] Partial save (no PC; sectors [%u, %u]) done, but a slot failed to save properly.", 0, sector_start_pc);
       } else {
-         DebugPrintf("Partial save (no PC; sectors [%u, %u]) done. No errors detected yet (but we still need to check whether flash memory has an apparent issue).", SECTOR_ID_SAVEBLOCK2, SECTOR_ID_SAVEBLOCK1_END);
+         DebugPrintf("[Savedata] Partial save (no PC; sectors [%u, %u]) done. No errors detected yet (but we still need to check whether flash memory has an apparent issue).", 0, sector_start_pc);
       }
       #endif
    }
@@ -592,7 +613,7 @@ static void WriteHallOfFame() {
 
 
 u8 TrySavingData(u8 saveType) {
-   DebugPrintf("Received request to save... Type is %d.", saveType);
+   DebugPrintf("[Savedata] Received request to save... Type is %d.", saveType);
    if (gFlashMemoryPresent != TRUE) {
       gSaveAttemptStatus = SAVE_STATUS_ERROR;
       return SAVE_STATUS_ERROR;
@@ -600,11 +621,11 @@ u8 TrySavingData(u8 saveType) {
 
    HandleSavingData(saveType);
    if (!gDamagedSaveSectors) {
-      DebugPrintf("Request to save was successful (hopefully)!", 0);
+      DebugPrintf("[Savedata] Request to save was successful (hopefully)!", 0);
       gSaveAttemptStatus = SAVE_STATUS_OK;
       return SAVE_STATUS_OK;
    } else {
-      DebugPrintf("Request to save failed!", 0);
+      DebugPrintf("[Savedata] Request to save failed!", 0);
       DoSaveFailedScreen(saveType);
       gSaveAttemptStatus = SAVE_STATUS_ERROR;
       return SAVE_STATUS_ERROR;
@@ -685,8 +706,6 @@ u32 TryWriteSpecialSaveSector(u8 sector, u8* src) {
 }
 
 // TODO: Rename to DoLinkIncrementalPartialSave_PartA
-// Better yet: wrap both this and WriteSaveBlock1 in a function that writes the appropriate 
-// sector based on gIncrementalSectorId.
 u8 WriteSaveBlock2(void) {
    if (gFlashMemoryPresent != TRUE)
       return TRUE;
@@ -700,29 +719,34 @@ u8 WriteSaveBlock2(void) {
       gDamagedSaveSectors  = 0;
    }
    
-   SerializeToSlotOwnedSector(SECTOR_ID_SAVEBLOCK2, TRUE);
+   {
+      #pragma lu_bitpack serialized_sector_id_to_constant start_of_sb1 (*gSaveBlock1Ptr)
+      int i = 0;
+      for(; i < start_of_sb1; ++i) {
+         SerializeToSlotOwnedSector(i, TRUE);
+      }
+      gIncrementalSectorId = i;
+   }
    if (gDamagedSaveSectors) {
       // This is the same as `OnFailedFullSlotSave`.
       gLastWrittenSector = gLastKnownGoodSector;
       gSaveCounter       = gLastSaveCounter;
    }
    
-   gIncrementalSectorId = SECTOR_ID_SAVEBLOCK1_START;
-   
    return FALSE;
 }
 
 // TODO: Rename to DoLinkIncrementalPartialSave_PartB
-// Better yet: wrap both this and WriteSaveBlock1 in a function that writes the appropriate 
-// sector based on gIncrementalSectorId.
 //
 // Used in conjunction with WriteSaveBlock2 to write both for certain link saves.
 // This will be called repeatedly in a task, writing each sector of SaveBlock1 incrementally.
 // It returns TRUE when finished.
 bool8 WriteSaveBlock1Sector(void) {
+   #pragma lu_bitpack serialized_sector_id_to_constant start_of_pss (*gPokemonStoragePtr)
+   
    u8  finished = FALSE;
    u16 sectorId = ++gIncrementalSectorId; // Because WriteSaveBlock2 will have been called prior, this will be SECTOR_ID_SAVEBLOCK1_START
-   if (sectorId <= SECTOR_ID_SAVEBLOCK1_END) {
+   if (sectorId < start_of_pss) {
       SerializeToSlotOwnedSector(sectorId, TRUE);
    } else {
       finished = TRUE;

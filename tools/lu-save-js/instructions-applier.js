@@ -20,21 +20,15 @@ class InstructionsApplier {
             value = value.members[segm.what];
             console.assert(!!value);
          } else if (segm.type == "array-access") {
+            console.assert(value instanceof CValueInstanceArray);
+            
             let index = segm.what;
             if (!isNaN(+index)) {
                index = this.variables.loop_counters[index];
                console.assert(index !== undefined);
             }
             
-            // TODO: FINISH THIS
-            //
-            // Once we refactor CValueInstance so that it refers only to single 
-            // elements, with CValueInstanceArray representing arrays, it'll be 
-            // simpler and cleaner to here navigate into (potentially nested) 
-            // arrays.
-            console.assert(false, "TODO");
-            // value = ...
-            
+            value = value.values[index];
          } else {
             console.assert(false, "unreachable");
          }
@@ -54,12 +48,9 @@ class InstructionsApplier {
             // TODO
             
          } else if (node instanceof UnionSwitchInstructionNode) {
-            
-            // TODO: resolve the CValuePath of the `tag` into a CValueInstance reference
-            // TODO: assert that the corresponding CValue is of an integral type (including bools)
-            
-            let tag_value;
-            // TODO: set `tag_value` to the current value of the tag CValueInstance
+            let tag_value = this.resolve_value_path(node.tag);
+            console.assert(tag_value instanceof CValueInstance);
+            console.assert(tag_value.type == "integer" || tag_value.type == "boolean");
             
             let case_node = node.cases[tag_value];
             if (case_node) {
@@ -72,10 +63,7 @@ class InstructionsApplier {
          } else if (node instanceof PaddingInstructionNode) {
             this.bitstream.skip_reading_bits(node.bitcount);
          } else if (node instanceof SingleInstructionNode) {
-            
-            let value;
-            // TODO: resolve the CValuePath being targeted into a CValueInstance/CStructInstance reference
-            
+            let value = this.resolve_value_path(node.value);
             if (node.type == "struct") {
                console.assert(value instanceof CStructInstance);
                let /*CStruct*/ type = value.type;

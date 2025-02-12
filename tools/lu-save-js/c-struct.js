@@ -44,12 +44,14 @@ class CStructInstance {
       if (type) {
          for(let /*CValue*/ src of type.members) {
             let dst;
-            if (src.type == "struct") {
+            if (src.array_ranks.length > 0) {
+               dst = new CValueInstanceArray(format, src, 0);
+            } else if (src.type == "struct") {
                let src_type = src.anonymous_type;
                if (!src_type) {
                   src_type = this.save_format.lookup_type_by_name(src.c_typenames.serialized);
                }
-               dst = new CStructInstance(format, type);
+               dst = new CStructInstance(format, src_type);
             } else {
                dst = new CValueInstance(format, src);
             }

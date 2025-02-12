@@ -43,9 +43,13 @@ class CValue {
          if (dvs)
             this.default_value = dvs.textContent;
       }
-      for(let child of node.children)
-         if (child.nodeName == "array-rank")
-            this.array_ranks.push(+child.getAttribute("extent"));
+      for(let child of node.children) {
+         if (child.nodeName == "array-rank") {
+            let extent = +child.getAttribute("extent");
+            console.assert(!isNaN(extent));
+            this.array_ranks.push(extent);
+         }
+      }
          
       if (this.type == "struct" && !this.c_typenames.original) {
          this.anonymous_type = new CStruct();
@@ -53,6 +57,33 @@ class CValue {
             if (child.nodeName == "members") {
                this.anonymous_type.members_from_xml(child);
             }
+         }
+      }
+   }
+};
+
+// represents a single-dimensional array within the instance tree
+class CValueInstanceArray {
+   constructor(/*SaveFormat*/ format, /*CValue*/ base, /*size_t*/ rank) {
+      this.save_format = format;
+      this.base        = base;
+      this.values      = null;
+      if (base) {
+         if (!rank)
+            rank = 0;
+         console.assert(rank < base.array_ranks.length);
+         let extent       = base.array_ranks[rank];
+         let is_innermost = rank + 1 == base.array_ranks.length;
+         
+         this.values = [];
+         for(let i = 0; i < extent; ++i) {
+            let v;
+            if (is_innermost) {
+               v = new CValueInstance(format, base);
+            } else {
+               v = new CValueInstanceArray(format, base, rank + 1);
+            }
+            this.values.push(v);
          }
       }
    }
@@ -73,29 +104,7 @@ class CValueInstance {
                console.assert(!!instance_of, "if a struct value is an instance of a named struct, that struct must exist in the format");
             }
          }
-         
-         if (base.array_ranks.length) {
-            let recursively_build;
-            recursively_build = (function (i) {
-               let extent = base.array_ranks[i];
-               let out    = [];
-               if (i + 1 == base.array_ranks.length) {
-                  for(let j = 0; j < extent; ++j) {
-                     if (base.default_value) {
-                        out[j] = base.default_value;
-                     } else if (base.type == "struct") {
-                        out[j] = new CStructInstance(this.save_format, instance_of);
-                     }
-                  }
-                  return out;
-               }
-               for(let j = 0; j < extent; ++j) {
-                  out[j] = recursively_build(i + 1);
-               }
-               return out;
-            }).bind(this);
-            this.value = recursively_build(0);
-         } else if (base.default_value) {
+         if (base.default_value) {
             this.value = base.default_value;
          } else if (instance_of) {
             this.value = new CStructInstance(this.save_format, instance_of);

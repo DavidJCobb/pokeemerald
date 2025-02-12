@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+   <head>
+      <title>Bitpacked save dumper</title>
+      <link rel="stylesheet" href="index.css" />
+      <script>
+console.assert = function(condition, ...args) {
+   if (condition)
+      return;
+   console.log(...args);
+   throw new Error("Assertion failed. ", ...args); // actually halt execution
+};
+      </script>
+      
+      <script src="c-value.js"></script>
+      <script src="c-struct.js"></script>
+      <script src="c-union.js"></script>
+      <script src="c-value-path.js"></script>
+      <script src="instructions.js"></script>
+      <script src="save-format.js"></script>
+      
+      <!-- helper for pasting `charmap.txt` in and getting something usable -->
+      <script src="parse-charset.js"></script>
+      
+      <script src="charset.js"></script>
+      <script src="bitstream.js"></script>
+   </head>
+   <body>
+      <h1>Bitpacked save dumper</h1>
+      <p>
+         Given an XML file which describes a bitpacked save format, and an emulator SAV file made with that format, this page is intended to dump the contents of that save file.
+      </p>
+      <div class="form">
+         <label for="file-xml">Save file format (XML):</label>
+         <input type="file" id="file-xml" />
+         
+         <label for="file-sav">Save file (SAV):</label>
+         <input type="file" id="file-sav" />
+         
+         <button>Load</button>
+      </div>
+      <script src="index.js"></script>
+   </body>
+</html>

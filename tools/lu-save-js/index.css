@@ -1,0 +1,15 @@
+html {
+   font-family: Calibri, sans-serif;
+}
+
+.form {
+   display: grid;
+   grid-auto-columns: 10em min-content;
+   
+   label {
+      grid-column: 1;
+   }
+   button {
+      grid-column: 1 / span 2;
+   }
+}

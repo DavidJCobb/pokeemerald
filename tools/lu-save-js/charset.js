@@ -77,7 +77,7 @@ const CHARSET_CONTROL_CODES = (function() {
    out.define_char_code(0xFB, "\\p");
    out.define_char_code(0xFE, "\\n");
    return out;
-});
+})();
 
 const CHARSET_ENGLISH = (function() {
    let out = new Charset();

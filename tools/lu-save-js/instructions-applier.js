@@ -17,13 +17,18 @@ class InstructionsApplier {
       let rank  = 0;
       for(let segm of path.segments) {
          if (segm.type === null || segm.type == "member-access") {
-            value = value.members[segm.what];
+            if (value instanceof CUnionInstance) {
+               value = value.emplace(segm.what);
+            } else {
+               console.assert(value instanceof CStructInstance);
+               value = value.members[segm.what];
+            }
             console.assert(!!value);
          } else if (segm.type == "array-access") {
             console.assert(value instanceof CValueInstanceArray);
             
             let index = segm.what;
-            if (!isNaN(+index)) {
+            if (isNaN(+index)) {
                index = this.variables.loop_counters[index];
                console.assert(index !== undefined);
             }
@@ -50,7 +55,7 @@ class InstructionsApplier {
          } else if (node instanceof UnionSwitchInstructionNode) {
             let tag_value = this.resolve_value_path(node.tag);
             console.assert(tag_value instanceof CValueInstance);
-            console.assert(tag_value.type == "integer" || tag_value.type == "boolean");
+            console.assert(tag_value.base.type == "integer" || tag_value.base.type == "boolean");
             
             let case_node = node.cases[tag_value];
             if (case_node) {

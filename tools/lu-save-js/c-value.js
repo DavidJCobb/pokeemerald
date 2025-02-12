@@ -60,6 +60,28 @@ class CValue {
          }
       }
    }
+   
+   make_instance_representation(save_format, innermost) {
+      if (!innermost && this.array_ranks.length > 0) {
+         return new CValueInstanceArray(save_format, this, 0);
+      }
+      if (this.type == "union-external-tag" || this.type == "union-internal-tag") {
+         let c_type = save_format.lookup_type_by_name(this.c_typenames.serialized);
+         console.assert(!!c_type);
+         console.assert(c_type instanceof CUnion);
+         return new CUnionInstance(save_format, c_type);
+      }
+      if (this.type == "struct") {
+         let c_type = this.anonymous_type;
+         if (!c_type) {
+            c_type = save_format.lookup_type_by_name(this.c_typenames.serialized);
+            console.assert(!!c_type);
+         }
+         console.assert(c_type instanceof CStruct);
+         return new CStructInstance(save_format, c_type);
+      }
+      return new CValueInstance(save_format, this);
+   }
 };
 
 // represents a single-dimensional array within the instance tree
@@ -79,7 +101,7 @@ class CValueInstanceArray {
          for(let i = 0; i < extent; ++i) {
             let v;
             if (is_innermost) {
-               v = new CValueInstance(format, base);
+               v = base.make_instance_representation(format, true);
             } else {
                v = new CValueInstanceArray(format, base, rank + 1);
             }

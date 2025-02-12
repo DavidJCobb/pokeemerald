@@ -124,7 +124,7 @@ class SaveFormat {
          out.slots.push(slot);
          
          for(let tlv of this.top_level_values) {
-            let value = new CValueInstance(this, tlv);
+            let value = tlv.make_instance_representation(this);
             slot.members[tlv.name] = value;
          }
          
@@ -133,9 +133,15 @@ class SaveFormat {
             let blob = new DataView(sav.buffer, pos, 0x1000);
             
             let flash_sector = this.#decompose_flash_sector(blob);
-            //
-            // TODO: Read instructions
-            //
+            let id = flash_sector.header.sector_id;
+            console.assert(id < SECTORS_PER_SLOT);
+            console.assert(!!this.sectors[id].instructions);
+            
+            let applier = new InstructionsApplier();
+            applier.save_format = this;
+            applier.root_data   = slot;
+            applier.bitstream   = new Bitstream(blob);
+            applier.apply(this.sectors[id].instructions);
          }
       }
       {  // Special sectors

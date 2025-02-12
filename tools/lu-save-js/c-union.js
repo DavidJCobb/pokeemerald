@@ -35,4 +35,20 @@ class CUnionInstance {
       this.type        = type; // CUnion
       this.value       = null;
    }
+   emplace(member_name) {
+      for(let member of this.type.members) {
+         if (member.name != member_name)
+            continue;
+         if (member instanceof CStruct) {
+            this.value = new CStructInstance(this.save_format, member);
+         } else if (member instanceof CUnion) {
+            this.value = new CUnionInstance(this.save_format, member);
+         } else {
+            console.assert(member instanceof CValue);
+            this.value = member.make_instance_representation(this.save_format);
+         }
+         return this.value;
+      }
+      console.assert(false, "invalid member name");
+   }
 };

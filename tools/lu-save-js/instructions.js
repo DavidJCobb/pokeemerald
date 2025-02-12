@@ -155,6 +155,7 @@ class SingleInstructionNode extends InstructionNode {
             break;
          case "struct":
             break;
+         /*// Tagnames used for `member` definitions, NOT `single` instruction nodes
          case "transform":
             this.options = {
                transformed_type: node.getAttribute("transformed-type"),
@@ -166,6 +167,7 @@ class SingleInstructionNode extends InstructionNode {
                tag: node.getAttribute("tag"),
             };
             break;
+         //*/
       }
    }
 };

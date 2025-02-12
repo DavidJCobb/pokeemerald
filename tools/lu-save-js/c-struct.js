@@ -3,9 +3,9 @@ class CStruct {
    constructor() {
       this.node = null;
       
-      this.symbol  = null; // typedef struct {} <name>
-      this.tag     = null; // struct <name>
-      this.members = [];
+      this.symbol  = null; // typedef struct {} NAME
+      this.tag     = null; // struct NAME
+      this.members = [];   // Array<CValue>
       
       // Defined if the struct has a whole-struct serialization function.
       this.instructions = null; // Optional<RootInstructionNode>
@@ -39,11 +39,20 @@ class CStructInstance {
    constructor(/*SaveFormat*/ format, /*CStruct*/ type) {
       this.save_format = format;
       this.type        = type; // CStruct
-      this.members     = {};
+      this.members     = {}; // Array<Variant<CStructInstance, CValueInstance>>
       
       if (type) {
-         for(let src of type.members) {
-            let dst = new CValueInstance(format, src);
+         for(let /*CValue*/ src of type.members) {
+            let dst;
+            if (src.type == "struct") {
+               let src_type = src.anonymous_type;
+               if (!src_type) {
+                  src_type = this.save_format.lookup_type_by_name(src.c_typenames.serialized);
+               }
+               dst = new CStructInstance(format, type);
+            } else {
+               dst = new CValueInstance(format, src);
+            }
             this.members[src.name] = dst;
          }
       }

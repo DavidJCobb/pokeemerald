@@ -10,3 +10,8 @@ The architecture is as follows:
   * `CStructInstance` and `CUnionInstance` are instances of structs and unions.
   * `CValueInstance` is a serialized value.
     * Currently, `CValueInstance` is a direct parallel to `CValue`, but this complicates the handling of arrays. I will likely split it into `CValueInstance` for single values and `CValueInstanceArray` for arrays, such that `int foo[3][2]` in C produces one `CValue`, and nested `CValueInstanceArray`s where the innermost ones hold multipel `CValue`s.
+
+Loading data from a bitpacked save works by: spawning an `InstructionsApplier`; feeding it an appropriate `SaveFormat`, root data object (the "target"), bitstream; and applying it to an `<instructions />` node:
+
+* To read a sector, have your applier target a nameless `CStructInstance` whose members are the top-level values in the bitstream. Have the bitstream wrap the given sector of flash memory.
+* When processing a `SingleInstructionNode`, you may find that the node's `type` is `"struct"`. In that case, you're dealing with a whole struct. Loop up the appropriate `CStruct`, find its `<instructions />` node, and spawn a new `InstructionsApplier` whose target is the struct instance. Have it reuse the same bitstream as the original `InstructionsApplier`.

@@ -14,8 +14,36 @@ html {
    }
 }
 
+.slot {
+   --padding: .25em;
+   
+   border:  1px solid #666;
+   margin:  1em 0;
+   padding: var(--padding);
+   
+   &::before {
+      --undo-padding: calc(var(--padding) * -0.5);
+      
+      content: "Savedata slot";
+      display:     block;
+      font-weight: bold;
+      font-size:   2em;
+      padding:     .25em;
+      margin:      var(--undo-padding);
+      margin-bottom: .125em;
+      border-bottom: inherit;
+      
+      background: #666;
+      color: #FFF;
+   }
+   &[data-slot-id]::before {
+      content: "Savedata slot " attr(data-slot-id);
+   }
+}
+
 c-view {
    height: 300px;
+   border: 1px solid #888;
    
    font-family: Consolas, Lucida Console, monospace;
    font-size:   .8em;

@@ -25,6 +25,9 @@ console.assert = function(condition, ...args) {
       <script src="charset.js"></script>
       <script src="bitstream.js"></script>
       <script src="instructions-applier.js"></script>
+      
+      <script src="render-c-struct.js"></script>
+      <script src="c-view-element.js"></script>
    </head>
    <body>
       <h1>Bitpacked save dumper</h1>
@@ -40,6 +43,10 @@ console.assert = function(condition, ...args) {
          
          <button>Load</button>
       </div>
+      <section class="slot" data-slot-id="1">
+      </section>
+      <section class="slot" data-slot-id="2">
+      </section>
       <script src="index.js"></script>
    </body>
 </html>

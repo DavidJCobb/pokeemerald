@@ -29,4 +29,27 @@ document.querySelector(".form button").addEventListener("click", async function(
    
    let decoded = format.load(data_s);
    console.log("Save dump: ", decoded);
+   
+   /*//
+   for(let i = 0; i < decoded.slots.length; ++i) {
+      let slot      = decoded.slots[i];
+      let container = document.querySelector(".slot[data-slot-id='" + (i + 1) + "']");
+      let frag      = new DocumentFragment();
+      for(let name in slot.members) {
+         let memb = slot.members[name];
+         let node = instance_tree_item_to_node(memb);
+         node.name = name;
+         frag.append(node);
+      }
+      container.replaceChildren(frag);
+   }
+   //*/
+   for(let i = 0; i < decoded.slots.length; ++i) {
+      let slot      = decoded.slots[i];
+      let container = document.querySelector(".slot[data-slot-id='" + (i + 1) + "']");
+      let view      = document.createElement("c-view");
+      container.replaceChildren(view);
+      view.scope = decoded.slots[0];
+      window.setTimeout(function() { view.repaint() }, 1);
+   }
 });

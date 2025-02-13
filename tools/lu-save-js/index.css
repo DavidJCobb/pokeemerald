@@ -13,3 +13,7 @@ html {
       grid-column: 1 / span 2;
    }
 }
+
+c-view {
+   height: 300px;
+}

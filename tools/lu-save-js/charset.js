@@ -85,7 +85,7 @@ const CHARSET_ENGLISH = (function() {
    out.run(0x00, " ÀÁÂÇÈÉÊËÌÎÏÒÓÔŒÙÚÛÑßàá");
    out.run(0x19, "çèéêëì");
    out.run(0x20, "îïòóôœùúûñºª");
-   out[0x2C] = "SUPER_ER"; // TODO: what is this?
+   out.define_char_code(0x2C, "SUPER_ER");
    out.run(0x2D, "&+");
    out.define_char_code(0x34, "LV"); // "Lv." glyph
    out.define_char_code(0x35, "=");
@@ -110,7 +110,7 @@ const CHARSET_ENGLISH = (function() {
    out.define_char_code(0x84, "SUPER_E");
    out.run(0x85, "<>");
    out.define_char_code(0xA0, "SUPER_RE");
-   out.run(0xA1, "0123456789!?.-·…“”‘’'♂♀¥,×/ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz▶:ÄÖÜäöü");
+   out.run(0xA1, "0123456789!?.-·…“”‘’♂♀¥,×/ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz▶:ÄÖÜäöü");
    out.define_byte_sequence("TALL_PLUS", 0xFC, 0x0C, 0xFB);
    out.define_char_code(0xFF, "\0");
    

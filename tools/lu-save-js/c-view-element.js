@@ -340,6 +340,12 @@ class CViewElement extends HTMLElement {
       this.repaint();
    }
    
+   //
+   // Repaint process
+   //
+   
+   #tooltips_pending_update = null; // #tooltips_pending_update[row][col]
+   
    #stringify_value(item) {
       console.assert(item instanceof CValueInstance);
       if (item.value === null) {
@@ -384,7 +390,6 @@ class CViewElement extends HTMLElement {
          case "omitted":
             return "[omitted]";
       }
-      
    }
    
    // Helper function for drawing within a clip region and guaranteeing 
@@ -406,14 +411,61 @@ class CViewElement extends HTMLElement {
       context.restore();
    }
    
-   #paint_tooltip_region(x, y, w, h, tip) {
-      let node = document.createElement("div");
+   #update_tooltip(row, col, tip, override_bounds) {
+      if (override_bounds) {
+         if (override_bounds.w === 0 || override_bounds.h === 0)
+            return;
+      }
+      let x, y, w, h;
+      switch (col) {
+         case 0:
+            x = 0;
+            w = this.#computed_column_widths.path;
+            break;
+         case 1:
+            x = this.#computed_column_widths.path;
+            w = this.#computed_column_widths.value;
+            break;
+         case 2:
+            x = this.#computed_column_widths.path + this.#computed_column_widths.value;
+            w = this.#computed_column_widths.type;
+            break;
+      }
+      x -= this.#scroll_pos.x;
+      y = row * this.#cached_style_addenda.row_height - this.#scroll_pos.y;
+      h = this.#cached_style_addenda.row_height;
+      
+      if (override_bounds) {
+         if (override_bounds.x || override_bounds.x === 0)
+            x = override_bounds.x;
+         if (override_bounds.y || override_bounds.y === 0)
+            y = override_bounds.y;
+         if (override_bounds.w)
+            w = override_bounds.w;
+         if (override_bounds.h)
+            h = override_bounds.h;
+      }
+      
+      let node;
+      {
+         let r = this.#tooltips_pending_update[row];
+         if (r) {
+            node = r[col];
+            delete r[col];
+         }
+      }
+      if (!node) {
+         node = document.createElement("div");
+         node.setAttribute("data-row", row);
+         node.setAttribute("data-col", col);
+         this.#tooltip_region_container.append(node);
+      }
+      
       node.style.left   = x + "px";
       node.style.top    = y + "px";
       node.style.width  = w + "px";
       node.style.height = h + "px";
       node.title = tip;
-      this.#tooltip_region_container.append(node);
    }
    
    #paint_item_row(row, indent, item, name, is_expanded) {
@@ -565,7 +617,7 @@ class CViewElement extends HTMLElement {
             
             let width = context.measureText(name).width;
             if (width > clipregion.w - x) {
-               this.#paint_tooltip_region(clipregion.x, y, clipregion.w, row_height, typename);
+               this.#update_tooltip(row, 0, name);
             }
          }).bind(this)
       );
@@ -590,7 +642,7 @@ class CViewElement extends HTMLElement {
             
             let width = context.measureText(value).width;
             if (width > clipregion.w - this.#cached_styles.row.padding.left) {
-               this.#paint_tooltip_region(clipregion.x, y, clipregion.w, row_height, value);
+               this.#update_tooltip(row, 1, value);
             }
          }).bind(this)
       );
@@ -638,7 +690,7 @@ class CViewElement extends HTMLElement {
             
             let width = context.measureText(typename).width;
             if (width > clipregion.w - this.#cached_styles.row.padding.left) {
-               this.#paint_tooltip_region(clipregion.x, y, clipregion.w, row_height, typename);
+               this.#update_tooltip(row, 2, typename);
             }
          }).bind(this)
       );
@@ -667,7 +719,18 @@ class CViewElement extends HTMLElement {
       let context   = canvas.getContext("2d");
       context.textBaseline = "top";
       
-      this.#tooltip_region_container.replaceChildren();
+      {
+         this.#tooltips_pending_update = {};
+         for(let tooltip of this.#tooltip_region_container.children) {
+            let row = +tooltip.getAttribute("data-row");
+            let col = +tooltip.getAttribute("data-col");
+            
+            let r = this.#tooltips_pending_update[row];
+            if (!r)
+               r = this.#tooltips_pending_update[row] = [];
+            r[col] = tooltip;
+         }
+      }
       
       {
          context.font = this.#cached_styles["base-text"].font;
@@ -788,6 +851,15 @@ class CViewElement extends HTMLElement {
       this.#content_size.height = current_row * ROW_HEIGHT;
       
       this.#scroll_sizer.style.height = `${current_row * ROW_HEIGHT}px`;
+      
+      for(let row in this.#tooltips_pending_update) {
+         let list = this.#tooltips_pending_update[row];
+         for(let col in list) {
+            if (list[col])
+               list[col].remove();
+         }
+      }
+      this.#tooltips_pending_update = {};
    }
 };
 customElements.define("c-view", CViewElement);

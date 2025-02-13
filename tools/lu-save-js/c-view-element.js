@@ -6,6 +6,9 @@ class CViewElement extends HTMLElement {
    
    #resize_observer = null;
    
+   #recache_styles_queued = false;
+   #repaint_queued        = false;
+   
    // Contains all CStructInstances, etc., that the user has expanded within the treeview
    #expanded_items = new Set();
    
@@ -18,10 +21,87 @@ class CViewElement extends HTMLElement {
       y: 0,
    };
    
-   #style = {
-      font_size:   12, // pixels
-      row_padding: 12 * 0.25,
+   //
+   // Allow setting certain display properties via CSS. We (ab)use CSS transitions 
+   // and transition events to detect changes to the computed style, recaching and 
+   // repainting when those changes occur.
+   //
+   #cached_styles = {
+      //
+      // Each key in this object maps to a ::part(...) exposed by our element, for 
+      // the outside world to style. The `_type` fields on each entry identify the 
+      // properties we'll check and cache.
+      //
+      "base-text": {
+         _type:     "text",
+         color:     null,
+         font:      null,
+         font_size: null, // via parseFloat; exists so we can compute row heights
+      },
+      "name-text": {
+         _type:     "text",
+         color:     null,
+         font:      null,
+         font_size: null, // via parseFloat; exists so we can compute row heights
+      },
+      "value-text": {
+         _type:     "text",
+         color:     null,
+         font:      null,
+         font_size: null, // via parseFloat; exists so we can compute row heights
+      },
+      "row": {
+         _type:     "box",
+         padding:   {}, // one member per side, each parseFloat'd
+      },
+      "twisty": {
+         _type:     "icon",
+         color:     null,
+         width:     null, // via parseFloat
+         height:    null, // via parseFloat
+      },
    };
+   #cached_style_addenda = {
+      row_height:         0,
+      row_content_height: 0,
+   };
+   #recache_styles() {
+      for(let key in this.#cached_styles) {
+         let part  = this.#shadow.querySelector(`[part="${key}"]`);
+         let style = getComputedStyle(part);
+         let cache = this.#cached_styles[key];
+         switch (cache._type) {
+            case "box":
+               cache.padding = {
+                  bottom: parseFloat(style.paddingBottom),
+                  left:   parseFloat(style.paddingLeft),
+                  right:  parseFloat(style.paddingRight),
+                  top:    parseFloat(style.paddingTop),
+               };
+               break;
+            case "icon":
+               cache.color     = style.color;
+               cache.width     = parseFloat(style.width);
+               cache.height    = parseFloat(style.height);
+               break;
+            case "text":
+               cache.color     = style.color;
+               cache.font      = style.font;
+               cache.font_size = parseFloat(style.fontSize);
+               break;
+         }
+      }
+      this.#cached_style_addenda.row_content_height =  Math.max(
+         this.#cached_styles["base-text"].font_size,
+         this.#cached_styles["name-text"].font_size,
+         this.#cached_styles["value-text"].font_size
+      );
+      this.#cached_style_addenda.row_height =
+         this.#cached_styles.row.padding.top +
+         this.#cached_styles.row.padding.bottom +
+         this.#cached_style_addenda.row_content_height
+      ;
+   }
    
    // Cache of the last-painted rows, so we can handle click events, etc., 
    // sanely and without having to re-layout everything.
@@ -49,13 +129,42 @@ canvas {
    width:   100%;
    height:  100%;
 }
+[part] {
+   position:       absolute !important;
+   visibility:     hidden   !important;
+   pointer-events: none     !important;
+   
+   transition-duration: 0.001s;
+   transition-behavior: allow-discrete;
+   &[data-type="text"] {
+      transition-property: color, font;
+   }
+   &[data-type="box"] {
+      transition-property: padding;
+   }
+}
+
+:where([part="twisty"]) {
+   width:  1em;
+   height: 1em;
+   color:  #888;
+}
       </style>
+      <div part="row" data-type="box">
+         <span part="base-text" data-type="text">
+            <div part="twisty" data-type="icon"></div>
+            <span part="name-text" data-type="text"></span>
+            <span part="value-text" data-type="text"></span>
+         </span>
+      </div>
       `;
       this.#canvas = document.createElement("canvas");
       this.#shadow.append(this.#canvas);
       
       this.addEventListener("click", this.#on_click.bind(this));
       this.addEventListener("wheel", this.#on_mousewheel.bind(this));
+      
+      this.#shadow.addEventListener("transitionend", this.#on_observe_css_change.bind(this));
    }
    
    get scope() { return this.#scope; }
@@ -94,6 +203,7 @@ canvas {
          this.#resize_observer = new ResizeObserver(this.#on_observe_resize.bind(this));
          this.#resize_observer.observe(this);
       }
+      this.#recache_styles();
       this.repaint();
    }
    
@@ -102,13 +212,13 @@ canvas {
    //
    
    #on_click(e) {
-      let x = e.offsetX;
-      let y = e.offsetY;
+      const x = e.offsetX;
+      const y = e.offsetY;
       if (this.#last_painted_rows.length == 0)
          return;
       
-      let shift_y    = this.#last_painted_rows[0].y;
-      let row_height = this.#last_painted_rows[0].h;
+      const shift_y    = this.#last_painted_rows[0].y;
+      const row_height = this.#cached_style_addenda.row_height;
       
       let i = Math.floor((y - shift_y) / row_height);
       if (i < 0 || i >= this.#last_painted_rows.length)
@@ -139,7 +249,7 @@ canvas {
                case WheelEvent.DOM_DELTA_PIXEL:
                   break;
                case WheelEvent.DOM_DELTA_LINE:
-                  y *= (this.#style.font_size + this.#style.row_padding * 2);
+                  y *= this.#cached_style_addenda.row_height;
                   break;
                case WheelEvent.DOM_DELTA_PAGE:
                   break;
@@ -148,6 +258,10 @@ canvas {
                e.preventDefault();
          }
       }
+   }
+   
+   #on_observe_css_change(e) {
+      this.#queue_repaint(true);
    }
    
    #on_observe_resize(entries) {
@@ -258,8 +372,8 @@ canvas {
       let canvas  = this.#canvas;
       let context = canvas.getContext("2d");
       
-      const row_height   = (this.#style.font_size + (this.#style.row_padding * 2));
-      const indent_width = this.#style.font_size;
+      const row_height   = this.#cached_style_addenda.row_height;
+      const indent_width = this.#cached_styles["base-text"].font_size;
       
       let x = indent * indent_width;
       let y = row * row_height;
@@ -278,38 +392,41 @@ canvas {
          },
       };
       
-      x += this.#style.row_padding;
-      y += this.#style.row_padding;
+      x += this.#cached_styles.row.padding.left;
+      y += this.#cached_styles.row.padding.top;
+      
+      context.font = this.#cached_styles["base-text"].font;
+      const space_width = context.measureText(" ").width;
       
       if (!(item instanceof CValueInstance)) {
          //
          // Item can have children. Draw a twisty.
          //
-         context.fillStyle = "#888";
+         const w  = this.#cached_styles.twisty.width;
+         const h  = this.#cached_styles.twisty.height;
+         const dy = (this.#cached_style_addenda.row_content_height - h) / 2;
+         context.fillStyle = this.#cached_styles.twisty.color;
          if (is_expanded) {
-            context.moveTo(x, y);
-            context.lineTo(x + this.#style.font_size, y);
-            context.lineTo(x + this.#style.font_size / 2, y + this.#style.font_size);
+            context.moveTo(x,         dy + y);
+            context.lineTo(x + w,     dy + y);
+            context.lineTo(x + w / 2, dy + y + h);
             context.closePath();
          } else {
-            context.moveTo(x, y);
-            context.lineTo(x + this.#style.font_size, y + this.#style.font_size / 2);
-            context.lineTo(x, y + this.#style.font_size);
+            context.moveTo(x,     dy + y);
+            context.lineTo(x + w, dy + y + h / 2);
+            context.lineTo(x,     dy + y + h);
             context.closePath();
          }
          context.fill();
          painted.coords.twisty = {
             x: x,
-            y: y,
-            w: this.#style.font_size,
-            h: this.#style.font_size,
+            y: y + dy,
+            w: w,
+            h: h,
          };
       }
-      x += this.#style.font_size; // advance past the twisty (or where it would be)
-      //
-      // Spacing between twisty and next content:
-      //
-      x += this.#style.row_padding;
+      x += this.#cached_styles.twisty.width; // advance past the twisty (or where it would be)
+      x += space_width;
       
       // Draw item text.
       {
@@ -317,14 +434,17 @@ canvas {
          if (item instanceof CValueInstance) {
             value = this.#stringify_value(item);
          }
-         context.fillStyle = "#000";
+         context.fillStyle = this.#cached_styles["name-text"].color;
+         context.font      = this.#cached_styles["name-text"].font;
          context.fillText(name, x, y);
          if (value !== null) {
             x += context.measureText(name).width;
-            context.fillStyle = "#888";
+            context.fillStyle = this.#cached_styles["base-text"].color;
+            context.font      = this.#cached_styles["base-text"].font;
             context.fillText(": ", x, y);
             x += context.measureText(": ").width;
-            context.fillStyle = "#4A6";
+            context.fillStyle = this.#cached_styles["value-text"].color;
+            context.font      = this.#cached_styles["value-text"].font;
             context.fillText(value, x, y);
          }
       }
@@ -332,19 +452,32 @@ canvas {
       this.#last_painted_rows.push(painted);
    }
    
+   #queue_repaint(also_styles) {
+      if (also_styles)
+         this.#recache_styles_queued = true;
+      if (this.#repaint_queued)
+         return;
+      this.#repaint_queued = true;
+      window.setTimeout(this.repaint.bind(this), 1);
+   }
    repaint() {
+      this.#repaint_queued = false;
+      if (this.#recache_styles_queued) {
+         this.#recache_styles_queued = false;
+         this.#recache_styles();
+      }
+      
       let canvas    = this.#canvas;
       canvas.width  = this.offsetWidth;
       canvas.height = this.offsetHeight;
       let context   = canvas.getContext("2d");
-      
-      const ROW_HEIGHT = (this.#style.font_size + (this.#style.row_padding * 2));
-      
-      const INDENT_WIDTH = this.#style.font_size;
-      
-      context.font = `${this.#style.font_size}px Arial`;
-      context.fillStyle = "#000";
       context.textBaseline = "top";
+      
+      const ROW_HEIGHT   = this.#cached_style_addenda.row_height;
+      const INDENT_WIDTH = this.#cached_styles["base-text"].font_size;
+      
+      context.font      = this.#cached_styles["base-text"].font;
+      context.fillStyle = this.#cached_styles["base-text"].color;
       
       let current_row    = 0;
       let current_indent = 0;
@@ -358,7 +491,6 @@ canvas {
          if (!(item instanceof CValueInstance))
             if (this.#expanded_items.has(item))
                expanded = true;
-//expanded = true; // TEST
          
          let y = current_row * ROW_HEIGHT;
          if (y + ROW_HEIGHT > current_scroll.y && y < canvas_end_y) {

@@ -16,4 +16,24 @@ html {
 
 c-view {
    height: 300px;
+   
+   font-family: Consolas, Lucida Console, monospace;
+   font-size:   .8em;
+   
+   &::part(row) {
+      padding: .25em;
+   }
+   &::part(base-text) {
+      color: #888;
+   }
+   &::part(name-text) {
+      color: #000;
+   }
+   &::part(value-text) {
+      color: #4A6;
+   }
+   &::part(twisty) {
+      width:  .75em;
+      height: .75em;
+   }
 }

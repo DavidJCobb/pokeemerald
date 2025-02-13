@@ -4,6 +4,7 @@ class CViewElement extends HTMLElement {
    #canvas;
    #scroll_pane;
    #scroll_sizer;
+   #tooltip_region_container;
    
    #column_widths = {
       path:  "3fr",
@@ -197,6 +198,18 @@ class CViewElement extends HTMLElement {
       width:    100%;
       height:   100%;
    }
+   .tooltip-stubs {
+      position: sticky;
+      float:    left;
+      left:     0;
+      top:      0;
+      width:    0;
+      height:   0;
+      
+      div {
+         position: absolute;
+      }
+   }
 }
       </style>
       <div part="row" data-type="box">
@@ -208,12 +221,14 @@ class CViewElement extends HTMLElement {
       </div>
       <div class="scroll">
          <canvas></canvas>
+         <div class="tooltip-stubs"></div>
          <div class="sizer"></div>
       </div>
       `;
       this.#canvas = this.#shadow.querySelector("canvas");
       this.#scroll_pane  = this.#shadow.querySelector(".scroll");
       this.#scroll_sizer = this.#shadow.querySelector(".scroll .sizer");
+      this.#tooltip_region_container = this.#shadow.querySelector(".tooltip-stubs");
       
       this.#shadow.addEventListener("transitionend", this.#on_observe_css_change.bind(this));
       
@@ -373,7 +388,9 @@ class CViewElement extends HTMLElement {
    }
    
    // Helper function for drawing within a clip region and guaranteeing 
-   // that we successfully tear the region down when we're done.
+   // that we successfully tear the region down when we're done. The 
+   // functor you pass in receives the clip region as an argument, for 
+   // convenience.
    #within_clip_region(x, y, w, h, functor) {
       let context = this.#canvas.getContext("2d");
       context.save();
@@ -381,12 +398,22 @@ class CViewElement extends HTMLElement {
       context.clip();
       context.beginPath(); // ensure that that `rect` call doesn't affect any later `fill` calls
       try {
-         functor();
+         functor({ x: x, y: y, w: w, h: h });
       } catch (e) {
          context.restore();
          throw e;
       }
       context.restore();
+   }
+   
+   #paint_tooltip_region(x, y, w, h, tip) {
+      let node = document.createElement("div");
+      node.style.left   = x + "px";
+      node.style.top    = y + "px";
+      node.style.width  = w + "px";
+      node.style.height = h + "px";
+      node.title = tip;
+      this.#tooltip_region_container.append(node);
    }
    
    #paint_item_row(row, indent, item, name, is_expanded) {
@@ -492,7 +519,7 @@ class CViewElement extends HTMLElement {
          0,
          this.#computed_column_widths.path - this.#cached_styles.row.padding.right,
          canvas_height,
-         (function() {
+         (function(clipregion) {
             x += this.#cached_styles.row.padding.left;
             y += this.#cached_styles.row.padding.top;
             
@@ -535,6 +562,11 @@ class CViewElement extends HTMLElement {
             context.fillStyle = this.#cached_styles["name-text"].color;
             context.font      = this.#cached_styles["name-text"].font;
             context.fillText(name, x, y);
+            
+            let width = context.measureText(name).width;
+            if (width > clipregion.w - x) {
+               this.#paint_tooltip_region(clipregion.x, y, clipregion.w, row_height, typename);
+            }
          }).bind(this)
       );
       
@@ -545,7 +577,7 @@ class CViewElement extends HTMLElement {
          0,
          this.#computed_column_widths.value - this.#cached_styles.row.padding.right,
          canvas_height,
-         (function() {
+         (function(clipregion) {
             let value = null;
             if (item instanceof CValueInstance) {
                value = this.#stringify_value(item);
@@ -555,6 +587,11 @@ class CViewElement extends HTMLElement {
             context.fillStyle = this.#cached_styles["value-text"].color;
             context.font      = this.#cached_styles["value-text"].font;
             context.fillText(value, x, y);
+            
+            let width = context.measureText(value).width;
+            if (width > clipregion.w - this.#cached_styles.row.padding.left) {
+               this.#paint_tooltip_region(clipregion.x, y, clipregion.w, row_height, value);
+            }
          }).bind(this)
       );
       
@@ -565,7 +602,7 @@ class CViewElement extends HTMLElement {
          0,
          this.#computed_column_widths.type - this.#cached_styles.row.padding.right,
          canvas_height,
-         (function() {
+         (function(clipregion) {
             let typename = null;
             if (item instanceof CStructInstance) {
                let type = item.type;
@@ -598,6 +635,11 @@ class CViewElement extends HTMLElement {
             context.fillStyle = this.#cached_styles["name-text"].color;
             context.font      = this.#cached_styles["name-text"].font;
             context.fillText(typename, x, y);
+            
+            let width = context.measureText(typename).width;
+            if (width > clipregion.w - this.#cached_styles.row.padding.left) {
+               this.#paint_tooltip_region(clipregion.x, y, clipregion.w, row_height, typename);
+            }
          }).bind(this)
       );
       
@@ -624,6 +666,8 @@ class CViewElement extends HTMLElement {
       canvas.height = this.#scroll_pane.clientHeight;
       let context   = canvas.getContext("2d");
       context.textBaseline = "top";
+      
+      this.#tooltip_region_container.replaceChildren();
       
       {
          context.font = this.#cached_styles["base-text"].font;

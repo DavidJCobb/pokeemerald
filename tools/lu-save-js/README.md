@@ -25,4 +25,16 @@ Loading data from a bitpacked save works by: spawning an `InstructionsApplier`; 
 
 My initial desire was to render the tree of loaded data as custom elements, for ease of implementation. Unfortunately, however, the DOM just fundamentally can't handle that much content; Firefox, at the very least, slowed to a crawl and the browser tab became nearly inoperable when I tried.
 
-As such, we use a custom immediate-mode renderer: the `CViewElement`. In plainer terms: it's canvas-based rendering.
+As such, we render the data table as a canvas, with custom implementations of sizing, layout, hitboxes, and so on; see `CViewElement`.
+
+
+### Click hitboxes
+
+The custom element needs to know what rows were rendered, and what hitboxes exist within them, in order to handle clicks on rows' expand/collapse "twisty" icons whenever such icons are present. To enable this, we maintain a list of all rows that were rendered on the last repaint, describing their sizes, positions, the data items being rendered, and any hitboxes of note.
+
+
+### Tooltips
+
+When a cell's content is truncated, we give it a tooltip. Tooltips are implemented as absolutely-positioned `div` elements placed overtop the canvas, with `title` attributes.
+
+At the start of the repaint process, we gather up all extant tooltips and store references to them in a map, indexing them by the row and column of the cells they annotate. When a cell needs a tooltip, it checks the map for an existing tooltip; if one is found, it's removed from the map and updated; otherwise, a new tooltip is created and *not* added to the map. Any tooltips still in the map at the end of the repaint process are deleted.

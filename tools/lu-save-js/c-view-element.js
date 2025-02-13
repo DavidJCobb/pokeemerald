@@ -617,7 +617,15 @@ class CViewElement extends HTMLElement {
             
             let width = context.measureText(name).width;
             if (width > clipregion.w - x) {
-               this.#update_tooltip(row, 0, name);
+               this.#update_tooltip(
+                  row,
+                  0,
+                  name,
+                  {  // override bounds so we don't cover and block the twisty
+                     x:     x,
+                     width: clipregion.w - x
+                  }
+               );
             }
          }).bind(this)
       );

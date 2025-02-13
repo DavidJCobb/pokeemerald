@@ -90,6 +90,7 @@ class CValueInstanceArray {
       this.save_format = format;
       this.base        = base;
       this.values      = null;
+      this.rank        = rank || 0;
       if (base) {
          if (!rank)
             rank = 0;

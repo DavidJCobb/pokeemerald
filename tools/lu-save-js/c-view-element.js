@@ -5,6 +5,17 @@ class CViewElement extends HTMLElement {
    #scroll_pane;
    #scroll_sizer;
    
+   #column_widths = {
+      path:  "3fr",
+      value: "1fr",
+      type:  "30ch",
+   };
+   #computed_column_widths = {
+      path:  null,
+      value: null,
+      type:  null,
+   };
+   
    #scope = null; // Variant<CStructInstance, CUnionInstance, CValueInstanceArray, CValue>
    
    #resize_observer = null;
@@ -54,14 +65,17 @@ class CViewElement extends HTMLElement {
          font_size: null, // via parseFloat; exists so we can compute row heights
       },
       "row": {
-         _type:     "box",
-         padding:   {}, // one member per side, each parseFloat'd
+         _type:        "box",
+         background:   null,
+         border_color: {}, // one member per side
+         border_width: {}, // one member per side, each parseFloat'd
+         padding:      {}, // one member per side, each parseFloat'd
       },
       "twisty": {
-         _type:     "icon",
-         color:     null,
-         width:     null, // via parseFloat
-         height:    null, // via parseFloat
+         _type:  "icon",
+         color:  null,
+         width:  null, // via parseFloat
+         height: null, // via parseFloat
       },
    };
    #cached_style_addenda = {
@@ -75,6 +89,19 @@ class CViewElement extends HTMLElement {
          let cache = this.#cached_styles[key];
          switch (cache._type) {
             case "box":
+               cache.background = style.backgroundColor;
+               cache.border_color = {
+                  bottom: (style.borderBottomColor),
+                  left:   (style.borderLeftColor),
+                  right:  (style.borderRightColor),
+                  top:    (style.borderTopColor),
+               };
+               cache.border_width = {
+                  bottom: parseFloat(style.borderBottomWidth),
+                  left:   parseFloat(style.borderLeftWidth),
+                  right:  parseFloat(style.borderRightWidth),
+                  top:    parseFloat(style.borderTopWidth),
+               };
                cache.padding = {
                   bottom: parseFloat(style.paddingBottom),
                   left:   parseFloat(style.paddingLeft),
@@ -102,6 +129,8 @@ class CViewElement extends HTMLElement {
       this.#cached_style_addenda.row_height =
          this.#cached_styles.row.padding.top +
          this.#cached_styles.row.padding.bottom +
+         this.#cached_styles.row.border_width.top +
+         this.#cached_styles.row.border_width.bottom +
          this.#cached_style_addenda.row_content_height
       ;
    }
@@ -343,12 +372,31 @@ class CViewElement extends HTMLElement {
       
    }
    
+   // Helper function for drawing within a clip region and guaranteeing 
+   // that we successfully tear the region down when we're done.
+   #within_clip_region(x, y, w, h, functor) {
+      let context = this.#canvas.getContext("2d");
+      context.save();
+      context.rect(x, y, w, h);
+      context.clip();
+      context.beginPath(); // ensure that that `rect` call doesn't affect any later `fill` calls
+      try {
+         functor();
+      } catch (e) {
+         context.restore();
+         throw e;
+      }
+      context.restore();
+   }
+   
    #paint_item_row(row, indent, item, name, is_expanded) {
       let canvas  = this.#canvas;
       let context = canvas.getContext("2d");
       
-      const row_height   = this.#cached_style_addenda.row_height;
-      const indent_width = this.#cached_styles["base-text"].font_size;
+      const canvas_width  = canvas.width;
+      const canvas_height = canvas.height;
+      const row_height    = this.#cached_style_addenda.row_height;
+      const indent_width  = this.#cached_styles["base-text"].font_size;
       
       let x = indent * indent_width;
       let y = row * row_height;
@@ -367,62 +415,191 @@ class CViewElement extends HTMLElement {
          },
       };
       
-      x += this.#cached_styles.row.padding.left;
-      y += this.#cached_styles.row.padding.top;
-      
-      context.font = this.#cached_styles["base-text"].font;
-      const space_width = context.measureText(" ").width;
-      
-      if (!(item instanceof CValueInstance)) {
-         //
-         // Item can have children. Draw a twisty.
-         //
-         const w  = this.#cached_styles.twisty.width;
-         const h  = this.#cached_styles.twisty.height;
-         const dy = (this.#cached_style_addenda.row_content_height - h) / 2;
-         context.fillStyle = this.#cached_styles.twisty.color;
-         if (is_expanded) {
-            context.moveTo(x,         dy + y);
-            context.lineTo(x + w,     dy + y);
-            context.lineTo(x + w / 2, dy + y + h);
-            context.closePath();
-         } else {
-            context.moveTo(x,     dy + y);
-            context.lineTo(x + w, dy + y + h / 2);
-            context.lineTo(x,     dy + y + h);
-            context.closePath();
-         }
-         context.fill();
-         painted.coords.twisty = {
-            x: x,
-            y: y + dy,
-            w: w,
-            h: h,
-         };
-      }
-      x += this.#cached_styles.twisty.width; // advance past the twisty (or where it would be)
-      x += space_width;
-      
-      // Draw item text.
+      // Draw table borders for this row and its cells.
       {
-         let value = null;
-         if (item instanceof CValueInstance) {
-            value = this.#stringify_value(item);
+         let ccw = this.#computed_column_widths;
+         if (this.#cached_styles.row.background != "transparent") {
+            context.fillStyle = this.#cached_styles.row.background;
+            context.rect(x, y, ccw.path, row_height);
+            context.rect(x + ccw.path, y, ccw.value, row_height);
+            context.rect(x + ccw.path + ccw.value, y, ccw.type, row_height);
          }
-         context.fillStyle = this.#cached_styles["name-text"].color;
-         context.font      = this.#cached_styles["name-text"].font;
-         context.fillText(name, x, y);
-         if (value !== null) {
-            x += context.measureText(name).width;
-            context.fillStyle = this.#cached_styles["base-text"].color;
-            context.font      = this.#cached_styles["base-text"].font;
-            context.fillText(": ", x, y);
-            x += context.measureText(": ").width;
+         let cbw = this.#cached_styles.row.border_width;
+         let cbc = this.#cached_styles.row.border_color;
+         
+         function unblurred_line_h(thickness, x, y, to) {
+            x  = Math.round(x);
+            y  = Math.round(y);
+            to = Math.round(to);
+            let off = thickness % 2 ? 0.5 : 0;
+            context.beginPath();
+            context.moveTo(x + off,  y + off);
+            context.lineTo(to - off, y + off);
+            context.stroke();
+         }
+         function unblurred_line_v(thickness, x, y, to) {
+            x  = Math.round(x);
+            y  = Math.round(y);
+            to = Math.round(to);
+            let off = thickness % 2 ? 0.5 : 0;
+            context.beginPath();
+            context.moveTo(x + off, y + off);
+            context.lineTo(x + off, to - off);
+            context.stroke();
+         }
+         
+         if (row == 0 && cbw.top > 0) {
+            context.strokeStyle = cbc.top;
+            context.lineWidth   = cbw.top;
+            unblurred_line_h(cbw.top, 0, Math.floor(y), canvas_width);
+         }
+         {  // Row left border
+            context.strokeStyle = cbc.left;
+            context.lineWidth   = cbw.left;
+            unblurred_line_v(cbw.left, 0, Math.floor(y), y + row_height);
+         }
+         {  // Row right border
+            context.strokeStyle = cbc.right;
+            context.lineWidth   = cbw.right;
+            unblurred_line_v(cbw.right, canvas_width - cbw.right, Math.floor(y), y + row_height);
+         }
+         {  // Row bottom border
+            context.strokeStyle = cbc.bottom;
+            context.lineWidth   = cbw.bottom;
+            unblurred_line_h(cbw.bottom, 0, y + row_height - cbw.bottom, canvas_width);
+         }
+         //
+         // Borders between cells.
+         //
+         if (cbw.left || cbw.right) {
+            let thick;
+            if (cbw.left > cbw.right) {
+               context.strokeStyle = cbc.left;
+               context.lineWidth   = thick = cbw.left;
+            } else {
+               context.strokeStyle = cbc.right;
+               context.lineWidth   = thick = cbw.right;
+            }
+            unblurred_line_v(thick, ccw.path,             Math.floor(y), y + row_height);
+            unblurred_line_v(thick, ccw.path + ccw.value, Math.floor(y), y + row_height);
+         }
+         
+      }
+      
+      // COLUMN: Path
+      this.#within_clip_region(
+         0,
+         0,
+         this.#computed_column_widths.path - this.#cached_styles.row.padding.right,
+         canvas_height,
+         (function() {
+            x += this.#cached_styles.row.padding.left;
+            y += this.#cached_styles.row.padding.top;
+            
+            context.font = this.#cached_styles["base-text"].font;
+            const space_width = context.measureText(" ").width;
+            
+            if (!(item instanceof CValueInstance)) {
+               //
+               // Item can have children. Draw a twisty.
+               //
+               const w  = this.#cached_styles.twisty.width;
+               const h  = this.#cached_styles.twisty.height;
+               const dy = (this.#cached_style_addenda.row_content_height - h) / 2;
+               context.fillStyle = this.#cached_styles.twisty.color;
+               if (is_expanded) {
+                  context.moveTo(x,         dy + y);
+                  context.lineTo(x + w,     dy + y);
+                  context.lineTo(x + w / 2, dy + y + h);
+                  context.closePath();
+               } else {
+                  context.moveTo(x,     dy + y);
+                  context.lineTo(x + w, dy + y + h / 2);
+                  context.lineTo(x,     dy + y + h);
+                  context.closePath();
+               }
+               context.fill();
+               painted.coords.twisty = {
+                  x: x,
+                  y: y + dy,
+                  w: w,
+                  h: h,
+               };
+            }
+            x += this.#cached_styles.twisty.width; // advance past the twisty (or where it would be)
+            x += space_width;
+            
+            //
+            // Draw path text.
+            //
+            context.fillStyle = this.#cached_styles["name-text"].color;
+            context.font      = this.#cached_styles["name-text"].font;
+            context.fillText(name, x, y);
+         }).bind(this)
+      );
+      
+      // COLUMN: Value
+      x = this.#computed_column_widths.path + this.#cached_styles.row.padding.left;
+      this.#within_clip_region(
+         this.#computed_column_widths.path,
+         0,
+         this.#computed_column_widths.value - this.#cached_styles.row.padding.right,
+         canvas_height,
+         (function() {
+            let value = null;
+            if (item instanceof CValueInstance) {
+               value = this.#stringify_value(item);
+            }
+            if (value === null)
+               return;
             context.fillStyle = this.#cached_styles["value-text"].color;
             context.font      = this.#cached_styles["value-text"].font;
             context.fillText(value, x, y);
-         }
-      }
+         }).bind(this)
+      );
+      
+      // COLUMN: Type
+      x = this.#computed_column_widths.path + this.#computed_column_widths.value + this.#cached_styles.row.padding.left;
+      this.#within_clip_region(
+         this.#computed_column_widths.path + this.#computed_column_widths.value,
+         0,
+         this.#computed_column_widths.type - this.#cached_styles.row.padding.right,
+         canvas_height,
+         (function() {
+            let typename = null;
+            if (item instanceof CStructInstance) {
+               let type = item.type;
+               if (type) {
+                  if (type.tag) {
+                     //typename = "struct " + type.tag;
+                     typename = type.tag;
+                  } else if (type.symbol) {
+                     typename = type.symbol;
+                  }
+               }
+            } else if (item instanceof CUnionInstance) {
+               
+            } else if (item instanceof CValueInstance) {
+               typename = item.base.c_typenames.serialized;
+               if (item.base.type == "string") {
+                  typename += "[...]";
+               }
+            } else if (item instanceof CValueInstanceArray) {
+               typename = item.base.c_typenames.serialized;
+               for(let i = 0; i < item.base.array_ranks.length; ++i) {
+                  if (i < item.rank)
+                     continue;
+                  let extent = item.base.array_ranks[i];
+                  typename += "[" + extent + "]";
+               }
+            }
+            if (typename === null)
+               return;
+            context.fillStyle = this.#cached_styles["name-text"].color;
+            context.font      = this.#cached_styles["name-text"].font;
+            context.fillText(typename, x, y);
+         }).bind(this)
+      );
       
       this.#last_painted_rows.push(painted);
    }
@@ -447,6 +624,48 @@ class CViewElement extends HTMLElement {
       canvas.height = this.#scroll_pane.clientHeight;
       let context   = canvas.getContext("2d");
       context.textBaseline = "top";
+      
+      {
+         context.font = this.#cached_styles["base-text"].font;
+         
+         let base_width = canvas.width;
+         let flex_width = base_width;
+         let flex_sum   = 0;
+         for(let key in this.#column_widths) {
+            this.#computed_column_widths[key] = null;
+            let desired = this.#column_widths[key];
+            if (desired.endsWith("fr")) {
+               flex_sum += Math.max(0, parseFloat(desired));
+               continue;
+            }
+            
+            let width;
+            if (desired.endsWith("%")) {
+               width = base_width * parseFloat(desired) / 100;
+            } else if (desired.endsWith("px")) {
+               width = parseFloat(desired);
+            } else if (desired.endsWith("ch")) {
+               width = context.measureText(" ").width * parseFloat(desired);
+            } else if (desired.endsWith("em")) {
+               let metrics = context.measureText("X");
+               let em      = metrics.emHeightAscent - metrics.emHeightDescent;
+               width = em * parseFloat(desired);
+            }
+            if (+width > 0) {
+               this.#computed_column_widths[key] = width;
+               flex_width -= width;
+            } else {
+               this.#column_widths[key] = "1fr";
+               flex_sum += 1;
+            }
+         }
+         for(let key in this.#column_widths) {
+            if (this.#computed_column_widths[key] !== null)
+               continue;
+            let flex = parseFloat(this.#column_widths[key]) / flex_sum;
+            this.#computed_column_widths[key] = flex_width * flex;
+         }
+      }
       
       const ROW_HEIGHT   = this.#cached_style_addenda.row_height;
       const INDENT_WIDTH = this.#cached_styles["base-text"].font_size;

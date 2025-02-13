@@ -2,6 +2,9 @@
 class CViewElement extends HTMLElement {
    #shadow;
    #canvas;
+   #scroll_pane;
+   #scroll_sizer;
+   
    #scope = null; // Variant<CStructInstance, CUnionInstance, CValueInstanceArray, CValue>
    
    #resize_observer = null;
@@ -122,12 +125,11 @@ class CViewElement extends HTMLElement {
       this.#shadow.innerHTML = `
       <style>
 :host {
-   display: inline-block;
-}
-canvas {
    display: block;
-   width:   100%;
-   height:  100%;
+}
+:where(:host) {
+   width:  100%;
+   height: 300px;
 }
 [part] {
    position:       absolute !important;
@@ -149,6 +151,24 @@ canvas {
    height: 1em;
    color:  #888;
 }
+
+.scroll {
+   position: relative;
+   overflow: auto;
+   width:    100%;
+   height:   100%;
+   scrollbar-gutter: stable;
+   
+   canvas {
+      position: sticky;
+      float:    right; /* remove from document flow */
+      left:     0;
+      top:      0;
+      display:  block;
+      width:    100%;
+      height:   100%;
+   }
+}
       </style>
       <div part="row" data-type="box">
          <span part="base-text" data-type="text">
@@ -157,14 +177,19 @@ canvas {
             <span part="value-text" data-type="text"></span>
          </span>
       </div>
+      <div class="scroll">
+         <canvas></canvas>
+         <div class="sizer"></div>
+      </div>
       `;
-      this.#canvas = document.createElement("canvas");
-      this.#shadow.append(this.#canvas);
-      
-      this.addEventListener("click", this.#on_click.bind(this));
-      this.addEventListener("wheel", this.#on_mousewheel.bind(this));
+      this.#canvas = this.#shadow.querySelector("canvas");
+      this.#scroll_pane  = this.#shadow.querySelector(".scroll");
+      this.#scroll_sizer = this.#shadow.querySelector(".scroll .sizer");
       
       this.#shadow.addEventListener("transitionend", this.#on_observe_css_change.bind(this));
+      
+      this.addEventListener("click", this.#on_click.bind(this));
+      this.#scroll_pane.addEventListener("scroll", this.#on_scroll.bind(this));
    }
    
    get scope() { return this.#scope; }
@@ -239,27 +264,6 @@ canvas {
       }
    }
    
-   #on_mousewheel(e) {
-      if (e.deltaY) {
-         const outer_height = this.#canvas.height;
-         const inner_height = this.#content_size.height;
-         if (inner_height > outer_height) {
-            let y = e.deltaY;
-            switch (e.deltaMode) {
-               case WheelEvent.DOM_DELTA_PIXEL:
-                  break;
-               case WheelEvent.DOM_DELTA_LINE:
-                  y *= this.#cached_style_addenda.row_height;
-                  break;
-               case WheelEvent.DOM_DELTA_PAGE:
-                  break;
-            }
-            if (this.#scroll_y_by(y))
-               e.preventDefault();
-         }
-      }
-   }
-   
    #on_observe_css_change(e) {
       this.#queue_repaint(true);
    }
@@ -273,23 +277,15 @@ canvas {
       }
    }
    
+   #on_scroll(e) {
+      this.#scroll_pos.x = this.#scroll_pane.scrollLeft;
+      this.#scroll_pos.y = this.#scroll_pane.scrollTop;
+      this.repaint();
+   }
+   
    //
    // Internal behavior
    //
-   
-   #scroll_y_by(px) {
-      const outer_height = this.#canvas.height;
-      const inner_height = this.#content_size.height;
-      
-      let y = px + this.#scroll_pos.y;
-      y = Math.max(0, Math.min(inner_height - outer_height, y));
-      if (y != this.#scroll_pos.y) {
-         this.#scroll_pos.y = y;
-         this.repaint();
-         return true;
-      }
-      return false;
-   }
    
    #toggle_item_expansion(item) {
       if (this.#expanded_items.has(item)) {
@@ -298,27 +294,6 @@ canvas {
          this.#expanded_items.add(item);
       }
       this.repaint();
-   }
-   
-   #repaint_scrollbar() {
-      const SCROLLBAR_WIDTH = 8;
-      
-      let x      = this.#canvas.width - SCROLLBAR_WIDTH;
-      let height = this.#canvas.height;
-      if (this.#content_size.height <= height)
-         return;
-      
-      let track_height = height;
-      
-      let context = this.#canvas.getContext("2d");
-      context.fillStyle = "#DDD"; // track
-      context.fillRect(x, 0, SCROLLBAR_WIDTH, track_height);
-      
-      context.fillStyle = "#888"; // thumb
-      let thumb_size = (height / this.#content_size.height) * track_height;
-      let thumb_pos  = (this.#scroll_pos.y / this.#content_size.height) * track_height;
-      thumb_size = Math.max(thumb_size, 1);
-      context.fillRect(x, thumb_pos, SCROLLBAR_WIDTH, thumb_size);
    }
    
    #stringify_value(item) {
@@ -468,8 +443,8 @@ canvas {
       }
       
       let canvas    = this.#canvas;
-      canvas.width  = this.offsetWidth;
-      canvas.height = this.offsetHeight;
+      canvas.width  = this.#scroll_pane.clientWidth;
+      canvas.height = this.#scroll_pane.clientHeight;
       let context   = canvas.getContext("2d");
       context.textBaseline = "top";
       
@@ -549,7 +524,7 @@ canvas {
       
       this.#content_size.height = current_row * ROW_HEIGHT;
       
-      this.#repaint_scrollbar();
+      this.#scroll_sizer.style.height = `${current_row * ROW_HEIGHT}px`;
    }
 };
 customElements.define("c-view", CViewElement);

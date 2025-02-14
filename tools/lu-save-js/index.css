@@ -48,6 +48,15 @@ c-view {
    font-family: Consolas, Lucida Console, monospace;
    font-size:   .8em;
    
+   &::part(header-row) {
+      background:  #888;
+      color:       #FFF;
+      font-weight: bold;
+   }
+   &::part(header-cell) {
+      border:  3px solid #FFF;
+      padding: .25em;
+   }
    &::part(row) {
       padding: .25em;
       border: 1px solid #CCC;

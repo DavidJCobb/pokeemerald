@@ -48,106 +48,119 @@ class CViewElement extends HTMLElement {
       // properties we'll check and cache.
       //
       "base-text": {
-         _type:     "text",
-         color:     null,
-         font:      null,
-         font_size: null, // via parseFloat; exists so we can compute row heights
+         _type: "text"
       },
       "name-text": {
-         _type:     "text",
-         color:     null,
-         font:      null,
-         font_size: null, // via parseFloat; exists so we can compute row heights
+         _type: "text"
       },
       "value-text": {
-         _type:     "text",
-         color:     null,
-         font:      null,
-         font_size: null, // via parseFloat; exists so we can compute row heights
+         _type: "text"
       },
+      "header-row":  { _type: ["box", "text"], },
+      "header-cell": { _type: ["box", "text"], },
       "row": {
-         _type:        "box",
-         background:   null,
-         border_color: {}, // one member per side
-         border_width: {}, // one member per side, each parseFloat'd
-         padding:      {}, // one member per side, each parseFloat'd
+         _type: "box",
       },
       "twisty": {
-         _type:  "icon",
-         color:  null,
-         width:  null, // via parseFloat
-         height: null, // via parseFloat
+         _type: "icon",
       },
    };
    #cached_style_addenda = {
-      row_height:         0,
-      row_content_height: 0,
+      header_height:         0,
+      header_content_height: 0,
+      row_height:            0,
+      row_content_height:    0,
    };
    #recache_styles() {
       for(let key in this.#cached_styles) {
          let part  = this.#shadow.querySelector(`[part="${key}"]`);
          let style = getComputedStyle(part);
          let cache = this.#cached_styles[key];
-         switch (cache._type) {
-            case "box":
-               cache.background = style.backgroundColor;
-               cache.border_color = {
-                  bottom: (style.borderBottomColor),
-                  left:   (style.borderLeftColor),
-                  right:  (style.borderRightColor),
-                  top:    (style.borderTopColor),
-               };
-               cache.border_width = {
-                  bottom: parseFloat(style.borderBottomWidth),
-                  left:   parseFloat(style.borderLeftWidth),
-                  right:  parseFloat(style.borderRightWidth),
-                  top:    parseFloat(style.borderTopWidth),
-               };
-               cache.padding = {
-                  bottom: parseFloat(style.paddingBottom),
-                  left:   parseFloat(style.paddingLeft),
-                  right:  parseFloat(style.paddingRight),
-                  top:    parseFloat(style.paddingTop),
-               };
-               break;
-            case "icon":
-               cache.color     = style.color;
-               cache.width     = parseFloat(style.width);
-               cache.height    = parseFloat(style.height);
-               break;
-            case "text":
-               cache.color     = style.color;
-               cache.font      = style.font;
-               cache.font_size = parseFloat(style.fontSize);
-               break;
+         
+         let is_multi = Array.isArray(cache._type);
+         let is_box   = cache._type == "box" || (is_multi && cache._type.includes("box"));
+         let is_icon  = cache._type == "icon";
+         let is_text  = cache._type == "text" || (is_multi && cache._type.includes("text"));
+         
+         if (is_box) {
+            cache.background = style.backgroundColor;
+            cache.border_color = {
+               bottom: (style.borderBottomColor),
+               left:   (style.borderLeftColor),
+               right:  (style.borderRightColor),
+               top:    (style.borderTopColor),
+            };
+            cache.border_width = {
+               bottom: parseFloat(style.borderBottomWidth),
+               left:   parseFloat(style.borderLeftWidth),
+               right:  parseFloat(style.borderRightWidth),
+               top:    parseFloat(style.borderTopWidth),
+            };
+            cache.padding = {
+               bottom: parseFloat(style.paddingBottom),
+               left:   parseFloat(style.paddingLeft),
+               right:  parseFloat(style.paddingRight),
+               top:    parseFloat(style.paddingTop),
+            };
+         }
+         if (is_icon) {
+            cache.color     = style.color;
+            cache.width     = parseFloat(style.width);
+            cache.height    = parseFloat(style.height);
+         }
+         if (is_text) {
+            cache.color     = style.color;
+            cache.font      = style.font;
+            cache.font_size = parseFloat(style.fontSize); // for size/layout calculations
          }
       }
-      this.#cached_style_addenda.row_content_height =  Math.max(
-         this.#cached_styles["base-text"].font_size,
-         this.#cached_styles["name-text"].font_size,
-         this.#cached_styles["value-text"].font_size
+      
+      const addenda = this.#cached_style_addenda;
+      const styles  = this.#cached_styles;
+      
+      addenda.header_content_height = Math.round(styles["header-cell"].font_size);
+      addenda.header_height = Math.floor(
+         styles["header-row"].border_width.top +
+         styles["header-row"].border_width.bottom +
+         styles["header-row"].padding.top +
+         styles["header-row"].padding.bottom +
+         styles["header-cell"].border_width.top +
+         styles["header-cell"].border_width.bottom +
+         styles["header-cell"].padding.top +
+         styles["header-cell"].padding.bottom +
+         addenda.header_content_height
       );
-      this.#cached_style_addenda.row_height =
-         this.#cached_styles.row.padding.top +
-         this.#cached_styles.row.padding.bottom +
-         this.#cached_styles.row.border_width.top +
-         this.#cached_styles.row.border_width.bottom +
-         this.#cached_style_addenda.row_content_height
+      
+      addenda.row_content_height =  Math.max(
+         styles["base-text"].font_size,
+         styles["name-text"].font_size,
+         styles["value-text"].font_size
+      );
+      addenda.row_height =
+         styles.row.padding.top +
+         styles.row.padding.bottom +
+         styles.row.border_width.top +
+         styles.row.border_width.bottom +
+         addenda.row_content_height
       ;
    }
    
-   // Cache of the last-painted rows, so we can handle click events, etc., 
-   // sanely and without having to re-layout everything.
-   //
-   // items: {
-   //    item:     ...,
-   //    indent:   0,
-   //    expanded: true,
-   //    coords:   { // canvas-relative
-   //       twisty: { x: 0, y: 0 },
-   //    }
-   // }
-   #last_painted_rows = [];
+   #last_repaint_result = {
+      sticky_header: {
+         y: 0, // canvas-relative
+         h: 0,
+      },
+      
+      // rows[i] == {
+      //    item:     ...,
+      //    indent:   0,
+      //    expanded: true,
+      //    coords:   { // canvas-relative
+      //       twisty: { x: 0, y: 0 },
+      //    }
+      // }
+      rows: [],
+   };
    
    constructor() {
       super();
@@ -168,11 +181,20 @@ class CViewElement extends HTMLElement {
    
    transition-duration: 0.001s;
    transition-behavior: allow-discrete;
+   
+   --transition-properties-text
+   
+   &[data-type="box"] {
+      transition-property: padding;
+   }
    &[data-type="text"] {
       transition-property: color, font;
    }
-   &[data-type="box"] {
-      transition-property: padding;
+   &[data-type~="box"][data-type~="text"] {
+      transition-property: padding, color, font;
+   }
+   &[data-type="icon"] {
+      transition-property: color, width, height;
    }
 }
 
@@ -212,6 +234,9 @@ class CViewElement extends HTMLElement {
    }
 }
       </style>
+      <div part="header-row" data-type="box text">
+         <div part="header-cell" data-type="box text"></div>
+      </div>
       <div part="row" data-type="box">
          <span part="base-text" data-type="text">
             <div part="twisty" data-type="icon"></div>
@@ -283,17 +308,25 @@ class CViewElement extends HTMLElement {
    #on_click(e) {
       const x = e.offsetX;
       const y = e.offsetY;
-      if (this.#last_painted_rows.length == 0)
+      {  // Check for clicks on the sticky header.
+         let sh = this.#last_repaint_result.sticky_header;
+         if (sh.h > 0 && y >= sh.y && y <= sh.y + sh.h)
+            return;
+      }
+      //
+      // Handle interactions with table rows:
+      //
+      if (this.#last_repaint_result.rows.length == 0)
          return;
       
-      const shift_y    = this.#last_painted_rows[0].y;
+      const shift_y    = this.#last_repaint_result.rows[0].y;
       const row_height = this.#cached_style_addenda.row_height;
       
       let i = Math.floor((y - shift_y) / row_height);
-      if (i < 0 || i >= this.#last_painted_rows.length)
+      if (i < 0 || i >= this.#last_repaint_result.rows.length)
          return;
       
-      let row = this.#last_painted_rows[i];
+      let row = this.#last_repaint_result.rows[i];
       {
          let twisty = row.coords.twisty;
          if (twisty) {
@@ -468,6 +501,283 @@ class CViewElement extends HTMLElement {
       node.title = tip;
    }
    
+   #paint_cached_style_box(key, coords, content_paint_functor) {
+      let { x, y, w, h, row, col, column_count } = coords;
+      
+      const canvas  = this.#canvas;
+      const context = canvas.getContext("2d");
+      const style   = this.#cached_styles[key];
+      if (col !== undefined && column_count !== undefined) {
+         //
+         // Adjust metrics to account for border collapsing.
+         //
+         if (col + 1 < column_count) {
+            let thick = style.border_width.right;
+            if (col > 0) {
+               thick = Math.max(thick, style.border_width.left);
+            }
+            w += Math.ceil(thick / 2);
+         }
+      }
+      
+      context.fillStyle = style.background;
+      if (row !== undefined) {
+         context.rect(
+            Math.floor(x + style.border_width.left),
+            Math.floor(y + style.border_width.top),
+            Math.floor(w - style.border_width.left - style.border_width.right),
+            Math.floor(h - style.border_width.top - style.border_width.bottom)
+         );
+      } else {
+         let bl = style.border_width.left;
+         let br = style.border_width.right;
+         let bt = style.border_width.top;
+         let bb = style.border_width.bottom;
+         if (row > 0) {
+            bl = Math.max(bl, br);
+         }
+         if (col > 0) {
+            bt = Math.max(bt, bb);
+         }
+         if (col < column_count - 1) {
+            bb = Math.max(style.border_width.top, style.border_width.bottom);
+         }
+         
+         context.rect(
+            Math.floor(x + bl),
+            Math.floor(y + bt),
+            Math.floor(w - bl - br),
+            Math.floor(h - bt - bb)
+         );
+      }
+      context.fill();
+      //
+      // Borders:
+      //
+      let thick;
+      let color;
+      context.lineCap = "butt";
+      {  // Horizontal
+         let cx1   = Math.floor(x);
+         let cx2   = Math.floor(x + w);
+         if (row === undefined || row === 0) {
+            //
+            // For table-cell-like boxes, we draw top borders only if there is 
+            // no cell above the current cell. Note that row and column numbers 
+            // should be relative to the painted cells, not all cells, i.e. the 
+            // first row that you paint is row 0.
+            //
+            thick = style.border_width.top;
+            color = style.border_color.top;
+            if (thick > 0) {
+               context.strokeStyle = color;
+               context.lineWidth   = thick;
+               let cy = Math.floor(y + thick) - thick / 2;
+               context.beginPath();
+               context.moveTo(cx1, cy);
+               context.lineTo(cx2, cy);
+               context.stroke();
+            }
+         }
+         thick = style.border_width.bottom;
+         color = style.border_color.bottom;
+         if (row > 0) {
+            //
+            // Collapse table borders, preferring the thicker border.
+            //
+            if (thick < style.border_width.top) {
+               thick = style.border_width.top;
+               color = style.border_color.top;
+            }
+         }
+         if (thick > 0) {
+            context.strokeStyle = color;
+            context.lineWidth   = thick;
+            let cy  = Math.floor(y + h) - thick / 2;
+            context.beginPath();
+            context.moveTo(cx1, cy);
+            context.lineTo(cx2, cy);
+            context.stroke();
+         }
+      }
+      {  // Vertical
+         let cy1 = Math.floor(y);
+         let cy2 = Math.floor(y + h);
+         if (col === undefined || col === 0) {
+            //
+            // Left borders work similarly to top borders.
+            //
+            thick = style.border_width.left;
+            color = style.border_color.left;
+            if (thick < style.border_width.right) {
+               thick = style.border_width.right;
+               color = style.border_color.right;
+            }
+            if (thick > 0) {
+               context.strokeStyle = color;
+               context.lineWidth   = thick;
+               let cx = Math.floor(x) + thick / 2;
+               context.beginPath();
+               context.moveTo(cx, cy1);
+               context.lineTo(cx, cy2);
+               context.stroke();
+            }
+         }
+         thick = style.border_width.right;
+         color = style.border_color.right;
+         if (col > 0) {
+            //
+            // Collapse table borders, preferring the thicker border.
+            //
+            if (thick < style.border_width.left) {
+               thick = style.border_width.left;
+               color = style.border_color.left;
+            }
+         }
+         if (thick > 0) {
+            context.strokeStyle = color;
+            context.lineWidth   = thick;
+            let cx  = Math.floor(x + w) - thick / 2;
+            context.beginPath();
+            context.moveTo(cx, cy1);
+            context.lineTo(cx, cy2);
+            context.stroke();
+         }
+      }
+      
+      if (content_paint_functor) {
+         context.save();
+         try {
+            let ix = x + style.border_width.left   + style.padding.left;
+            let iy = y + style.border_width.top    + style.padding.top;
+            let iw = w - style.border_width.right  - style.padding.right  - (ix - x);
+            let ih = h - style.border_width.bottom - style.padding.bottom - (iy - y);
+            context.rect(ix, iy, iw, ih);
+            context.clip();
+            context.beginPath(); // prevent `rect` from affecting any later `fill` calls
+            context.translate(ix, iy);
+            content_paint_functor({ x: ix, y: iy, w: iw, h: ih });
+         } catch (e) {
+            context.restore();
+            throw e;
+         }
+         context.restore();
+      }
+   }
+   
+   #paint_sticky_header() {
+      let canvas  = this.#canvas;
+      let context = canvas.getContext("2d");
+      
+      const styles  = this.#cached_styles;
+      const addenda = this.#cached_style_addenda;
+      
+      let canvas_width  = canvas.width;
+      let canvas_height = canvas.height;
+      
+      let x = 0;
+      let y = 0;
+      this.#last_repaint_result.sticky_header.y = y;
+      this.#last_repaint_result.sticky_header.h = addenda.header_height;
+      
+      this.#paint_cached_style_box(
+         "header-row",
+         {
+            x: x,
+            y: y,
+            w: canvas_width,
+            h: addenda.header_height
+         }
+      );
+      
+      x += styles["header-row"].border_width.left + styles["header-row"].padding.left;
+      y += styles["header-row"].border_width.top  + styles["header-row"].padding.top;
+      let w = 
+         canvas_width -
+         styles["header-row"].border_width.left -
+         styles["header-row"].border_width.right -
+         styles["header-row"].padding.left -
+         styles["header-row"].padding.right
+      ;
+      let h = 
+         addenda.header_height -
+         styles["header-row"].border_width.top -
+         styles["header-row"].border_width.bottom -
+         styles["header-row"].padding.top -
+         styles["header-row"].padding.bottom
+      ;
+      let r = x + w;
+      
+      context.font = styles["header-cell"].font;
+      this.#paint_cached_style_box(
+         "header-cell",
+         {
+            x:   x,
+            y:   y,
+            w:   this.#computed_column_widths.path - x,
+            h:   h,
+            row: 0,
+            col: 0,
+            column_count: 3,
+         },
+         function(content_box) {
+            const text = "Path";
+            context.fillStyle = styles["header-cell"].color;
+            context.fillText(text, 0, 0);
+            let width = context.measureText(text).width;
+            if (width > content_box.w) {
+               // TODO: implement tooltips on headers
+            }
+         }
+      );
+      
+      x = this.#computed_column_widths.path;
+      this.#paint_cached_style_box(
+         "header-cell", 
+         {
+            x:   x,
+            y:   y,
+            w:   this.#computed_column_widths.path + this.#computed_column_widths.value - x,
+            h:   h,
+            row: 0,
+            col: 1,
+            column_count: 3,
+         },
+         function(content_box) {
+            const text = "Value";
+            context.fillStyle = styles["header-cell"].color;
+            context.fillText(text, 0, 0);
+            let width = context.measureText(text).width;
+            if (width > content_box.w) {
+               // TODO: implement tooltips on headers
+            }
+         }
+      );
+      
+      x = this.#computed_column_widths.path + this.#computed_column_widths.value;
+      this.#paint_cached_style_box(
+         "header-cell",
+         {
+            x:   x,
+            y:   y,
+            w:   r - x,
+            h:   h,
+            row: 0,
+            col: 2,
+            column_count: 3,
+         },
+         function(content_box) {
+            const text = "Type";
+            context.fillStyle = styles["header-cell"].color;
+            context.fillText(text, 0, 0);
+            let width = context.measureText(text).width;
+            if (width > content_box.w) {
+               // TODO: implement tooltips on headers
+            }
+         }
+      );
+   }
+   
    #paint_item_row(row, indent, item, name, is_expanded) {
       let canvas  = this.#canvas;
       let context = canvas.getContext("2d");
@@ -478,7 +788,7 @@ class CViewElement extends HTMLElement {
       const indent_width  = this.#cached_styles["base-text"].font_size;
       
       let x = indent * indent_width;
-      let y = row * row_height;
+      let y = this.#cached_style_addenda.header_height + row * row_height;
       x -= this.#scroll_pos.x;
       y -= this.#scroll_pos.y;
       
@@ -703,7 +1013,7 @@ class CViewElement extends HTMLElement {
          }).bind(this)
       );
       
-      this.#last_painted_rows.push(painted);
+      this.#last_repaint_result.rows.push(painted);
    }
    
    #queue_repaint(also_styles) {
@@ -791,9 +1101,10 @@ class CViewElement extends HTMLElement {
       let current_row    = 0;
       let current_indent = 0;
       let current_scroll = this.#scroll_pos;
+      let first_row_y    = this.#cached_style_addenda.header_height;
       let canvas_end_y   = current_scroll.y + this.offsetHeight;
       let paint_item;
-      this.#last_painted_rows = [];
+      this.#last_repaint_result.rows = [];
       paint_item = (function(name, item) {
          let rows     = 1;
          let expanded = false;
@@ -801,7 +1112,7 @@ class CViewElement extends HTMLElement {
             if (this.#expanded_items.has(item))
                expanded = true;
          
-         let y = current_row * ROW_HEIGHT;
+         let y = first_row_y + current_row * ROW_HEIGHT;
          if (y + ROW_HEIGHT > current_scroll.y && y < canvas_end_y) {
             this.#paint_item_row(current_row, current_indent, item, name, expanded);
          }
@@ -856,7 +1167,8 @@ class CViewElement extends HTMLElement {
          paint_item(name, item.value);
       }
       
-      this.#content_size.height = current_row * ROW_HEIGHT;
+      this.#content_size.height = first_row_y + current_row * ROW_HEIGHT;
+      this.#paint_sticky_header();
       
       this.#scroll_sizer.style.height = `${current_row * ROW_HEIGHT}px`;
       

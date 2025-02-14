@@ -33,6 +33,7 @@ class CUnionInstance {
    constructor(/*SaveFormat*/ format, /*CUnion*/ type) {
       this.save_format = format;
       this.type        = type; // CUnion
+      this.value_name  = null;
       this.value       = null;
    }
    emplace(member_name) {
@@ -47,6 +48,7 @@ class CUnionInstance {
             console.assert(member instanceof CValue);
             this.value = member.make_instance_representation(this.save_format);
          }
+         this.value_name = member_name;
          return this.value;
       }
       console.assert(false, "invalid member name");

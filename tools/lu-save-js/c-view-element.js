@@ -380,7 +380,32 @@ class CViewElement extends HTMLElement {
    #tooltips_pending_update = null; // #tooltips_pending_update[row][col]
    
    #stringify_value(item) {
-      console.assert(item instanceof CValueInstance);
+      if (item instanceof CValueInstanceArray) {
+         let base = item.base;
+         switch (base.type) {
+            case "boolean":
+            case "integer":
+            case "string":
+               break;
+            default:
+               return "[ ... ]";
+         }
+         if (item.rank + 1 < base.array_ranks.length)
+            return null;
+         let text   = "[ ";
+         let extent = base.array_ranks[item.rank];
+         for(let i = 0; i < extent; ++i) {
+            if (i > 0)
+               text += ", ";
+            let element = item.values[i];
+            text += this.#stringify_value(element);
+         }
+         text += " ]";
+         return text;
+      }
+      if (!(item instanceof CValueInstance)) {
+         return null;
+      }
       if (item.value === null) {
          return "[empty]";
       }
@@ -906,10 +931,7 @@ class CViewElement extends HTMLElement {
             column_count: 3,
          },
          (function(content_box) {
-            let value = null;
-            if (item instanceof CValueInstance) {
-               value = this.#stringify_value(item);
-            }
+            let value = this.#stringify_value(item);
             if (value === null)
                return;
             
@@ -936,7 +958,7 @@ class CViewElement extends HTMLElement {
          },
          (function(content_box) {
             let typename = null;
-            if (item instanceof CStructInstance) {
+            if (item instanceof CStructInstance || item instanceof CUnionInstance) {
                let type = item.type;
                if (type) {
                   if (type.tag) {
@@ -946,8 +968,6 @@ class CViewElement extends HTMLElement {
                      typename = type.symbol;
                   }
                }
-            } else if (item instanceof CUnionInstance) {
-               
             } else if (item instanceof CValueInstance) {
                typename = item.base.c_typenames.serialized;
                if (item.base.type == "string") {

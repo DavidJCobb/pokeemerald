@@ -33,9 +33,27 @@ document.querySelector(".form button").addEventListener("click", async function(
    for(let i = 0; i < decoded.slots.length; ++i) {
       let slot      = decoded.slots[i];
       let container = document.querySelector(".slot[data-slot-id='" + (i + 1) + "']");
+      let header    = container.querySelector("aside");
       let view      = document.createElement("c-view");
-      container.replaceChildren(view);
+      container.replaceChildren(header, view);
       view.scope = decoded.slots[0];
       window.setTimeout(function() { view.repaint() }, 1);
+      
+      let version = -1;
+      let counter = -1;
+      let s_frag  = new DocumentFragment();
+      for(let sector of slot.sectors) {
+         let s_item = document.createElement("li");
+         s_frag.append(s_item);
+         if (sector.signature == 0x8012025) {
+            s_item.className   = sector._checksum_is_valid ? "good" : "bad";
+            s_item.textContent = sector.sector_id;
+            version = Math.max(version, sector.version);
+            counter = Math.max(counter, sector.counter);
+         }
+      }
+      header.querySelector(".sectors").replaceChildren(s_frag);
+      header.querySelector("[data-field='version'] .value").textContent = version;
+      header.querySelector("[data-field='counter'] .value").textContent = counter;
    }
 });

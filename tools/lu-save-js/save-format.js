@@ -126,6 +126,7 @@ class SaveFormat {
          for(let tlv of this.top_level_values) {
             let value = tlv.make_instance_representation(this);
             slot.members[tlv.name] = value;
+            slot.sectors = [];
          }
          
          for(let j = 0; j < SECTORS_PER_SLOT; ++j) {
@@ -136,6 +137,20 @@ class SaveFormat {
             let id = flash_sector.header.sector_id;
             console.assert(id < SECTORS_PER_SLOT);
             console.assert(!!this.sectors[id].instructions);
+            
+            slot.sectors.push(flash_sector.header);
+            {
+               let checksum = 0;
+               for(let k = 0; k < 0x1000 - 128; k += 4) {
+                  checksum += blob.getUint32(k, true);
+                  checksum |= 0;
+               }
+               checksum = ((checksum >> 16) + checksum) & 0xFFFF;
+               if (checksum == flash_sector.header.checksum)
+                  flash_sector.header._checksum_is_valid = true;
+               else
+                  flash_sector.header._checksum_is_valid = false;
+            }
             
             let applier = new InstructionsApplier();
             applier.save_format = this;

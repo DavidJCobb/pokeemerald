@@ -39,6 +39,50 @@ html {
    &[data-slot-id]::before {
       content: "Savedata slot " attr(data-slot-id);
    }
+   
+   aside {
+      display:   flex;
+      flex-flow: row nowrap;
+      gap:       2em;
+      margin-bottom: var(--padding);
+      
+      .field {
+         display:   flex;
+         flex-flow: row nowrap;
+         gap:       1ch;
+         
+         label {
+            font-weight: bold;
+         }
+      }
+      
+      .sectors {
+         display:    flex;
+         flex-flow:  row nowrap;
+         gap:        0.5em;
+         list-style: none;
+         padding:    0;
+         margin:     0;
+         
+         li {
+            width:  1rem;
+            height: 1rem;
+            border: 1px solid #000;
+            background: #CCC;
+            text-align:  center;
+            line-height: 1rem;
+            font-size: .85rem;
+            
+            &.good {
+               background: #0A0;
+               color: #FFF;
+            }
+            &.bad {
+               background: #F00;
+            }
+         }
+      }
+   }
 }
 
 c-view {

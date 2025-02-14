@@ -1127,7 +1127,7 @@ class CViewElement extends HTMLElement {
       this.#content_size.height = first_row_y + current_row * ROW_HEIGHT;
       this.#paint_sticky_header();
       
-      this.#scroll_sizer.style.height = `${current_row * ROW_HEIGHT}px`;
+      this.#scroll_sizer.style.height = `${this.#content_size.height}px`;
       
       for(let row in this.#tooltips_pending_update) {
          let list = this.#tooltips_pending_update[row];

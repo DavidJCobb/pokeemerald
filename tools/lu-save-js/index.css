@@ -49,6 +49,7 @@ c-view {
    font-size:   .8em;
    
    &::part(header-row) {
+      border:      1px solid #CCC;
       background:  #888;
       color:       #FFF;
       font-weight: bold;
@@ -58,11 +59,11 @@ c-view {
       padding: .25em;
    }
    &::part(row) {
-      padding: .25em;
-      border: 1px solid #CCC;
+      color:   #888;
    }
-   &::part(base-text) {
-      color: #888;
+   &::part(cell) {
+      padding: .25em;
+      border:  1px solid #CCC;
    }
    &::part(name-text) {
       color: #000;

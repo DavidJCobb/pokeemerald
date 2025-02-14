@@ -47,9 +47,6 @@ class CViewElement extends HTMLElement {
       // the outside world to style. The `_type` fields on each entry identify the 
       // properties we'll check and cache.
       //
-      "base-text": {
-         _type: "text"
-      },
       "name-text": {
          _type: "text"
       },
@@ -58,9 +55,8 @@ class CViewElement extends HTMLElement {
       },
       "header-row":  { _type: ["box", "text"], },
       "header-cell": { _type: ["box", "text"], },
-      "row": {
-         _type: "box",
-      },
+      "row":         { _type: ["box", "text"], },
+      "cell":        { _type: ["box", "text"], },
       "twisty": {
          _type: "icon",
       },
@@ -132,15 +128,19 @@ class CViewElement extends HTMLElement {
       );
       
       addenda.row_content_height =  Math.max(
-         styles["base-text"].font_size,
+         styles["cell"].font_size,
          styles["name-text"].font_size,
          styles["value-text"].font_size
       );
       addenda.row_height =
-         styles.row.padding.top +
-         styles.row.padding.bottom +
-         styles.row.border_width.top +
-         styles.row.border_width.bottom +
+         styles["row"].border_width.top +
+         styles["row"].border_width.bottom +
+         styles["row"].padding.top +
+         styles["row"].padding.bottom +
+         styles["cell"].border_width.top +
+         styles["cell"].border_width.bottom +
+         styles["cell"].padding.top +
+         styles["cell"].padding.bottom +
          addenda.row_content_height
       ;
    }
@@ -237,12 +237,12 @@ class CViewElement extends HTMLElement {
       <div part="header-row" data-type="box text">
          <div part="header-cell" data-type="box text"></div>
       </div>
-      <div part="row" data-type="box">
-         <span part="base-text" data-type="text">
+      <div part="row" data-type="box text">
+         <div part="cell" data-type="box text">
             <div part="twisty" data-type="icon"></div>
             <span part="name-text" data-type="text"></span>
             <span part="value-text" data-type="text"></span>
-         </span>
+         </div>
       </div>
       <div class="scroll">
          <canvas></canvas>
@@ -465,7 +465,7 @@ class CViewElement extends HTMLElement {
             break;
       }
       x -= this.#scroll_pos.x;
-      y = row * this.#cached_style_addenda.row_height - this.#scroll_pos.y;
+      y = this.#cached_style_addenda.header_height + row * this.#cached_style_addenda.row_height - this.#scroll_pos.y;
       h = this.#cached_style_addenda.row_height;
       
       if (override_bounds) {
@@ -784,10 +784,10 @@ class CViewElement extends HTMLElement {
       
       const canvas_width  = canvas.width;
       const canvas_height = canvas.height;
-      const row_height    = this.#cached_style_addenda.row_height;
-      const indent_width  = this.#cached_styles["base-text"].font_size;
+      let   row_height    = this.#cached_style_addenda.row_height;
+      const indent_width  = this.#cached_styles["cell"].font_size;
       
-      let x = indent * indent_width;
+      let x = 0;
       let y = this.#cached_style_addenda.header_height + row * row_height;
       x -= this.#scroll_pos.x;
       y -= this.#scroll_pos.y;
@@ -804,88 +804,43 @@ class CViewElement extends HTMLElement {
          },
       };
       
-      // Draw table borders for this row and its cells.
-      {
-         let ccw = this.#computed_column_widths;
-         if (this.#cached_styles.row.background != "transparent") {
-            context.fillStyle = this.#cached_styles.row.background;
-            context.rect(x, y, ccw.path, row_height);
-            context.rect(x + ccw.path, y, ccw.value, row_height);
-            context.rect(x + ccw.path + ccw.value, y, ccw.type, row_height);
+      this.#paint_cached_style_box(
+         "row",
+         {
+            x: x,
+            y: y,
+            w: canvas_width,
+            h: row_height
          }
-         let cbw = this.#cached_styles.row.border_width;
-         let cbc = this.#cached_styles.row.border_color;
-         
-         function unblurred_line_h(thickness, x, y, to) {
-            x  = Math.round(x);
-            y  = Math.round(y);
-            to = Math.round(to);
-            let off = thickness % 2 ? 0.5 : 0;
-            context.beginPath();
-            context.moveTo(x + off,  y + off);
-            context.lineTo(to - off, y + off);
-            context.stroke();
-         }
-         function unblurred_line_v(thickness, x, y, to) {
-            x  = Math.round(x);
-            y  = Math.round(y);
-            to = Math.round(to);
-            let off = thickness % 2 ? 0.5 : 0;
-            context.beginPath();
-            context.moveTo(x + off, y + off);
-            context.lineTo(x + off, to - off);
-            context.stroke();
-         }
-         
-         if (row == 0 && cbw.top > 0) {
-            context.strokeStyle = cbc.top;
-            context.lineWidth   = cbw.top;
-            unblurred_line_h(cbw.top, 0, Math.floor(y), canvas_width);
-         }
-         {  // Row left border
-            context.strokeStyle = cbc.left;
-            context.lineWidth   = cbw.left;
-            unblurred_line_v(cbw.left, 0, Math.floor(y), y + row_height);
-         }
-         {  // Row right border
-            context.strokeStyle = cbc.right;
-            context.lineWidth   = cbw.right;
-            unblurred_line_v(cbw.right, canvas_width - cbw.right, Math.floor(y), y + row_height);
-         }
-         {  // Row bottom border
-            context.strokeStyle = cbc.bottom;
-            context.lineWidth   = cbw.bottom;
-            unblurred_line_h(cbw.bottom, 0, y + row_height - cbw.bottom, canvas_width);
-         }
-         //
-         // Borders between cells.
-         //
-         if (cbw.left || cbw.right) {
-            let thick;
-            if (cbw.left > cbw.right) {
-               context.strokeStyle = cbc.left;
-               context.lineWidth   = thick = cbw.left;
-            } else {
-               context.strokeStyle = cbc.right;
-               context.lineWidth   = thick = cbw.right;
-            }
-            unblurred_line_v(thick, ccw.path,             Math.floor(y), y + row_height);
-            unblurred_line_v(thick, ccw.path + ccw.value, Math.floor(y), y + row_height);
-         }
-         
+      );
+      const row_style = this.#cached_styles["row"];
+      let row_inset_l = row_style.border_width.left   + row_style.padding.left;
+      let row_inset_t = row_style.border_width.top    + row_style.padding.top;
+      let row_inset_r = row_style.border_width.right  + row_style.padding.right;
+      let row_inset_b = row_style.border_width.bottom + row_style.padding.bottom;
+      let row_inner_h = row_height - row_inset_t - row_inset_b;
+      
+      let paint_row = row;
+      if (row_inset_t > 0 && row_inset_b > 0) {
+         paint_row = 0; // HACK: ensure top/bottom borders don't collapse
       }
       
-      // COLUMN: Path
-      this.#within_clip_region(
-         0,
-         0,
-         this.#computed_column_widths.path - this.#cached_styles.row.padding.right,
-         canvas_height,
-         (function(clipregion) {
-            x += this.#cached_styles.row.padding.left;
-            y += this.#cached_styles.row.padding.top;
+      this.#paint_cached_style_box(
+         "cell",
+         {
+            x: x + row_inset_l,
+            y: y + row_inset_t,
+            w: this.#computed_column_widths.path - row_inset_l,
+            h: row_inner_h,
+            row: paint_row,
+            col: 0,
+            column_count: 3,
+         },
+         (function(content_box) {
+            let x = indent * indent_width;
+            let y = 0;
             
-            context.font = this.#cached_styles["base-text"].font;
+            context.font = this.#cached_styles["cell"].font;
             const space_width = context.measureText(" ").width;
             
             if (!(item instanceof CValueInstance)) {
@@ -909,8 +864,8 @@ class CViewElement extends HTMLElement {
                }
                context.fill();
                painted.coords.twisty = {
-                  x: x,
-                  y: y + dy,
+                  x: content_box.x + x,
+                  y: content_box.y + y + dy,
                   w: w,
                   h: h,
                };
@@ -926,53 +881,60 @@ class CViewElement extends HTMLElement {
             context.fillText(name, x, y);
             
             let width = context.measureText(name).width;
-            if (width > clipregion.w - x) {
+            if (width > content_box.w - x) {
                this.#update_tooltip(
                   row,
                   0,
                   name,
                   {  // override bounds so we don't cover and block the twisty
-                     x:     x,
-                     width: clipregion.w - x
+                     x:     ix + x,
+                     width: iw - x
                   }
                );
             }
          }).bind(this)
       );
-      
-      // COLUMN: Value
-      x = this.#computed_column_widths.path + this.#cached_styles.row.padding.left;
-      this.#within_clip_region(
-         this.#computed_column_widths.path,
-         0,
-         this.#computed_column_widths.value - this.#cached_styles.row.padding.right,
-         canvas_height,
-         (function(clipregion) {
+      this.#paint_cached_style_box(
+         "cell",
+         {
+            x: x + this.#computed_column_widths.path,
+            y: y + row_inset_t,
+            w: this.#computed_column_widths.value,
+            h: row_inner_h,
+            row: paint_row,
+            col: 1,
+            column_count: 3,
+         },
+         (function(content_box) {
             let value = null;
             if (item instanceof CValueInstance) {
                value = this.#stringify_value(item);
             }
             if (value === null)
                return;
+            
             context.fillStyle = this.#cached_styles["value-text"].color;
             context.font      = this.#cached_styles["value-text"].font;
-            context.fillText(value, x, y);
+            context.fillText(value, 0, 0);
             
             let width = context.measureText(value).width;
-            if (width > clipregion.w - this.#cached_styles.row.padding.left) {
+            if (width > content_box.w) {
                this.#update_tooltip(row, 1, value);
             }
          }).bind(this)
       );
-      
-      // COLUMN: Type
-      x = this.#computed_column_widths.path + this.#computed_column_widths.value + this.#cached_styles.row.padding.left;
-      this.#within_clip_region(
-         this.#computed_column_widths.path + this.#computed_column_widths.value,
-         0,
-         this.#computed_column_widths.type - this.#cached_styles.row.padding.right,
-         canvas_height,
-         (function(clipregion) {
+      this.#paint_cached_style_box(
+         "cell",
+         {
+            x: x + this.#computed_column_widths.path + this.#computed_column_widths.value,
+            y: y + row_inset_t,
+            w: this.#computed_column_widths.type - row_inset_r,
+            h: row_inner_h,
+            row: paint_row,
+            col: 2,
+            column_count: 3,
+         },
+         (function(content_box) {
             let typename = null;
             if (item instanceof CStructInstance) {
                let type = item.type;
@@ -1004,15 +966,14 @@ class CViewElement extends HTMLElement {
                return;
             context.fillStyle = this.#cached_styles["name-text"].color;
             context.font      = this.#cached_styles["name-text"].font;
-            context.fillText(typename, x, y);
+            context.fillText(typename, 0, 0);
             
             let width = context.measureText(typename).width;
-            if (width > clipregion.w - this.#cached_styles.row.padding.left) {
+            if (width > content_box.w) {
                this.#update_tooltip(row, 2, typename);
             }
          }).bind(this)
       );
-      
       this.#last_repaint_result.rows.push(painted);
    }
    
@@ -1051,7 +1012,7 @@ class CViewElement extends HTMLElement {
       }
       
       {
-         context.font = this.#cached_styles["base-text"].font;
+         context.font = this.#cached_styles["cell"].font;
          
          let base_width = canvas.width;
          let flex_width = base_width;
@@ -1092,11 +1053,7 @@ class CViewElement extends HTMLElement {
          }
       }
       
-      const ROW_HEIGHT   = this.#cached_style_addenda.row_height;
-      const INDENT_WIDTH = this.#cached_styles["base-text"].font_size;
-      
-      context.font      = this.#cached_styles["base-text"].font;
-      context.fillStyle = this.#cached_styles["base-text"].color;
+      const ROW_HEIGHT = this.#cached_style_addenda.row_height;
       
       let current_row    = 0;
       let current_indent = 0;

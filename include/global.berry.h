@@ -1,6 +1,8 @@
 #ifndef GUARD_GLOBAL_BERRY_H
 #define GUARD_GLOBAL_BERRY_H
 
+#include "lu/bitpack_options.h"
+
 #define BERRY_NAME_LENGTH 6
 #define BERRY_ITEM_EFFECT_COUNT 18
 
@@ -26,7 +28,7 @@ struct Berry
 
 struct Berry2
 {
-    u8 name[BERRY_NAME_LENGTH + 1];
+    LU_BP_STRING_NT u8 name[BERRY_NAME_LENGTH + 1];
     u8 firmness;
     u16 size;
     u8 maxYield;

@@ -64,16 +64,9 @@ class Bitstream {
    }
    read_string(max_length) {
       let s = [];
-      let i;
-      for(i = 0; i < max_length; ++i) {
+      for(let i = 0; i <= max_length; ++i) {
          let c = this.read_unsigned(8);
-         if (c == CHARSET_CONTROL_CODES.chars_to_bytes["\0"]) {
-            break;
-         }
          s.push(c);
-      }
-      for(; i < max_length; ++i) {
-         s.push(CHARSET_CONTROL_CODES.chars_to_bytes["\0"]);
       }
       return s;
    }

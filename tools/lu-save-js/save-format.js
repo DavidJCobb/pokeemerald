@@ -130,7 +130,7 @@ class SaveFormat {
          }
          
          for(let j = 0; j < SECTORS_PER_SLOT; ++j) {
-            let pos  = 0x1000 * (SLOTS_PER_SAV * i + j);
+            let pos  = 0x1000 * (SECTORS_PER_SLOT * i + j);
             let blob = new DataView(sav.buffer, pos, 0x1000);
             
             let flash_sector = this.#decompose_flash_sector(blob);

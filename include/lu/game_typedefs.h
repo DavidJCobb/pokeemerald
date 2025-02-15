@@ -25,7 +25,7 @@ LU_BP_CATEGORY("player-name")  LU_BP_STRING_NT typedef u8 PlayerName[PLAYER_NAME
 LU_BP_CATEGORY("player-name")  LU_BP_STRING_UT typedef u8 PlayerNameNoTerminator[PLAYER_NAME_LENGTH];
 LU_BP_CATEGORY("pokemon-level") LU_BP_MINMAX(0,100) typedef u8 PokemonLevel;
 LU_BP_CATEGORY("pokemon-name") LU_BP_STRING_NT typedef u8 PokemonName[POKEMON_NAME_LENGTH + 1];
-LU_BP_CATEGORY("pokemon-name") LU_BP_STRING_NT typedef u8 PokemonNameNoTerminator[POKEMON_NAME_LENGTH];
+LU_BP_CATEGORY("pokemon-name") LU_BP_STRING_UT typedef u8 PokemonNameNoTerminator[POKEMON_NAME_LENGTH];
 LU_BP_CATEGORY("species-id") typedef u16 PokemonSpeciesID;
 
 // NOTE: Trainer IDs have some other representations as well.

@@ -480,26 +480,27 @@ class CViewElement extends HTMLElement {
                for(let i = 0; i < item.value.length; ++i) {
                   let cc = item.value[i];
                   let ch = CHARSET_ENGLISH.bytes_to_chars[cc];
-                  if (ch) {
+                  if (ch && ch.length == 1) {
                      if (ch == '"')
                         text += '\\';
                      text += ch;
                      continue;
-                  }
-                  ch = CHARSET_CONTROL_CODES.bytes_to_chars[cc];
-                  if (STOP_AT_TERMINATOR) {
-                     if (ch == '\0')
-                        break;
-                  }
-                  switch (ch) {
-                     case "\\l":
-                     case "\\p":
-                     case "\\n":
-                        text += ch;
-                        continue;
-                     case '\0':
-                        text += "\\0";
-                        continue;
+                  } else if (!ch) {
+                     ch = CHARSET_CONTROL_CODES.bytes_to_chars[cc];
+                     if (STOP_AT_TERMINATOR) {
+                        if (ch == '\0')
+                           break;
+                     }
+                     switch (ch) {
+                        case "\\l":
+                        case "\\p":
+                        case "\\n":
+                           text += ch;
+                           continue;
+                        case '\0':
+                           text += "\\0";
+                           continue;
+                     }
                   }
                   text += "\\x" + cc.toString(16).padStart(2, '0').toUpperCase();
                }

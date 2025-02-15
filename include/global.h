@@ -192,7 +192,7 @@ struct UCoords32
 struct Time
 {
     /*0x00*/ s16 days;
-    /*0x02*/ s8 hours;
+    LU_BP_MINMAX(0,24) /*0x02*/ s8 hours;
     LU_BP_MINMAX(0,60) /*0x03*/ s8 minutes;
     LU_BP_MINMAX(0,60) /*0x04*/ s8 seconds;
 };
@@ -695,7 +695,7 @@ struct MauvilleOldManTrader
 {
     u8 id;
     u8 decorations[NUM_TRADER_ITEMS];
-    LU_BP_CATEGORY("player-name?") u8 playerNames[NUM_TRADER_ITEMS][11];
+    LU_BP_CATEGORY("player-name") LU_BP_STRING_NT u8 playerNames[NUM_TRADER_ITEMS][11];
     u8 alreadyTraded;
     LanguageID language[NUM_TRADER_ITEMS];
 };

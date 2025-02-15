@@ -1,6 +1,8 @@
 #ifndef GUARD_POKEMON_STORAGE_SYSTEM_H
 #define GUARD_POKEMON_STORAGE_SYSTEM_H
 
+#include "lu/bitpack_options.h"
+
 #define TOTAL_BOXES_COUNT       14
 #define IN_BOX_ROWS             5 // Number of rows, 6 Pokémon per row
 #define IN_BOX_COLUMNS          6 // Number of columns, 5 Pokémon per column
@@ -18,9 +20,9 @@ ROWS        0   1   2   3   4   5
 
 struct PokemonStorage
 {
-    /*0x0000*/ u8 currentBox;
+    /*0x0000*/ LU_BP_MINMAX(0, TOTAL_BOXES_COUNT - 1) u8 currentBox;
     /*0x0001*/ struct BoxPokemon boxes[TOTAL_BOXES_COUNT][IN_BOX_COUNT];
-    /*0x8344*/ u8 boxNames[TOTAL_BOXES_COUNT][BOX_NAME_LENGTH + 1];
+    /*0x8344*/ LU_BP_STRING_NT u8 boxNames[TOTAL_BOXES_COUNT][BOX_NAME_LENGTH + 1];
     /*0x83C2*/ u8 boxWallpapers[TOTAL_BOXES_COUNT];
 };
 

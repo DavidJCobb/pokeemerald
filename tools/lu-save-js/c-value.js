@@ -19,7 +19,7 @@ class CValue {
          return str;
       str = str.trim();
       str = str.replace(/^(?:(?:const|volatile) )+/, "");
-      str = str.replace(/(?:\[\d+\])+$/, "");
+      str = str.replace(/(?:\[\d+\])+$/, ""); // array type to value type
       return str;
    }
    
@@ -43,6 +43,16 @@ class CValue {
          if (dvs)
             this.default_value = dvs.textContent;
       }
+      
+      switch (this.type) {
+         case "string":
+            this.options = {
+               length:           +node.getAttribute("length"),
+               needs_terminator: node.getAttribute("nonstring") != "true",
+            };
+            break;
+      }
+      
       for(let child of node.children) {
          if (child.nodeName == "array-rank") {
             let extent = +child.getAttribute("extent");
@@ -50,7 +60,7 @@ class CValue {
             this.array_ranks.push(extent);
          }
       }
-         
+      
       if (this.type == "struct" && !this.c_typenames.original) {
          this.anonymous_type = new CStruct();
          for(let child of node.children) {

@@ -21,7 +21,7 @@ class CViewElement extends HTMLElement {
    
    #resize_observer = null;
    
-   #recache_styles_queued = false;
+   #recache_styles_queued = true; // force recache on first repaint
    #repaint_queued        = false;
    
    // Contains all CStructInstances, etc., that the user has expanded within the treeview
@@ -162,6 +162,8 @@ class CViewElement extends HTMLElement {
       rows: [],
    };
    
+   #typed_value_formatters = {}; // [typename] = function(inst) {}
+   
    constructor() {
       super();
       this.#shadow = this.attachShadow({ mode: "open" });
@@ -259,6 +261,25 @@ class CViewElement extends HTMLElement {
       
       this.addEventListener("click", this.#on_click.bind(this));
       this.#scroll_pane.addEventListener("scroll", this.#on_scroll.bind(this));
+   }
+   
+   // Compare to writing DisplayString for a type in Natvis.
+   getTypeFormatter(typename) {
+      return this.#typed_value_formatters[typename] || null;
+   }
+   setTypeFormatter(typename, formatter) {
+      if (!formatter) {
+         if (!this.#typed_value_formatters[typename])
+            return;
+         this.#typed_value_formatters[typename] = null;
+      } else {
+         if (!(formatter instanceof Function))
+            throw new TypeError("the formatter must be a function");
+         if (this.#typed_value_formatters[typename] == formatter)
+            return;
+         this.#typed_value_formatters[typename] = formatter;
+      }
+      this.repaint();
    }
    
    get scope() { return this.#scope; }
@@ -380,6 +401,21 @@ class CViewElement extends HTMLElement {
    #tooltips_pending_update = null; // #tooltips_pending_update[row][col]
    
    #stringify_value(item) {
+      if (item instanceof CStructInstance) {
+         let type      = item.type;
+         let typename  = type.tag || type.symbol;
+         let formatter = this.#typed_value_formatters[typename];
+         if (formatter) {
+            let text;
+            try {
+               text = formatter(item);
+            } catch (e) {
+               text = "[custom formatter error]";
+               console.log(e);
+            }
+            return text;
+         }
+      }
       if (item instanceof CValueInstanceArray) {
          let base = item.base;
          switch (base.type) {
@@ -410,6 +446,8 @@ class CViewElement extends HTMLElement {
          return "[empty]";
       }
       
+      const SHOW_STRINGS_AS_SINGLE_CHARS = false;
+      
       let base = item.base;
       console.assert(!!base);
       switch (base.type) {
@@ -419,20 +457,53 @@ class CViewElement extends HTMLElement {
          case "pointer":
             return "0x" + item.value.toString(16).padStart(8, '0').toUpperCase();
          case "string":
-            {
+            if (SHOW_STRINGS_AS_SINGLE_CHARS) {
                let text = "";
                for(let i = 0; i < item.value.length; ++i) {
                   let cc = item.value[i];
                   let ch = CHARSET_ENGLISH.bytes_to_chars[cc];
                   if (!ch) {
                      ch = CHARSET_CONTROL_CODES.bytes_to_chars[cc];
-                     if (ch == '\0')
+                     if (ch == '\0') {
+                        ch = "\\0";
                         break;
+                     }
                   }
                   
                   text += "'" + ch + "' ";
                }
                return text;
+            } else {
+               const STOP_AT_TERMINATOR = true;
+               
+               let text = "";
+               for(let i = 0; i < item.value.length; ++i) {
+                  let cc = item.value[i];
+                  let ch = CHARSET_ENGLISH.bytes_to_chars[cc];
+                  if (ch) {
+                     if (ch == '"')
+                        text += '\\';
+                     text += ch;
+                     continue;
+                  }
+                  ch = CHARSET_CONTROL_CODES.bytes_to_chars[cc];
+                  if (STOP_AT_TERMINATOR) {
+                     if (ch == '\0')
+                        break;
+                  }
+                  switch (ch) {
+                     case "\\l":
+                     case "\\p":
+                     case "\\n":
+                        text += ch;
+                        continue;
+                     case '\0':
+                        text += "\\0";
+                        continue;
+                  }
+                  text += "\\x" + cc.toString(16).padStart(2, '0').toUpperCase();
+               }
+               return `"${text}"`;
             }
             break;
          case "buffer":
@@ -971,7 +1042,14 @@ class CViewElement extends HTMLElement {
             } else if (item instanceof CValueInstance) {
                typename = item.base.c_typenames.serialized;
                if (item.base.type == "string") {
-                  typename += "[...]";
+                  let len = "...";
+                  if (item.base.options.length) {
+                     len = item.base.options.length;
+                     if (item.base.options.needs_terminator) {
+                        len += " + sizeof('\\0')";
+                     }
+                  }
+                  typename += `[${len}]`;
                }
             } else if (item instanceof CValueInstanceArray) {
                typename = item.base.c_typenames.serialized;
@@ -1108,12 +1186,8 @@ class CViewElement extends HTMLElement {
                }
             } else if (item instanceof CUnionInstance) {
                let name = "[unnamed]";
-               for(let memb of item.type.members) {
-                  if (memb == item.value.base) {
-                     name = memb.name;
-                     break;
-                  }
-               }
+               if (item.value_name)
+                  name = item.value_name;
                paint_item(name, item.value);
             }
             --current_indent;

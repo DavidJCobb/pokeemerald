@@ -18,7 +18,7 @@ class InstructionsApplier {
       for(let segm of path.segments) {
          if (segm.type === null || segm.type == "member-access") {
             if (value instanceof CUnionInstance) {
-               value = value.emplace(segm.what);
+               value = value.get_or_emplace(segm.what);
             } else {
                console.assert(value instanceof CStructInstance);
                value = value.members[segm.what];
@@ -56,8 +56,9 @@ class InstructionsApplier {
             let tag_value = this.resolve_value_path(node.tag);
             console.assert(tag_value instanceof CValueInstance);
             console.assert(tag_value.base.type == "integer" || tag_value.base.type == "boolean");
+            console.assert(!isNaN(+tag_value.value));
             
-            let case_node = node.cases[tag_value];
+            let case_node = node.cases[+tag_value.value];
             if (case_node) {
                this.apply(case_node);
             } else if (node.else_case) {

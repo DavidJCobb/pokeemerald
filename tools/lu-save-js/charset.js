@@ -76,6 +76,7 @@ const CHARSET_CONTROL_CODES = (function() {
    out.define_char_code(0xFA, "\\l");
    out.define_char_code(0xFB, "\\p");
    out.define_char_code(0xFE, "\\n");
+   out.define_char_code(0xFF, "\0");
    return out;
 })();
 
@@ -112,7 +113,6 @@ const CHARSET_ENGLISH = (function() {
    out.define_char_code(0xA0, "SUPER_RE");
    out.run(0xA1, "0123456789!?.-·…“”‘’♂♀¥,×/ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz▶:ÄÖÜäöü");
    out.define_byte_sequence("TALL_PLUS", 0xFC, 0x0C, 0xFB);
-   out.define_char_code(0xFF, "\0");
    
    return out;
 })();

@@ -64,7 +64,7 @@ class Bitstream {
    }
    read_string(max_length) {
       let s = [];
-      for(let i = 0; i <= max_length; ++i) {
+      for(let i = 0; i < max_length; ++i) {
          let c = this.read_unsigned(8);
          s.push(c);
       }

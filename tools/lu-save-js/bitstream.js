@@ -35,9 +35,13 @@ class Bitstream {
       };
    }
    
-   skip_reading_bits(bitcount) {
+   skip_bits(bitcount) {
       this.#advance_by_bits(bitcount);
    }
+   
+   //
+   // Reading
+   //
    
    read_bool() {
       return (this.#consume_byte_for_read(1).value & 1) == 1;
@@ -69,5 +73,64 @@ class Bitstream {
          s.push(c);
       }
       return s;
+   }
+   
+   //
+   // Writing
+   //
+   
+   write_bool(v) {
+      if (!this.shift) {
+         this.dataview.setUint8(this.target, v ? 0x80 : 0x00);
+         ++this.shift;
+         return;
+      }
+      let mask = 1 << (8 - this.shift - 1);
+      let byte = this.dataview.getUint8(this.target);
+      if (v)
+         byte |= mask;
+      else
+         byte &= ~mask;
+      this.dataview.setUint8(this.target, byte);
+      this.#advance_by_bits(1);
+   }
+   write_unsigned(bitcount, value) {
+      if (bitcount < 8) {
+         value &= (1 << bitcount) - 1;
+      }
+      while (bitcount > 0) {
+         if (!this.shift) {
+            if (bitcount < 8) {
+               this.dataview.setUint8(this.target, value << (8 - bitcount));
+               this.#advance_by_bits(bitcount);
+               return;
+            }
+            this.dataview.setUint8(this.target, value >> (bitcount - 8));
+            this.#advance_by_bytes(1);
+            bitcount -= 8;
+            continue;
+         }
+         let extra = 8 - this.shift;
+         let byte  = this.dataview.getUint8(this.target);
+         if (bitcount <= extra) {
+            //
+            // The value can fit entirely within the current byte.
+            //
+            byte |= value << (extra - bitcount);
+            this.dataview.setUint8(this.target, byte);
+            this.#advance_by_bits(bitcount);
+            return;
+         }
+         byte &= ~(0xFF >> this.shift); // clear the bits we're about to write
+         byte |= ((value >> (bitcount - extra)) & 0xFF);
+         this.dataview.setUint8(this.target, byte);
+         this.#advance_by_bits(extra);
+         bitcount -= extra;
+      }
+   }
+   write_string(max_length, value) {
+      for(let i = 0; i < max_length; ++i) {
+         this.write_unsigned(8, value[i]);
+      }
    }
 };

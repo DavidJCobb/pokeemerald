@@ -41,12 +41,12 @@ class InstructionsApplier {
       return value;
    }
    
-   apply(/*RootInstructionNode*/ inst) {
+   read(/*RootInstructionNode*/ inst) {
       for(let node of inst.instructions) {
          if (node instanceof LoopInstructionNode) {
             for(let i = 0; i < node.indices.count; ++i) {
                this.variables.loop_counters[node.counter_variable] = node.indices.start + i;
-               this.apply(node);
+               this.read(node);
             }
          } else if (node instanceof TransformInstructionNode) {
             
@@ -60,14 +60,14 @@ class InstructionsApplier {
             
             let case_node = node.cases[+tag_value.value];
             if (case_node) {
-               this.apply(case_node);
+               this.read(case_node);
             } else if (node.else_case) {
-               this.apply(node.else_case);
+               this.read(node.else_case);
             } else {
                throw new Error("unexpected union tag value, and the serialization format has no fallback for this! (outdated codegen or a codegen bug?)");
             }
          } else if (node instanceof PaddingInstructionNode) {
-            this.bitstream.skip_reading_bits(node.bitcount);
+            this.bitstream.skip_bits(node.bitcount);
          } else if (node instanceof SingleInstructionNode) {
             let value = this.resolve_value_path(node.value);
             if (node.type == "struct") {
@@ -88,7 +88,7 @@ class InstructionsApplier {
                whole_struct_applier.save_format = this.save_format;
                whole_struct_applier.root_data   = value;
                whole_struct_applier.bitstream   = this.bitstream;
-               whole_struct_applier.apply(type.instructions);
+               whole_struct_applier.read(type.instructions);
             } else {
                console.assert(value instanceof CValueInstance);
                switch (node.type) {
@@ -128,6 +128,96 @@ class InstructionsApplier {
                      
                   case "string":
                      value.value = this.bitstream.read_string(node.options.length);
+                     break;
+               }
+            }
+         }
+      }
+   }
+   
+   // Assumes the same SaveFormat.
+   save(/*RootInstructionNode*/ inst) {
+      for(let node of inst.instructions) {
+         if (node instanceof LoopInstructionNode) {
+            for(let i = 0; i < node.indices.count; ++i) {
+               this.variables.loop_counters[node.counter_variable] = node.indices.start + i;
+               this.save(node);
+            }
+         } else if (node instanceof TransformInstructionNode) {
+            
+            // TODO
+            
+         } else if (node instanceof UnionSwitchInstructionNode) {
+            let tag_value = this.resolve_value_path(node.tag);
+            console.assert(tag_value instanceof CValueInstance);
+            console.assert(tag_value.base.type == "integer" || tag_value.base.type == "boolean");
+            console.assert(!isNaN(+tag_value.value));
+            
+            let case_node = node.cases[+tag_value.value];
+            if (case_node) {
+               this.save(case_node);
+            } else if (node.else_case) {
+               this.save(node.else_case);
+            } else {
+               throw new Error("unexpected union tag value, and the serialization format has no fallback for this! (outdated codegen or a codegen bug?)");
+            }
+         } else if (node instanceof PaddingInstructionNode) {
+            this.bitstream.skip_bits(node.bitcount);
+         } else if (node instanceof SingleInstructionNode) {
+            let value = this.resolve_value_path(node.value);
+            if (node.type == "struct") {
+               console.assert(value instanceof CStructInstance);
+               let /*CStruct*/ type = value.type;
+               console.assert(!!type.instructions);
+               
+               // spawn a new InstructionsApplier
+               //  - have it use our same save format
+               //  - have it use our same bitstream (not a copy)
+               //     - that way, our bitstream is advanced to the end of the struct too
+               //  - set its `root_data` to the target CValueInstance
+               //  - leave its `variables` blank
+               //     - these variables are scoped to sectors or whole-struct functions
+               //     - in essence, you make and run a new InstructionsApplier for each such scope
+               //  - run the new InstructionsApplier on the CStruct's `instructions`
+               let whole_struct_applier = new InstructionsApplier();
+               whole_struct_applier.save_format = this.save_format;
+               whole_struct_applier.root_data   = value;
+               whole_struct_applier.bitstream   = this.bitstream;
+               whole_struct_applier.save(type.instructions);
+            } else {
+               console.assert(value instanceof CValueInstance);
+               switch (node.type) {
+                  case "omitted":
+                     break;
+                  
+                  case "boolean":
+                     this.bitstream.write_bool(value.value);
+                     break;
+                     
+                  case "buffer":
+                     {
+                        let buffer = new ArrayBuffer(node.options.bytecount);
+                        for(let i = 0; i < node.options.bytecount; ++i) {
+                           this.bitstream.write_unsigned(8, value.value.getUint8(i));
+                        }
+                     }
+                     break;
+                     
+                  case "integer":
+                     {
+                        let v = value.value;
+                        if (node.options.min !== null)
+                           v -= node.options.min;
+                        this.bitstream.write_unsigned(node.options.bitcount, v);
+                     }
+                     break;
+                     
+                  case "pointer":
+                     this.bitstream.write_unsigned(32, value.value);
+                     break;
+                     
+                  case "string":
+                     this.bitstream.write_string(node.options.length, value.value);
                      break;
                }
             }

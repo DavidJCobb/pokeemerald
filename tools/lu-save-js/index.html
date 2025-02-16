@@ -41,7 +41,8 @@ console.assert = function(condition, ...args) {
          <label for="file-sav">Save file (SAV):</label>
          <input type="file" id="file-sav" />
          
-         <button>Load</button>
+         <button data-action="load">Load</button>
+         <button data-action="roundtrip">Test round-trip load-and-save</button>
       </div>
       <section class="slot" data-slot-id="1">
          <aside>

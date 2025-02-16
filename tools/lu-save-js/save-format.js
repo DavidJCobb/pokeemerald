@@ -159,7 +159,7 @@ class SaveFormat {
                applier.save_format = this;
                applier.root_data   = slot;
                applier.bitstream   = new Bitstream(blob);
-               applier.apply(this.sectors[id].instructions);
+               applier.read(this.sectors[id].instructions);
             }
          }
       }
@@ -171,5 +171,46 @@ class SaveFormat {
       }
       
       return out;
+   }
+   
+   test_round_tripping(/*DataView*/ sav) {
+      const SLOTS_PER_SAV    =  2;
+      const SECTORS_PER_SLOT = 14;
+      const SECTOR_SIGNATURE = 0x8012025;
+      
+      let decoded = this.load(sav);
+      for(let i = 0; i < decoded.slots.length; ++i) {
+         let slot = decoded.slots[i];
+         for(let j = 0; j < SECTORS_PER_SLOT; ++j) {
+            let pos = 0x1000 * (SECTORS_PER_SLOT * i + j);
+            let src = new DataView(sav.buffer, pos, 0x1000);
+            
+            let flash_sector = this.#decompose_flash_sector(src);
+            if (flash_sector.header.signature != SECTOR_SIGNATURE) {
+               continue;
+            }
+            let id = flash_sector.header.sector_id;
+            
+            let dst      = new ArrayBuffer(0x1000 - 128);
+            let dst_view = new DataView(dst);
+            
+            let applier = new InstructionsApplier();
+            applier.save_format = this;
+            applier.root_data   = slot;
+            applier.bitstream   = new Bitstream(dst_view);
+            applier.save(this.sectors[id].instructions);
+            
+            for(let k = 0; k < dst_view.byteLength; k += 4) {
+               let a = src.getUint32(i);
+               let b = dst_view.getUint32(i);
+               if (a != b) {
+                  console.log("Src view: ", src);
+                  console.log("Dst view: ", dst_view);
+                  console.assert(false, `Round-tripped data mismatched at slot ${i} sector ${j} (ID ${id}) offset 0x${k.toString(16).toUpperCase().padStart(4, '0')}!`);
+               }
+            }
+         }
+      }
+      console.log("All good!");
    }
 };

@@ -6,6 +6,7 @@ class CUnion {
       this.symbol  = null;
       this.tag     = null;
       this.members = []; // Array<CValue>
+      this.tag_is_internal = false;
    }
    
    // `node` should be a `union` element
@@ -20,6 +21,7 @@ class CUnion {
                break;
             case "union-options":
                this.tag = child.getAttribute("tag");
+               this.tag_is_internal = child.getAttribute("is-internal") == "true";
                break;
          }
       }
@@ -61,22 +63,18 @@ class CUnionInstance {
       if (this.value_name == member_name && this.value !== null)
          return this.value;
       let common_members = null;
-      if (this.value !== null && this.type.tag !== null) {
+      if (this.tag_is_internal) {
          //
-         // HACK: Preserve the internal tag while loading. We load the 
-         //       tag (which emplaces the first union member), and then 
-         //       we want to emplace the proper union member in order 
-         //       to load it.
+         // Keep the internal tag (and all other shared members-of-members).
          //
-         // TODO: We need a way to explicitly know that a union c-type 
-         //       is internally tagged.
-         //
-         if (this.value instanceof CStructInstance && this.value.members[this.type.tag]) {
-            common_members = {};
-            for(let name in this.value.members) {
-               common_members[name] = this.value.members[name];
-               if (name == this.type.tag)
-                  break;
+         if (this.value !== null && this.type.tag !== null) {
+            if (this.value instanceof CStructInstance && this.value.members[this.type.tag]) {
+               common_members = {};
+               for(let name in this.value.members) {
+                  common_members[name] = this.value.members[name];
+                  if (name == this.type.tag)
+                     break;
+               }
             }
          }
       }

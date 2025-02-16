@@ -60,7 +60,7 @@
             view.setTypeFormatter(typename, FORMATTERS[typename]);
          }
          container.replaceChildren(header, view);
-         view.scope = decoded.slots[0];
+         view.scope = slot;
          window.setTimeout(function() { view.repaint() }, 1);
          
          let version = -1;

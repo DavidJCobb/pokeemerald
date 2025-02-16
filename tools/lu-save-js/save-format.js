@@ -106,6 +106,7 @@ class SaveFormat {
    load(/*DataView*/ sav) {
       const SLOTS_PER_SAV    =  2;
       const SECTORS_PER_SLOT = 14;
+      const SECTOR_SIGNATURE = 0x8012025;
       
       if (sav.byteLength < 0x1000 * 32) {
          throw new Error("The SAV file is truncated.");
@@ -135,8 +136,9 @@ class SaveFormat {
             
             let flash_sector = this.#decompose_flash_sector(blob);
             let id = flash_sector.header.sector_id;
-            console.assert(id < SECTORS_PER_SLOT);
-            console.assert(!!this.sectors[id].instructions);
+            if (flash_sector.header.signature == SECTOR_SIGNATURE) {
+               console.assert(id < SECTORS_PER_SLOT);
+            }
             
             slot.sectors.push(flash_sector.header);
             {
@@ -152,11 +154,13 @@ class SaveFormat {
                   flash_sector.header._checksum_is_valid = false;
             }
             
-            let applier = new InstructionsApplier();
-            applier.save_format = this;
-            applier.root_data   = slot;
-            applier.bitstream   = new Bitstream(blob);
-            applier.apply(this.sectors[id].instructions);
+            if (id < this.sectors.length && this.sectors[id].instructions) {
+               let applier = new InstructionsApplier();
+               applier.save_format = this;
+               applier.root_data   = slot;
+               applier.bitstream   = new Bitstream(blob);
+               applier.apply(this.sectors[id].instructions);
+            }
          }
       }
       {  // Special sectors

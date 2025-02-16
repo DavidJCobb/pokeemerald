@@ -695,7 +695,7 @@ struct MauvilleOldManTrader
 {
     u8 id;
     u8 decorations[NUM_TRADER_ITEMS];
-    LU_BP_CATEGORY("player-name") LU_BP_STRING_NT u8 playerNames[NUM_TRADER_ITEMS][11];
+    LU_BP_CATEGORY("player-name-mauville-old-man") LU_BP_STRING_WT u8 playerNames[NUM_TRADER_ITEMS][11];
     u8 alreadyTraded;
     LanguageID language[NUM_TRADER_ITEMS];
 };

@@ -28,7 +28,7 @@ struct Berry
 
 struct Berry2
 {
-    LU_BP_STRING_NT u8 name[BERRY_NAME_LENGTH + 1];
+    LU_BP_STRING_WT u8 name[BERRY_NAME_LENGTH + 1];
     u8 firmness;
     u16 size;
     u8 maxYield;

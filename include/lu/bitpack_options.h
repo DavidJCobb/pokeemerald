@@ -32,7 +32,7 @@
 
 // Indicates that a char array (or nested array thereof) is a string and 
 // must have a terminator byte while in memory.
-#define LU_BP_STRING_NT        LU_BP_STRING
+#define LU_BP_STRING_WT        LU_BP_STRING
 
 // Indicates that a char array (or nested array thereof) is a string and 
 // does not require a terminator byte while in memory; the string value 

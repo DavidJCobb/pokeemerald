@@ -120,54 +120,11 @@ class SingleInstructionNode extends InstructionNode {
       super();
       this.type    = null;
       this.value   = new CValuePath(); // value to serialize
-      this.options = {};
+      this.options = new CBitpackOptions();
    }
    from_xml(node) {
       this.type = node.nodeName;
       this.value.parse(node.getAttribute("value"));
-      switch (this.type) {
-         case "boolean":
-            break;
-         case "buffer":
-            this.options = {
-               bytecount: +node.getAttribute("bytecount"),
-            };
-            break;
-         case "integer":
-            this.options = {
-               bitcount: +node.getAttribute("bitcount"),
-               min:      +node.getAttribute("min") || 0,
-               max:      null
-            };
-            {
-               let max = node.getAttribute("max");
-               if (max !== null)
-                  this.options.max = +max;
-            }
-            break;
-         case "pointer":
-            break;
-         case "string":
-            this.options = {
-               length: +node.getAttribute("length"),
-               needs_terminator: node.getAttribute("nonstring") != "true",
-            };
-            break;
-         case "struct":
-            break;
-         /*// Tagnames used for `member` definitions, NOT `single` instruction nodes
-         case "transform":
-            this.options = {
-               transformed_type: node.getAttribute("transformed-type"),
-            };
-            break;
-         case "union-internal-tag":
-         case "union-external-tag":
-            this.options = {
-               tag: node.getAttribute("tag"),
-            };
-            break;
-         //*/
-      }
+      this.options.from_xml(node, true);
    }
 };

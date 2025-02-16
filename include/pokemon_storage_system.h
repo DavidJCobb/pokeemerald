@@ -22,7 +22,7 @@ struct PokemonStorage
 {
     /*0x0000*/ LU_BP_MINMAX(0, TOTAL_BOXES_COUNT - 1) u8 currentBox;
     /*0x0001*/ struct BoxPokemon boxes[TOTAL_BOXES_COUNT][IN_BOX_COUNT];
-    /*0x8344*/ LU_BP_STRING_NT u8 boxNames[TOTAL_BOXES_COUNT][BOX_NAME_LENGTH + 1];
+    /*0x8344*/ LU_BP_STRING_WT u8 boxNames[TOTAL_BOXES_COUNT][BOX_NAME_LENGTH + 1];
     /*0x83C2*/ u8 boxWallpapers[TOTAL_BOXES_COUNT];
 };
 

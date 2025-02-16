@@ -113,7 +113,13 @@ class InstructionsApplier {
                      break;
                      
                   case "integer":
-                     value.value = this.bitstream.read_unsigned(node.options.bitcount) + node.options.min;
+                     if (value.base.type_is_signed) {
+                        value.value = this.bitstream.read_signed(node.options.bitcount);
+                     } else {
+                        value.value = this.bitstream.read_unsigned(node.options.bitcount);
+                     }
+                     if (node.options.min !== null)
+                        value.value += node.options.min;
                      break;
                      
                   case "pointer":

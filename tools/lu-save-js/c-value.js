@@ -12,6 +12,8 @@ class CValue {
       
       // If this is an anonymous struct, you'll find the type here.
       this.anonymous_type = null;
+      
+      this.options = new CBitpackOptions();
    }
    
    #parse_c_type(str) {
@@ -44,14 +46,10 @@ class CValue {
             this.default_value = dvs.textContent;
       }
       
-      switch (this.type) {
-         case "string":
-            this.options = {
-               length:           +node.getAttribute("length"),
-               needs_terminator: node.getAttribute("nonstring") != "true",
-            };
-            break;
+      if (this.type == "integer") {
+         this.type_is_signed = node.getAttribute("type-is-signed") == "true";
       }
+      this.options.from_xml(node, true);
       
       for(let child of node.children) {
          if (child.nodeName == "array-rank") {

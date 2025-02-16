@@ -103,7 +103,27 @@ class SaveFormat {
       return out;
    }
    
-   load(/*DataView*/ sav) {
+   #compute_checksum(sector_view) {
+      let checksum = 0;
+      for(let k = 0; k < 0x1000 - 128; k += 4) {
+         checksum += sector_view.getUint32(k, true);
+         checksum |= 0; // force to 32-bit int
+      }
+      checksum = ((checksum >> 16) + checksum) & 0xFFFF;
+      return checksum;
+   }
+   
+   /*loaded-slot-type*/ make_empty_slot() {
+      let slot = new CStructInstance(this, null);
+      for(let tlv of this.top_level_values) {
+         let value = tlv.make_instance_representation(this);
+         slot.members[tlv.name] = value;
+         slot.sectors = [];
+      }
+      return slot;
+   }
+   
+   /*loaded-data-type*/ load(/*DataView*/ sav) {
       const SLOTS_PER_SAV    =  2;
       const SECTORS_PER_SLOT = 14;
       const SECTOR_SIGNATURE = 0x8012025;
@@ -121,14 +141,8 @@ class SaveFormat {
          }
       };
       for(let i = 0; i < SLOTS_PER_SAV; ++i) {
-         let slot = new CStructInstance(this, null);
+         let slot = this.make_empty_slot();
          out.slots.push(slot);
-         
-         for(let tlv of this.top_level_values) {
-            let value = tlv.make_instance_representation(this);
-            slot.members[tlv.name] = value;
-            slot.sectors = [];
-         }
          
          for(let j = 0; j < SECTORS_PER_SLOT; ++j) {
             let pos  = 0x1000 * (SECTORS_PER_SLOT * i + j);
@@ -142,12 +156,7 @@ class SaveFormat {
             
             slot.sectors.push(flash_sector.header);
             {
-               let checksum = 0;
-               for(let k = 0; k < 0x1000 - 128; k += 4) {
-                  checksum += blob.getUint32(k, true);
-                  checksum |= 0;
-               }
-               checksum = ((checksum >> 16) + checksum) & 0xFFFF;
+               let checksum = this.#compute_checksum(flash_sector.data);
                if (checksum == flash_sector.header.checksum)
                   flash_sector.header._checksum_is_valid = true;
                else
@@ -167,10 +176,80 @@ class SaveFormat {
          out.special_sectors.hall_of_fame[0] = new DataView(sav.buffer, 0x1000*28, 0x1000);
          out.special_sectors.hall_of_fame[1] = new DataView(sav.buffer, 0x1000*29, 0x1000);
          out.special_sectors.trainer_hill = new DataView(sav.buffer, 0x1000*30, 0x1000);
-         out.special_sectors.recorded_battle = new DataView(sav.buffer, 0x1000*30, 0x1000);
+         out.special_sectors.recorded_battle = new DataView(sav.buffer, 0x1000*31, 0x1000);
       }
       
       return out;
+   }
+   
+   /*DataView*/ save(/*loaded-data-type*/ data) {
+      const SECTORS_PER_SLOT = 14;
+      const SECTOR_SIGNATURE = 0x8012025;
+      
+      let buffer = new ArrayBuffer(0x1000 * 32);
+      let view   = new DataView(buffer);
+      
+      function _copy_sector(src_view, n) {
+         let dst_view = new DataView(view.buffer, 0x1000 * n, 0x1000);
+         for(let i = 0; i < dst_view.byteLength; i += 4) {
+            dst_view.setUint32(i, src_view.getUint32(i, true), true);
+         }
+      }
+      
+      for(let i = 0; i < data.slots.length; ++i) {
+         let slot = data.slots[i];
+         for(let j = 0; j < slot.sectors.length; ++j) {
+            let sector_view = new DataView(view.buffer, 0x1000 * (SECTORS_PER_SLOT * i + j), 0x1000);
+            
+            let header = slot.sectors[j];
+            if (header.signature == SECTOR_SIGNATURE) {
+               if (header.sector_id < this.sectors.length) {
+                  let instructions = this.sectors[header.sector_id].instructions;
+                  if (instructions) {
+                     let applier = new InstructionsApplier();
+                     applier.save_format = this;
+                     applier.root_data   = slot;
+                     applier.bitstream   = new Bitstream(sector_view);
+                     applier.save(instructions);
+                     
+                     header = structuredClone(header);
+                     header.checksum = this.#compute_checksum(sector_view);
+                  }
+               }
+            }
+            //
+            // Serialize header.
+            //
+            {
+               let offset = 0x1000 - 16;
+               
+               sector_view.setUint32(offset, header.version, true);
+               offset += 4;
+               
+               sector_view.setUint16(offset, header.sector_id, true);
+               offset += 2;
+               
+               // TODO: Recompute checksum; write it at the end.
+               sector_view.setUint16(offset, header.checksum, true);
+               offset += 2;
+               
+               sector_view.setUint32(offset, header.signature, true);
+               offset += 4;
+               
+               sector_view.setUint32(offset, header.counter, true);
+               offset += 4;
+            }
+         }
+      }
+      //
+      // Handle special sectors.
+      //
+      _copy_sector(data.special_sectors.hall_of_fame[0], 28);
+      _copy_sector(data.special_sectors.hall_of_fame[1], 29);
+      _copy_sector(data.special_sectors.trainer_hill, 30);
+      _copy_sector(data.special_sectors.recorded_battle, 31);
+      
+      return view;
    }
    
    test_round_tripping(/*DataView*/ sav) {

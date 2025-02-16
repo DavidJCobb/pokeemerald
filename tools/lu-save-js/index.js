@@ -40,22 +40,7 @@
       return format;
    };
    
-   document.querySelector(".form button[data-action='load']").addEventListener("click", async function() {
-      let data_s = null;
-      {
-         let node_s = document.getElementById("file-sav");
-         if (!node_s.files.length) {
-            alert("Error: no save file given");
-            return;
-         }
-         let file = node_s.files[0];
-         data_s = new DataView(await file.arrayBuffer());
-      }
-      
-      let format  = await _get_save_format();
-      let decoded = format.load(data_s);
-      console.log("Save dump: ", decoded);
-      
+   function _render_loaded_save(decoded) {
       for(let i = 0; i < decoded.slots.length; ++i) {
          let slot      = decoded.slots[i];
          let container = document.querySelector(".slot[data-slot-id='" + (i + 1) + "']");
@@ -85,6 +70,25 @@
          header.querySelector("[data-field='version'] .value").textContent = version;
          header.querySelector("[data-field='counter'] .value").textContent = counter;
       }
+   }
+   
+   document.querySelector(".form button[data-action='load']").addEventListener("click", async function() {
+      let data_s = null;
+      {
+         let node_s = document.getElementById("file-sav");
+         if (!node_s.files.length) {
+            alert("Error: no save file given");
+            return;
+         }
+         let file = node_s.files[0];
+         data_s = new DataView(await file.arrayBuffer());
+      }
+      
+      let format  = await _get_save_format();
+      let decoded = format.load(data_s);
+      console.log("Save dump: ", decoded);
+      
+      _render_loaded_save(decoded);
    });
    
    document.querySelector(".form button[data-action='roundtrip']").addEventListener("click", async function() {
@@ -101,5 +105,67 @@
       
       let format = await _get_save_format();
       format.test_round_tripping(data_s);
+   });
+   
+   document.querySelector(".form button[data-action='translate']").addEventListener("click", async function() {
+      let data_s = null;
+      {
+         let node_s = document.getElementById("file-sav");
+         if (!node_s.files.length) {
+            alert("Error: no save file given");
+            return;
+         }
+         let file = node_s.files[0];
+         data_s = new DataView(await file.arrayBuffer());
+      }
+      
+      let src_format = await _get_save_format();
+      let dst_format;
+      {
+         let node_x = document.getElementById("file-xml");
+         if (!node_x.files.length) {
+            alert("Error: no save file format given");
+            return;
+         }
+         let file = node_x.files[0];
+         
+         let parser = new DOMParser();
+         let text   = await file.text();
+         let data_x = parser.parseFromString(text, "text/xml");
+         
+         dst_format = new SaveFormat();
+         dst_format.from_xml(data_x.documentElement);
+      }
+      
+      let loaded   = src_format.load(data_s);
+      let dst_data = {
+         slots: [],
+         special_sectors: loaded.special_sectors,
+      };
+      for(let i = 0; i < loaded.slots.length; ++i) {
+         let slot = dst_format.make_empty_slot();
+         slot.sectors = structuredClone(loaded.slots[i].sectors);
+         dst_data.slots.push(slot);
+         
+         let present = false;
+         for(let header of loaded.slots[i].sectors) {
+            if (header.signature == 0x8012025) {
+               present = true;
+               break;
+            }
+         }
+         if (present) {
+            let info = translate_value_instance_tree(src_format, loaded.slots[i], dst_format, slot);
+            console.log(`Translation result for slot ${i + 1}`, info);
+         } else {
+            console.log(`Slot ${i + 1} is absent.`);
+         }
+      }
+      let repacked = dst_format.save(dst_data);
+      console.log("Repacked: ", repacked);
+      
+      let roundtripped = dst_format.load(repacked);
+      console.log("Round-tripped: ", roundtripped);
+      _render_loaded_save(roundtripped);
    });
 }

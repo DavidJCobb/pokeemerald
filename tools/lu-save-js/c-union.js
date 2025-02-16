@@ -6,13 +6,16 @@ class CUnion {
       this.symbol  = null;
       this.tag     = null;
       this.members = []; // Array<CValue>
-      this.tag_is_internal = false;
+      
+      this.internal_tag_name    = null;
+      this.members_by_tag_value = {};
    }
    
    // `node` should be a `union` element
    from_xml(node) {
       this.node   = node;
       this.symbol = node.getAttribute("name");
+      this.tag    = node.getAttribute("tag");
       
       for(let child of node.children) {
          switch (child.nodeName) {
@@ -20,8 +23,7 @@ class CUnion {
                this.members_from_xml(child);
                break;
             case "union-options":
-               this.tag = child.getAttribute("tag");
-               this.tag_is_internal = child.getAttribute("is-internal") == "true";
+               this.internal_tag_name = child.getAttribute("tag");
                break;
          }
       }
@@ -31,16 +33,22 @@ class CUnion {
          let member = new CValue();
          member.from_xml(item);
          this.members.push(member);
+         
+         let tv = item.getAttribute("union-tag-value");
+         if (tv !== null) {
+            this.members_by_tag_value[tv] = member;
+         }
       }
    }
 };
 
 class CUnionInstance {
    constructor(/*SaveFormat*/ format, /*CUnion*/ type) {
-      this.save_format = format;
-      this.type        = type; // CUnion
-      this.value_name  = null;
-      this.value       = null;
+      this.save_format  = format;
+      this.type         = type; // CUnion
+      this.value_name   = null;
+      this.value        = null;
+      this.external_tag = null; // Optional<CValueInstance>
    }
    emplace(member_name) {
       for(let member of this.type.members) {
@@ -63,12 +71,12 @@ class CUnionInstance {
       if (this.value_name == member_name && this.value !== null)
          return this.value;
       let common_members = null;
-      if (this.tag_is_internal) {
+      if (this.internal_tag_name) {
          //
          // Keep the internal tag (and all other shared members-of-members).
          //
-         if (this.value !== null && this.type.tag !== null) {
-            if (this.value instanceof CStructInstance && this.value.members[this.type.tag]) {
+         if (this.value !== null) {
+            if (this.value instanceof CStructInstance && this.value.members[this.type.internal_tag_name]) {
                common_members = {};
                for(let name in this.value.members) {
                   common_members[name] = this.value.members[name];

@@ -196,7 +196,12 @@ class InstructionsApplier {
                      
                   case "buffer":
                      {
-                        let buffer = new ArrayBuffer(node.options.bytecount);
+                        if (value.value === null) {
+                           for(let i = 0; i < node.options.bytecount; ++i) {
+                              this.bitstream.write_unsigned(8, 0x00);
+                           }
+                           break;
+                        }
                         for(let i = 0; i < node.options.bytecount; ++i) {
                            this.bitstream.write_unsigned(8, value.value.getUint8(i));
                         }
@@ -217,7 +222,16 @@ class InstructionsApplier {
                      break;
                      
                   case "string":
-                     this.bitstream.write_string(node.options.length, value.value);
+                     {
+                        let length = node.options.length;
+                        let text   = value.value;
+                        if (text === null) {
+                           text = [];
+                           for(let i = 0; i < length; ++i)
+                              text[i] = CHARSET_CONTROL_CODES.chars_to_bytes["\0"];
+                        }
+                        this.bitstream.write_string(length, text);
+                     }
                      break;
                }
             }

@@ -45,6 +45,9 @@ class CStructInstance {
          for(let /*CValue*/ src of type.members) {
             let dst = src.make_instance_representation(this.save_format);
             this.members[src.name] = dst;
+            if (src.type == "union-external-tag") {
+               dst.external_tag = this.members[src.options.tag];
+            }
          }
       }
    }

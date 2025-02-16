@@ -984,8 +984,8 @@ class CViewElement extends HTMLElement {
                   0,
                   name,
                   {  // override bounds so we don't cover and block the twisty
-                     x:     ix + x,
-                     width: iw - x
+                     x:     content_box.x + x,
+                     width: content_box.w - x
                   }
                );
             }

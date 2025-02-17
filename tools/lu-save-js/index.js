@@ -1,25 +1,4 @@
 {
-   const FORMATTERS = {
-      "Coords16": function(inst) {
-         for(let key of ["x", "y"]) {
-            if (inst.members[key] === null)
-               return null;
-            if (inst.members[key].value === null)
-               return null;
-         }
-         return `(${inst.members.x.value}, ${inst.members.y.value})`;
-      },
-      "Time": function(inst) {
-         for(let key of ["days", "hours", "minutes", "seconds"]) {
-            if (inst.members[key] === null)
-               return null;
-            if (inst.members[key].value === null)
-               return null;
-         }
-         return `${inst.members.days.value}d ${inst.members.hours.value}hr ${inst.members.minutes.value}m ${inst.members.seconds.value}s`;
-      },
-   };
-   
    async function _get_save_format() {
       let data_x = null;
       {
@@ -40,38 +19,6 @@
       return format;
    };
    
-   function _render_loaded_save(decoded) {
-      for(let i = 0; i < decoded.slots.length; ++i) {
-         let slot      = decoded.slots[i];
-         let container = document.querySelector(".slot[data-slot-id='" + (i + 1) + "']");
-         let header    = container.querySelector("aside");
-         let view      = document.createElement("c-view");
-         for(let typename in FORMATTERS) {
-            view.setTypeFormatter(typename, FORMATTERS[typename]);
-         }
-         container.replaceChildren(header, view);
-         view.scope = slot;
-         window.setTimeout(function() { view.repaint() }, 1);
-         
-         let version = -1;
-         let counter = -1;
-         let s_frag  = new DocumentFragment();
-         for(let sector of slot.sectors) {
-            let s_item = document.createElement("li");
-            s_frag.append(s_item);
-            if (sector.signature == 0x8012025) {
-               s_item.className   = sector._checksum_is_valid ? "good" : "bad";
-               s_item.textContent = sector.sector_id;
-               version = Math.max(version, sector.version);
-               counter = Math.max(counter, sector.counter);
-            }
-         }
-         header.querySelector(".sectors").replaceChildren(s_frag);
-         header.querySelector("[data-field='version'] .value").textContent = version;
-         header.querySelector("[data-field='counter'] .value").textContent = counter;
-      }
-   }
-   
    document.querySelector(".form button[data-action='load']").addEventListener("click", async function() {
       let data_s = null;
       {
@@ -88,7 +35,16 @@
       let decoded = format.load(data_s);
       console.log("Save dump: ", decoded);
       
-      _render_loaded_save(decoded);
+      let section = document.querySelector("section.slots");
+      let frag    = new DocumentFragment();
+      for(let i = 0; i < decoded.slots.length; ++i) {
+         let slot = decoded.slots[i];
+         let element = document.createElement("save-slot-element");
+         element.title = `Save slot ${i + 1}`;
+         frag.append(element);
+         element.slotData = slot;
+      }
+      section.replaceChildren(frag);
    });
    
    document.querySelector(".form button[data-action='roundtrip']").addEventListener("click", async function() {
@@ -143,13 +99,13 @@
          special_sectors: loaded.special_sectors,
       };
       for(let i = 0; i < loaded.slots.length; ++i) {
-         let slot = dst_format.make_empty_slot();
+         let slot = new SaveSlot(dst_format);
          slot.sectors = structuredClone(loaded.slots[i].sectors);
          dst_data.slots.push(slot);
          
          let present = false;
          for(let header of loaded.slots[i].sectors) {
-            if (header.signature == 0x8012025) {
+            if (header.signature == SAVE_SECTOR_SIGNATURE) {
                present = true;
                break;
             }
@@ -166,6 +122,16 @@
       
       let roundtripped = dst_format.load(repacked);
       console.log("Round-tripped: ", roundtripped);
-      _render_loaded_save(roundtripped);
+      
+      let section = document.querySelector("section.slots");
+      let frag    = new DocumentFragment();
+      for(let i = 0; i < roundtripped.slots.length; ++i) {
+         let slot = roundtripped.slots[i];
+         let element = document.createElement("save-slot-element");
+         element.title = `Save slot ${i + 1} after translation and reload`;
+         frag.append(element);
+         element.slotData = slot;
+      }
+      section.replaceChildren(frag);
    });
 }

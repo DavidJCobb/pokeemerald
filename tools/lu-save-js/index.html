@@ -11,6 +11,7 @@ console.assert = function(condition, ...args) {
    throw new Error("Assertion failed. ", ...args); // actually halt execution
 };
       </script>
+      <script src="common.js"></script>
       
       <script src="c-value.js"></script>
       <script src="c-struct.js"></script>
@@ -18,6 +19,8 @@ console.assert = function(condition, ...args) {
       <script src="c-value-path.js"></script>
       <script src="c-bitpack-options.js"></script>
       <script src="instructions.js"></script>
+      <script src="save-slot.js"></script>
+      <script src="save-file.js"></script>
       <script src="save-format.js"></script>
       
       <!-- helper for pasting `charmap.txt` in and getting something usable -->
@@ -28,6 +31,7 @@ console.assert = function(condition, ...args) {
       <script src="instructions-applier.js"></script>
       
       <script src="c-view-element.js"></script>
+      <script src="save-slot-element.js"></script>
       
       <script src="translate_value_instance_tree.js"></script>
    </head>
@@ -53,37 +57,7 @@ console.assert = function(condition, ...args) {
          
          <button data-action="translate">Translate to new format</button>
       </div>
-      <section class="slot" data-slot-id="1">
-         <aside>
-            <span class="field" data-field="version">
-               <label>Version:</label>
-               <span class="value"></span>
-            </span>
-            <span class="field" data-field="counter">
-               <label>Counter:</label>
-               <span class="value"></span>
-            </span>
-            <span class="field">
-               <label>Sectors:</label>
-               <ul class="sectors"></ul>
-            </span>
-         </aside>
-      </section>
-      <section class="slot" data-slot-id="2">
-         <aside>
-            <span class="field" data-field="version">
-               <label>Version:</label>
-               <span class="value"></span>
-            </span>
-            <span class="field" data-field="counter">
-               <label>Counter:</label>
-               <span class="value"></span>
-            </span>
-            <span class="field">
-               <label>Sectors:</label>
-               <ul class="sectors"></ul>
-            </span>
-         </aside>
+      <section class="slots">
       </section>
       <script src="index.js"></script>
    </body>

@@ -81,9 +81,9 @@ class SaveFormat {
          data: null,
       };
       
-      out.data = new DataView(view.buffer, view.byteOffset, (0x1000 - 128));
+      out.data = new DataView(view.buffer, view.byteOffset, SAVE_SECTOR_DATA_SIZE);
       
-      let offset = 0x1000 - 16;
+      let offset = FLASH_SECTOR_SIZE - 16;
       
       out.header.version = view.getUint32(offset, ENDIANNESS);
       offset += 4;
@@ -105,7 +105,7 @@ class SaveFormat {
    
    #compute_checksum(sector_view) {
       let checksum = 0;
-      for(let k = 0; k < 0x1000 - 128; k += 4) {
+      for(let k = 0; k < FLASH_SECTOR_SIZE - 128; k += 4) {
          checksum += sector_view.getUint32(k, true);
          checksum |= 0; // force to 32-bit int
       }
@@ -113,84 +113,53 @@ class SaveFormat {
       return checksum;
    }
    
-   /*loaded-slot-type*/ make_empty_slot() {
-      let slot = new CStructInstance(this, null);
-      for(let tlv of this.top_level_values) {
-         let value = tlv.make_instance_representation(this);
-         slot.members[tlv.name] = value;
-         slot.sectors = [];
-      }
-      return slot;
-   }
-   
-   /*loaded-data-type*/ load(/*DataView*/ sav) {
-      const SLOTS_PER_SAV    =  2;
-      const SECTORS_PER_SLOT = 14;
-      const SECTOR_SIGNATURE = 0x8012025;
-      
-      if (sav.byteLength < 0x1000 * 32) {
+   /*SaveFile*/ load(/*DataView*/ sav) {
+      if (sav.byteLength < FLASH_MEMORY_SIZE) {
          throw new Error("The SAV file is truncated.");
       }
       
-      let out = {
-         slots: [],
-         special_sectors: {
-            hall_of_fame:    [ null, null ],
-            trainer_hill:    null,
-            recorded_battle: null,
-         }
-      };
-      for(let i = 0; i < SLOTS_PER_SAV; ++i) {
-         let slot = this.make_empty_slot();
+      let out = new SaveFile();
+      for(let i = 0; i < SAVE_SLOT_COUNT; ++i) {
+         let slot = new SaveSlot(this);
          out.slots.push(slot);
          
-         for(let j = 0; j < SECTORS_PER_SLOT; ++j) {
-            let pos  = 0x1000 * (SECTORS_PER_SLOT * i + j);
-            let blob = new DataView(sav.buffer, pos, 0x1000);
+         for(let j = 0; j < SAVE_SECTORS_PER_SLOT; ++j) {
+            let pos  = FLASH_SECTOR_SIZE * (SAVE_SECTORS_PER_SLOT * i + j);
+            let blob = new DataView(sav.buffer, pos, FLASH_SECTOR_SIZE);
             
-            let flash_sector = this.#decompose_flash_sector(blob);
-            let id = flash_sector.header.sector_id;
-            if (flash_sector.header.signature == SECTOR_SIGNATURE) {
-               console.assert(id < SECTORS_PER_SLOT);
-            }
+            let sector_header = slot.loadSectorMetadata(blob);
+            let sector_data   = new DataView(sav.buffer, pos, SAVE_SECTOR_DATA_SIZE);
             
-            slot.sectors.push(flash_sector.header);
-            {
-               let checksum = this.#compute_checksum(flash_sector.data);
-               if (checksum == flash_sector.header.checksum)
-                  flash_sector.header._checksum_is_valid = true;
-               else
-                  flash_sector.header._checksum_is_valid = false;
+            let id = sector_header.sector_id;
+            if (sector_header.signature == SAVE_SECTOR_SIGNATURE) {
+               console.assert(id < SAVE_SECTORS_PER_SLOT);
             }
             
             if (id < this.sectors.length && this.sectors[id].instructions) {
                let applier = new InstructionsApplier();
                applier.save_format = this;
                applier.root_data   = slot;
-               applier.bitstream   = new Bitstream(blob);
+               applier.bitstream   = new Bitstream(sector_data);
                applier.read(this.sectors[id].instructions);
             }
          }
       }
       {  // Special sectors
-         out.special_sectors.hall_of_fame[0] = new DataView(sav.buffer, 0x1000*28, 0x1000);
-         out.special_sectors.hall_of_fame[1] = new DataView(sav.buffer, 0x1000*29, 0x1000);
-         out.special_sectors.trainer_hill = new DataView(sav.buffer, 0x1000*30, 0x1000);
-         out.special_sectors.recorded_battle = new DataView(sav.buffer, 0x1000*31, 0x1000);
+         out.special_sectors.hall_of_fame[0] = new DataView(sav.buffer, FLASH_SECTOR_SIZE*28, FLASH_SECTOR_SIZE);
+         out.special_sectors.hall_of_fame[1] = new DataView(sav.buffer, FLASH_SECTOR_SIZE*29, FLASH_SECTOR_SIZE);
+         out.special_sectors.trainer_hill = new DataView(sav.buffer, FLASH_SECTOR_SIZE*30, FLASH_SECTOR_SIZE);
+         out.special_sectors.recorded_battle = new DataView(sav.buffer, FLASH_SECTOR_SIZE*31, FLASH_SECTOR_SIZE);
       }
       
       return out;
    }
    
-   /*DataView*/ save(/*loaded-data-type*/ data) {
-      const SECTORS_PER_SLOT = 14;
-      const SECTOR_SIGNATURE = 0x8012025;
-      
-      let buffer = new ArrayBuffer(0x1000 * 32);
+   /*DataView*/ save(/*SaveFile*/ data) {
+      let buffer = new ArrayBuffer(FLASH_MEMORY_SIZE);
       let view   = new DataView(buffer);
       
       function _copy_sector(src_view, n) {
-         let dst_view = new DataView(view.buffer, 0x1000 * n, 0x1000);
+         let dst_view = new DataView(view.buffer, FLASH_SECTOR_SIZE * n, FLASH_SECTOR_SIZE);
          for(let i = 0; i < dst_view.byteLength; i += 4) {
             dst_view.setUint32(i, src_view.getUint32(i, true), true);
          }
@@ -199,10 +168,10 @@ class SaveFormat {
       for(let i = 0; i < data.slots.length; ++i) {
          let slot = data.slots[i];
          for(let j = 0; j < slot.sectors.length; ++j) {
-            let sector_view = new DataView(view.buffer, 0x1000 * (SECTORS_PER_SLOT * i + j), 0x1000);
+            let sector_view = new DataView(view.buffer, FLASH_SECTOR_SIZE * (SAVE_SECTORS_PER_SLOT * i + j), FLASH_SECTOR_SIZE);
             
             let header = slot.sectors[j];
-            if (header.signature == SECTOR_SIGNATURE) {
+            if (header.signature == SAVE_SECTOR_SIGNATURE) {
                if (header.sector_id < this.sectors.length) {
                   let instructions = this.sectors[header.sector_id].instructions;
                   if (instructions) {
@@ -213,7 +182,7 @@ class SaveFormat {
                      applier.save(instructions);
                      
                      header = structuredClone(header);
-                     header.checksum = this.#compute_checksum(sector_view);
+                     header.checksum = checksum16(sector_view, SAVE_SECTOR_DATA_SIZE);
                   }
                }
             }
@@ -221,7 +190,7 @@ class SaveFormat {
             // Serialize header.
             //
             {
-               let offset = 0x1000 - 16;
+               let offset = SAVE_SECTOR_FULL_SIZE - 16;
                
                sector_view.setUint32(offset, header.version, true);
                offset += 4;
@@ -253,24 +222,20 @@ class SaveFormat {
    }
    
    test_round_tripping(/*DataView*/ sav) {
-      const SLOTS_PER_SAV    =  2;
-      const SECTORS_PER_SLOT = 14;
-      const SECTOR_SIGNATURE = 0x8012025;
-      
       let decoded = this.load(sav);
       for(let i = 0; i < decoded.slots.length; ++i) {
          let slot = decoded.slots[i];
-         for(let j = 0; j < SECTORS_PER_SLOT; ++j) {
-            let pos = 0x1000 * (SECTORS_PER_SLOT * i + j);
-            let src = new DataView(sav.buffer, pos, 0x1000);
+         for(let j = 0; j < SAVE_SECTORS_PER_SLOT; ++j) {
+            let pos = FLASH_SECTOR_SIZE * (SAVE_SECTORS_PER_SLOT * i + j);
+            let src = new DataView(sav.buffer, pos, FLASH_SECTOR_SIZE);
             
             let flash_sector = this.#decompose_flash_sector(src);
-            if (flash_sector.header.signature != SECTOR_SIGNATURE) {
+            if (flash_sector.header.signature != SAVE_SECTOR_SIGNATURE) {
                continue;
             }
             let id = flash_sector.header.sector_id;
             
-            let dst      = new ArrayBuffer(0x1000 - 128);
+            let dst      = new ArrayBuffer(FLASH_SECTOR_SIZE - 128);
             let dst_view = new DataView(dst);
             
             let applier = new InstructionsApplier();

@@ -1,6 +1,7 @@
 
 class SaveSlotElement extends HTMLElement {
    #shadow;
+   #editor;
    #field_nodes = {
       counter: null,
       version: null,
@@ -54,14 +55,25 @@ class SaveSlotElement extends HTMLElement {
          </span>
       </aside>
       <c-view></c-view>
+      <c-value-editor></c-value-editor>
    </div>
 </details>
       `.trim();
       
-      this.#view = this.#shadow.querySelector("c-view");
+      this.#editor = this.#shadow.querySelector("c-value-editor");
+      this.#view   = this.#shadow.querySelector("c-view");
       for(let typename in SaveSlotElement.TYPE_SUMMARY_FORMATTERS) {
          this.#view.setTypeFormatter(typename, SaveSlotElement.TYPE_SUMMARY_FORMATTERS[typename]);
       }
+      this.#view.allowSelection = true;
+      this.#view.addEventListener("selection-changed", (function(e) {
+         let item = e.detail.item;
+         if (item instanceof CValueInstance)
+            this.#editor.target = item;
+         else
+            this.#editor.target = null;
+      }).bind(this));
+      this.#editor.addEventListener("change", this.#view.repaint.bind(this.#view));
       
       {
          let aside = this.#shadow.querySelector("aside");

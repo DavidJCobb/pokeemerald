@@ -20,7 +20,22 @@ details>div {
    gap: .25em;
 }
 
+c-value-editor:not([has-target="true"]) {
+   display: none;
+}
+details>div:has(c-value-editor[has-target="true"]) {
+   display: grid;
+   grid-template:
+      "info info"
+      "view edit" 1fr
+      /
+      2fr 1fr
+   ;
+}
+
 aside {
+   grid-area: info;
+   
    display:   flex;
    flex-flow: row nowrap;
    gap:       2em;
@@ -65,6 +80,8 @@ aside {
 }
 
 c-view {
+   grid-area: view;
+   
    height: 300px;
    border: 1px solid #888;
    
@@ -82,7 +99,12 @@ c-view {
       padding: .25em;
    }
    &::part(row) {
-      color:   #888;
+      background: #FFF;
+      color:      #888;
+   }
+   &::part(selected-row) {
+      background: #00A;
+      color:      #FFF;
    }
    &::part(cell) {
       padding: .25em;
@@ -95,7 +117,12 @@ c-view {
       color: #4A6;
    }
    &::part(twisty) {
+      color:  #888;
       width:  .75em;
       height: .75em;
    }
+}
+
+c-value-editor {
+   grid-area: edit;
 }

@@ -1,5 +1,7 @@
 
 class CViewElement extends HTMLElement {
+   #allow_selection = false;
+   #selected_item   = null;
    #shadow;
    #canvas;
    #scroll_pane;
@@ -47,19 +49,15 @@ class CViewElement extends HTMLElement {
       // the outside world to style. The `_type` fields on each entry identify the 
       // properties we'll check and cache.
       //
-      "name-text": {
-         _type: "text"
-      },
-      "value-text": {
-         _type: "text"
-      },
-      "header-row":  { _type: ["box", "text"], },
-      "header-cell": { _type: ["box", "text"], },
-      "row":         { _type: ["box", "text"], },
-      "cell":        { _type: ["box", "text"], },
-      "twisty": {
-         _type: "icon",
-      },
+      "header-row":    { _type: ["box", "text"] },
+      "header-cell":   { _type: ["box", "text"] },
+      "row":           { _type: ["box", "text"] },
+      "cell":          { _type: ["box", "text"] },
+      "twisty":        { _type: "icon" },
+      "name-text":     { _type: "text" },
+      "value-text":    { _type: "text" },
+      "selected-row":  { _type: "box-recolor" },
+      "selected-cell": { _type: "box-recolor" },
    };
    #cached_style_addenda = {
       header_height:         0,
@@ -69,15 +67,26 @@ class CViewElement extends HTMLElement {
    };
    #recache_styles() {
       for(let key in this.#cached_styles) {
-         let part  = this.#shadow.querySelector(`[part="${key}"]`);
+         let part  = this.#shadow.querySelector(`[part~="${key}"]`);
          let style = getComputedStyle(part);
          let cache = this.#cached_styles[key];
          
-         let is_multi = Array.isArray(cache._type);
-         let is_box   = cache._type == "box" || (is_multi && cache._type.includes("box"));
-         let is_icon  = cache._type == "icon";
-         let is_text  = cache._type == "text" || (is_multi && cache._type.includes("text"));
+         let is_multi  = Array.isArray(cache._type);
+         let is_box    = cache._type == "box" || (is_multi && cache._type.includes("box"));
+         let is_icon   = cache._type == "icon";
+         let is_text   = cache._type == "text" || (is_multi && cache._type.includes("text"));
+         let is_boxmod = cache._type == "box-recolor";
          
+         if (is_boxmod) {
+            cache.background   = style.backgroundColor;
+            cache.border_color = {
+               bottom: (style.borderBottomColor),
+               left:   (style.borderLeftColor),
+               right:  (style.borderRightColor),
+               top:    (style.borderTopColor),
+            };
+            cache.color = style.color;
+         }
          if (is_box) {
             cache.background = style.backgroundColor;
             cache.border_color = {
@@ -187,19 +196,31 @@ class CViewElement extends HTMLElement {
    --transition-properties-text
    
    &[data-type="box"] {
-      transition-property: padding;
+      transition-property: background, border, padding;
    }
    &[data-type="text"] {
       transition-property: color, font;
    }
    &[data-type~="box"][data-type~="text"] {
-      transition-property: padding, color, font;
+      transition-property: background, border, padding, color, font;
    }
    &[data-type="icon"] {
       transition-property: color, width, height;
    }
+   
+   &[data-type="box-recolor"] {
+      transition-property: background, border-color, color;
+      
+      *:where(&) {
+         background:   inherit;
+         border-color: inherit;
+      }
+   }
 }
 
+:where([part~="cell"]) {
+   background-color: inherit;
+}
 :where([part="twisty"]) {
    width:  1em;
    height: 1em;
@@ -246,6 +267,9 @@ class CViewElement extends HTMLElement {
             <span part="value-text" data-type="text"></span>
          </div>
       </div>
+      <div part="row selected-row" data-type="box-recolor">
+         <div part="cell selected-cell" data-type="box-recolor"></div>
+      </div>
       <div class="scroll">
          <canvas></canvas>
          <div class="tooltip-stubs"></div>
@@ -262,6 +286,17 @@ class CViewElement extends HTMLElement {
       this.addEventListener("click", this.#on_click.bind(this));
       this.#scroll_pane.addEventListener("scroll", this.#on_scroll.bind(this));
    }
+   
+   get allowSelection() { return this.#allow_selection; }
+   set allowSelection(v) {
+      this.#allow_selection = !!v;
+      if (!this.#allow_selection) {
+         this.#selected_item = null;
+         this.repaint();
+      }
+   }
+   
+   get selectedItem() { return this.#selected_item; }
    
    // Compare to writing DisplayString for a type in Natvis.
    getTypeFormatter(typename) {
@@ -360,6 +395,7 @@ class CViewElement extends HTMLElement {
             }
          }
       }
+      this.#select(row.item);
    }
    
    #on_observe_css_change(e) {
@@ -385,6 +421,18 @@ class CViewElement extends HTMLElement {
    // Internal behavior
    //
    
+   #select(item) {
+      if (item && !this.#allow_selection) {
+         return;
+      }
+      if (this.#selected_item == item)
+         return;
+      this.#selected_item = item;
+      this.#queue_repaint();
+      this.dispatchEvent(new CustomEvent("selection-changed", { detail: {
+         item: item,
+      }}));
+   }
    #toggle_item_expansion(item) {
       if (this.#expanded_items.has(item)) {
          this.#expanded_items.delete(item);
@@ -598,12 +646,13 @@ class CViewElement extends HTMLElement {
       node.title = tip;
    }
    
-   #paint_cached_style_box(key, coords, content_paint_functor) {
+   #paint_cached_style_box(key, coords, content_paint_functor, recolor_key) {
       let { x, y, w, h, row, col, column_count } = coords;
       
       const canvas  = this.#canvas;
       const context = canvas.getContext("2d");
       const style   = this.#cached_styles[key];
+      const colors  = this.#cached_styles[recolor_key] || style;
       if (col !== undefined && column_count !== undefined) {
          //
          // Adjust metrics to account for border collapsing.
@@ -617,7 +666,7 @@ class CViewElement extends HTMLElement {
          }
       }
       
-      context.fillStyle = style.background;
+      context.fillStyle = colors.background;
       if (row !== undefined) {
          context.rect(
             Math.floor(x + style.border_width.left),
@@ -665,7 +714,7 @@ class CViewElement extends HTMLElement {
             // first row that you paint is row 0.
             //
             thick = style.border_width.top;
-            color = style.border_color.top;
+            color = colors.border_color.top;
             if (thick > 0) {
                context.strokeStyle = color;
                context.lineWidth   = thick;
@@ -677,14 +726,14 @@ class CViewElement extends HTMLElement {
             }
          }
          thick = style.border_width.bottom;
-         color = style.border_color.bottom;
+         color = colors.border_color.bottom;
          if (row > 0) {
             //
             // Collapse table borders, preferring the thicker border.
             //
             if (thick < style.border_width.top) {
                thick = style.border_width.top;
-               color = style.border_color.top;
+               color = colors.border_color.top;
             }
          }
          if (thick > 0) {
@@ -705,10 +754,10 @@ class CViewElement extends HTMLElement {
             // Left borders work similarly to top borders.
             //
             thick = style.border_width.left;
-            color = style.border_color.left;
+            color = colors.border_color.left;
             if (thick < style.border_width.right) {
                thick = style.border_width.right;
-               color = style.border_color.right;
+               color = colors.border_color.right;
             }
             if (thick > 0) {
                context.strokeStyle = color;
@@ -721,14 +770,14 @@ class CViewElement extends HTMLElement {
             }
          }
          thick = style.border_width.right;
-         color = style.border_color.right;
+         color = colors.border_color.right;
          if (col > 0) {
             //
             // Collapse table borders, preferring the thicker border.
             //
             if (thick < style.border_width.left) {
                thick = style.border_width.left;
-               color = style.border_color.left;
+               color = colors.border_color.left;
             }
          }
          if (thick > 0) {
@@ -908,7 +957,9 @@ class CViewElement extends HTMLElement {
             y: y,
             w: canvas_width,
             h: row_height
-         }
+         },
+         null,
+         (item == this.#selected_item) ? "selected-row" : null
       );
       const row_style = this.#cached_styles["row"];
       let row_inset_l = row_style.border_width.left   + row_style.padding.left;
@@ -947,7 +998,7 @@ class CViewElement extends HTMLElement {
                const w  = this.#cached_styles.twisty.width;
                const h  = this.#cached_styles.twisty.height;
                const dy = (this.#cached_style_addenda.row_content_height - h) / 2;
-               context.fillStyle = this.#cached_styles.twisty.color;
+               context.fillStyle = this.#cached_styles["twisty"].color;
                if (is_expanded) {
                   context.moveTo(x,         dy + y);
                   context.lineTo(x + w,     dy + y);
@@ -960,6 +1011,7 @@ class CViewElement extends HTMLElement {
                   context.closePath();
                }
                context.fill();
+               context.beginPath();
                painted.coords.twisty = {
                   x: content_box.x + x,
                   y: content_box.y + y + dy,
@@ -973,8 +1025,12 @@ class CViewElement extends HTMLElement {
             //
             // Draw path text.
             //
-            context.fillStyle = this.#cached_styles["name-text"].color;
-            context.font      = this.#cached_styles["name-text"].font;
+            if (item == this.#selected_item) {
+               context.fillStyle = this.#cached_styles["selected-cell"].color;
+            } else {
+               context.fillStyle = this.#cached_styles["name-text"].color;
+            }
+            context.font = this.#cached_styles["name-text"].font;
             context.fillText(name, x, y);
             
             this.#update_tooltip(
@@ -986,7 +1042,8 @@ class CViewElement extends HTMLElement {
                   width: content_box.w - x
                }
             );
-         }).bind(this)
+         }).bind(this),
+         (item == this.#selected_item) ? "selected-cell" : null
       );
       this.#paint_cached_style_box(
          "cell",
@@ -1004,15 +1061,20 @@ class CViewElement extends HTMLElement {
             if (value === null)
                return;
             
-            context.fillStyle = this.#cached_styles["value-text"].color;
-            context.font      = this.#cached_styles["value-text"].font;
+            if (item == this.#selected_item) {
+               context.fillStyle = this.#cached_styles["selected-cell"].color;
+            } else {
+               context.fillStyle = this.#cached_styles["value-text"].color;
+            }
+            context.font = this.#cached_styles["value-text"].font;
             context.fillText(value, 0, 0);
             
             let width = context.measureText(value).width;
             if (width > content_box.w) {
                this.#update_tooltip(row, 1, value);
             }
-         }).bind(this)
+         }).bind(this),
+         (item == this.#selected_item) ? "selected-cell" : null
       );
       this.#paint_cached_style_box(
          "cell",
@@ -1060,15 +1122,20 @@ class CViewElement extends HTMLElement {
             }
             if (typename === null)
                return;
-            context.fillStyle = this.#cached_styles["name-text"].color;
-            context.font      = this.#cached_styles["name-text"].font;
+            if (item == this.#selected_item) {
+               context.fillStyle = this.#cached_styles["selected-cell"].color;
+            } else {
+               context.fillStyle = this.#cached_styles["name-text"].color;
+            }
+            context.font = this.#cached_styles["name-text"].font;
             context.fillText(typename, 0, 0);
             
             let width = context.measureText(typename).width;
             if (width > content_box.w) {
                this.#update_tooltip(row, 2, typename);
             }
-         }).bind(this)
+         }).bind(this),
+         (item == this.#selected_item) ? "selected-cell" : null
       );
       this.#last_repaint_result.rows.push(painted);
    }

@@ -39,7 +39,7 @@ class CStructInstance {
    constructor(/*SaveFormat*/ format, /*CStruct*/ type) {
       this.save_format = format;
       this.type        = type; // CStruct
-      this.members     = {}; // Array<Variant<CStructInstance, CValueInstance>>
+      this.members     = {}; // Array<Variant<CStructInstance, CValueInstance, CValueInstanceArray, CUnionInstance>>
       
       if (type) {
          for(let /*CValue*/ src of type.members) {
@@ -50,5 +50,23 @@ class CStructInstance {
             }
          }
       }
+   }
+   
+   // Returns a list of any instance-objects that couldn't be filled in.
+   fill_in_defaults() {
+      let unfilled = [];
+      for(let member of this.members) {
+         if (member instanceof CValueInstance) {
+            let dv = member.base?.default_value;
+            if (dv === undefined) {
+               unfilled.push(member);
+            } else {
+               member.value = dv;
+            }
+            continue;
+         }
+         unfilled = unfilled.concat(member.fill_in_defaults());
+      }
+      return unfilled;
    }
 };

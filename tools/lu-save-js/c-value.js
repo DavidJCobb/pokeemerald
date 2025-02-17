@@ -118,6 +118,27 @@ class CValueInstanceArray {
          }
       }
    }
+   
+   // Returns a list of any instance-objects that couldn't be filled in.
+   fill_in_defaults() {
+      if (!this.values)
+         return [this];
+      
+      let unfilled = [];
+      for(let member of this.values) {
+         if (member instanceof CValueInstance) {
+            let dv = member.base?.default_value;
+            if (dv === undefined) {
+               unfilled.push(member);
+            } else {
+               member.value = dv;
+            }
+            continue;
+         }
+         unfilled = unfilled.concat(member.fill_in_defaults());
+      }
+      return unfilled;
+   }
 };
 
 class CValueInstance {

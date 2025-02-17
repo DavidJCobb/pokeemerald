@@ -94,4 +94,22 @@ class CUnionInstance {
       }
       return v;
    }
+   
+   // Returns a list of any instance-objects that couldn't be filled in.
+   fill_in_defaults() {
+      if (!this.value)
+         return [this];
+      
+      let member = this.value;
+      if (member instanceof CValueInstance) {
+         let dv = member.base?.default_value;
+         if (dv === undefined) {
+            return [member];
+         } else {
+            member.value = dv;
+         }
+         return [];
+      }
+      return member.fill_in_defaults();
+   }
 };

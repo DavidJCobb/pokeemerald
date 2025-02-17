@@ -8,8 +8,8 @@ function translate_value_instance_tree(
 ) {
    let result = {
       dst:         dst_root,
-      lost_values: [], // values in src that weren't found in dst
-      missing:     [], // values in dst that weren't found in src AND weren't defaulted
+      lost_values: [], // instance-objects in src that weren't found in dst
+      missing:     [], // instance-objects in dst that weren't found in src AND weren't defaulted
       alterations: [],
    };
    function _translate(src, dst) {
@@ -17,12 +17,16 @@ function translate_value_instance_tree(
          result.lost_values.push(src);
       }
       function _on_no_src_for_dst() {
-         //
-         // TODO: Default what we can, logging any (nested) values that are 
-         // neither omitted nor defaulted as missing.
-         //
-         
-result.missing.push(dst); // for now, just log everything as missing
+         if (!(dst instanceof CValueInstance)) {
+            result.missing = result.missing.concat(dst.fill_in_defaults());
+         } else {
+            let dv = dst.base?.default_value;
+            if (dv === undefined) {
+               result.missing.push(dst);
+            } else {
+               dst.value = dv;
+            }
+         }
       }
       
       if (src && !dst) {

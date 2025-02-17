@@ -1,11 +1,7 @@
 
-class CStruct {
+class CStruct extends CContainerTypeDefinition {
    constructor() {
-      this.node = null;
-      
-      this.symbol  = null; // typedef struct {} NAME
-      this.tag     = null; // struct NAME
-      this.members = [];   // Array<CValue>
+      super();
       
       // Defined if the struct has a whole-struct serialization function.
       this.instructions = null; // Optional<RootInstructionNode>
@@ -35,15 +31,16 @@ class CStruct {
    }
 };
 
-class CStructInstance {
-   constructor(/*SaveFormat*/ format, /*CStruct*/ type) {
-      this.save_format = format;
-      this.type        = type; // CStruct
-      this.members     = {}; // Array<Variant<CStructInstance, CValueInstance, CValueInstanceArray, CUnionInstance>>
+class CStructInstance extends CTypeInstance {
+   constructor(/*SaveFormat*/ format, /*CStruct*/ type, /*CValue*/ decl) {
+      super(format, type, decl);
+      this.members = {}; // Array<CInstance>
       
       if (type) {
+         console.assert(type instanceof CStruct);
          for(let /*CValue*/ src of type.members) {
             let dst = src.make_instance_representation(this.save_format);
+            dst.is_member_of = this;
             this.members[src.name] = dst;
             if (src.type == "union-external-tag") {
                dst.external_tag = this.members[src.options.tag];

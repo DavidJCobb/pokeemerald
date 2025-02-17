@@ -400,7 +400,7 @@ class CViewElement extends HTMLElement {
    
    #tooltips_pending_update = null; // #tooltips_pending_update[row][col]
    
-   #stringify_value(item) {
+   #stringify_value(/*CInstance*/ item) {
       if (item instanceof CStructInstance) {
          let type      = item.type;
          let typename  = type.tag || type.symbol;
@@ -875,7 +875,7 @@ class CViewElement extends HTMLElement {
       );
    }
    
-   #paint_item_row(row, indent, item, name, is_expanded) {
+   #paint_item_row(row, indent, /*CInstance*/ item, name, is_expanded) {
       let canvas  = this.#canvas;
       let context = canvas.getContext("2d");
       
@@ -977,18 +977,15 @@ class CViewElement extends HTMLElement {
             context.font      = this.#cached_styles["name-text"].font;
             context.fillText(name, x, y);
             
-            let width = context.measureText(name).width;
-            if (width > content_box.w - x) {
-               this.#update_tooltip(
-                  row,
-                  0,
-                  name,
-                  {  // override bounds so we don't cover and block the twisty
-                     x:     content_box.x + x,
-                     width: content_box.w - x
-                  }
-               );
-            }
+            this.#update_tooltip(
+               row,
+               0,
+               item.build_path_string(),
+               {  // override bounds so we don't cover and block the twisty
+                  x:     content_box.x + x,
+                  width: content_box.w - x
+               }
+            );
          }).bind(this)
       );
       this.#paint_cached_style_box(

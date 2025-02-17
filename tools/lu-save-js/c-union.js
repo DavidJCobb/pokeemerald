@@ -1,11 +1,7 @@
 
-class CUnion {
+class CUnion extends CContainerTypeDefinition {
    constructor() {
-      this.node = null;
-      
-      this.symbol  = null;
-      this.tag     = null;
-      this.members = []; // Array<CValue>
+      super();
       
       this.internal_tag_name    = null;
       this.members_by_tag_value = {};
@@ -42,15 +38,17 @@ class CUnion {
    }
 };
 
-class CUnionInstance {
-   constructor(/*SaveFormat*/ format, /*CUnion*/ type) {
-      this.save_format  = format;
-      this.type         = type; // CUnion
+class CUnionInstance extends CTypeInstance {
+   constructor(/*SaveFormat*/ format, /*CUnion*/ type, /*CValue*/ decl) {
+      super(format, type, decl);
       this.value_name   = null;
       this.value        = null;
       this.external_tag = null; // Optional<CValueInstance>
+      if (type)
+         console.assert(type instanceof CUnion);
    }
-   emplace(member_name) {
+   
+   /*CInstance*/ emplace(member_name) {
       for(let member of this.type.members) {
          if (member.name != member_name)
             continue;
@@ -62,12 +60,13 @@ class CUnionInstance {
             console.assert(member instanceof CValue);
             this.value = member.make_instance_representation(this.save_format);
          }
+         this.value.is_member_of = this;
          this.value_name = member_name;
          return this.value;
       }
       console.assert(false, "invalid member name");
    }
-   get_or_emplace(member_name) {
+   /*CInstance*/ get_or_emplace(member_name) {
       if (this.value_name == member_name && this.value !== null)
          return this.value;
       let common_members = null;
@@ -89,7 +88,7 @@ class CUnionInstance {
       let v = this.emplace(member_name);
       if (common_members) {
          for(let name in common_members) {
-            this.value.members[name] = common_members[name];
+            v.members[name].value = common_members[name].value;
          }
       }
       return v;

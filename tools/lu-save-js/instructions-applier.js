@@ -127,7 +127,8 @@ class InstructionsApplier {
                      break;
                      
                   case "string":
-                     value.value = this.bitstream.read_string(node.options.length);
+                     value.value = new PokeString();
+                     value.value.bytes = this.bitstream.read_string(node.options.length);
                      break;
                }
             }
@@ -226,11 +227,11 @@ class InstructionsApplier {
                         let length = node.options.length;
                         let text   = value.value;
                         if (text === null) {
-                           text = [];
+                           text = new PokeString();
                            for(let i = 0; i < length; ++i)
-                              text[i] = CHARSET_CONTROL_CODES.chars_to_bytes["\0"];
+                              text.bytes[i] = CHARSET_CONTROL_CODES.chars_to_bytes["\0"];
                         }
-                        this.bitstream.write_string(length, text);
+                        this.bitstream.write_string(length, text.bytes);
                      }
                      break;
                }

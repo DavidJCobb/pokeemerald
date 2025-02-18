@@ -98,8 +98,8 @@ function translate_value_instance_tree(
                src:  src,
                dst:  dst,
                type: "type-conversion",
-               from: src.type,
-               to:   dst.type,
+               from: src.decl.type,
+               to:   dst.decl.type,
             });
          }
          function _log_size_truncation(src_size, dst_size) {
@@ -113,9 +113,9 @@ function translate_value_instance_tree(
          }
          
          let value = null;
-         switch (dst.base.type) {
+         switch (dst.decl.type) {
             case "boolean":
-               switch (src.base.type) {
+               switch (src.decl.type) {
                   case "boolean":
                      value = src.value;
                      break;
@@ -127,11 +127,11 @@ function translate_value_instance_tree(
                break;
             case "buffer":
                {
-                  const dst_size = dst.base.options.bytecount;
+                  const dst_size = dst.decl.options.bytecount;
                   
                   let src_size;
                   let i = 0;
-                  if (src.base.type == "buffer") {
+                  if (src.decl.type == "buffer") {
                      src_size = src.value.byteLength;
                      
                      let buffer = new ArrayBuffer(dst_size);
@@ -140,15 +140,15 @@ function translate_value_instance_tree(
                      let stop = Math.min(src_size, dst_size);
                      for(; i < stop; ++i)
                         value.setUint8(i, src.value.getUint8(i));
-                  } else if (src.base.type == "string") {
-                     src_size = src.base.options.max_length;
+                  } else if (src.decl.type == "string") {
+                     src_size = Math.min(src.decl.options.max_length, src.value.bytes.length);
                      
                      let buffer = new ArrayBuffer(dst_size);
                      value = new DataView(buffer);
                      
                      let stop = Math.min(src_size, dst_size);
                      for(; i < stop; ++i)
-                        value.setUint8(i, src.value[i]);
+                        value.setUint8(i, src.value.bytes[i]);
                   } else {
                      break;
                   }
@@ -159,7 +159,7 @@ function translate_value_instance_tree(
                }
                break;
             case "integer":
-               switch (src.base.type) {
+               switch (src.decl.type) {
                   case "boolean":
                      value = src.value ? 1 : 0;
                      _log_type_conversion();
@@ -170,7 +170,7 @@ function translate_value_instance_tree(
                }
                break;
             case "pointer":
-               if (src.base.type != dst.base.type) {
+               if (src.decl.type != dst.decl.type) {
                   break;
                }
                value = src.value;
@@ -178,34 +178,34 @@ function translate_value_instance_tree(
             case "string":
                {
                   const EOS      = CHARSET_CONTROL_CODES.chars_to_bytes["\0"];
-                  const dst_size = dst.base.options.length;
+                  const dst_size = dst.decl.options.length;
                   
                   let src_size;
                   let i = 0;
-                  if (src.base.type == "string") {
+                  if (src.decl.type == "string") {
                      src_size = 0;
-                     for(; src_size < src.value.length; ++src_size)
-                        if (src.value[src_size] == EOS)
+                     for(; src_size < src.value.bytes.length; ++src_size)
+                        if (src.value.bytes[src_size] == EOS)
                            break;
                      
-                     value = [];
+                     value = new PokeString();
                      
                      let stop = Math.min(src_size, dst_size);
                      for(; i < stop; ++i)
-                        value.push(src.value[i]);
-                  } else if (src.base.type == "buffer") {
+                        value.bytes.push(src.value.bytes[i]);
+                  } else if (src.decl.type == "buffer") {
                      src_size = src.value.byteLength;
                      
-                     value = [];
+                     value = new PokeString();
                      
                      let stop = Math.min(src_size, dst_size);
                      for(; i < stop; ++i)
-                        value.push(src.value.getUint8(i));
+                        value.bytes.push(src.value.getUint8(i));
                   } else {
                      break;
                   }
                   for(; i < dst_size; ++i)
-                     value.push(EOS);
+                     value.bytes.push(EOS);
                   if (src_size > dst_size)
                      _log_size_truncation(src_size, dst_size);
                }

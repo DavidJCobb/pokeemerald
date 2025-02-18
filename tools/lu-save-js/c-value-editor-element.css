@@ -1,0 +1,68 @@
+
+:host {
+   display: grid;
+   grid-template:
+      "path"    max-content
+      "editor"  max-content
+      "preview" 1fr
+   ;
+}
+header {
+   grid-area:     path;
+   font-family:   Consolas, Inconsolata, Lucida Console, monospace;
+   font-weight:   bold;
+   border-bottom: 1px solid #808080;
+   margin-bottom: .5em;
+}
+input, select {
+   grid-area: editor;
+   
+   &[type="number" i] {
+      text-align: right;
+   }
+}
+
+.preview.string {
+   [data-ligature].alternate-sup-sub {
+      &::before {
+         font-size: .7em;
+         vertical-align: top;
+      }
+      &::after {
+         font-size: .7em;
+         vertical-align: bottom;
+      }
+   }
+   
+   [data-ligature] {
+      &[data-ligature="PKMN_PK"] {
+         &::before { content: "P"; }
+         &::after  { content: "K"; }
+      }
+      &[data-ligature="PKMN_MN"] {
+         &::before { content: "M"; }
+         &::after  { content: "N"; }
+      }
+      
+      &[data-ligature="POKEBLOCK_PO"] {
+         &::before { content: "P"; }
+         &::after  { content: "O"; }
+      }
+      &[data-ligature="POKEBLOCK_KE"] {
+         &::before { content: "K"; }
+         &::after  { content: "E"; }
+      }
+      &[data-ligature="POKEBLOCK_BL"] {
+         &::before { content: "B"; }
+         &::after  { content: "L"; }
+      }
+      &[data-ligature="POKEBLOCK_OC"] {
+         &::before { content: "O"; }
+         &::after  { content: "C"; }
+      }
+      &[data-ligature="POKEBLOCK_K"] {
+         &::before { content: "K"; }
+         &::after  { content: " "; }
+      }
+   }
+}

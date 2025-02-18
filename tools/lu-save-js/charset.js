@@ -4,6 +4,9 @@ class Charset {
       this.chars_to_bytes = {};
       
       this.byte_sequences = {}; // [name] == [byte, byte]; if `byte` == "*", then matches any byte
+      
+      this.entities = {}; // [name] == [byte, byte, ...] // stores canonical names
+      this.entities_lower = {}; // stores lowercase names, for case-insensitive lookups
    }
    
    run(base, str) {
@@ -22,10 +25,51 @@ class Charset {
    define_byte_sequence(name, ...bytes) {
       this.byte_sequences[name] = [...bytes];
    }
+   
+   define_entity(name, bytes) {
+      this.entities[name] = bytes;
+      this.entities_lower[name.toLowerCase()] = bytes;
+   }
+   get_entity(name) {
+      return this.entities_lower[name.toLowerCase()];
+   }
 };
 
 const CHARSET_CONTROL_CODES = (function() {
    let out = new Charset();
+   for(let [i, name] of [
+      "A", "B", "L", "R", "Start", "Select", "DPadUp", "DPadDown", "DPadLeft", "DPadRight", "DPadUpDown", "DPadLeftRight", "DPadNone"
+   ]) {
+      let en = "Button" + name;
+      out.define_entity(en, [0xF8, i]);
+   }
+   //
+   out.define_entity("LocationNameEndMarker", [0xFC, 0x00]);
+   out.define_entity("FontSmall", [0xFC, 0x06, 0x00]);
+   out.define_entity("FontNormal", [0xFC, 0x06, 0x01]);
+   out.define_entity("FontShort", [0xFC, 0x06, 0x02]);
+   out.define_entity("FontNarrow", [0xFC, 0x06, 0x07]);
+   out.define_entity("FontSmallNarrow", [0xFC, 0x06, 0x08]);
+   out.define_entity("ResetFont", [0xFC, 0x07]);
+   out.define_entity("ToJapanese", [0xFC, 0x15]);
+   out.define_entity("ToLatin", [0xFC, 0x16]);
+   out.define_entity("PauseMusic", [0xFC, 0x17]);
+   out.define_entity("ResumeMusic", [0xFC, 0x18]);
+   //
+   out.define_entity("PlayerName", [0xFD, 0x01]);
+   out.define_entity("StrVar1", [0xFD, 0x02]);
+   out.define_entity("StrVar2", [0xFD, 0x03]);
+   out.define_entity("StrVar3", [0xFD, 0x04]);
+   out.define_entity("HonorificChild", [0xFD, 0x05]);
+   out.define_entity("RivalName", [0xFD, 0x06]);
+   out.define_entity("GameVersion", [0xFD, 0x07]);
+   out.define_entity("TeamAquaName", [0xFD, 0x08]);
+   out.define_entity("TeamMagmaName", [0xFD, 0x09]);
+   out.define_entity("TeamAquaLeaderName", [0xFD, 0x0A]);
+   out.define_entity("TeamMagmaLeaderName", [0xFD, 0x0B]);
+   out.define_entity("TeamAquaLegendaryName", [0xFD, 0x0C]);
+   out.define_entity("TeamMagmaLegendaryName", [0xFD, 0x0D]);
+   
    out.define_char_code(0xF7, "DYNAMIC");
    out.define_byte_sequence("NAME_END", 0xFC, 0x00);
    out.define_byte_sequence("COLOR", 0xFC, 0x01, "*");

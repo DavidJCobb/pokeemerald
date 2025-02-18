@@ -507,7 +507,7 @@ class CViewElement extends HTMLElement {
          case "string":
             if (SHOW_STRINGS_AS_SINGLE_CHARS) {
                let text = "";
-               for(let i = 0; i < item.value.length; ++i) {
+               for(let i = 0; i < item.value.bytes.length; ++i) {
                   let cc = item.value[i];
                   let ch = CHARSET_ENGLISH.bytes_to_chars[cc];
                   if (!ch) {
@@ -522,36 +522,8 @@ class CViewElement extends HTMLElement {
                }
                return text;
             } else {
-               const STOP_AT_TERMINATOR = true;
-               
-               let text = "";
-               for(let i = 0; i < item.value.length; ++i) {
-                  let cc = item.value[i];
-                  let ch = CHARSET_ENGLISH.bytes_to_chars[cc];
-                  if (ch && ch.length == 1) {
-                     if (ch == '"')
-                        text += '\\';
-                     text += ch;
-                     continue;
-                  } else if (!ch) {
-                     ch = CHARSET_CONTROL_CODES.bytes_to_chars[cc];
-                     if (STOP_AT_TERMINATOR) {
-                        if (ch == '\0')
-                           break;
-                     }
-                     switch (ch) {
-                        case "\\l":
-                        case "\\p":
-                        case "\\n":
-                           text += ch;
-                           continue;
-                        case '\0':
-                           text += "\\0";
-                           continue;
-                     }
-                  }
-                  text += "\\x" + cc.toString(16).padStart(2, '0').toUpperCase();
-               }
+               let text = item.value.to_text();
+               text = text.replaceAll('"', "\\\"");
                return `"${text}"`;
             }
             break;

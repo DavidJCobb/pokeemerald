@@ -11,7 +11,9 @@ console.assert = function(condition, ...args) {
    throw new Error("Assertion failed. ", ...args); // actually halt execution
 };
       </script>
+      <script src="charset.js"></script>
       <script src="common.js"></script>
+      <script src="poke-string.js"></script>
       
       <script src="c-base.js"></script>
       <script src="c-value.js"></script>
@@ -27,7 +29,6 @@ console.assert = function(condition, ...args) {
       <!-- helper for pasting `charmap.txt` in and getting something usable -->
       <script src="parse-charset.js"></script>
       
-      <script src="charset.js"></script>
       <script src="bitstream.js"></script>
       <script src="instructions-applier.js"></script>
       
@@ -36,6 +37,8 @@ console.assert = function(condition, ...args) {
       <script src="save-slot-element.js"></script>
       
       <script src="translate_value_instance_tree.js"></script>
+      
+      <script src="editor-enums.js"></script>
    </head>
    <body>
       <h1>Bitpacked save dumper</h1>

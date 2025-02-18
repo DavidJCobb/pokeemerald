@@ -17,7 +17,7 @@ details>div {
    
    display: flex;
    flex-flow: column nowrap;
-   gap: .25em;
+   gap: .25em .5em;
 }
 
 c-value-editor:not([has-target="true"]) {

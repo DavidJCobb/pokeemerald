@@ -22,47 +22,64 @@ input, select {
    }
 }
 
-.preview.string {
-   [data-ligature].alternate-sup-sub {
-      &::before {
+:host([data-type="string"]) .preview {
+   --background: #FFF;
+   background: var(--background);
+   
+   white-space: pre;
+   overflow:    auto;
+   
+   /* so un-shifted text aligns properly with shifted text */
+   span {
+      vertical-align: top;
+   }
+   
+   .placeholder {
+      color:  #30A030;
+      border: 1px solid currentColor;
+   }
+   .shift {
+      display:     inline-block;
+      margin-top:  var(--shift-y,0px);
+      margin-left: var(--shift-x,0px);
+   }
+   .skip {
+      display: inline-block;
+   }
+   .clear {
+      display:    inline-block;
+      background: var(--background);
+   }
+   
+   .force-fixed-width :is(.letter, .ligature) {
+      display:    inline-block;
+      min-width:  var(--fixed-width,auto);
+      text-align: left;
+   }
+   
+   .ligature.sup-sub {
+      &::before,
+      &::after {
+         display: inline-block;
          font-size: .7em;
          vertical-align: top;
       }
+      &::before {
+         content: var(--sup-char);
+      }
       &::after {
-         font-size: .7em;
-         vertical-align: bottom;
+         content: var(--sub-char);
+         padding-top: .3em;
       }
    }
    
-   [data-ligature] {
-      &[data-ligature="PKMN_PK"] {
-         &::before { content: "P"; }
-         &::after  { content: "K"; }
-      }
-      &[data-ligature="PKMN_MN"] {
-         &::before { content: "M"; }
-         &::after  { content: "N"; }
-      }
+   /* for the "BLOCK" in "PoKeBLOCK" */
+   .ligature.skinny {
+      --width: 0.8;
       
-      &[data-ligature="POKEBLOCK_PO"] {
-         &::before { content: "P"; }
-         &::after  { content: "O"; }
-      }
-      &[data-ligature="POKEBLOCK_KE"] {
-         &::before { content: "K"; }
-         &::after  { content: "E"; }
-      }
-      &[data-ligature="POKEBLOCK_BL"] {
-         &::before { content: "B"; }
-         &::after  { content: "L"; }
-      }
-      &[data-ligature="POKEBLOCK_OC"] {
-         &::before { content: "O"; }
-         &::after  { content: "C"; }
-      }
-      &[data-ligature="POKEBLOCK_K"] {
-         &::before { content: "K"; }
-         &::after  { content: " "; }
-      }
+      display:     inline-block;
+      font-family: Consolas, Inconsolata, Lucida Console, monospace;
+      width:       calc(1ch * var(--char-count,2) * var(--width,1));
+      transform:   scaleX(var(--width,1));
    }
 }

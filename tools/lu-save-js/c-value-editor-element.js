@@ -184,6 +184,7 @@ class CValueEditorElement extends HTMLElement {
       
       this.#shadow.querySelector("header").textContent = this.#target.build_path_string();
       const decl = this.#target.decl;
+      this.setAttribute("data-type", decl.type);
       
       let frag = new DocumentFragment();
       switch (decl.type) {
@@ -230,15 +231,20 @@ class CValueEditorElement extends HTMLElement {
             {
                const input = this.#input = document.createElement("textarea");
                //input.setAttribute("maxlength", this.#target_options.max_length); // fails for escape codes and XML entities
-               input.value = this.#target.value.to_text();
+               
+               let printer = new LiteralPokeStringPrinter();
+               printer.print(this.#target.value);
+               input.value = printer.result;
             }
             this.#preview = document.createElement("div");
             break;
       }
       if (this.#input)
          frag.append(this.#input);
-      if (this.#preview)
+      if (this.#preview) {
+         this.#preview.classList.add("preview");
          frag.append(this.#preview);
+      }
       this.#body.replaceChildren(frag);
       this.update_preview();
    }
@@ -248,8 +254,9 @@ class CValueEditorElement extends HTMLElement {
          return;
       const decl = this.#target.decl;
       if (decl.type == "string") {
-         let frag = this.#target.value.to_dom();
-         this.#preview.replaceChildren(frag);
+         let printer = new DOMPokeStringPrinter();
+         printer.print(this.#target.value);
+         this.#preview.replaceChildren(printer.result);
       }
       
    }

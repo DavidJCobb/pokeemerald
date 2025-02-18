@@ -522,8 +522,10 @@ class CViewElement extends HTMLElement {
                }
                return text;
             } else {
-               let text = item.value.to_text();
-               text = text.replaceAll('"', "\\\"");
+               let printer = new LiteralPokeStringPrinter();
+               printer.escape_quotes = true;
+               printer.print(item.value);
+               let text = printer.result;
                return `"${text}"`;
             }
             break;

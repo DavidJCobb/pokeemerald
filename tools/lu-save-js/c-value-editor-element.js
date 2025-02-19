@@ -136,33 +136,7 @@ class CValueEditorElement extends HTMLElement {
                   this.#target_options.enumeration = enum_def;
                }
             }
-            {
-               let min = o.min;
-               let max = o.max;
-               let bcm  = (1 << o.bitcount) - 1;
-               if (o.is_signed && min === null && max === null) {
-                  bcm = (1 << (o.bitcount - 1)) - 1; // assume a sign bit
-                  min = -(bcm + 1);
-                  max = bcm;
-               } else if (min === null) {
-                  if (max === null) {
-                     min = 0;
-                     max = (1 << o.bitcount) - 1;
-                  } else {
-                     if (max > bcm)
-                        min = max - bcm;
-                     else
-                        min = 0;
-                  }
-               } else if (max === null) {
-                  max = min + bcm;
-               }
-               Object.assign(this.#target_options, {
-                  bitcount: o.bitcount,
-                  min:      min,
-                  max:      max,
-               });
-            }
+            Object.assign(this.#target_options, this.#target.decl.compute_integer_bounds());
             break;
          case "string":
             this.#target_options.max_length = o.length;

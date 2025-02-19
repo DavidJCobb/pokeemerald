@@ -12,8 +12,36 @@ class AbstractDataFormatTranslator {
    constructor() {
    }
    
-   // convenience accessors for subclasses
-   get PASS() { return DataFormatTranslator.RESULTS.PASS; }
+   /*void*/ pass(/*CInstance*/ inst) {
+      const PASS = DataFormatTranslator.RESULTS.PASS;
+      if (inst instanceof CValueInstance) {
+         if (inst.value === null) // don't clobber an already-filled value
+            inst.value = PASS;
+         return;
+      }
+      if (inst instanceof CValueInstanceArray) {
+         for(let value of inst.values)
+            this.pass(value);
+         return;
+      }
+      if (inst instanceof CUnionInstance) {
+         if (inst.value && inst.value !== PASS) {
+            this.pass(inst.value);
+         } else {
+            console.assert(!inst.external_tag, "a CUnionInstance may have a null value during translation if it's internally tagged, but should never have one if it's externally tagged");
+            inst.value = PASS;
+         }
+         return;
+      }
+      if (inst instanceof CStructInstance) {
+         for(let memb of inst.members) {
+            console.assert(memb instanceof CInstance);
+            this.pass(memb);
+         }
+         return;
+      }
+      unreachable();
+   }
    
    //
    // Extension points:
@@ -21,7 +49,7 @@ class AbstractDataFormatTranslator {
    
    // Translate data from `src` into `dst`. If there are any fields within 
    // `dst` that you don't want to manually and fully translate, you must 
-   // overwrite them with `this.PASS`.
+   // call `this.pass(field)` on them.
    //
    // These arguments are CInstances, so where the data is actually located 
    // will vary. If `src instanceof CValueInstance`, then you'd look in 
@@ -90,9 +118,9 @@ class TranslationOperation {
    // Recursively check whether a CInstance (and any members) has 
    // its value filled in.
    /*bool*/ #instance_is_filled(/*CInstance*/ inst, /*bool*/ allow_PASS) /*const*/ {
+      console.assert(inst instanceof CInstance);
+      
       const PASS = AbstractDataFormatTranslator.RESULTS.PASS;
-      if (inst === PASS)
-         return allow_PASS || false;
       
       if (inst instanceof CValueInstance) {
          if (inst.decl.type == "omitted") {
@@ -101,11 +129,9 @@ class TranslationOperation {
             //
             return true;
          }
-         if (allow_PASS) {
-            if (inst.value === PASS)
-               return true;
-         }
-         return inst.value !== null && inst.value !== PASS;
+         if (inst.value === PASS)
+            return !!allow_PASS;
+         return inst.value !== null;
       }
       if (inst instanceof CValueInstanceArray) {
          for(let value of inst.values)
@@ -120,9 +146,12 @@ class TranslationOperation {
          return true;
       }
       if (inst instanceof CUnionInstance) {
+         if (inst.value === PASS) {
+            return allow_PASS;
+         }
          return this.#instance_is_filled(inst.value, allow_PASS);
       }
-      console.assert(false, "unreachable");
+      unreachable();
    }
    
    /*[[noreturn]]*/ #report_failure_to_translate(src, dst, dst_member) /*const*/ {
@@ -139,9 +168,21 @@ class TranslationOperation {
          }
          return true;
       }
+      
+      function _member_is_intact(memb) {
+         if (!(memb instanceof CInstance))
+            return false;
+         if (memb.member_of != dst)
+            return false;
+         return true;
+      }
+      
       if (dst instanceof CValueInstance) {
          for(let i = 0; i < dst.values; ++i) {
             const dst_e = dst.values[i];
+            if (!_member_is_intact(dst_e)) {
+               throw new Error(`Failed to translate destination array ${dst.build_path_string()} element ${i} given source value ${src.build_path_string()}. The user-defined translator overwrote the destination CInstance with something else, instead of modifying the data in the CInstance.`);
+            }
             if (!this.#instance_is_filled(dst_e, true)) {
                throw new Error(`Failed to translate destination array ${dst.build_path_string()} element ${i} given source value ${src.build_path_string()}.`);
             }
@@ -151,6 +192,9 @@ class TranslationOperation {
       if (dst instanceof CStructInstance) {
          for(let member in dst.members) {
             let inst = dst.members[member];
+            if (!_member_is_intact(inst)) {
+               throw new Error(`Failed to translate destination value ${dst.build_path_string()}.${member} given source value ${src.build_path_string()}. The user-defined translator overwrote the destination CInstance with something else, instead of modifying the data in the CInstance.`);
+            }
             if (!this.#instance_is_filled(inst, true)) {
                this.#report_failure_tO_translate(src, dst, member);
             }
@@ -158,10 +202,19 @@ class TranslationOperation {
          return true;
       }
       if (dst instanceof CUnionInstance) {
-         if (!this.#instance_is_filled(dst.value, true)) {
+         if (dst.value === null) {
             this.#report_failure_to_translate(src, dst);
          }
+         if (dst.value === PASS && dst.external_tag) {
+            throw new Error(`Failed to translate destination union ${dst.build_path_string()} given source value ${src.build_path_string()}. The user-defined translator overwrote the CInstance for the destination union's value, instead of modifying the data in the CInstance.`);
+         }
          if (dst.value !== PASS) {
+            if (!_member_is_intact(dst.value)) {
+               throw new Error(`Failed to translate destination union ${dst.build_path_string()} given source value ${src.build_path_string()}. The user-defined translator did not properly emplace the destination union's value.`);
+            }
+            if (!this.#instance_is_filled(dst.value, true)) {
+               this.#report_failure_to_translate(src, dst);
+            }
             //
             // Verify that custom translators didn't violate any invariants 
             // with respect to the union tag.
@@ -175,10 +228,13 @@ class TranslationOperation {
          }
          return true;
       }
-      return false;
+      
+      unreachable();
    }
    
    #clear_pass_state(/*CInstance*/ dst) {
+      console.assert(dst instanceof CInstance);
+      
       const PASS = AbstractDataFormatTranslator.RESULTS.PASS;
       
       if (dst instanceof CValueInstance) {
@@ -187,62 +243,33 @@ class TranslationOperation {
          return;
       }
       if (dst instanceof CValueInstanceArray) {
-         for(let i = 0; i < dst.values.length; ++i) {
-            if (dst.values[i] === PASS) {
-               //
-               // A user-defined translator chose to use the default translation 
-               // for this element. Fair enough, but in making that choice, it 
-               // clobbered the CInstance for the element. Rebuild it.
-               //
-               dst.rebuild_element(i);
-            } else {
-               this.#clear_pass_state(dst.values[i]);
-            }
-         }
+         for(let i = 0; i < dst.values.length; ++i)
+            this.#clear_pass_state(dst.values[i]);
          return;
       }
       if (dst instanceof CStructInstance) {
-         for(let name in dst.members) {
-            let inst = dst.members[name];
-            if (inst === PASS) {
-               //
-               // A user-defined translator chose to use the default translation 
-               // for this member. Fair enough, but in making that choice, it 
-               // clobbered the CInstance for the member. Rebuild it.
-               //
-               inst = dst.rebuild_member(name);
-            } else {
-               this.#clear_pass_state(inst);
-            }
-         }
+         for(let memb of dst.meembers)
+            this.#clear_pass_state(memb);
          return;
       }
       if (dst instanceof CUnionInstance) {
          let inst = dst.value;
-         if (inst === PASS) {
-            //
-            // A user-defined translator chose to use the default translation for 
-            // the union's active member. Fair enough. Can we rebuild said member?
-            //
-            dst.value = null;
-            if (dst.external_tag) {
-               this.#default_init_dst(dst);
-               console.assert(!!dst.value);
-            }
-         } else if (inst) {
-            this.#clear_pass_state(inst);
+         if (inst) {
+            if (inst === PASS)
+               dst.value = null;
+            else
+               this.#clear_pass_state(inst);
          }
          return;
       }
+      unreachable();
    }
    
    translate(/*CInstance*/ src, /*CInstance*/ dst) {
-      const PASS = AbstractDataFormatTranslator.RESULTS.PASS;
-      
       if (dst instanceof CDeclInstance) {
          if (dst.decl.type == "omitted")
             return;
-         if (dst instanceof CValueInstance && dst.value !== null && dst.value !== PASS) {
+         if (dst instanceof CValueInstance && dst.value !== null) {
             //
             // Something already translated this value for us. Skip default 
             // processing.
@@ -287,9 +314,8 @@ class TranslationOperation {
          }
       }
       //
-      // User-defined translations have run. Handle any 
-      // default translations, including recursing into 
-      // aggregates to translate their members.
+      // User-defined translations have run. Handle any default translations, 
+      // including recursing into aggregates to translate their members.
       //
       if (dst instanceof CValueInstance && dst.decl.type == "omitted") {
          return;
@@ -461,9 +487,14 @@ class TranslationOperation {
                }
                if (src_value === null)
                   break;
-               //
-               // TODO: Validate that the value can fit!
-               //
+               {
+                  let computed_dst = dst.decl.compute_integer_bounds();
+                  if (src_value < computed_dst.min || src_value > computed_dst.max)
+                     //
+                     // The source value can't fit in the destination.
+                     //
+                     break;
+               }
                dst.value = src_value;
             }
             break;

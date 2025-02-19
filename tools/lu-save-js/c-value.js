@@ -92,6 +92,36 @@ class CValue extends CDefinition {
       }
       return new CValueInstance(save_format, this);
    }
+   
+   compute_integer_bounds() {
+      console.assert(this..type == "integer");
+      const options = this.options;
+      let   out = {
+         bitcount: options.bitcount,
+         min:      options.min,
+         max:      options.max,
+      };
+      let bitcount_max = (1 << options.bitcount) - 1;
+      if (options.is_signed && options.min === null && options.max === null) {
+         bitcount_max = (1 << (options.bitcount - 1)) - 1; // assume a sign bit
+         out.min = -(bitcount_max + 1);
+         out.max = bitcount_max;
+      } else if (options.min === null) {
+         if (options.max === null) {
+            out.min = 0;
+            out.max = bitcount_max;
+         } else {
+            if (out.max > bitcount_max || options.is_signed) {
+               out.min = out.max - bitcount_max;
+            } else {
+               out.min = 0;
+            }
+         }
+      } else if (options.max === null) {
+         out.max = min + bitcount_max;
+      }
+      return out;
+   }
 };
 
 // represents a single-dimensional array within the instance tree
@@ -167,6 +197,8 @@ class CValueInstance extends CDeclInstance {
       }
    }
    
+   // TODO: See if this field name is still used. Replace it if so; then delete the 
+   // getter and setter.
    get base() { return this.decl; }
    set base(v) {
       console.assert(!v || v instanceof CValue);

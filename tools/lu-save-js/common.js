@@ -11,7 +11,7 @@ const SAVE_SECTOR_SIGNATURE = 0x08012025;
 const SAVE_SLOT_COUNT       = 2;
 const SAVE_SECTORS_PER_SLOT = 14;
 
-function checksum16(blob, length) {
+/*uint16_t*/ function checksum16(/*const DataView*/ blob, /*Optional<size_t>*/ length) {
    if (!length)
       length = blob.byteLength;
    let checksum = 0;
@@ -21,4 +21,8 @@ function checksum16(blob, length) {
    }
    checksum = ((checksum >> 16) + checksum) & 0xFFFF;
    return checksum;
+}
+
+/*[[noreturn]]*/ function unreachable() {
+   throw new Error("This code location should be unreachable.");
 }

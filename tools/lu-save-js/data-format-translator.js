@@ -6,7 +6,7 @@ class AbstractDataFormatTranslator {
       // This translator is opting not to handle a given destination value, 
       // preferring instead to defer to the default behavior (which may be 
       // to pass said value to another translator).
-      PASS: new Symbol("PASS"),
+      PASS: Symbol("PASS"),
    };
    
    constructor() {
@@ -62,6 +62,9 @@ class AbstractDataFormatTranslator {
    // `a.b[0][3].c` within its own save file as well; but `src` may be a 
    // CValueInstance while `dst` is a CStructInstance, for example.
    //
+   // Note also that a previously executed user-defined translator may 
+   // already have filled in some or all data within `dst`.
+   //
    /*void*/ translateInstance(/*const CInstance*/ src, /*CInstance*/ dst) {
    }
 };
@@ -86,9 +89,11 @@ class TranslationOperation {
       throw new Error(`Failed to translate destination union ${dst.build_path_string()}: tag value ${dst.external_tag.build_path_string()} had value ${+tag} which does not correspond to any union member.`);
    }
    
-   // Returns `false` if any members were not initialized. Used for default 
-   // translation operations, e.g. if a destination array is longer than 
-   // a source array.
+   // Default-initialize all data in `dst` that we are capable of defaulting. 
+   // Returns false if any data fails to initialize.
+   //
+   // Used for default translation operations, e.g. if a destination array is 
+   // longer than the source array.
    /*bool*/ #default_init_dst(/*CInstance*/ dst) {
       if (dst instanceof CValueInstance) {
          if (dst.decl.type == "omitted") {
@@ -114,9 +119,11 @@ class TranslationOperation {
       }
       if (dst instanceof CStructInstance) {
          let all_present = true;
-         for(let member of dst.members)
-            if (!this.#default_init_dst(member))
+         for(let name in dst.members) {
+            let memb = dst.members[name];
+            if (!this.#default_init_dst(memb))
                all_present = false;
+         }
          return all_present;
       }
       console.assert(false, "unreachable");
@@ -147,14 +154,19 @@ class TranslationOperation {
          return true;
       }
       if (inst instanceof CStructInstance) {
-         for(let member of inst.members)
-            if (!this.#instance_is_filled(member, allow_PASS))
+         for(let name in inst.members) {
+            let memb = inst.members[name];
+            if (!this.#instance_is_filled(memb, allow_PASS))
                return false;
+         }
          return true;
       }
       if (inst instanceof CUnionInstance) {
          if (inst.value === PASS) {
             return allow_PASS;
+         }
+         if (!inst.value) {
+            return false;
          }
          return this.#instance_is_filled(inst.value, allow_PASS);
       }
@@ -203,7 +215,7 @@ class TranslationOperation {
                throw new Error(`Failed to translate destination value ${dst.build_path_string()}.${member} given source value ${src.build_path_string()}. The user-defined translator overwrote the destination CInstance with something else, instead of modifying the data in the CInstance.`);
             }
             if (!this.#instance_is_filled(inst, true)) {
-               this.#report_failure_tO_translate(src, dst, member);
+               this.#report_failure_to_translate(src, dst, member);
             }
          }
          return true;
@@ -272,7 +284,28 @@ class TranslationOperation {
       unreachable();
    }
    
-   translate(/*CInstance*/ src, /*CInstance*/ dst) {
+   #get_user_defined_translators_for(/*const CInstance*/ src, /*CInstance*/ dst) {
+      if (src instanceof SaveSlot) {
+         return [];
+      }
+      
+      let src_typename;
+      if (src instanceof CDeclInstance) {
+         src_typename = src.decl.c_typenames.serialized;
+      } else if (src instanceof CTypeInstance) {
+         src_typename = src.type.tag || src.type.symbol;
+      }
+      
+      let list = [];
+      if (src_typename) {
+         let tran = this.translators_by_src_typename[src_typename];
+         if (tran)
+            list.push(tran);
+      }
+      return list;
+   }
+   
+   translate(/*const CInstance*/ src, /*CInstance*/ dst) {
       if (dst instanceof CDeclInstance) {
          if (dst.decl.type == "omitted")
             return;
@@ -288,39 +321,26 @@ class TranslationOperation {
          this.#emplace_appropriate_externally_tagged_union_member(dst);
       }
       
-      let src_typename;
-      if (src instanceof CDeclInstance) {
-         src_typename = src.decl.c_typenames.serialized;
-      } else if (src instanceof CTypeInstance) {
-         src_typename = src.type.tag || src.type.symbol;
-      }
-      if (src_typename) {
-         let translator = this.translators_by_src_typename[src_typename];
-         if (translator) {
-            let union_member_decl;
-            if (dst instanceof CUnionInstance) {
-               union_member_decl = dst.value?.decl;
-            }
-            
-            translator.translateInstance(src, dst);
-            //
-            // The user-defined translator has run.
-            //
-            // Verify that the user-defined translator actually filled in 
-            // all fields in the destination (either with full values or 
-            // by intentionally PASSing on them), and error if it didn't. 
-            // Also error if it violated any other invariants (e.g. if it 
-            // emplaced a union member contrary to the value of the union 
-            // tag CInstance).
-            //
-            this.#verify_successful_user_defined_translation(src, dst, union_member_decl);
-            //
-            // Clear out any PASS values, both so they don't confuse us 
-            // when we translate nested values, and so they aren't left 
-            // in should we throw an error.
-            //
-            this.#clear_pass_state(dst);
-         }
+      let translators = this.#get_user_defined_translators_for(src, dst);
+      for(let translator of translators) {
+         translator.translateInstance(src, dst);
+         //
+         // The user-defined translator has run.
+         //
+         // Verify that the user-defined translator actually filled in 
+         // all fields in the destination (either with full values or 
+         // by intentionally PASSing on them), and error if it didn't. 
+         // Also error if it violated any other invariants (e.g. if it 
+         // emplaced a union member contrary to the value of the union 
+         // tag CInstance).
+         //
+         this.#verify_successful_user_defined_translation(src, dst, union_member_decl);
+         //
+         // Clear out any PASS values, both so they don't confuse us 
+         // when we translate nested values, and so they aren't left 
+         // in should we throw an error.
+         //
+         this.#clear_pass_state(dst);
       }
       //
       // User-defined translations have run. Handle any default translations, 

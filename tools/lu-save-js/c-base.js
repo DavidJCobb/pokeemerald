@@ -16,6 +16,13 @@ class CContainerTypeDefinition extends CTypeDefinition {
       super();
       this.members = []; // Array<CValue>
    }
+   
+   /*Optional<CValue>*/ member_by_name(name) /*const*/ {
+      for(let memb of this.members)
+         if (memb.name == name)
+            return memb;
+      return null;
+   }
 };
 
 class CInstance {

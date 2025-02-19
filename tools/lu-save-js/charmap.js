@@ -41,6 +41,13 @@ class Charmap {
          charset.define_glyph_run(0xB5, "♂♀");
          charset.define_glyph_run(0xB9, "×/");
          charset.define_glyph_run(0xEF, "▶:ÄÖÜäöü"); // [EF, F6]
+         
+         //
+         // TODO: Define extended charcodes (0x0100 onward) here, and modify 
+         //       PokeStringPrinter to use them. Several of these codes are 
+         //       only available in the Latin fonts, but others are common to 
+         //       both encodings.
+         //
       }
       {
          let charset = this.latin;

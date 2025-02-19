@@ -55,6 +55,14 @@ class Bitstream {
          result = (result << info.consumed) | info.value;
          remaining -= info.consumed;
       }
+      if (bitcount == 32 && result < 0) {
+         //
+         // EDGE-CASE: JavaScript bitwise operations coerce values to 
+         // signed 32-bit integers, whereas we here want an unsigned 
+         // 32-bit integer.
+         //
+         result += 0xFFFFFFFF + 1;
+      }
       return result;
    }
    read_signed(bitcount) { // UNTESTED AND NOT NEEDED FOR CODEGEN

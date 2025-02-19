@@ -8,6 +8,7 @@ class CValue extends CDefinition {
          original:   null,
          serialized: null,
       };
+      this.type_is_signed = null; // pertains to the C type; only relevant for integers
       this.default_value = null;
       this.array_ranks   = [];
       
@@ -94,18 +95,32 @@ class CValue extends CDefinition {
    }
    
    compute_integer_bounds() {
-      console.assert(this..type == "integer");
+      console.assert(this.type == "integer");
       const options = this.options;
       let   out = {
          bitcount: options.bitcount,
          min:      options.min,
          max:      options.max,
       };
-      let bitcount_max = (1 << options.bitcount) - 1;
-      if (options.is_signed && options.min === null && options.max === null) {
-         bitcount_max = (1 << (options.bitcount - 1)) - 1; // assume a sign bit
-         out.min = -(bitcount_max + 1);
-         out.max = bitcount_max;
+      
+      function _bitmax(bitcount) {
+         if (bitcount == 31)
+            return 0x80000000;
+         if (bitcount == 32)
+            return 0xFFFFFFFF;
+         //
+         // JS bitwise operators coerce operands to int32_t, so the below 
+         // expression is improperly signed at a bitcount of 31, and will 
+         // produce a result that is not representable at a bitcount of 32.
+         //
+         return (1 << bitcount) - 1;
+      }
+      
+      let bitcount_max = _bitmax(options.bitcount);
+      if (this.type_is_signed && options.min === null && options.max === null) {
+         bitcount_max = _bitmax(options.bitcount - 1); // assume a sign bit
+         out.min = -bitcount_max;
+         out.max = bitcount_max - 1;
       } else if (options.min === null) {
          if (options.max === null) {
             out.min = 0;
@@ -163,6 +178,15 @@ class CValueInstanceArray extends CDeclInstance {
       this.values[i] = v;
    }
    
+   copy_contents_of(/*const CValueInstanceArray*/ other) {
+      console.assert(other instanceof CValueInstance);
+      console.assert(this.decl.type == other.decl.type);
+      console.assert(this.values.length == other.values.length);
+      for(let i = 0; i < this.values.length; ++i) {
+         this.values[i].copy_contents_of(other.values[i]);
+      }
+   }
+   
    // Returns a list of any instance-objects that couldn't be filled in.
    fill_in_defaults() {
       if (!this.values)
@@ -203,5 +227,34 @@ class CValueInstance extends CDeclInstance {
    set base(v) {
       console.assert(!v || v instanceof CValue);
       this.decl = v;
+   }
+   
+   copy_contents_of(/*const CValueInstance*/ other) {
+      console.assert(other instanceof CValueInstance);
+      console.assert(this.decl.type == other.decl.type);
+      if (other.value === null) {
+         this.value = null;
+         return;
+      }
+      if (other.value instanceof DataView) {
+         const size   = other.value.byteLength;
+         let   buffer = new ArrayBuffer(size);
+         this.value = new DataView(buffer);
+         
+         let i;
+         for(i = 0; i < size; i += 4)
+            this.value.setUint32(other.value.getUint32(i, true), true);
+         for(; i < size; ++i)
+            this.value.setUint8(other.value.getUint8(i));
+         return;
+      }
+      if (other.value instanceof PokeString) {
+         if (!(this.value instanceof PokeString)) {
+            this.value = new PokeString();
+         }
+         this.value.bytes = ([]).concat(other.value.bytes);
+         return;
+      }
+      this.value = other.value;
    }
 };

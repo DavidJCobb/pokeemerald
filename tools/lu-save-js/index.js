@@ -64,6 +64,8 @@
    });
    
    document.querySelector(".form button[data-action='translate']").addEventListener("click", async function() {
+      const USE_NEW_TRANSLATION = true;
+      
       let data_s = null;
       {
          let node_s = document.getElementById("file-sav");
@@ -111,8 +113,14 @@
             }
          }
          if (present) {
-            let info = translate_value_instance_tree(src_format, loaded.slots[i], dst_format, slot);
-            console.log(`Translation result for slot ${i + 1}`, info);
+            if (USE_NEW_TRANSLATION) {
+               let operation = new TranslationOperation();
+               operation.translate(loaded.slots[i], slot);
+               console.log(`Slot ${i + 1} translated.`, slot);
+            } else {
+               let info = translate_value_instance_tree(src_format, loaded.slots[i], dst_format, slot);
+               console.log(`Translation result for slot ${i + 1}`, info);
+            }
          } else {
             console.log(`Slot ${i + 1} is absent.`);
          }

@@ -44,6 +44,16 @@ class CStructInstance extends CTypeInstance {
       }
    }
    
+   copy_contents_of(/*const CStructInstance*/ other) {
+      console.assert(other instanceof CStructInstance);
+      for(let name in this.members) {
+         let src = other.members[name];
+         let dst = this.members[name];
+         console.assert(!!src);
+         dst.copy_contents_of(src);
+      }
+   }
+   
    // Pass either a name or a decl.
    rebuild_member(/*Optional<String>*/ name, /*Optional<CValue>*/ decl) {
       console.assert(!!this.type);
@@ -64,7 +74,6 @@ class CStructInstance extends CTypeInstance {
       if (decl.type == "union-external-tag") {
          dst.external_tag = this.members[decl.options.tag];
       }
-      break;
    }
    
    // Returns a list of any instance-objects that couldn't be filled in.

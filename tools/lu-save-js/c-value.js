@@ -110,14 +110,7 @@ class CValueInstanceArray extends CDeclInstance {
          
          this.values = [];
          for(let i = 0; i < extent; ++i) {
-            let v;
-            if (is_innermost) {
-               v = definition.make_instance_representation(format, true);
-            } else {
-               v = new CValueInstanceArray(format, definition, rank + 1);
-            }
-            v.is_member_of = this;
-            this.values.push(v);
+            this.rebuild_element(i);
          }
       }
    }
@@ -126,6 +119,18 @@ class CValueInstanceArray extends CDeclInstance {
    set base(v) {
       console.assert(!v || v instanceof CValue);
       this.decl = v;
+   }
+   
+   rebuild_element(i) {
+      let is_innermost = this.rank + 1 == this.decl.array_ranks.length;
+      let v;
+      if (is_innermost) {
+         v = this.decl.make_instance_representation(this.save_format, true);
+      } else {
+         v = new CValueInstanceArray(this.save_format, this.decl, this.rank + 1);
+      }
+      v.is_member_of = this;
+      this.values[i] = v;
    }
    
    // Returns a list of any instance-objects that couldn't be filled in.

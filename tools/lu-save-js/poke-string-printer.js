@@ -382,5 +382,4 @@ class LiteralPokeStringPrinter extends AbstractPokeStringPrinter {
    handle_string_substitution(index) {
       this.result += `\\xFD\\x${this.#format_byte(index)}`;
    }
-   
 };

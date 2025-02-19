@@ -39,14 +39,32 @@ class CStructInstance extends CTypeInstance {
       if (type) {
          console.assert(type instanceof CStruct);
          for(let /*CValue*/ src of type.members) {
-            let dst = src.make_instance_representation(this.save_format);
-            dst.is_member_of = this;
-            this.members[src.name] = dst;
-            if (src.type == "union-external-tag") {
-               dst.external_tag = this.members[src.options.tag];
-            }
+            this.rebuild_member(null, src);
          }
       }
+   }
+   
+   // Pass either a name or a decl.
+   rebuild_member(/*Optional<String>*/ name, /*Optional<CValue>*/ decl) {
+      console.assert(!!this.type);
+      if (!decl) {
+         for(let /*CValue*/ src of this.type.members) {
+            if (src.name == name) {
+               decl = src;
+               break;
+            }
+         }
+         console.assert(!!decl);
+      } else {
+         console.assert(!name || decl.name == name);
+      }
+      let dst = decl.make_instance_representation(this.save_format);
+      dst.is_member_of = this;
+      this.members[decl.name] = dst;
+      if (decl.type == "union-external-tag") {
+         dst.external_tag = this.members[decl.options.tag];
+      }
+      break;
    }
    
    // Returns a list of any instance-objects that couldn't be filled in.

@@ -1,3 +1,8 @@
+
+//
+// TODO: Replace this with Charmap
+//
+
 class Charset {
    constructor() {
       this.bytes_to_chars = {};

@@ -68,10 +68,27 @@ class AbstractDataFormatTranslator {
 
 class TranslationOperation {
    constructor() {
-      this.translators_by_src_typename = {};
+      this.translators_by_src_typename = {}; // holds AbstractDataFormatTranslator
    }
    
-   // Returns `false` if any members were not initialized.
+   #emplace_appropriate_externally_tagged_union_member(/*CUnionInstance*/ dst) {
+      console.assert(dst instanceof CUnionInstance);
+      if (!dst.external_tag)
+         return;
+      let tag = dst.external_tag.value;
+      if (!tag && tag !== 0)
+         return false;
+      let decl = dst.type.members_by_tag_value[+tag];
+      if (decl) {
+         let v = dst.get_or_emplace(decl.name);
+         return this.#default_init_dst(v);
+      }
+      throw new Error(`Failed to translate destination union ${dst.build_path_string()}: tag value ${dst.external_tag.build_path_string()} had value ${+tag} which does not correspond to any union member.`);
+   }
+   
+   // Returns `false` if any members were not initialized. Used for default 
+   // translation operations, e.g. if a destination array is longer than 
+   // a source array.
    /*bool*/ #default_init_dst(/*CInstance*/ dst) {
       if (dst instanceof CValueInstance) {
          if (dst.decl.type == "omitted") {
@@ -93,17 +110,7 @@ class TranslationOperation {
          return all_present;
       }
       if (dst instanceof CUnionInstance) {
-         if (!dst.external_tag)
-            return false;
-         let tag = dst.external_tag.value;
-         if (!tag && tag !== 0)
-            return false;
-         let decl = dst.type.members_by_tag_value[+tag];
-         if (decl) {
-            let v = dst.get_or_emplace(decl.name);
-            return this.#default_init_dst(v);
-         }
-         throw new Error(`Failed to translate destination union ${dst.build_path_string()}: tag value ${dst.external_tag.build_path_string()} had value ${+tag} which does not correspond to any union member.`);
+         this.#emplace_appropriate_externally_tagged_union_member(dst);
       }
       if (dst instanceof CStructInstance) {
          let all_present = true;
@@ -277,7 +284,9 @@ class TranslationOperation {
             return;
          }
       }
-      this.#default_init_dst(dst);
+      if (dst instanceof CUnionInstance) {
+         this.#emplace_appropriate_externally_tagged_union_member(dst);
+      }
       
       let src_typename;
       if (src instanceof CDeclInstance) {
@@ -448,6 +457,10 @@ class TranslationOperation {
       console.assert(src instanceof CValueInstance);
       console.assert(dst instanceof CValueInstance);
       if (src.decl.type == "omitted" || src.value === null || dst.decl.type == "omitted") {
+         let dv = dst.decl.default_value;
+         if (dv !== null && dv !== undefined) {
+            dst.value = dv;
+         }
          return;
       }
       const src_options = src.decl.options;
@@ -555,6 +568,13 @@ class TranslationOperation {
                break;
             dst.value = src.value;
             break;
+      }
+      
+      if (dst.value === null) {
+         let dv = dst.decl.default_value;
+         if (dv !== null && dv !== undefined) {
+            dst.value = dv;
+         }
       }
    }
 };

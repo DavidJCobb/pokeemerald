@@ -103,16 +103,6 @@ class SaveFormat {
       return out;
    }
    
-   #compute_checksum(sector_view) {
-      let checksum = 0;
-      for(let k = 0; k < FLASH_SECTOR_SIZE - 128; k += 4) {
-         checksum += sector_view.getUint32(k, true);
-         checksum |= 0; // force to 32-bit int
-      }
-      checksum = ((checksum >> 16) + checksum) & 0xFFFF;
-      return checksum;
-   }
-   
    /*SaveFile*/ load(/*DataView*/ sav) {
       if (sav.byteLength < FLASH_MEMORY_SIZE) {
          throw new Error("The SAV file is truncated.");
@@ -182,7 +172,7 @@ class SaveFormat {
                      applier.save(instructions);
                      
                      header = structuredClone(header);
-                     header.checksum = checksum16(sector_view, SAVE_SECTOR_DATA_SIZE);
+                     header.checksum = checksumA32R16(sector_view, SAVE_SECTOR_DATA_SIZE);
                   }
                }
             }

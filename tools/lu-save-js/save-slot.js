@@ -33,7 +33,7 @@ class SaveSlot extends CStructInstance {
       header.signature = read(32);
       header.counter   = read(32);
       
-      let computed = checksum16(sector_view, SAVE_SECTOR_DATA_SIZE);
+      let computed = checksumA32R16(sector_view, SAVE_SECTOR_DATA_SIZE);
       header.checksum_is_valid = computed == header.checksum;
       
       return header;

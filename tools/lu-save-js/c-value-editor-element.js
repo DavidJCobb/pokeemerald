@@ -9,17 +9,6 @@ class CValueEditorElement extends HTMLElement {
    
    #target_options = {};
    
-   static #enum_definitions = {};
-   static registerEnumDefinition(typename, values) {
-      if (Array.isArray(values)) {
-         let map = {};
-         for(let i = 0; i < values.length; ++i)
-            map[values[i]] = i;
-         values = map;
-      }
-      this.#enum_definitions[typename] = values;
-   }
-   
    constructor() {
       super();
       this.#shadow = this.attachShadow({ mode: "open" });
@@ -131,7 +120,8 @@ class CValueEditorElement extends HTMLElement {
             this.#target_options.enumeration = null;
             {
                let typename = decl.c_typenames.serialized;
-               let enum_def = CValueEditorElement.#enum_definitions[typename];
+               let format   = this.#target?.save_format;
+               let enum_def = format.enums[typename];
                if (enum_def) {
                   this.#target_options.enumeration = enum_def;
                }
@@ -170,8 +160,7 @@ class CValueEditorElement extends HTMLElement {
                let enum_def   = this.#target_options.enumeration;
                let datalist   = document.createElement("datalist");
                let value_name = null;
-               for(let name in enum_def) {
-                  let val = enum_def[name];
+               for(const [name, val] of enum_def) {
                   if (val == this.#target.value) {
                      value_name = name;
                   }

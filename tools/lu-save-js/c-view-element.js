@@ -496,11 +496,22 @@ class CViewElement extends HTMLElement {
       
       const SHOW_STRINGS_AS_SINGLE_CHARS = false;
       
-      let base = item.base;
+      let base = item.decl;
       console.assert(!!base);
       switch (base.type) {
          case "boolean":
+            return ""+item.value;
          case "integer":
+            {
+               let typename = base.c_typenames.serialized;
+               let format   = item.save_format;
+               let enum_def = format.enums[typename];
+               if (enum_def) {
+                  for(const [name, value] of enum_def)
+                     if (value == item.value)
+                        return name;
+               }
+            }
             return ""+item.value;
          case "pointer":
             return "0x" + item.value.toString(16).padStart(8, '0').toUpperCase();

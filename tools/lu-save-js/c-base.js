@@ -1,4 +1,5 @@
 
+// Akin to a GCC TYPE node or a decl_descriptor from our codegen plug-in.
 class CDefinition {
 };
 

@@ -78,12 +78,9 @@ class TranslationOperation {
       console.assert(dst instanceof CUnionInstance);
       if (!dst.external_tag)
          return;
-      let tag = dst.external_tag.value;
-      if (!tag && tag !== 0)
-         return false;
-      let decl = dst.type.members_by_tag_value[+tag];
+      let decl = dst.type.member_by_tag_value(dst.external_tag);
       if (decl) {
-         let v = dst.get_or_emplace(decl.name);
+         let v = dst.get_or_emplace(decl);
          return this.#default_init_dst(v);
       }
       throw new Error(`Failed to translate destination union ${dst.build_path_string()}: tag value ${dst.external_tag.build_path_string()} had value ${+tag} which does not correspond to any union member.`);
@@ -239,15 +236,17 @@ class TranslationOperation {
             // with respect to the union tag.
             //
             if (dst.external_tag) {
-               console.assert(!!dst_active_union_member_decl, "we should've successfully defaulted the union based on its external tag, so we should know what CValue we defaulted it to");
-               if (dst.value.decl != dst_active_union_member_decl) {
-                  throw new Error(`Failed to translate destination union ${dst.build_path_string()}: tag value ${dst.external_tag.build_path_string()} had value ${+tag} corresponding to union member ${dst_active_union_member_decl.name}, but a user-defined translation improperly changed the union to member ${dst.value.decl.name}, contradicting the tag.`);
+               let decl = dst.type.member_by_tag_value(dst.external_tag);
+               if (!decl) {
+                  throw new Error(`Failed to translate destination union ${dst.build_path_string()} given source value ${src.build_path_string()}. The destination union's external tag ${dst.external_tag.build_path_string()} has a value which doesn't match any of the union type's members; either an error internal to the translation system has occurred, or a user-defined translation improperly altered the value of the external tag.`);
+               }
+               if (dst.value.decl != decl) {
+                  throw new Error(`Failed to translate destination union ${dst.build_path_string()} given source value ${src.build_path_string()}. The destination union's active member is ${dst.value.decl.name}, but based on the current value ${dst.external_tag.value} of its external tag ${dst.external_tag.build_path_string()}, the union's active member should be ${decl.name}. A user-defined translation improperly altered either the value of the external tag, or the union's active member, such that the two no longer match.`);
                }
             }
          }
          return true;
       }
-      
       unreachable();
    }
    
@@ -305,7 +304,7 @@ class TranslationOperation {
       return list;
    }
    
-   translate(/*const CInstance*/ src, /*CInstance*/ dst) {
+   #translate_impl(/*const CInstance*/ src, /*CInstance*/ dst) {
       if (dst instanceof CDeclInstance) {
          if (dst.decl.type == "omitted")
             return;
@@ -393,7 +392,7 @@ class TranslationOperation {
                }
                continue;
             }
-            this.translate(src_e, dst_e);
+            this.#translate_impl(src_e, dst_e);
          }
          return;
       } else if (dst instanceof CUnionInstance) {
@@ -428,7 +427,7 @@ class TranslationOperation {
                   if (!src_inst) {
                      throw new Error(`Failed to translate destination value ${dst.build_path_string()}.<any>.${name} given source union ${src.build_path_string()}. The source union's current value does not have a member named ${name}.`);
                   }
-                  this.translate(src_inst, dst_inst);
+                  this.#translate_impl(src_inst, dst_inst);
                   if (name == tag_name)
                      break;
                }
@@ -444,7 +443,7 @@ class TranslationOperation {
             // Fall through.
             //
          }
-         this.translate(src.value, dst.value);
+         this.#translate_impl(src.value, dst.value);
          return;
       } else if (dst instanceof CStructInstance) {
          for(let member_name in dst.members) {
@@ -467,7 +466,7 @@ class TranslationOperation {
                }
                continue;
             }
-            this.translate(src_e, dst_e);
+            this.#translate_impl(src_e, dst_e);
          }
          return;
       }
@@ -595,6 +594,104 @@ class TranslationOperation {
          if (dv !== null && dv !== undefined) {
             dst.value = dv;
          }
+      }
+   }
+   
+   translate(/*const CInstance*/ src, /*CInstance*/ dst) {
+      this.#translate_impl(src, dst);
+      //
+      // Verify that no type-mismatched values were improperly written in by a 
+      // user-defined translator. Doing this check after translation means we 
+      // can't report the problem ASAP after it happens, but it also means we 
+      // don't have to recursively check everything that a translator could 
+      // theoretically touch after each individual CInstance is handed to a 
+      // translator.
+      //
+      let errors = [];
+      function _typecheck(/*const CInstance*/ inst) {
+         if (inst instanceof CStructInstance) {
+            for(let name in inst.members)
+               _typecheck(inst.members[name]);
+            return;
+         }
+         if (inst instanceof CValueInstanceArray) {
+            for(let memb of inst.values)
+               _typecheck(memb);
+            return;
+         }
+         if (inst instanceof CUnionInstance) {
+            if (inst.value)
+               _typecheck(inst.value);
+            return;
+         }
+         console.assert(inst instanceof CValueInstance);
+         console.assert(!!inst.decl);
+         let   valid = true;
+         const value = inst.value;
+         let   note  = null;
+         switch (inst.decl.type) {
+            case "omitted":
+               break;
+            case "boolean":
+               valid = (value === true || value === false || +value === value);
+               break;
+            case "buffer":
+               valid = value instanceof DataView;
+               break;
+            case "integer":
+               valid = (value || value === 0) && !isNaN(+value);
+               if (valid) {
+                  let v = +value;
+                  let bounds = inst.decl.compute_integer_bounds();
+                  if (v < bounds.min || v > bounds.max) {
+                     valid = false;
+                     note  = `the value lies outside the valid range [${bounds.min}, ${bounds.max}]`;
+                  }
+               }
+               break;
+            case "pointer":
+               if (!value && value !== 0) {
+                  valid = false;
+               } else  {
+                  let p = +value;
+                  if (isNaN(p) || p > 0xFFFFFFFF) {
+                     valid = false;
+                  } else if (p < 0) {
+                     //
+                     // Correct potential problems that may arise from JS bitwise 
+                     // operators, which coerce the result to an int32_t.
+                     //
+                     p += 0xFFFFFFFF + 1;
+                     if (p < 0) {
+                        //
+                        // Value was too negative and isn't representable inside 
+                        // of a uint32_t.
+                        //
+                        valid = false;
+                     }
+                  }
+               }
+               break;
+            case "string":
+               valid = value instanceof PokeString;
+               if (!valid && value+"" === value) {
+                  note = "values intended to represent strings must be instances of PokeString, not bare string literals or native String objects";
+               }
+               break;
+         }
+         if (!valid) {
+            let text = `Value ${inst.build_path_string()} was improperly set to ${value}.`;
+            if (note) {
+               text += ` (Note: ${note}.)`;
+            } else {
+               text += ` (Value is of the wrong type.)`;
+            }
+            errors.push(new Error(text));
+         }
+      }
+      _typecheck(dst);
+      if (errors.length) {
+         throw new AggregateError(errors, "Failed to translate savedata to a different format; see associated errors.");
       }
    }
 };

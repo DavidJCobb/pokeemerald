@@ -36,6 +36,16 @@ class CUnion extends CContainerTypeDefinition {
          }
       }
    }
+   
+   /*Optional<CValue>*/ member_by_tag_value(/*Variant<int, CValueInstance>*/ tag) {
+      if (tag instanceof CValueInstance) {
+         tag = tag.value;
+      }
+      tag = +tag;
+      if (isNaN(tag))
+         return null;
+      return this.members_by_tag_value[tag] || null;
+   }
 };
 
 class CUnionInstance extends CTypeInstance {

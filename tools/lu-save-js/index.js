@@ -16,6 +16,9 @@
       let format = new SaveFormat();
       format.from_xml(data_x.documentElement);
       console.log("Save format: ", format);
+      for(let name in EDITOR_ENUMS) {
+         format.enums[name] = EDITOR_ENUMS[name];
+      }
       return format;
    };
    
@@ -93,6 +96,9 @@
          
          dst_format = new SaveFormat();
          dst_format.from_xml(data_x.documentElement);
+         for(let name in EDITOR_ENUMS) {
+            dst_format.enums[name] = EDITOR_ENUMS[name];
+         }
       }
       
       let loaded   = src_format.load(data_s);

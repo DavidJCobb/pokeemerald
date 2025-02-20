@@ -1,6 +1,15 @@
-CValueEditorElement.registerEnumDefinition(
-   "PokemonSpeciesID",
-   [
+const EDITOR_ENUMS = (function() {
+   let out = new Map();
+   
+   function _from_array(name, array) {
+      let values = new Map();
+      for(let i = 0; i < array.length; ++i) {
+         values.set(array[i], i);
+      }
+      out[name] = values;
+   }
+   
+   _from_array("PokemonSpeciesID", [
       "NONE",
       "BULBASAUR",
       "IVYSAUR",
@@ -416,5 +425,7 @@ CValueEditorElement.registerEnumDefinition(
       "DEOXYS",
       "CHIMECHO",
       "EGG",
-   ]
-);
+   ]);
+   
+   return out;
+})();

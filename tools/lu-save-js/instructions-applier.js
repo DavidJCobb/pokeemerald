@@ -12,13 +12,32 @@ class InstructionsApplier {
    }
    
    /*Variant<CStructInstance, CUnionInstance, CValueInstance, CValueInstanceArray>*/
-   resolve_value_path(/*CValuePath*/ path) {
+   resolve_value_path(/*CValuePath*/ path, for_read) {
       let value = this.root_data;
       let rank  = 0;
       for(let segm of path.segments) {
          if (segm.type === null || segm.type == "member-access") {
             if (value instanceof CUnionInstance) {
-               value = value.get_or_emplace(segm.what);
+               if (for_read) {
+                  value = value.get_or_emplace(segm.what);
+               } else {
+                  if (!value.value) {
+                     throw new Error("To-be-serialized union value is missing!");
+                  }
+                  if (value.value.decl != segm.what) {
+                     //
+                     // The to-be-serialized union value doesn't match what's currently 
+                     // in the union. If the union is internally tagged, then that's 
+                     // probably because we're serializing a shared member-of-members, 
+                     // in which case we should just grab whatever the active member 
+                     // is and allow ourselves to traverse further into that.
+                     //
+                     if (value.external_tag) {
+                        throw new Error("To-be-serialized union value isn't what's currently in the union!");
+                     }
+                  }
+                  value = value.value;
+               }
             } else {
                console.assert(value instanceof CStructInstance);
                value = value.members[segm.what];
@@ -35,7 +54,7 @@ class InstructionsApplier {
             
             value = value.values[index];
          } else {
-            console.assert(false, "unreachable");
+            unreachable();
          }
       }
       return value;
@@ -53,7 +72,7 @@ class InstructionsApplier {
             // TODO
             
          } else if (node instanceof UnionSwitchInstructionNode) {
-            let tag_value = this.resolve_value_path(node.tag);
+            let tag_value = this.resolve_value_path(node.tag, true);
             console.assert(tag_value instanceof CValueInstance);
             console.assert(tag_value.base.type == "integer" || tag_value.base.type == "boolean");
             console.assert(!isNaN(+tag_value.value));
@@ -69,7 +88,7 @@ class InstructionsApplier {
          } else if (node instanceof PaddingInstructionNode) {
             this.bitstream.skip_bits(node.bitcount);
          } else if (node instanceof SingleInstructionNode) {
-            let value = this.resolve_value_path(node.value);
+            let value = this.resolve_value_path(node.value, true);
             if (node.type == "struct") {
                console.assert(value instanceof CStructInstance);
                let /*CStruct*/ type = value.type;
@@ -149,7 +168,7 @@ class InstructionsApplier {
             // TODO
             
          } else if (node instanceof UnionSwitchInstructionNode) {
-            let tag_value = this.resolve_value_path(node.tag);
+            let tag_value = this.resolve_value_path(node.tag, false);
             console.assert(tag_value instanceof CValueInstance);
             console.assert(tag_value.base.type == "integer" || tag_value.base.type == "boolean");
             console.assert(!isNaN(+tag_value.value));
@@ -165,7 +184,7 @@ class InstructionsApplier {
          } else if (node instanceof PaddingInstructionNode) {
             this.bitstream.skip_bits(node.bitcount);
          } else if (node instanceof SingleInstructionNode) {
-            let value = this.resolve_value_path(node.value);
+            let value = this.resolve_value_path(node.value, false);
             if (node.type == "struct") {
                console.assert(value instanceof CStructInstance);
                let /*CStruct*/ type = value.type;

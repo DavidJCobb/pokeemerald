@@ -17,6 +17,7 @@ class SaveSector {
 
 class SaveFormat {
    constructor() {
+      this.enums   = new Map(); // Map<String, Map<String, int>>
       this.sectors = []; // Array<SaveSector>
       this.structs = []; // Array<CStruct>
       this.unions  = []; // Array<CUnion>

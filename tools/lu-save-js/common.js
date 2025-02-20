@@ -11,6 +11,10 @@ const SAVE_SECTOR_SIGNATURE = 0x08012025;
 const SAVE_SLOT_COUNT       = 2;
 const SAVE_SECTORS_PER_SLOT = 14;
 
+/*[[noreturn]]*/ function unreachable() {
+   throw new Error("This code location should be unreachable.");
+}
+
 //
 // CHECKSUM CODE:
 //
@@ -110,8 +114,4 @@ function checksum(
    let checksum = checksum32(blob, length);
    checksum = ((checksum >> 16) + checksum) & 0xFFFF;
    return checksum;
-}
-
-/*[[noreturn]]*/ function unreachable() {
-   throw new Error("This code location should be unreachable.");
 }

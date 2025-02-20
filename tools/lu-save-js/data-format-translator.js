@@ -484,7 +484,7 @@ class TranslationOperation {
                   tag_value = +tag_value.value;
                }
                dst.emplace(dst.type.members_by_tag_value[tag_value]);
-               dst.members[tag_name].value = tag_value;
+               dst.value.members[tag_name].value = tag_value;
                //
                // Fall through, to translate the remaining members of the newly-
                // emplaced destination union member.

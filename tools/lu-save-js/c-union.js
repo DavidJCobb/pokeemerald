@@ -119,7 +119,7 @@ class CUnionInstance extends CTypeInstance {
             return this.value;
       }
       let common_members = null;
-      if (this.internal_tag_name) {
+      if (this.type.internal_tag_name) {
          //
          // Keep the internal tag (and all other shared members-of-members).
          //

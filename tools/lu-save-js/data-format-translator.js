@@ -462,21 +462,29 @@ class TranslationOperation {
                //
                console.assert(dst.type.members.length > 0);
                
-               let tag_name = dst.type.internal_tag_name;
-               dst.emplace(dst.type.members[0].name);
-               for(let name in dst.value.members) {
-                  let src_inst = src.value.members[name];
-                  let dst_inst = dst.value.members[name];
-                  if (!src_inst) {
-                     throw new Error(`Failed to translate destination value ${dst.build_path_string()}.<any>.${name} given source union ${src.build_path_string()}. The source union's current value does not have a member named ${name}.`);
+               let tag_name  = dst.type.internal_tag_name;
+               let tag_value = src.value.members[tag_name];
+               if (!tag_value || tag_value.value === null) {
+                  //
+                  // The source union's current value doesn't have a member with 
+                  // the same name as the union tag, or it has such a member but 
+                  // somehow the member isn't filled. Check if the destination-
+                  // side union tag has a default value, and if so, use that.
+                  //
+                  let memb = dst.type.members[0].member_by_name(tag_name);
+                  console.assert(!!memb);
+                  if (memb.default_value === null || memb.default_value === undefined) {
+                     //
+                     // No default. Fail.
+                     //
+                     this.#report_failure_to_translate(src, dst);
                   }
-                  this.#translate_impl(src_inst, dst_inst);
-                  if (name == tag_name)
-                     break;
+                  tag_value = memb.default_value;
+               } else {
+                  tag_value = +tag_value.value;
                }
-               let tag_value = dst.value.members[tag_name].value;
-               console.assert(tag_value !== null);
-               dst.get_or_emplace(dst.type.members_by_tag_value[+tag_value]);
+               dst.emplace(dst.type.members_by_tag_value[tag_value]);
+               dst.members[tag_name].value = tag_value;
                //
                // Fall through, to translate the remaining members of the newly-
                // emplaced destination union member.

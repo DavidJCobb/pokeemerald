@@ -13,7 +13,7 @@ class AbstractDataFormatTranslator {
    }
    
    /*void*/ pass(/*CInstance*/ inst) {
-      const PASS = DataFormatTranslator.RESULTS.PASS;
+      const PASS = AbstractDataFormatTranslator.RESULTS.PASS;
       if (inst instanceof CValueInstance) {
          if (inst.value === null) // don't clobber an already-filled value
             inst.value = PASS;
@@ -34,7 +34,8 @@ class AbstractDataFormatTranslator {
          return;
       }
       if (inst instanceof CStructInstance) {
-         for(let memb of inst.members) {
+         for(let name in inst.members) {
+            let memb = inst.members[name];
             console.assert(memb instanceof CInstance);
             this.pass(memb);
          }
@@ -66,12 +67,31 @@ class AbstractDataFormatTranslator {
    // already have filled in some or all data within `dst`.
    //
    /*void*/ translateInstance(/*const CInstance*/ src, /*CInstance*/ dst) {
+      purecall();
    }
 };
 
 class TranslationOperation {
+   static TranslatorMapPair = class TranslatorMapPair {
+      constructor() {
+         this.src = new Map(); // Map<String typename, Array<AbstractDataFormatTranslator>>
+         this.dst = new Map(); // Map<String typename, Array<AbstractDataFormatTranslator>>
+      }
+      add(which, criterion, translator) {
+         const map = this[which];
+         if (!map)
+            throw new Error("You must specify whether this is a \"src\" or \"dst\" translator.");
+         let list = map.get(criterion);
+         if (!list) {
+            map.set(criterion, list = []);
+         }
+         list.push(translator);
+      }
+   };
+   
    constructor() {
-      this.translators_by_src_typename = {}; // holds AbstractDataFormatTranslator
+      this.translators_by_typename          = new TranslationOperation.TranslatorMapPair();
+      this.translators_for_top_level_values = new TranslationOperation.TranslatorMapPair();
    }
    
    #emplace_appropriate_externally_tagged_union_member(/*CUnionInstance*/ dst) {
@@ -188,7 +208,7 @@ class TranslationOperation {
       function _member_is_intact(memb) {
          if (!(memb instanceof CInstance))
             return false;
-         if (memb.member_of != dst)
+         if (memb.is_member_of != dst)
             return false;
          return true;
       }
@@ -266,8 +286,10 @@ class TranslationOperation {
          return;
       }
       if (dst instanceof CStructInstance) {
-         for(let memb of dst.meembers)
+         for(let name in dst.members) {
+            let memb = dst.members[name];
             this.#clear_pass_state(memb);
+         }
          return;
       }
       if (dst instanceof CUnionInstance) {
@@ -287,20 +309,41 @@ class TranslationOperation {
       if (src instanceof SaveSlot) {
          return [];
       }
-      
-      let src_typename;
-      if (src instanceof CDeclInstance) {
-         src_typename = src.decl.c_typenames.serialized;
-      } else if (src instanceof CTypeInstance) {
-         src_typename = src.type.tag || src.type.symbol;
-      }
-      
       let list = [];
-      if (src_typename) {
-         let tran = this.translators_by_src_typename[src_typename];
-         if (tran)
-            list.push(tran);
+      
+      function _gather(pair, func) {
+         let key = (func)(src);
+         if (key) {
+            let subset = pair.src.get(key);
+            if (subset)
+               list = list.concat(subset);
+         }
+         key = (func)(dst);
+         if (key) {
+            let subset = pair.dst.get(key);
+            if (subset)
+               list = list.concat(subset);
+         }
       }
+      
+      _gather(
+         this.translators_by_typename,
+         function(inst) {
+            if (inst instanceof CDeclInstance)
+               return inst.decl.c_typenames.serialized;
+            else if (inst instanceof CTypeInstance)
+               return inst.type.tag || inst.type.symbol;
+         }
+      );
+      _gather(
+         this.translators_for_top_level_values,
+         function(inst) {
+            if (!(inst.is_member_of instanceof SaveSlot))
+               return;
+            return inst.decl.name;
+         }
+      );
+      
       return list;
    }
    
@@ -333,7 +376,7 @@ class TranslationOperation {
          // emplaced a union member contrary to the value of the union 
          // tag CInstance).
          //
-         this.#verify_successful_user_defined_translation(src, dst, union_member_decl);
+         this.#verify_successful_user_defined_translation(src, dst);
          //
          // Clear out any PASS values, both so they don't confuse us 
          // when we translate nested values, and so they aren't left 
@@ -637,6 +680,12 @@ class TranslationOperation {
                break;
             case "buffer":
                valid = value instanceof DataView;
+               if (valid) {
+                  if (value.byteLength > inst.decl.options.bytecount) {
+                     valid = false;
+                     note  = `the value is ${value.byteLength} bytes long, and cannot fit in a ${inst.decl.options.bytecount}-byte buffer`;
+                  }
+               }
                break;
             case "integer":
                valid = (value || value === 0) && !isNaN(+value);
@@ -654,8 +703,11 @@ class TranslationOperation {
                   valid = false;
                } else  {
                   let p = +value;
-                  if (isNaN(p) || p > 0xFFFFFFFF) {
+                  if (isNaN(p)) {
                      valid = false;
+                  } else if (p > 0xFFFFFFFF) {
+                     valid = false;
+                     note  = "the value is outside the address range representable by a 32-bit pointer";
                   } else if (p < 0) {
                      //
                      // Correct potential problems that may arise from JS bitwise 
@@ -668,19 +720,36 @@ class TranslationOperation {
                         // of a uint32_t.
                         //
                         valid = false;
+                        note  = "the value is outside the address range representable by a 32-bit pointer";
                      }
                   }
                }
                break;
             case "string":
                valid = value instanceof PokeString;
-               if (!valid && value+"" === value) {
+               if (valid) {
+                  if (value.length > inst.decl.options.length) {
+                     //
+                     // TODO: If terminating nulls are what's causing us to overrun 
+                     // the space limit, then just truncate them instead of erroring.
+                     //
+                     valid = false;
+                     note  = `the string is ${value.length} bytes long, but only ${inst.decl.options.length} bytes are available with which to store it`;
+                  }
+               } else if (!valid && value+"" === value) {
                   note = "values intended to represent strings must be instances of PokeString, not bare string literals or native String objects";
                }
                break;
          }
          if (!valid) {
-            let text = `Value ${inst.build_path_string()} was improperly set to ${value}.`;
+            let stringified = ""+value;
+            if (!(value instanceof Object)) {
+               try {
+                  stringified = JSON.stringify(value);
+               } catch (e) {}
+            }
+            
+            let text = `Value ${inst.build_path_string()} was improperly set to ${stringified}.`;
             if (note) {
                text += ` (Note: ${note}.)`;
             } else {

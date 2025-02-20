@@ -245,12 +245,20 @@ class InstructionsApplier {
                      {
                         let length = node.options.length;
                         let text   = value.value;
+                        let bytes;
                         if (text === null) {
-                           text = new PokeString();
+                           bytes = [];
                            for(let i = 0; i < length; ++i)
-                              text.bytes[i] = CHARSET_CONTROL_CODES.chars_to_bytes["\0"];
+                              bytes[i] = CHARSET_CONTROL_CODES.chars_to_bytes["\0"];
+                        } else {
+                           bytes = text.bytes;
+                           if (bytes.length < length) {
+                              bytes = ([]).concat(text.bytes);
+                              for(let i = bytes.length; i < length; ++i)
+                                 bytes[i] = CHARSET_CONTROL_CODES.chars_to_bytes["\0"];
+                           }
                         }
-                        this.bitstream.write_string(length, text.bytes);
+                        this.bitstream.write_string(length, bytes);
                      }
                      break;
                }

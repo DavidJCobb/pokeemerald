@@ -10,6 +10,7 @@ class SaveSlot extends CStructInstance {
             throw new TypeError("SaveFormat instance or falsy expected");
          for(let tlv of save_format.top_level_values) {
             let value = tlv.make_instance_representation(save_format);
+            value.is_member_of = this;
             this.members[tlv.name] = value;
          }
       }

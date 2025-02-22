@@ -57,12 +57,6 @@ class AbstractDataFormatTranslator {
    // `src.value`, whereas if `src instanceof CStructInstance`, then you'd 
    // check each of `src.members`.
    //
-   // These arguments are not guaranteed to have the same constructor. All 
-   // you can be sure of is that they exist at the value path: if `src` is 
-   // `a.b[0][3].c` within its respective save file, then `dst` will be 
-   // `a.b[0][3].c` within its own save file as well; but `src` may be a 
-   // CValueInstance while `dst` is a CStructInstance, for example.
-   //
    // Note also that a previously executed user-defined translator may 
    // already have filled in some or all data within `dst`.
    //
@@ -191,6 +185,9 @@ class TranslationOperation {
    }
    
    /*[[noreturn]]*/ #report_failure_to_translate(src, dst, dst_member) /*const*/ {
+      if (!src) {
+         throw new Error(`Failed to translate destination value ${dst.build_path_string()}: no value with the same path exists in the source format.`);
+      }
       if (dst_member) {
          throw new Error(`Failed to translate destination value ${dst.build_path_string()} member ${dst_member} given source value ${src.build_path_string()}.`);
       }
@@ -398,7 +395,7 @@ class TranslationOperation {
          //
          return;
       }
-      if (src.constructor != dst.constructor) {
+      if (!src || src.constructor != dst.constructor) {
          //
          // We don't currently support interconverting across types as 
          // a default translation; for example, there's no way to turn 
@@ -443,7 +440,8 @@ class TranslationOperation {
             //
             // The source union has no value to default-translate.
             //
-            this.#report_failure_to_translate(src, dst);
+            if (!dst.value || !this.#instance_is_filled(dst.value, false))
+               this.#report_failure_to_translate(src, dst);
          }
          if (dst.external_tag) {
             console.assert(!!dst.value, "the destination union should have a value: we default-create it before running a translator, and the translator should either properly update it or set it to PASS, which we then default-create again in #clear_pass_state");
@@ -493,6 +491,9 @@ class TranslationOperation {
             //
             // Fall through.
             //
+         }
+         if (!src.value) {
+            return;
          }
          this.#translate_impl(src.value, dst.value);
          return;
@@ -666,6 +667,20 @@ class TranslationOperation {
             return;
          }
          if (inst instanceof CValueInstanceArray) {
+            if (!inst.values) {
+               errors.push(new Error(`Value ${inst.build_value_path()} is missing its values array.`));
+               return;
+            }
+            if (!Array.isArray(inst.values)) {
+               errors.push(new Error(`Value ${inst.build_value_path()} had its values array replaced with something that is not an array.`));
+               return;
+            }
+            if (inst.values.length != inst.declared_length) {
+               errors.push(new Error(`Value ${inst.build_value_path()} has ${inst.values.length} values in its values array, when there should be ${inst.declared_length} values.`));
+               //
+               // Fall through: check what values remain.
+               //
+            }
             for(let memb of inst.values)
                _typecheck(memb);
             return;

@@ -20,6 +20,8 @@ Loading data from a bitpacked save works by: spawning an `InstructionsApplier`; 
 * To read a sector, have your applier target a nameless `CStructInstance` whose members are the top-level values in the bitstream. Have the bitstream wrap the given sector of flash memory.
 * When processing a `SingleInstructionNode`, you may find that the node's `type` is `"struct"`. In that case, you're dealing with a whole struct. Loop up the appropriate `CStruct`, find its `<instructions />` node, and spawn a new `InstructionsApplier` whose target is the struct instance. Have it reuse the same bitstream as the original `InstructionsApplier`.
 
+One of our desired features is the ability to translate bitpacked data from one save format to another. This process is internally called *translation*, and is performed by spawning and running a `TranslationOperation` on a `SaveSlot`. Prior to running the operation, you can attach *user-defined translators* to it to handle cases where data can't be translated automatically (e.g. fields that have been redesigned, restructured, etc.). See `DATA TRANSLATION.md`.
+
 
 ## Rendering
 

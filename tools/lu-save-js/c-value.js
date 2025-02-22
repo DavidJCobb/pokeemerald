@@ -166,6 +166,8 @@ class CValueInstanceArray extends CDeclInstance {
       this.decl = v;
    }
    
+   get declared_length() { return this.decl.array_ranks[this.rank]; }
+   
    rebuild_element(i) {
       let is_innermost = this.rank + 1 == this.decl.array_ranks.length;
       let v;

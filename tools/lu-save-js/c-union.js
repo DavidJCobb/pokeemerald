@@ -88,6 +88,10 @@ class CUnionInstance extends CTypeInstance {
       this.value.copy_contents_of(other.value);
    }
    
+   //
+   // Internal use:
+   //
+   
    /*CInstance*/ emplace(/*Variant<String, CValue>*/ member) {
       console.assert(!!member);
       if (member instanceof CDefinition) {

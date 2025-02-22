@@ -7,7 +7,7 @@ One of the features of this save editor is the ability to translate a savegame f
 
 User-defined translators are subclasses of `AbstractDataFormatTranslator`. They are expected to override the `translateInstance` method. This override receives two arguments: a source `CInstance` and a destination `CInstance`. The translator is expected to review the data in the source, and copy that data (altering it in whatever manner is necessary) into the destination. (Modifying the source is undefined behavior.)
 
-Translators are only invoked when the destination value isn't fully filled in, and when it's the same class as the source value. (If the destination isn't fully filled in *and* is of a different class, then translation fails.)
+Translators are only invoked when the destination value isn't fully filled in. There's no guarantee that the source and destination objects will be of the same class; for example, even if `abc.xyz[3][2]` is a `CValueInstance` in the source format, it may be a `CStructInstance` or something else in the destination format.
 
 The translator *must* handle all data (besides `omitted` fields) in the destination `CInstance` and its nested `CInstance`s, by either writing values in, or by passing a `CInstance` to `this.pass`. Calling `this.pass` is how you decline to handle a given value: the translation system will see that and carry out any default behaviors (e.g. calling other applicable translators, or attempting default value copying/conversion). We require that you either fill in or pass a value, as a safeguard to help make it harder to forget to fill something in.
 

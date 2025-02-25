@@ -21,32 +21,32 @@ class SaveFormat {
       this.sectors = []; // Array<SaveSector>
       this.types   = {
          integrals: [], // Array<CIntegralTypeDefinition>
-         structs:   [], // Array<CStruct>
-         unions:    [], // Array<CUnion>
+         structs:   [], // Array<CStructDefinition>
+         unions:    [], // Array<CUnionDefinition>
       };
-      this.top_level_values = []; // Array<CValue>
+      this.top_level_values = []; // Array<CDeclDefinition>
    }
    
    // `node` should be the root `data` node
    from_xml(node) {
       node.querySelectorAll("c-types>integral").forEach((function(node) {
          let type = new CIntegralTypeDefinition(this);
-         type.from_xml(node);
+         type.begin_load(node);
          this.types.integrals.push(type);
       }).bind(this));
       node.querySelectorAll("c-types>struct").forEach((function(node) {
-         let type = new CStruct(this);
-         type.from_xml(node);
+         let type = new CStructDefinition(this);
+         type.begin_load(node);
          this.types.structs.push(type);
       }).bind(this));
       node.querySelectorAll("c-types>union").forEach((function(node) {
-         let type = new CUnion(this);
-         type.from_xml(node);
+         let type = new CUnionDefinition(this);
+         type.begin_load(node);
          this.types.unions.push(type);
       }).bind(this));
       node.querySelectorAll("top-level-values>*").forEach((function(node) {
-         let value = new CValue(this);
-         value.from_xml(node);
+         let value = new CDeclDefinition(this);
+         value.begin_load(node);
          
          value.dereference_count    = +(node.getAttribute("dereference-count") || 0);
          value.force_to_next_sector = node.getAttribute("force-to-next-sector") == "true";

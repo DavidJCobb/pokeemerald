@@ -19,7 +19,7 @@ class CViewElement extends HTMLElement {
       type:  null,
    };
    
-   #scope = null; // Variant<CStructInstance, CUnionInstance, CValueInstanceArray, CValue>
+   #scope = null; // Variant<CStructInstance, CUnionInstance, CArrayInstance, CValue>
    
    #resize_observer = null;
    
@@ -326,22 +326,8 @@ class CViewElement extends HTMLElement {
       }
       if (v == this.#scope)
          return;
-      {
-         let found = false;
-         for(let allowed of [
-            CStructInstance,
-            CUnionInstance,
-            CValueInstance,
-            CValueInstanceArray,
-         ]) {
-            if (v instanceof allowed) {
-               found = true;
-               break;
-            }
-         }
-         if (!found)
-            throw new TypeError("invalid scope object");
-      }
+      if (!(v instanceof CInstance))
+         throw new TypeError("invalid scope object");
       this.#scope = v;
       this.repaint();
    }
@@ -464,9 +450,9 @@ class CViewElement extends HTMLElement {
             return text;
          }
       }
-      if (item instanceof CValueInstanceArray) {
-         let base = item.base;
-         switch (base.type) {
+      if (item instanceof CArrayInstance) {
+         let decl = item.decl;
+         switch (decl.type) {
             case "boolean":
             case "integer":
             case "string":
@@ -474,10 +460,10 @@ class CViewElement extends HTMLElement {
             default:
                return "[ ... ]";
          }
-         if (item.rank + 1 < base.array_ranks.length)
+         if (item.rank + 1 < decl.array_extents.length)
             return null;
          let text   = "[ ";
-         let extent = base.array_ranks[item.rank];
+         let extent = decl.array_extents[item.rank];
          for(let i = 0; i < extent; ++i) {
             if (i > 0)
                text += ", ";
@@ -496,14 +482,14 @@ class CViewElement extends HTMLElement {
       
       const SHOW_STRINGS_AS_SINGLE_CHARS = false;
       
-      let base = item.decl;
-      console.assert(!!base);
-      switch (base.type) {
+      let decl = item.decl;
+      console.assert(!!decl);
+      switch (decl.type) {
          case "boolean":
             return ""+item.value;
          case "integer":
             {
-               let typename = base.c_types.serialized.name;
+               let typename = decl.c_types.serialized.name;
                let format   = item.save_format;
                let enum_def = format.enums[typename];
                if (enum_def) {
@@ -1085,23 +1071,23 @@ class CViewElement extends HTMLElement {
                   }
                }
             } else if (item instanceof CValueInstance) {
-               typename = item.base.c_types.serialized.name;
-               if (item.base.type == "string") {
+               typename = item.decl.c_types.serialized.name;
+               if (item.decl.type == "string") {
                   let len = "...";
-                  if (item.base.options.length) {
-                     len = item.base.options.length;
-                     if (item.base.options.needs_terminator) {
+                  if (item.decl.options.length) {
+                     len = item.decl.options.length;
+                     if (item.decl.options.needs_terminator) {
                         len += " + sizeof('\\0')";
                      }
                   }
                   typename += `[${len}]`;
                }
-            } else if (item instanceof CValueInstanceArray) {
-               typename = item.base.c_types.serialized.name;
-               for(let i = 0; i < item.base.array_ranks.length; ++i) {
+            } else if (item instanceof CArrayInstance) {
+               typename = item.decl.c_types.serialized.name;
+               for(let i = 0; i < item.decl.array_extents.length; ++i) {
                   if (i < item.rank)
                      continue;
-                  let extent = item.base.array_ranks[i];
+                  let extent = item.decl.array_extents[i];
                   typename += "[" + extent + "]";
                }
             }
@@ -1224,7 +1210,7 @@ class CViewElement extends HTMLElement {
          ++current_row;
          if (expanded) {
             ++current_indent;
-            if (item instanceof CValueInstanceArray) {
+            if (item instanceof CArrayInstance) {
                for(let i = 0; i < item.values.length; ++i) {
                   let child = item.values[i];
                   paint_item(i, child);
@@ -1247,7 +1233,7 @@ class CViewElement extends HTMLElement {
       let item = this.#scope;
       if (this.#scope instanceof CValueInstance) {
          paint_item("[...]", item);
-      } else if (this.#scope instanceof CValueInstanceArray) {
+      } else if (this.#scope instanceof CArrayInstance) {
          for(let i = 0; i < item.values.length; ++i) {
             let child = item.values[i];
             paint_item(i, child);
@@ -1260,7 +1246,7 @@ class CViewElement extends HTMLElement {
       } else if (this.#scope instanceof CUnionInstance) {
          let name = "[unnamed]";
          for(let memb of item.type.members) {
-            if (memb == item.value.base) {
+            if (memb == item.value.decl) {
                name = memb.name;
                break;
             }

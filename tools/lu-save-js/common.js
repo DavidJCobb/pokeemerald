@@ -11,6 +11,11 @@ const SAVE_SECTOR_SIGNATURE = 0x08012025;
 const SAVE_SLOT_COUNT       = 2;
 const SAVE_SECTORS_PER_SLOT = 14;
 
+/*[[noreturn]]*/ function refuse_abstract_instantiation(cls) {
+   if (new.target === cls) {
+      throw new Error(cls.name + " is an abstract class and cannot be directly instantiated.");
+   }
+}
 /*[[noreturn]]*/ function purecall() {
    throw new Error("You were supposed to override this function on your subclass!");
 }
@@ -25,6 +30,10 @@ function assert_xml_validity(condition, message) {
 function assert_logic(condition, message) {
    if (!condition)
       throw new Error(message);
+}
+function assert_type(condition, message) {
+   if (!condition)
+      throw new TypeError(message);
 }
 
 //

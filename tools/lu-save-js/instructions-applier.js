@@ -19,7 +19,7 @@ class InstructionsApplier {
          if (segm.type === null || segm.type == "member-access") {
             if (value instanceof CUnionInstance) {
                if (for_read) {
-                  value = value.get_or_emplace(segm.what);
+                  value = value._emplace_for_load(segm.what);
                } else {
                   if (!value.value) {
                      throw new Error("To-be-serialized union value is missing!");
@@ -44,7 +44,7 @@ class InstructionsApplier {
             }
             console.assert(!!value);
          } else if (segm.type == "array-access") {
-            console.assert(value instanceof CValueInstanceArray);
+            console.assert(value instanceof CArrayInstance);
             
             let index = segm.what;
             if (isNaN(+index)) {
@@ -74,7 +74,7 @@ class InstructionsApplier {
          } else if (node instanceof UnionSwitchInstructionNode) {
             let tag_value = this.resolve_value_path(node.tag, true);
             console.assert(tag_value instanceof CValueInstance);
-            console.assert(tag_value.base.type == "integer" || tag_value.base.type == "boolean");
+            console.assert(tag_value.decl.type == "integer" || tag_value.decl.type == "boolean");
             console.assert(!isNaN(+tag_value.value));
             
             let case_node = node.cases[+tag_value.value];
@@ -132,7 +132,7 @@ class InstructionsApplier {
                      break;
                      
                   case "integer":
-                     if (value.base.type_is_signed) {
+                     if (value.type.is_signed) {
                         value.value = this.bitstream.read_signed(node.options.bitcount);
                      } else {
                         value.value = this.bitstream.read_unsigned(node.options.bitcount);
@@ -170,7 +170,7 @@ class InstructionsApplier {
          } else if (node instanceof UnionSwitchInstructionNode) {
             let tag_value = this.resolve_value_path(node.tag, false);
             console.assert(tag_value instanceof CValueInstance);
-            console.assert(tag_value.base.type == "integer" || tag_value.base.type == "boolean");
+            console.assert(tag_value.decl.type == "integer" || tag_value.decl.type == "boolean");
             console.assert(!isNaN(+tag_value.value));
             
             let case_node = node.cases[+tag_value.value];

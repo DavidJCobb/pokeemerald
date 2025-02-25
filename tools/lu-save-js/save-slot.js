@@ -1,19 +1,27 @@
 
 // For a loaded save slot.
 class SaveSlot extends CStructInstance {
-   constructor(save_format) {
-      super(save_format, null);
-      this.sectors     = [];
-      this.save_format = save_format;
-      if (save_format) {
-         if (!(save_format instanceof SaveFormat))
-            throw new TypeError("SaveFormat instance or falsy expected");
-         for(let tlv of save_format.top_level_values) {
-            let value = tlv.make_instance_representation(save_format);
-            value.is_member_of = this;
-            this.members[tlv.name] = value;
-         }
+   #save_format;
+   
+   constructor(/*SaveFormat*/ save_format) {
+      assert_type(save_format instanceof SaveFormat);
+      super(/*CStructDefinition*/ null);
+      this.sectors      = [];
+      this.#save_format = save_format;
+      for(let tlv of this.save_format.top_level_values) {
+         let value = tlv.make_instance_representation();
+         value.is_member_of = this;
+         this.members[tlv.name] = value;
       }
+   }
+   
+   get save_format() {
+      return this.#save_format;
+   }
+   set save_format(v) {
+      if (v)
+         assert_type(v instanceof SaveFormat);
+      this.#save_format = v;
    }
    
    loadSectorMetadata(/*const DataView*/ sector_view) {

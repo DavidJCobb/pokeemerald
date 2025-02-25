@@ -83,7 +83,7 @@
       let src_format = await _get_save_format();
       let dst_format;
       {
-         let node_x = document.getElementById("file-xml");
+         let node_x = document.getElementById("translate-xml");
          if (!node_x.files.length) {
             alert("Error: no save file format given");
             return;

@@ -8,9 +8,11 @@ class CValue extends CDefinition {
          original:   null,
          serialized: null,
       };
+      this.field_info = null;
       this.type_is_signed = null; // pertains to the C type; only relevant for integers
       this.default_value = null;
-      this.array_ranks   = [];
+      this.array_ranks   = []; // array extents
+      this.categories    = []; // bitpacking category names
       
       // If this is an anonymous struct, you'll find the type here.
       this.anonymous_type = null;
@@ -35,6 +37,32 @@ class CValue extends CDefinition {
       if (!this.c_typenames.serialized)
          this.c_typenames.serialized = this.c_typenames.original;
       
+      if (this.type != "transform") { // this.field_info
+         let offset = node.getAttribute("c-offset");
+         if (offset !== null) {
+            let size = node.getAttribute("c-size");
+            if (size !== null) {
+               this.field_info = {
+                  is_bitfield: false,
+                  offset:      +offset,
+                  size:        +size,
+               };
+            }
+         } else {
+            offset = node.getAttribute("c-bitfield-offset");
+            if (offset !== null) {
+               let size = node.getAttribute("c-bitfield-width");
+               if (size !== null) {
+                  this.field_info = {
+                     is_bitfield: true,
+                     offset:      +offset,
+                     size:        +size,
+                  };
+               }
+            }
+         }
+      }
+      
       this.default_value = node.getAttribute("default-value");
       if (this.default_value !== null) {
          switch (this.type) {
@@ -58,6 +86,10 @@ class CValue extends CDefinition {
             let extent = +child.getAttribute("extent");
             console.assert(!isNaN(extent));
             this.array_ranks.push(extent);
+         } else if (child.nodeName == "category") {
+            let name = child.getAttribute("name");
+            if (name)
+               this.categories.push(name);
          }
       }
       

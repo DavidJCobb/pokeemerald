@@ -9,9 +9,7 @@ class CUnion extends CContainerTypeDefinition {
    
    // `node` should be a `union` element
    from_xml(node) {
-      this.node   = node;
-      this.symbol = node.getAttribute("name");
-      this.tag    = node.getAttribute("tag");
+      super.from_xml(node);
       
       for(let child of node.children) {
          switch (child.nodeName) {

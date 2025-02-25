@@ -9,6 +9,23 @@ class CTypeDefinition extends CDefinition {
       this.node   = null; // XML node within the SaveFormat
       this.tag    = null; // struct THIS_STRING { ... }
       this.symbol = null; // typedef struct { ... } THIS_STRING
+      this.c_info = {
+         alignment: null,
+         size:      null,
+      };
+   }
+   
+   from_xml(node) {
+      this.node   = node;
+      this.symbol = node.getAttribute("name");
+      this.tag    = node.getAttribute("tag");
+      
+      this.c_info.alignment = node.getAttribute("c-alignment");
+      this.c_info.size      = node.getAttribute("c-sizeof");
+      if (this.c_info.alignment !== null)
+         this.c_info.alignment = +this.c_info.alignment;
+      if (this.c_info.size !== null)
+         this.c_info.size = +this.c_info.size;
    }
 };
 

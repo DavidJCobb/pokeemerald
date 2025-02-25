@@ -71,14 +71,16 @@ function parseBBCode(str) {
       if (in_raw) {
          let j = str.indexOf("[/raw]", i);
          if (j >= 0) {
-            text += str.substring(i, j - i);
+            let end = j + ("[/raw]").length;
+            text += str.substring(i, j);
             _commit_text();
-            i = j + ("[/raw]").length;
+            i = end;
             --i; // for continue
          } else {
             text += str.substring(i);
             break;
          }
+         in_raw = false;
          continue;
       }
       let c = str[i];

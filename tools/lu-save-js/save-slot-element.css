@@ -100,15 +100,24 @@ c-view {
    }
    &::part(row) {
       background: #FFF;
-      color:      #888;
-   }
-   &::part(selected-row) {
-      background: #00A;
-      color:      #FFF;
+      color:      #000;
    }
    &::part(cell) {
       padding: .25em;
       border:  1px solid #CCC;
+   }
+   &::part(selected cell) {
+      background: #44A;
+      color:      #FFF !important;
+      border-left-color:  #FFF !important;
+      border-right-color: #FFF !important;
+   }
+   
+   &::part(deemphasize) {
+      color: #707070;
+   }
+   &::part(error) {
+      color: #A22;
    }
    &::part(name-text) {
       color: #000;
@@ -116,10 +125,14 @@ c-view {
    &::part(value-text) {
       color: #4A6;
    }
+   
    &::part(twisty) {
       color:  #888;
       width:  .75em;
       height: .75em;
+   }
+   &::part(selected twisty) {
+      color:  #FFF !important;
    }
 }
 

@@ -6,14 +6,14 @@ class TreeRowViewModel/*<T>*/ {
       ];
    }
    
-   /*T*/ getItem(parent, row) /*const*/ {
+   /*T*/ getItem(/*Optional<const T>*/ parent, row) /*const*/ {
       return null;
    }
-   /*Optional<Variant<Array<T>, Map<String, T>>>*/ getItemChildren(/*T*/ parent) /*const*/ {
+   /*Optional<Variant<Array<T>, Map<String, T>>>*/ getItemChildren(/*const T*/ item) /*const*/ {
       return null;
    }
-   /*bool*/ itemHasChildren(/*const T*/ parent) /*const*/ {
-      let children = this.getItemChildren(parent);
+   /*bool*/ itemHasChildren(/*const T*/ item) /*const*/ {
+      let children = this.getItemChildren(item);
       if (!children)
          return false;
       if (Array.isArray(children))
@@ -21,20 +21,13 @@ class TreeRowViewModel/*<T>*/ {
       return children.size > 0;
    }
    
-   /*String*/ getItemCellContent(item, col) /*const*/ {
+   /*String*/ getItemCellContent(/*const T*/ item, col, /*bool*/ is_selected) /*const*/ {
       //
-      // Returns a BBCode-formatted string (proper tag nesting required) with 
-      // the following tags:
+      // Returns a BBCode-formatted string (proper tag nesting required).
       //
-      //    [text=name]...[/style]
-      //       Activates a given text style.
-      //
-      //    [box=name]...[/style]
-      //       Creates a box with a given style.
-      //
-      return ""+item;
+      return (""+item).replaceAll("[", "[raw][[/raw]");
    }
-   /*Optional<String>*/ getItemTooltip(item, col) /*const*/ {
+   /*Optional<String>*/ getItemTooltip(/*const T*/ item, col) /*const*/ {
       return null;
    }
 };
@@ -918,7 +911,7 @@ class TreeRowViewElement extends HTMLElement {
                   (function(content_box) {
                      let overflowed = false;
                      
-                     let data = this.model.getItemCellContent(item, i);
+                     let data = this.model.getItemCellContent(item, i, is_selected);
                      tooltip = this.model.getItemTooltip(item, i);
                      if (data || data === 0) {
                         let fulltext = this.#draw_cell_content(content_box, data, is_selected, !!tooltip);
@@ -993,7 +986,7 @@ class TreeRowViewElement extends HTMLElement {
             //
             if (!overflowed) {
                overflowed = x >= content_box.width;
-               if (overflowed && user_tooltip)
+               if (overflowed && has_own_tooltip)
                   return;
             }
             if (overflowed) {

@@ -18,14 +18,26 @@ tree-row-view-element::part(header-cell) {
    padding: .25em;
    border: 2px solid #EEE;
 }
+
 tree-row-view-element::part(cell) {
    color: #000;
    padding: .25em;
    border: 2px solid #D0D0D0;
 }
 tree-row-view-element::part(twisty) {
+   color:  #808080;
    width:  .7em;
    height: .7em;
+}
+
+tree-row-view-element::part(selected cell) {
+   background: #44A !important;
+   color:      #FFF !important;
+   border-left-color:  #FFF !important;
+   border-right-color: #FFF !important;
+}
+tree-row-view-element::part(selected twisty) {
+   color: #FFF !important;
 }
 
 tree-row-view-element::part(special-text) {
@@ -40,6 +52,7 @@ tree-row-view-element::part(special-text) {
 {
    let node = document.getElementsByTagName("tree-row-view-element")[0];
    node.addTextStyle("special-text", "cell");
+   node.allowSelection = true;
    
    class Item {
       constructor(name, value, type, ...children) {

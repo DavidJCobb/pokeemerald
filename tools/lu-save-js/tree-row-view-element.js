@@ -201,6 +201,7 @@ class TreeRowViewElement extends HTMLElement {
    #content_size = { width: 0, height: 0 };
    #scroll_pos   = { x: 0, y: 0 };
    
+   #builtin_style_names = [];
    #cached_styles = Object.create(null);
    #cached_style_addenda = {
       header_height:         0,
@@ -322,6 +323,16 @@ class TreeRowViewElement extends HTMLElement {
          container.append(row.part_node);
          row.part_node.append(cell.part_node);
          cell.part_node.append(twisty.part_node);
+         {
+            let row    = this.#cached_styles["selected-row"]    = new BoxStyle("selected row");
+            let cell   = this.#cached_styles["selected-cell"]   = new BoxStyle("selected cell");
+            let twisty = this.#cached_styles["selected-twisty"] = new IconStyle("selected twisty");
+            container.append(row.part_node);
+            row.part_node.append(cell.part_node);
+            cell.part_node.append(twisty.part_node);
+         }
+         
+         this.#builtin_style_names = Object.keys(this.#cached_styles);
       }
       
       this.#shadow.addEventListener("transitionend", this.#on_observe_css_change.bind(this));
@@ -354,7 +365,7 @@ class TreeRowViewElement extends HTMLElement {
    addTextStyle(name, parent_name) {
       if (!name)
          throw new Error("invalid text style name");
-      if (["header-row", "header-cell", "row", "cell", "twisty"].includes(name))
+      if (this.#builtin_style_names.includes(name))
          throw new Error("the specified name is already in use by a built-in style");
       if (this.#cached_styles[name])
          throw new Error("the specified name is already in use");
@@ -374,7 +385,7 @@ class TreeRowViewElement extends HTMLElement {
    removeTextStyle(name) {
       if (!name)
          throw new Error("invalid text style name");
-      if (["header-row", "header-cell", "row", "cell", "twisty"].includes(name))
+      if (this.#builtin_style_names.includes(name))
          throw new Error("cannot remove a built-in style");
       let style = this.#cached_styles[name];
       if (!style)
@@ -478,7 +489,12 @@ class TreeRowViewElement extends HTMLElement {
          addenda.header_content_height
       );
       
-      addenda.row_content_height = Math.max(styles["cell"].font_size, styles["twisty"].height);
+      addenda.row_content_height = Math.max(
+         styles["cell"].font_size,
+         styles["twisty"].height,
+         styles["selected-cell"].font_size,
+         styles["selected-twisty"].height
+      );
       for(let name in styles) {
          let style = styles[name];
          if (["header-row", "header-cell", "row", "cell", "twisty"].includes(name))
@@ -806,6 +822,8 @@ class TreeRowViewElement extends HTMLElement {
       let   row_height    = this.#cached_style_addenda.row_height;
       const indent_width  = this.#cached_styles["cell"].font_size;
       
+      let is_selected = this.#allow_selection && this.#selected_item === item;
+      
       let x = 0;
       let y = this.#cached_style_addenda.header_height + row * row_height;
       x -= this.#scroll_pos.x;
@@ -824,7 +842,7 @@ class TreeRowViewElement extends HTMLElement {
       };
       
       this.#paint_box(
-         this.#cached_styles["row"],
+         this.#cached_styles[is_selected ? "selected-row" : "row"],
          new DOMRect(x, y, canvas_width, row_height)
       );
       const row_style = this.#cached_styles["row"];
@@ -851,7 +869,7 @@ class TreeRowViewElement extends HTMLElement {
          }
          let tooltip;
          this.#paint_box(
-            this.#cached_styles["cell"],
+            this.#cached_styles[is_selected ? "selected-cell" : "cell"],
             new DOMRect(x + cell_x, y + cell_y, cell_w, cell_h),
             null,
             null,
@@ -867,7 +885,7 @@ class TreeRowViewElement extends HTMLElement {
                      const w  = this.#cached_styles.twisty.width;
                      const h  = this.#cached_styles.twisty.height;
                      const dy = (content_box.height - h) / 2;
-                     context.fillStyle = this.#cached_styles["twisty"].color;
+                     context.fillStyle = this.#cached_styles[is_selected ? "selected-twisty" : "twisty"].color;
                      if (is_expanded) {
                         context.moveTo(x,         dy + y);
                         context.lineTo(x + w,     dy + y);
@@ -903,7 +921,7 @@ class TreeRowViewElement extends HTMLElement {
                      let data = this.model.getItemCellContent(item, i);
                      tooltip = this.model.getItemTooltip(item, i);
                      if (data || data === 0) {
-                        let fulltext = this.#draw_cell_content(content_box, data, !!tooltip);
+                        let fulltext = this.#draw_cell_content(content_box, data, is_selected, !!tooltip);
                         tooltip = tooltip || fulltext;
                      }
                   }).bind(this)
@@ -958,7 +976,7 @@ class TreeRowViewElement extends HTMLElement {
       return out;
    }
    
-   #draw_cell_content(content_box, bbcode, has_own_tooltip) {
+   #draw_cell_content(content_box, bbcode, is_selected, has_own_tooltip) {
       let x = 0;
       let y = 0;
       let context = this.#canvas.getContext("2d");
@@ -1041,7 +1059,7 @@ class TreeRowViewElement extends HTMLElement {
          }
       }).bind(this);
       {
-         let style = this.#cached_styles["cell"];
+         let style = this.#cached_styles[is_selected ? "selected-cell" : "cell"];
          context.fillStyle = style.color;
          context.font      = style.font;
          y = (content_box.height - style.font_size) / 2;

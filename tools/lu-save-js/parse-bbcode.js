@@ -14,18 +14,33 @@ function parseBBCode(str) {
    let where    = TEXT;
    let tag_name = "";
    let tag_data = "";
+   let in_raw   = false;
    
+   function _commit_text(parent) {
+      if (!text)
+         return;
+      if (!parent) {
+         parent = out;
+         if (stack.length)
+            parent = stack[stack.length - 1].children;
+      }
+      parent.push(text);
+      text = "";
+   }
    function _commit_tag(name, data) {
+      if (name == "raw") {
+         in_raw   = true;
+         tag_name = "";
+         tag_data = "";
+         return;
+      }
       let parent = out;
       if (stack.length)
          parent = stack[stack.length - 1].children;
       
       name = name.toLowerCase();
       let tag = { name: name, data: data };
-      if (text) {
-         parent.push(text);
-         text = "";
-      }
+      _commit_text(parent);
       parent.push(tag);
       switch (name) {
          case "b":
@@ -47,15 +62,25 @@ function parseBBCode(str) {
          return;
       let back = stack[stack.length - 1];
       if (back.name == name.toLowerCase()) {
-         if (text) {
-            back.children.push(text);
-            text = "";
-         }
+         _commit_text(back.children);
          stack.pop();
       }
    }
    
    for(let i = 0; i < str.length; ++i) {
+      if (in_raw) {
+         let j = str.indexOf("[/raw]", i);
+         if (j >= 0) {
+            text += str.substring(i, j - i);
+            _commit_text();
+            i = j + ("[/raw]").length;
+            --i; // for continue
+         } else {
+            text += str.substring(i);
+            break;
+         }
+         continue;
+      }
       let c = str[i];
       if (where == TAG_START) {
          if (c == '/') {
@@ -103,11 +128,6 @@ function parseBBCode(str) {
             break;
       }
    }
-   if (text) {
-      let parent = out;
-      if (stack.length)
-         parent = stack[stack.length - 1].children;
-      parent.push(text);
-   }
+   _commit_text();
    return out;
 }

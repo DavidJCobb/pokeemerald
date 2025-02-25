@@ -1,0 +1,116 @@
+<!doctype html>
+<html>
+   <head>
+      <title>TreeRowViewElement test</title>
+      <script src="parse-bbcode.js"></script>
+      <script src="tree-row-view-element.js"></script>
+      <style>
+html {
+   font-family: Calibri, sans-serif;
+}
+
+tree-row-view-element::part(header-row) {
+   background: #808080;
+   color: #FFF;
+   font-weight: bold;
+}
+tree-row-view-element::part(header-cell) {
+   padding: .25em;
+   border: 2px solid #EEE;
+}
+tree-row-view-element::part(cell) {
+   color: #000;
+   padding: .25em;
+   border: 2px solid #D0D0D0;
+}
+tree-row-view-element::part(twisty) {
+   width:  .7em;
+   height: .7em;
+}
+
+tree-row-view-element::part(special-text) {
+   color: #C00;
+   /*font-size: 1.4em;*/
+}
+      </style>
+   </head>
+   <body>
+      <tree-row-view-element></tree-row-view-element>
+      <script>
+{
+   let node = document.getElementsByTagName("tree-row-view-element")[0];
+   node.addTextStyle("special-text", "cell");
+   
+   class Item {
+      constructor(name, value, type, ...children) {
+         this.name  = name;
+         this.value = value;
+         this.type  = type;
+         this.children = [...children];
+      }
+   };
+   class Model extends TreeRowViewModel {
+      constructor() {
+         super();
+         this.top_level_items = [];
+      }
+      getItem(parent, row) {
+         return parent.children[row];
+      }
+      getItemChildren(parent) {
+         if (!parent)
+            return this.top_level_items;
+         return parent.children;
+      }
+      getItemCellContent(item, col) {
+         switch (col) {
+            case 0:
+               if (item.name == "foo") {
+                  return "foo [i](normal stuff)[/i] [style=special-text]Special[/style]";
+               }
+               return item.name+"";
+            case 1: return item.value || "";
+            case 2: return item.type  || "";
+         }
+         return "";
+      }
+      getItemTooltip(item, col) {
+         if (item.name == "b" && col == 0) {
+            return "Hello, world!";
+         }
+         return null;
+      }
+   };
+   
+   let model = new Model();
+   model.columns = [
+      { name: "Name",  width: "1fr" },
+      { name: "Value", width: "20ch" },
+      { name: "Type",  width: "4ch" },
+   ];
+   model.top_level_items.push(
+      new Item("foo", null, "FooObject",
+         new Item("a", 3, "int"),
+         new Item("b", null, "std::array<int>",
+            new Item(0, 10, "int"),
+            new Item(1, 20, "int"),
+            new Item(2, 30, "int"),
+         ),
+         new Item("c", 7, "int")
+      )
+   );
+   model.top_level_items.push(
+      new Item("bar", 5, "int")
+   );
+   model.top_level_items.push(
+      new Item("baz", null, "BazObject",
+         new Item("x", 6.5, "double")
+      )
+   );
+   
+   node.model = model;
+   node.repaint();
+}
+      </script>
+   </body>
+</html>

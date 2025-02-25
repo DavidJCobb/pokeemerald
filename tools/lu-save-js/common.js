@@ -18,6 +18,15 @@ const SAVE_SECTORS_PER_SLOT = 14;
    throw new Error("This code location should be unreachable.");
 }
 
+function assert_xml_validity(condition, message) {
+   if (!condition)
+      throw new Error(message);
+}
+function assert_logic(condition, message) {
+   if (!condition)
+      throw new Error(message);
+}
+
 //
 // CHECKSUM CODE:
 //

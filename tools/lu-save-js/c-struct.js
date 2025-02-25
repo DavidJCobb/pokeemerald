@@ -1,7 +1,7 @@
 
 class CStruct extends CContainerTypeDefinition {
-   constructor() {
-      super();
+   constructor(format) {
+      super(format);
       
       // Defined if the struct has a whole-struct serialization function.
       this.instructions = null; // Optional<RootInstructionNode>
@@ -10,21 +10,25 @@ class CStruct extends CContainerTypeDefinition {
    // `node` should be a `struct` element
    from_xml(node) {
       super.from_xml(node);
-      
+      //
+      // We don't load members here; we'll load them later on.
+      //
       for(let child of node.children) {
-         if (child.nodeName == "members") {
-            this.members_from_xml(child);
-         } else if (child.nodeName == "instructions") {
+         if (child.nodeName == "instructions") {
             this.instructions = new RootInstructionNode();
             this.instructions.from_xml(child);
          }
       }
    }
-   members_from_xml(node) { // `node` should be a `members` element
-      for(let item of node.children) {
-         let member = new CValue();
-         member.from_xml(item);
-         this.members.push(member);
+   finish_load() {
+      for(let child of this.node.children) {
+         if (child.nodeName != "members")
+            continue;
+         for(let item of child.children) {
+            let member = new CValue(this.save_format);
+            member.from_xml(item);
+            this.members.push(member);
+         }
       }
    }
 };
@@ -72,23 +76,5 @@ class CStructInstance extends CTypeInstance {
       if (decl.type == "union-external-tag") {
          dst.external_tag = this.members[decl.options.tag];
       }
-   }
-   
-   // Returns a list of any instance-objects that couldn't be filled in.
-   fill_in_defaults() {
-      let unfilled = [];
-      for(let member of this.members) {
-         if (member instanceof CValueInstance) {
-            let dv = member.base?.default_value;
-            if (dv === undefined) {
-               unfilled.push(member);
-            } else {
-               member.value = dv;
-            }
-            continue;
-         }
-         unfilled = unfilled.concat(member.fill_in_defaults());
-      }
-      return unfilled;
    }
 };

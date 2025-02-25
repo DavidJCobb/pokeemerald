@@ -327,7 +327,7 @@ class TranslationOperation {
          this.translators_by_typename,
          function(inst) {
             if (inst instanceof CDeclInstance)
-               return inst.decl.c_typenames.serialized;
+               return inst.decl.c_types.serialized.name;
             else if (inst instanceof CTypeInstance)
                return inst.type.tag || inst.type.symbol;
          }

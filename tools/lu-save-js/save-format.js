@@ -19,25 +19,33 @@ class SaveFormat {
    constructor() {
       this.enums   = new Map(); // Map<String, Map<String, int>>
       this.sectors = []; // Array<SaveSector>
-      this.structs = []; // Array<CStruct>
-      this.unions  = []; // Array<CUnion>
+      this.types   = {
+         integrals: [], // Array<CIntegralTypeDefinition>
+         structs:   [], // Array<CStruct>
+         unions:    [], // Array<CUnion>
+      };
       this.top_level_values = []; // Array<CValue>
    }
    
    // `node` should be the root `data` node
    from_xml(node) {
-      node.querySelectorAll("c-types>struct").forEach((function(node) {
-         let type = new CStruct();
+      node.querySelectorAll("c-types>integral").forEach((function(node) {
+         let type = new CIntegralTypeDefinition(this);
          type.from_xml(node);
-         this.structs.push(type);
+         this.types.integrals.push(type);
+      }).bind(this));
+      node.querySelectorAll("c-types>struct").forEach((function(node) {
+         let type = new CStruct(this);
+         type.from_xml(node);
+         this.types.structs.push(type);
       }).bind(this));
       node.querySelectorAll("c-types>union").forEach((function(node) {
-         let type = new CUnion();
+         let type = new CUnion(this);
          type.from_xml(node);
-         this.structs.push(type);
+         this.types.unions.push(type);
       }).bind(this));
       node.querySelectorAll("top-level-values>*").forEach((function(node) {
-         let value = new CValue();
+         let value = new CValue(this);
          value.from_xml(node);
          
          value.dereference_count    = +(node.getAttribute("dereference-count") || 0);
@@ -50,20 +58,36 @@ class SaveFormat {
          sector.from_xml(node);
          this.sectors.push(sector);
       }).bind(this));
+      //
+      // Now that all type definitions have been found, load member data 
+      // for aggregate types. We want to load this later so that we can 
+      // validate that if a member claims to be of a given type, we have 
+      // a definition for that type available.
+      //
+      for(let type of this.types.structs)
+         type.finish_load(type.node);
+      for(let type of this.types.unions)
+         type.finish_load(type.node);
    }
    
    lookup_type_by_name(name) {
-      for(let s of this.structs) {
-         if (s.tag == name)
-            return s;
-         if (s.symbol == name)
-            return s;
+      for(let type of this.types.integrals) {
+         if (type.symbol == name)
+            return type;
+         if (type.typedefs.includes(name))
+            return type;
       }
-      for(let s of this.unions) {
-         if (s.tag == name)
-            return s;
-         if (s.symbol == name)
-            return s;
+      for(let type of this.types.structs) {
+         if (type.tag == name)
+            return type;
+         if (type.symbol == name)
+            return type;
+      }
+      for(let type of this.types.unions) {
+         if (type.tag == name)
+            return type;
+         if (type.symbol == name)
+            return type;
       }
       return null;
    }

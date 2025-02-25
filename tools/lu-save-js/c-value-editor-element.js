@@ -119,7 +119,7 @@ class CValueEditorElement extends HTMLElement {
          case "integer":
             this.#target_options.enumeration = null;
             {
-               let typename = decl.c_typenames.serialized;
+               let typename = decl.typename;
                let format   = this.#target?.save_format;
                let enum_def = format.enums[typename];
                if (enum_def) {

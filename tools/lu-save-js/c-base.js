@@ -1,11 +1,15 @@
 
 // Akin to a GCC TYPE node or a decl_descriptor from our codegen plug-in.
 class CDefinition {
+   constructor(format) {
+      assert_logic(format instanceof SaveFormat);
+      this.save_format = format;
+   }
 };
 
 class CTypeDefinition extends CDefinition {
-   constructor() {
-      super();
+   constructor(format) {
+      super(format);
       this.node   = null; // XML node within the SaveFormat
       this.tag    = null; // struct THIS_STRING { ... }
       this.symbol = null; // typedef struct { ... } THIS_STRING
@@ -16,7 +20,53 @@ class CTypeDefinition extends CDefinition {
    }
    
    from_xml(node) {
-      this.node   = node;
+      this.node = node;
+   }
+};
+
+class CIntegralTypeDefinition extends CTypeDefinition {
+   constructor(format) {
+      super(format);
+      this.is_signed = null;
+      
+      this.typedefs = [];
+   }
+   
+   from_xml(node) {
+      super.from_xml(node);
+      this.symbol = node.getAttribute("name");
+      
+      this.is_signed = node.getAttribute("is-signed") == "true";
+      {
+         let v = node.getAttribute("alignment");
+         if (v !== null)
+            this.c_info.alignment = +v;
+      }
+      {
+         let v = node.getAttribute("size");
+         if (v !== null)
+            this.c_info.size = +v;
+      }
+      
+      for(let child of node.children) {
+         if (child.nodeName == "typedef") {
+            let name = child.getAttribute("name");
+            if (name)
+               this.typedefs.push(name);
+         }
+      }
+   }
+};
+
+class CContainerTypeDefinition extends CTypeDefinition {
+   constructor(format) {
+      super(format);
+      this.members = []; // Array<CValue>
+   }
+   
+   from_xml(node) {
+      super.from_xml(node);
+      
       this.symbol = node.getAttribute("name");
       this.tag    = node.getAttribute("tag");
       
@@ -27,13 +77,6 @@ class CTypeDefinition extends CDefinition {
       if (this.c_info.size !== null)
          this.c_info.size = +this.c_info.size;
    }
-};
-
-class CContainerTypeDefinition extends CTypeDefinition {
-   constructor() {
-      super();
-      this.members = []; // Array<CValue>
-   }
    
    /*Optional<CValue>*/ member_by_name(name) /*const*/ {
       for(let memb of this.members)
@@ -42,6 +85,10 @@ class CContainerTypeDefinition extends CTypeDefinition {
       return null;
    }
 };
+
+//
+// Instances:
+//
 
 class CInstance {
    constructor(/*SaveFormat*/ format) {

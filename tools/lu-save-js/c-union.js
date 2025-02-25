@@ -1,7 +1,7 @@
 
 class CUnion extends CContainerTypeDefinition {
-   constructor() {
-      super();
+   constructor(format) {
+      super(format);
       
       this.internal_tag_name    = null;
       this.members_by_tag_value = {};
@@ -10,27 +10,30 @@ class CUnion extends CContainerTypeDefinition {
    // `node` should be a `union` element
    from_xml(node) {
       super.from_xml(node);
-      
+      //
+      // We don't load members here; we'll load them later on.
+      //
       for(let child of node.children) {
          switch (child.nodeName) {
-            case "members":
-               this.members_from_xml(child);
-               break;
             case "union-options":
                this.internal_tag_name = child.getAttribute("tag");
                break;
          }
       }
    }
-   members_from_xml(node) { // `node` should be a `members` element
-      for(let item of node.children) {
-         let member = new CValue();
-         member.from_xml(item);
-         this.members.push(member);
-         
-         let tv = item.getAttribute("union-tag-value");
-         if (tv !== null) {
-            this.members_by_tag_value[tv] = member;
+   finish_load() {
+      for(let child of this.node.children) {
+         if (child.nodeName != "members")
+            continue;
+         for(let item of child.children) {
+            let member = new CValue(this.save_format);
+            member.from_xml(item);
+            this.members.push(member);
+            
+            let tv = item.getAttribute("union-tag-value");
+            if (tv !== null) {
+               this.members_by_tag_value[tv] = member;
+            }
          }
       }
    }
@@ -143,23 +146,5 @@ class CUnionInstance extends CTypeInstance {
          }
       }
       return v;
-   }
-   
-   // Returns a list of any instance-objects that couldn't be filled in.
-   fill_in_defaults() {
-      if (!this.value)
-         return [this];
-      
-      let member = this.value;
-      if (member instanceof CValueInstance) {
-         let dv = member.base?.default_value;
-         if (dv === undefined) {
-            return [member];
-         } else {
-            member.value = dv;
-         }
-         return [];
-      }
-      return member.fill_in_defaults();
    }
 };

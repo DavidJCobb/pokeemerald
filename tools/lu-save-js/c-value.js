@@ -1,14 +1,20 @@
 
 class CValue extends CDefinition {
-   constructor() {
-      super();
+   constructor(format) {
+      super(format);
       this.name = null;
       this.type = null;
-      this.c_typenames = {
-         original:   null,
-         serialized: null,
+      this.c_types = {
+         original: {
+            name:       null,
+            definition: null,
+         },
+         serialized: {
+            name:       null,
+            definition: null,
+         },
       };
-      this.field_info = null;
+      this.bitfield_info  = null;
       this.type_is_signed = null; // pertains to the C type; only relevant for integers
       this.default_value = null;
       this.array_ranks   = []; // array extents
@@ -20,46 +26,60 @@ class CValue extends CDefinition {
       this.options = new CBitpackOptions();
    }
    
+   /*CTypeDefinition*/ get serialized_type() {
+      return this.c_types.serialized.definition;
+   }
+   /*String*/ get typename() {
+      return this.c_types.serialized.name;
+   }
+   
    #parse_c_type(str) {
       if (str === null)
          return str;
       str = str.trim();
       str = str.replace(/^(?:(?:const|volatile) )+/, "");
       str = str.replace(/(?:\[\d+\])+$/, ""); // array type to value type
+      str = str.replace(/\*+$/, ""); // strip pointers
       return str;
    }
    
    from_xml(node) {
       this.name = node.getAttribute("name");
       this.type = node.nodeName;
-      this.c_typenames.original   = this.#parse_c_type(node.getAttribute("type"));
-      this.c_typenames.serialized = this.#parse_c_type(node.getAttribute("serialized-type"));
-      if (!this.c_typenames.serialized)
-         this.c_typenames.serialized = this.c_typenames.original;
       
-      if (this.type != "transform") { // this.field_info
-         let offset = node.getAttribute("c-offset");
-         if (offset !== null) {
-            let size = node.getAttribute("c-size");
-            if (size !== null) {
-               this.field_info = {
-                  is_bitfield: false,
-                  offset:      +offset,
-                  size:        +size,
-               };
-            }
-         } else {
-            offset = node.getAttribute("c-bitfield-offset");
-            if (offset !== null) {
-               let size = node.getAttribute("c-bitfield-width");
-               if (size !== null) {
-                  this.field_info = {
-                     is_bitfield: true,
-                     offset:      +offset,
-                     size:        +size,
-                  };
-               }
-            }
+      this.c_types.original.name   = this.#parse_c_type(node.getAttribute("type"));
+      this.c_types.serialized.name = this.#parse_c_type(node.getAttribute("serialized-type"));
+      for(let key in this.c_types) {
+         let info = this.c_types[key];
+         if (info.name) {
+            info.definition = this.save_format.lookup_type_by_name(info.name);
+            assert_xml_validity(!!info.definition, "If a field or variable declaration has a named type, that type must have a corresponding definition.");
+         }
+      }
+      if (!this.c_types.serialized.name) {
+         this.c_types.serialized.name       = this.c_types.original.name;
+         this.c_types.serialized.definition = this.c_types.original.definition;
+      }
+      switch (this.type) {
+         case "integral":
+            assert_xml_validity(this.c_types.serialized.definition instanceof CIntegralTypeDefinition, "If a field or declaration is serialized as an integer, then its serialized type must actually be an integral type.");
+            break;
+         
+         case "union-external-tag":
+         case "union-internal-tag":
+            assert_xml_validity(this.c_types.serialized.definition instanceof CUnion, "If a field or declaration is serialized as a union, then its serialized type must actually be a union.");
+            break;
+      }
+      
+      if (this.type != "transform") { // this.bitfield_info
+         let offset = node.getAttribute("c-bitfield-offset");
+         let size   = node.getAttribute("c-bitfield-width");
+         if (offset !== null && size !== null) {
+            this.bitfield_info = {
+               is_bitfield: true,
+               offset:      +offset,
+               size:        +size,
+            };
          }
       }
       
@@ -76,9 +96,6 @@ class CValue extends CDefinition {
             this.default_value = dvs.textContent;
       }
       
-      if (this.type == "integer") {
-         this.type_is_signed = node.getAttribute("type-is-signed") == "true";
-      }
       this.options.from_xml(node, true);
       
       for(let child of node.children) {
@@ -93,11 +110,15 @@ class CValue extends CDefinition {
          }
       }
       
-      if (this.type == "struct" && !this.c_typenames.original) {
-         this.anonymous_type = new CStruct();
+      if (this.type == "struct" && !this.c_types.original.name) {
+         this.anonymous_type = new CStruct(this.save_format);
          for(let child of node.children) {
             if (child.nodeName == "members") {
-               this.anonymous_type.members_from_xml(child);
+               for(let item of child.children) {
+                  let member = new CValue(this.save_format);
+                  member.from_xml(item);
+                  this.anonymous_type.members.push(member);
+               }
             }
          }
       }
@@ -108,16 +129,13 @@ class CValue extends CDefinition {
          return new CValueInstanceArray(save_format, this, 0);
       }
       if (this.type == "union-external-tag" || this.type == "union-internal-tag") {
-         let c_type = save_format.lookup_type_by_name(this.c_typenames.serialized);
-         console.assert(!!c_type);
-         console.assert(c_type instanceof CUnion);
-         return new CUnionInstance(save_format, c_type, this);
+         return new CUnionInstance(this.save_format, this.c_types.serialized.definition, this);
       }
       if (this.type == "struct") {
          let c_type = this.anonymous_type;
          if (!c_type) {
-            console.assert(!!this.c_typenames.serialized, "struct value must be either an instance of an anonymous struct, or an instance of a named struct");
-            c_type = save_format.lookup_type_by_name(this.c_typenames.serialized);
+            console.assert(!!this.c_types.serialized.name, "struct value must be either an instance of an anonymous struct, or an instance of a named struct");
+            c_type = this.c_types.serialized.definition;
             console.assert(!!c_type, "if a struct value is an instance of a named struct, that struct must exist in the format");
          }
          console.assert(c_type instanceof CStruct);
@@ -127,7 +145,8 @@ class CValue extends CDefinition {
    }
    
    compute_integer_bounds() {
-      console.assert(this.type == "integer");
+      assert_logic(this.type == "integer");
+      assert_logic(!!this.c_types.serialized.definition);
       const options = this.options;
       let   out = {
          bitcount: options.bitcount,
@@ -158,7 +177,7 @@ class CValue extends CDefinition {
             out.min = 0;
             out.max = bitcount_max;
          } else {
-            if (out.max > bitcount_max || options.is_signed) {
+            if (out.max > bitcount_max || this.c_types.serialized.definition.is_signed) {
                out.min = out.max - bitcount_max;
             } else {
                out.min = 0;
@@ -178,7 +197,7 @@ class CValueInstanceArray extends CDeclInstance {
       this.values = null;
       this.rank   = rank || 0;
       if (definition) {
-         console.assert(definition instanceof CValue);
+         assert_logic(definition instanceof CValue);
          if (!rank)
             rank = 0;
          console.assert(rank < definition.array_ranks.length);
@@ -194,7 +213,7 @@ class CValueInstanceArray extends CDeclInstance {
    
    get base() { return this.decl; }
    set base(v) {
-      console.assert(!v || v instanceof CValue);
+      assert_logic(!v || v instanceof CValue);
       this.decl = v;
    }
    
@@ -213,33 +232,12 @@ class CValueInstanceArray extends CDeclInstance {
    }
    
    copy_contents_of(/*const CValueInstanceArray*/ other) {
-      console.assert(other instanceof CValueInstance);
-      console.assert(this.decl.type == other.decl.type);
-      console.assert(this.values.length == other.values.length);
+      assert_logic(other instanceof CValueInstance);
+      assert_logic(this.decl.type == other.decl.type);
+      assert_logic(this.values.length == other.values.length);
       for(let i = 0; i < this.values.length; ++i) {
          this.values[i].copy_contents_of(other.values[i]);
       }
-   }
-   
-   // Returns a list of any instance-objects that couldn't be filled in.
-   fill_in_defaults() {
-      if (!this.values)
-         return [this];
-      
-      let unfilled = [];
-      for(let member of this.values) {
-         if (member instanceof CValueInstance) {
-            let dv = member.definition?.default_value;
-            if (dv === undefined) {
-               unfilled.push(member);
-            } else {
-               member.value = dv;
-            }
-            continue;
-         }
-         unfilled = unfilled.concat(member.fill_in_defaults());
-      }
-      return unfilled;
    }
 };
 
@@ -248,7 +246,7 @@ class CValueInstance extends CDeclInstance {
       super(format, definition);
       this.value = null;
       if (definition) {
-         console.assert(definition instanceof CValue);
+         assert_logic(definition instanceof CValue);
          let dv = definition.default_value;
          if (dv !== undefined && dv !== null)
             this.value = dv;
@@ -259,13 +257,13 @@ class CValueInstance extends CDeclInstance {
    // getter and setter.
    get base() { return this.decl; }
    set base(v) {
-      console.assert(!v || v instanceof CValue);
+      assert_logic(!v || v instanceof CValue);
       this.decl = v;
    }
    
    copy_contents_of(/*const CValueInstance*/ other) {
-      console.assert(other instanceof CValueInstance);
-      console.assert(this.decl.type == other.decl.type);
+      assert_logic(other instanceof CValueInstance);
+      assert_logic(this.decl.type == other.decl.type);
       if (other.value === null) {
          this.value = null;
          return;

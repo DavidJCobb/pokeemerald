@@ -503,7 +503,7 @@ class CViewElement extends HTMLElement {
             return ""+item.value;
          case "integer":
             {
-               let typename = base.c_typenames.serialized;
+               let typename = base.c_types.serialized.name;
                let format   = item.save_format;
                let enum_def = format.enums[typename];
                if (enum_def) {
@@ -1085,7 +1085,7 @@ class CViewElement extends HTMLElement {
                   }
                }
             } else if (item instanceof CValueInstance) {
-               typename = item.base.c_typenames.serialized;
+               typename = item.base.c_types.serialized.name;
                if (item.base.type == "string") {
                   let len = "...";
                   if (item.base.options.length) {
@@ -1097,7 +1097,7 @@ class CViewElement extends HTMLElement {
                   typename += `[${len}]`;
                }
             } else if (item instanceof CValueInstanceArray) {
-               typename = item.base.c_typenames.serialized;
+               typename = item.base.c_types.serialized.name;
                for(let i = 0; i < item.base.array_ranks.length; ++i) {
                   if (i < item.rank)
                      continue;

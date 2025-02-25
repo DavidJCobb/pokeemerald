@@ -139,6 +139,8 @@ class CBufferifier {
                   this.#advance_by_bytes(max);
                }
                break;
+            case "transform":
+               throw new Error("Cannot bufferify a transformed value, or any aggregate that contains one. We have no way of knowing the original in-memory representation.");
             default:
                throw new Error("Unimplemented value type " + type + ".");
          }
@@ -186,7 +188,7 @@ class CBufferifier {
          if (inst.decl.bitfield_info) {
             throw new Error("Cannot bufferify a bitfield.");
          }
-         if (inst.type == "transform") {
+         if (inst.decl.type == "transform") {
             throw new Error("Cannot bufferify a transformed value, or any aggregate that contains one. We have no way of knowing the original in-memory representation.");
          }
          type = inst.c_types.serialized.definition;

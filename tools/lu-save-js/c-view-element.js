@@ -68,7 +68,7 @@ class CViewElement extends TreeRowViewElement {
       
       /*String*/ getItemCellContent(/*const CInstance*/ inst, col, is_selected) /*const*/ {
          function _style(name, text) {
-            text = text.replaceAll("[", "[raw][[/raw]");
+            text = (text+"").replaceAll("[", "[raw][[/raw]");
             if (is_selected)
                return text;
             return `[style=${name}]${text}[/style]`;
@@ -76,6 +76,10 @@ class CViewElement extends TreeRowViewElement {
          
          if (col == 0) { // name
             if (inst.decl) {
+               let aggr = inst.is_member_of;
+               if (aggr instanceof CArrayInstance) {
+                  return _style("name-text", aggr.values.indexOf(inst));
+               }
                return _style("name-text", inst.decl.name);
             }
             return "[raw][[/raw]unnamed]";
@@ -213,6 +217,8 @@ class CViewElement extends TreeRowViewElement {
                      }
                   }
                   typename += `[raw][[/raw]${len}]`;
+               } else if (decl.bitfield_info) {
+                  typename += ":" + decl.bitfield_info.size;
                }
                return typename;
             }

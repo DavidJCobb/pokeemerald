@@ -15,80 +15,63 @@
 //
 class CBufferifier {
    constructor() {
-      this.buffer = null;
-      this.views  = []; // Array<DataView>
+      this.buffer = null; // ArrayBuffer
+      this.view   = null; // DataView
+      this.offset = 0;    // measured in bits (has to be that way for bitfields)
    }
    
-   #get_metrics_of(inst) {
+   #get_type(inst) {
+      let type;
       if (inst instanceof CDeclInstance) {
-         let info = inst.decl.field_info;
-         if (!info)
-            return null;
-         let out = {
-            is_bitfield: info.is_bitfield,
-            offset:      info.offset,
-            size:        info.size,
-         };
-         if (inst instanceof CValueInstanceArray) {
-            if (out.is_bitfield) {
-               throw new Error("Arrays of C bitfields are illegal.");
-            }
-            let extents = inst.decl.array_ranks;
-            let count   = extents[0];
-            for(let i = 1; i < inst.rank; ++i) {
-               count *= extents[i];
-            }
-            out.offset += out.size * count;
-            out.size   *= extents[inst.rank];
+         if (inst.decl.type == "transform") {
+            throw new Error("Cannot bufferify a transformed value, or any aggregate that contains one. We have no way of knowing the original in-memory representation.");
          }
-         return out;
+         return inst.decl.c_types.serialized.definition;
       } else if (inst instanceof CTypeInstance) {
-         let sizeof = inst.type.c_info.size;
-         let offset = inst.decl?.field_info?.offset;
-         if (!sizeof) {
-            throw new Error("Unable to ascertain the size of this object.");
-         }
-         return {
-            is_bitfield: false,
-            offset:      offset, // can be null/undefined e.g. if this is a top-level struct
-            size:        sizeof,
-         };
+         return inst.type;
       }
       return null;
    }
    
-   #handle_instance(inst, override_offset = null) {
+   #align(inst) {
+      let type = this.#get_type(inst);
+      if (type === null || type.c_info.alignment === null) {
+         throw new Error("Unable to bufferify this entity. Unknown size and alignment.");
+      }
+      if (this.offset % 8) {
+         this.offset += 8 - (this.offset % 8);
+      }
+      let align = type.c_info.alignment;
+      let diff  = (this.offset / 8) % align;
+      if (diff) {
+         this.offset += (align - diff) * 8;
+      }
+   }
+   
+   #advance_by_bits(b) {
+      this.offset += b;
+   }
+   #advance_by_bytes(b) {
+      this.offset += b * 8;
+   }
+   
+   get byte_offset() { return Math.floor(this.offset / 8); }
+   
+   #handle_instance(inst) {
       if (inst instanceof CValueInstance) {
-         let info = inst.decl.field_info;
-         if (!info) {
-            //
-            // TODO: This fails for top-level non-struct values e.g. ints or arrays thereof, 
-            //       since the XML doesn't report this information for them.
-            //
-            throw new Error("Unable to ascertain the C size or offset of the data we wish to bufferify.");
-         }
-         if (override_offset || override_offset === 0) {
-            info = Object.assign({ offset: override_offset }, info);
-         }
-         if (!this.buffer) {
-            if (info.is_bitfield) {
-               throw new Error("Cannot bufferify a lone C bitfield.");
-            }
-            this.buffer = new ArrayBuffer(info.size);
-            this.views.push(new DataView(this.buffer));
-         }
+         const bitfield_info = inst.decl.bitfield_info;
          //
          // Attempt to write into the buffer.
          //
-         let view = this.views[this.views.length - 1];
          let type = inst.decl.type;
          if (type == "omitted") {
             return;
          }
          if (inst.value === null) {
+            console.log(inst);
             throw new Error("Cannot bufferify a missing value.");
          }
-         if (info.is_bitfield) {
+         if (bitfield_info) {
             let v;
             if (type == "boolean") {
                v = inst.value ? 1 : 0;
@@ -98,50 +81,62 @@ class CBufferifier {
                throw new Error("Only booleans and integers can be C bitfields.");
             }
             
+            // HACK
+            let offset = bitfield_info.offset % 8;
+            
             // HACK: use Bitstream
-            let stream = new Bitstream(view);
-            stream.skip_bits(info.offset || 0);
-            stream.write_unsigned(info.size, v);
+            let stream = new Bitstream(this.view);
+            stream.skip_bits(this.offset + offset);
+            stream.write_unsigned(bitfield_info.size, v);
+            this.#advance_by_bits(bitfield_info.size);
             return;
          }
+         this.#align(inst);
+         let size = this.#get_type(inst).c_info.size;
          switch (type) {
             case "boolean":
                {
-                  view.setUint8(info.offset, inst.value ? 1 : 0);
-                  for(let i = 1; i < info.size; ++i)
-                     view.setUint8(info.offset + i, 0);
+                  this.view.setUint8(this.offset, inst.value ? 1 : 0);
+                  for(let i = 1; i < size; ++i)
+                     this.view.setUint8(this.offset + i, 0);
                }
+               this.#advance_by_bytes(size);
                break;
             case "buffer":
                {
                   let i;
-                  let end = Math.min(inst.value.byteLength, info.size);
+                  let max = inst.decl.options.bytecount;
+                  let end = Math.min(inst.value.byteLength, max);
                   for(i = 0; i < end; ++i)
-                     view.setUint8(info.offset + i, inst.value.getUint8(i));
-                  for(; i < info.size; ++i)
-                     view.setUint8(info.offset + i, 0);
+                     this.view.setUint8(this.byte_offset + i, inst.value.getUint8(i));
+                  for(; i < max; ++i)
+                     this.view.setUint8(this.byte_offset + i, 0);
+                  this.#advance_by_bytes(max);
                }
                break;
             case "integer":
             case "pointer":
-               switch (info.size) {
+               switch (size) {
                   case 1:
                   case 2:
                   case 4:
-                     view[`setUint${info.size * 8}`](info.offset, inst.value, true);
+                     this.view[`setUint${size * 8}`](this.byte_offset, inst.value, true);
                      break;
                   default:
                      throw new Error("Unsupported integral size.");
                }
+               this.#advance_by_bytes(size);
                break;
             case "string":
                {
                   let i;
-                  let end = Math.min(inst.value.length, info.size);
+                  let max = inst.decl.options.length;
+                  let end = Math.min(inst.value.length, max);
                   for(i = 0; i < end; ++i)
-                     view.setUint8(info.offset + i, inst.value.bytes[i]);
-                  for(; i < info.size; ++i)
-                     view.setUint8(info.offset + i, CHARSET_CONTROL_CODES.chars_to_bytes["\0"]);
+                     this.view.setUint8(this.byte_offset + i, inst.value.bytes[i]);
+                  for(; i < max; ++i)
+                     this.view.setUint8(this.byte_offset + i, CHARSET_CONTROL_CODES.chars_to_bytes["\0"]);
+                  this.#advance_by_bytes(max);
                }
                break;
             default:
@@ -154,58 +149,57 @@ class CBufferifier {
    }
    
    #handle_aggregate(inst) {
-      let view;
-      let metrics = this.#get_metrics_of(inst);
-      if (!metrics || !metrics.size) {
-         throw new Error("Unable to ascertain the C size of the data we wish to bufferify.");
-      }
-      if (metrics.is_bitfield) {
-         throw new Error("Illegal C bitfield (entity is an aggregate).");
-      }
-      if (this.buffer) {
-         if (!metrics.offset && metrics.offset !== 0) {
-            throw new Error("Unable to ascertain the C offset of the data we wish to bufferify.");
-         }
-         let back = this.views[this.views.length - 1];
-         view = new DataView(this.buffer, back.byteOffset + metrics.offset, metrics.size);
-         this.views.push(view);
-      } else {
-         if (metrics.is_bitfield) {
-            throw new Error("Cannot bufferify a bitfield.");
-         }
-         let offset = metrics.offset || 0;
-         this.buffer = new ArrayBuffer(metrics.size + offset);
-         view = new DataView(this.buffer, offset);
-         this.views.push(view);
-      }
-      
-      //
-      // Handle the aggregate.
-      //
-      
-      if (inst instanceof CValueInstanceArray) {
+      this.#align(inst);
+      if (inst instanceof CArrayInstance) {
          for(let i = 0; i < inst.values.length; ++i) {
-            let member = inst.values[i];
-            let offset = metrics.offset + metrics.size * i;
-            this.#handle_instance(member, offset, i);
+            this.#handle_instance(inst.values[i]);
          }
       } else if (inst instanceof CStructInstance) {
+         let offset = this.offset;
          for(let name in inst.members) {
-            let memb = inst.members[name];
-            this.#handle_instance(memb);
+            this.#handle_instance(inst.members[name]);
          }
+         {
+            let distance = this.offset - offset;
+            if (distance + 4*8 < this.#get_type(inst).c_info.size)
+               console.warn("Under-wrote the struct?", inst, distance);
+         }
+         this.offset = offset + this.#get_type(inst).c_info.size * 8;
       } else if (inst instanceof CUnionInstance) {
          if (inst.value) {
+            let offset = this.offset;
             this.#handle_instance(inst.value);
+            this.offset = offset + this.#get_type(inst).c_info.size * 8;
+         } else {
+            let size = inst.type.c_info.size;
+            if (!size && size !== 0) {
+               throw new Error("Unable to bufferify an empty union. Unknown size.");
+            }
+            this.offset += size * 8;
          }
       }
-      
-      this.views.pop();
    }
    
    run(/*CInstance*/ inst) {
-      this.buffer = null;
-      this.views  = [];
+      let type;
+      if (inst instanceof CDeclInstance) {
+         if (inst.decl.bitfield_info) {
+            throw new Error("Cannot bufferify a bitfield.");
+         }
+         if (inst.type == "transform") {
+            throw new Error("Cannot bufferify a transformed value, or any aggregate that contains one. We have no way of knowing the original in-memory representation.");
+         }
+         type = inst.c_types.serialized.definition;
+      } else if (inst instanceof CTypeInstance) {
+         type = inst.type;
+      }
+      if (!type.c_info.size) {
+         throw new Error("Unable to bufferify this entity. Unknown size.");
+      }
+      
+      this.buffer = new ArrayBuffer(type.c_info.size);
+      this.view   = new DataView(this.buffer);
+      this.offset = 0;
       this.#handle_instance(inst);
    }
 };

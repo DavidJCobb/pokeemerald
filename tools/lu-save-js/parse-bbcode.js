@@ -1,3 +1,20 @@
+//
+// Parse a BBCode string into a tree of tags and bare text strings. 
+// Each tag is a basic object with, at minimum, `name` and `data` 
+// keys. Some tags have a `children` key which is an array of more 
+// tags and strings.
+//
+// A tag of the form "[foo=bar]" will have name "foo" and data "bar". 
+// A tag of the form "[foo]" will have name "foo" and data null.
+//
+// Note that the list of tags which are allowed to contain children 
+// is hardcoded. (In other words, all tags are void elements except 
+// for a specific few.)
+//
+// A [raw]...[/raw] tag is offered for escaping left square brackets. 
+// It has the effect of disabling parsing inside of it. Obviously, 
+// it can't be nested.
+//
 function parseBBCode(str) {
    str+="";
    

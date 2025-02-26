@@ -77,6 +77,13 @@ class TransformInstructionNode extends ParentInstructionNode {
       this.transform_through = [];   // Array<String> of typenames
       this.transformed_var   = null; // String variable name
    }
+   from_xml(node) {
+      this.to_be_transformed.parse(node.getAttribute("value"));
+      this.transformed_type  = node.getAttribute("transformed-type");
+      this.transformed_var   = node.getAttribute("transformed-value");
+      
+      super.from_xml(node);
+   }
 };
 
 class UnionSwitchInstructionNode extends InstructionNode {

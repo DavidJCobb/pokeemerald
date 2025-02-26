@@ -16,6 +16,13 @@ class InstructionsApplier {
       let value = this.root_data;
       let rank  = 0;
       for(let segm of path.segments) {
+         if (segm.type === null) { // root segment
+            let subject = this.variables.transformed[segm.what];
+            if (subject) {
+               value = subject;
+               continue;
+            }
+         }
          if (segm.type === null || segm.type == "member-access") {
             if (value instanceof CUnionInstance) {
                if (for_read) {
@@ -68,9 +75,15 @@ class InstructionsApplier {
                this.read(node);
             }
          } else if (node instanceof TransformInstructionNode) {
+            let subject = this.resolve_value_path(node.to_be_transformed, true);
+            console.assert(subject instanceof CInstance);
             
-            // TODO
-            
+            let transform_applier = new InstructionsApplier();
+            transform_applier.save_format = this.save_format;
+            transform_applier.root_data   = this.root_data;
+            transform_applier.bitstream   = this.bitstream;
+            transform_applier.variables.transformed[node.transformed_var] = subject;
+            transform_applier.read(node);
          } else if (node instanceof UnionSwitchInstructionNode) {
             let tag_value = this.resolve_value_path(node.tag, true);
             console.assert(tag_value instanceof CValueInstance);
@@ -164,9 +177,15 @@ class InstructionsApplier {
                this.save(node);
             }
          } else if (node instanceof TransformInstructionNode) {
+            let subject = this.resolve_value_path(node.to_be_transformed, false);
+            console.assert(subject instanceof CInstance);
             
-            // TODO
-            
+            let transform_applier = new InstructionsApplier();
+            transform_applier.save_format = this.save_format;
+            transform_applier.root_data   = this.root_data;
+            transform_applier.bitstream   = this.bitstream;
+            transform_applier.variables.transformed[node.transformed_var] = subject;
+            transform_applier.save(node);
          } else if (node instanceof UnionSwitchInstructionNode) {
             let tag_value = this.resolve_value_path(node.tag, false);
             console.assert(tag_value instanceof CValueInstance);
@@ -184,8 +203,18 @@ class InstructionsApplier {
          } else if (node instanceof PaddingInstructionNode) {
             this.bitstream.skip_bits(node.bitcount);
          } else if (node instanceof SingleInstructionNode) {
-            let value = this.resolve_value_path(node.value, false);
-            if (node.type == "struct") {
+            let value              = this.resolve_value_path(node.value, false);
+            let serialization_type = node.type;
+            if (serialization_type == "transformed") {
+               let type = value.serialized_type;
+               if (type instanceof CStructDefinition) {
+                  serialization_type = "struct";
+               } else {
+                  throw new Error("support for other transformed types is not yet implemented here");
+               }
+            }
+            
+            if (serialization_type == "struct") {
                console.assert(value instanceof CStructInstance);
                let /*CStruct*/ type = value.type;
                console.assert(!!type.instructions);
@@ -206,7 +235,7 @@ class InstructionsApplier {
                whole_struct_applier.save(type.instructions);
             } else {
                console.assert(value instanceof CValueInstance);
-               switch (node.type) {
+               switch (serialization_type) {
                   case "omitted":
                      break;
                   

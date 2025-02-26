@@ -1,7 +1,7 @@
 
 class CValuePathSegment {
    constructor() {
-      this.type     = null; // null, "array-access", "member-access"
+      this.type     = null; // null (root segment), "array-access", "member-access"
       this.what     = null; // member name; array element index; array index var name
       this.resolved = null; // Optional<Variant<CValue, CStruct, CUnion>>
    }

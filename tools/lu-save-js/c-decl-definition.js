@@ -66,6 +66,9 @@ class CDeclDefinition extends CDefinition {
          if (!this.c_types.serialized.name) {
             Object.assign(this.c_types.serialized, this.c_types.original);
          }
+         if (this.type == "transformed") {
+            _load("serialized", "transformed-type");
+         }
          //
          // Validate.
          //
@@ -104,7 +107,7 @@ class CDeclDefinition extends CDefinition {
       //
       // Check for bitfield info (only when usable).
       //
-      if (this.type != "transform") {
+      if (this.type != "transformed") {
          let offset = node.getAttribute("c-bitfield-offset");
          let size   = node.getAttribute("c-bitfield-width");
          if (offset !== null && size !== null) {
@@ -155,6 +158,20 @@ class CDeclDefinition extends CDefinition {
       }
       if (this.type == "struct") {
          return new CStructInstance(this, this.c_types.serialized.definition);
+      }
+      if (this.type == "transformed") {
+         let type = this.serialized_type;
+         if (type instanceof CStructDefinition) {
+            return new CStructInstance(this, type);
+         }
+         if (type instanceof CUnionDefinition) {
+            return new CUnionInstance(this, type);
+         }
+         //
+         // In particular, the way we strip C type qualifiers on load will break 
+         // for transformations to arrays.
+         //
+         throw new Error("support for other transformed types is not yet implemented here");
       }
       return new CValueInstance(this);
    }

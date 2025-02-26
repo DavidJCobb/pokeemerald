@@ -101,7 +101,7 @@ class CUnionInstance extends CTypeInstance {
                common_members = {};
                for(let name in this.value.members) {
                   common_members[name] = this.value.members[name];
-                  if (name == this.type.tag)
+                  if (name == this.type.internal_tag_name)
                      break;
                }
             }

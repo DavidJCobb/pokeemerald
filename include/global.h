@@ -270,7 +270,7 @@ struct Apprentice
     TrainerID      playerId;
     PlayerNameNoTerminator playerName;
     LanguageID language;
-    u32 checksum;
+    LU_BP_CATEGORY("checksum-32") u32 checksum;
 };
 
 struct BattleTowerPokemon
@@ -313,7 +313,7 @@ struct EmeraldBattleTowerRecord
     /*0x34*/ struct BattleTowerPokemon party[MAX_FRONTIER_PARTY_SIZE];
     /*0xE4*/ LanguageID language;
     /*0xE7*/ //u8 padding[3];
-    /*0xE8*/ u32 checksum;
+    /*0xE8*/ LU_BP_CATEGORY("checksum-32") u32 checksum;
 };
 
 struct BattleTowerInterview
@@ -336,7 +336,7 @@ struct BattleTowerEReaderTrainer
     /*0x1C*/ EasyChatWordID farewellPlayerLost[EASY_CHAT_BATTLE_WORDS_COUNT];
     /*0x28*/ EasyChatWordID farewellPlayerWon[EASY_CHAT_BATTLE_WORDS_COUNT];
     /*0x34*/ struct BattleTowerPokemon party[FRONTIER_PARTY_SIZE];
-    /*0xB8*/ u32 checksum;
+    /*0xB8*/ LU_BP_CATEGORY("checksum-32") u32 checksum;
 };
 
 // For displaying party information on the player's Battle Dome tourney page
@@ -627,7 +627,7 @@ struct RamScriptData
 
 struct RamScript
 {
-    u32 checksum;
+    LU_BP_CATEGORY("checksum-crc16") u32 checksum;
     struct RamScriptData data;
 };
 
@@ -739,7 +739,7 @@ struct RecordMixingGiftData
 
 struct RecordMixingGift
 {
-    int checksum;
+    LU_BP_CATEGORY("checksum-a32u8") int checksum;
     struct RecordMixingGiftData data;
 };
 

@@ -4,6 +4,46 @@
       <option name="max-sector-bytecount" value="3968" />
    </config>
    <categories>
+      <category name="checksum-16">
+         <bitcounts total-unpacked="6848" total-packed="6848" />
+         <counts total="428">
+            <in-sector index="1" count="6" />
+            <in-sector index="3" count="2" />
+            <in-sector index="5" count="54" />
+            <in-sector index="6" count="54" />
+            <in-sector index="7" count="54" />
+            <in-sector index="8" count="54" />
+            <in-sector index="9" count="54" />
+            <in-sector index="10" count="54" />
+            <in-sector index="11" count="54" />
+            <in-sector index="12" count="42" />
+            <in-top-level-value name="gSaveBlock1Ptr" count="8" />
+            <in-top-level-value name="gPokemonStoragePtr" count="420" />
+         </counts>
+      </category>
+      <category name="checksum-32">
+         <bitcounts total-unpacked="384" total-packed="384" />
+         <counts total="12">
+            <in-sector index="0" count="11" />
+            <in-sector index="3" count="1" />
+            <in-top-level-value name="gSaveBlock2Ptr" count="11" />
+            <in-top-level-value name="gSaveBlock1Ptr" count="1" />
+         </counts>
+      </category>
+      <category name="checksum-a32u8">
+         <bitcounts total-unpacked="32" total-packed="32" />
+         <counts total="1">
+            <in-sector index="4" count="1" />
+            <in-top-level-value name="gSaveBlock1Ptr" count="1" />
+         </counts>
+      </category>
+      <category name="checksum-crc16">
+         <bitcounts total-unpacked="32" total-packed="32" />
+         <counts total="1">
+            <in-sector index="4" count="1" />
+            <in-top-level-value name="gSaveBlock1Ptr" count="1" />
+         </counts>
+      </category>
       <category name="easy-chat-word">
          <bitcounts total-unpacked="5504" total-packed="5504" />
          <counts total="344">
@@ -14,25 +54,24 @@
          </counts>
       </category>
       <category name="global-item-id">
-         <bitcounts total-unpacked="36384" total-packed="36384" />
-         <counts total="2274">
+         <bitcounts total-unpacked="15840" total-packed="15840" />
+         <counts total="990">
             <in-sector index="0" count="59" />
-            <in-sector index="1" count="261" />
+            <in-sector index="1" count="243" />
             <in-sector index="2" count="78" />
-            <in-sector index="3" count="193" />
+            <in-sector index="3" count="187" />
             <in-sector index="4" count="3" />
-            <in-sector index="5" count="196" />
-            <in-sector index="6" count="200" />
-            <in-sector index="7" count="200" />
-            <in-sector index="8" count="200" />
-            <in-sector index="9" count="196" />
-            <in-sector index="10" count="200" />
-            <in-sector index="11" count="200" />
-            <in-sector index="12" count="200" />
-            <in-sector index="13" count="88" />
+            <in-sector index="5" count="54" />
+            <in-sector index="6" count="54" />
+            <in-sector index="7" count="54" />
+            <in-sector index="8" count="54" />
+            <in-sector index="9" count="54" />
+            <in-sector index="10" count="54" />
+            <in-sector index="11" count="54" />
+            <in-sector index="12" count="42" />
             <in-top-level-value name="gSaveBlock2Ptr" count="59" />
-            <in-top-level-value name="gSaveBlock1Ptr" count="535" />
-            <in-top-level-value name="gPokemonStoragePtr" count="1680" />
+            <in-top-level-value name="gSaveBlock1Ptr" count="511" />
+            <in-top-level-value name="gPokemonStoragePtr" count="420" />
          </counts>
       </category>
       <category name="language">
@@ -40,42 +79,40 @@
          <counts total="1517">
             <in-sector index="0" count="71" />
             <in-sector index="1" count="6" />
-            <in-sector index="2" count="13" />
-            <in-sector index="3" count="1004" />
+            <in-sector index="2" count="14" />
+            <in-sector index="3" count="1003" />
             <in-sector index="4" count="3" />
-            <in-sector index="5" count="50" />
-            <in-sector index="6" count="50" />
-            <in-sector index="7" count="49" />
-            <in-sector index="8" count="50" />
-            <in-sector index="9" count="50" />
-            <in-sector index="10" count="50" />
-            <in-sector index="11" count="49" />
-            <in-sector index="12" count="50" />
-            <in-sector index="13" count="22" />
+            <in-sector index="5" count="54" />
+            <in-sector index="6" count="54" />
+            <in-sector index="7" count="54" />
+            <in-sector index="8" count="54" />
+            <in-sector index="9" count="54" />
+            <in-sector index="10" count="54" />
+            <in-sector index="11" count="54" />
+            <in-sector index="12" count="42" />
             <in-top-level-value name="gSaveBlock2Ptr" count="71" />
             <in-top-level-value name="gSaveBlock1Ptr" count="1026" />
             <in-top-level-value name="gPokemonStoragePtr" count="420" />
          </counts>
       </category>
       <category name="move-id">
-         <bitcounts total-unpacked="124816" total-packed="70209" />
-         <counts total="7801">
+         <bitcounts total-unpacked="42640" total-packed="23985" />
+         <counts total="2665">
             <in-sector index="0" count="168" />
-            <in-sector index="1" count="96" />
+            <in-sector index="1" count="24" />
             <in-sector index="2" count="312" />
-            <in-sector index="3" count="505" />
-            <in-sector index="5" count="784" />
-            <in-sector index="6" count="800" />
-            <in-sector index="7" count="800" />
-            <in-sector index="8" count="800" />
-            <in-sector index="9" count="784" />
-            <in-sector index="10" count="800" />
-            <in-sector index="11" count="800" />
-            <in-sector index="12" count="800" />
-            <in-sector index="13" count="352" />
+            <in-sector index="3" count="481" />
+            <in-sector index="5" count="216" />
+            <in-sector index="6" count="216" />
+            <in-sector index="7" count="216" />
+            <in-sector index="8" count="216" />
+            <in-sector index="9" count="216" />
+            <in-sector index="10" count="216" />
+            <in-sector index="11" count="216" />
+            <in-sector index="12" count="168" />
             <in-top-level-value name="gSaveBlock2Ptr" count="168" />
-            <in-top-level-value name="gSaveBlock1Ptr" count="913" />
-            <in-top-level-value name="gPokemonStoragePtr" count="6720" />
+            <in-top-level-value name="gSaveBlock1Ptr" count="817" />
+            <in-top-level-value name="gPokemonStoragePtr" count="1680" />
          </counts>
       </category>
       <category name="player-name">
@@ -83,18 +120,17 @@
          <counts total="1520">
             <in-sector index="0" count="81" />
             <in-sector index="1" count="6" />
-            <in-sector index="2" count="13" />
-            <in-sector index="3" count="977" />
+            <in-sector index="2" count="14" />
+            <in-sector index="3" count="976" />
             <in-sector index="4" count="23" />
-            <in-sector index="5" count="50" />
-            <in-sector index="6" count="49" />
-            <in-sector index="7" count="50" />
-            <in-sector index="8" count="50" />
-            <in-sector index="9" count="50" />
-            <in-sector index="10" count="49" />
-            <in-sector index="11" count="50" />
-            <in-sector index="12" count="50" />
-            <in-sector index="13" count="22" />
+            <in-sector index="5" count="54" />
+            <in-sector index="6" count="54" />
+            <in-sector index="7" count="54" />
+            <in-sector index="8" count="54" />
+            <in-sector index="9" count="54" />
+            <in-sector index="10" count="54" />
+            <in-sector index="11" count="54" />
+            <in-sector index="12" count="42" />
             <in-top-level-value name="gSaveBlock2Ptr" count="81" />
             <in-top-level-value name="gSaveBlock1Ptr" count="1019" />
             <in-top-level-value name="gPokemonStoragePtr" count="420" />
@@ -108,13 +144,14 @@
          </counts>
       </category>
       <category name="pokemon-level">
-         <bitcounts total-unpacked="1392" total-packed="1218" />
-         <counts total="174">
+         <bitcounts total-unpacked="1440" total-packed="1260" />
+         <counts total="180">
             <in-sector index="0" count="27" />
+            <in-sector index="1" count="6" />
             <in-sector index="2" count="78" />
             <in-sector index="3" count="69" />
             <in-top-level-value name="gSaveBlock2Ptr" count="27" />
-            <in-top-level-value name="gSaveBlock1Ptr" count="147" />
+            <in-top-level-value name="gSaveBlock1Ptr" count="153" />
          </counts>
       </category>
       <category name="pokemon-name">
@@ -123,48 +160,46 @@
             <in-sector index="0" count="28" />
             <in-sector index="1" count="6" />
             <in-sector index="3" count="142" />
-            <in-sector index="5" count="50" />
-            <in-sector index="6" count="50" />
-            <in-sector index="7" count="49" />
-            <in-sector index="8" count="50" />
-            <in-sector index="9" count="50" />
-            <in-sector index="10" count="50" />
-            <in-sector index="11" count="49" />
-            <in-sector index="12" count="50" />
-            <in-sector index="13" count="22" />
+            <in-sector index="5" count="54" />
+            <in-sector index="6" count="54" />
+            <in-sector index="7" count="54" />
+            <in-sector index="8" count="54" />
+            <in-sector index="9" count="54" />
+            <in-sector index="10" count="54" />
+            <in-sector index="11" count="54" />
+            <in-sector index="12" count="42" />
             <in-top-level-value name="gSaveBlock2Ptr" count="28" />
             <in-top-level-value name="gSaveBlock1Ptr" count="148" />
             <in-top-level-value name="gPokemonStoragePtr" count="420" />
          </counts>
       </category>
       <category name="species-id">
-         <bitcounts total-unpacked="39456" total-packed="27126" />
-         <counts total="2466">
+         <bitcounts total-unpacked="18912" total-packed="13002" />
+         <counts total="1182">
             <in-sector index="0" count="47" />
-            <in-sector index="1" count="24" />
+            <in-sector index="1" count="6" />
             <in-sector index="2" count="78" />
-            <in-sector index="3" count="635" />
+            <in-sector index="3" count="629" />
             <in-sector index="4" count="2" />
-            <in-sector index="5" count="196" />
-            <in-sector index="6" count="200" />
-            <in-sector index="7" count="200" />
-            <in-sector index="8" count="200" />
-            <in-sector index="9" count="196" />
-            <in-sector index="10" count="200" />
-            <in-sector index="11" count="200" />
-            <in-sector index="12" count="200" />
-            <in-sector index="13" count="88" />
+            <in-sector index="5" count="54" />
+            <in-sector index="6" count="54" />
+            <in-sector index="7" count="54" />
+            <in-sector index="8" count="54" />
+            <in-sector index="9" count="54" />
+            <in-sector index="10" count="54" />
+            <in-sector index="11" count="54" />
+            <in-sector index="12" count="42" />
             <in-top-level-value name="gSaveBlock2Ptr" count="47" />
-            <in-top-level-value name="gSaveBlock1Ptr" count="739" />
-            <in-top-level-value name="gPokemonStoragePtr" count="1680" />
+            <in-top-level-value name="gSaveBlock1Ptr" count="715" />
+            <in-top-level-value name="gPokemonStoragePtr" count="420" />
          </counts>
       </category>
       <category name="trainer-id">
          <bitcounts total-unpacked="6416" total-packed="6320" />
          <counts total="571">
             <in-sector index="0" count="363" />
-            <in-sector index="2" count="52" />
-            <in-sector index="3" count="122" />
+            <in-sector index="2" count="56" />
+            <in-sector index="3" count="118" />
             <in-sector index="4" count="34" />
             <in-top-level-value name="gSaveBlock2Ptr" count="363" />
             <in-top-level-value name="gSaveBlock1Ptr" count="208" />
@@ -181,10 +216,10 @@
       </integral>
       <integral name="short unsigned int" alignment="2" is-signed="false" size="2">
          <typedef name="u16" />
-         <typedef name="ItemIDGlobal" />
          <typedef name="PokemonSpeciesID" />
-         <typedef name="EasyChatWordID" />
          <typedef name="MoveID" />
+         <typedef name="ItemIDGlobal" />
+         <typedef name="EasyChatWordID" />
       </integral>
       <integral name="signed char" alignment="1" is-signed="true" size="1">
          <typedef name="s8" />
@@ -239,7 +274,9 @@
             <integer name="language" type="LanguageID" bitcount="4" min="0" max="7">
                <category name="language" />
             </integer>
-            <integer name="checksum" type="u32" bitcount="32" />
+            <integer name="checksum" type="u32" bitcount="32">
+               <category name="checksum-32" />
+            </integer>
          </members>
          <instructions>
             <integer value="id" type="u8" bitcount="5" />
@@ -640,7 +677,9 @@
             <struct name="party" type="BattleTowerPokemon[3]">
                <array-rank extent="3" />
             </struct>
-            <integer name="checksum" type="u32" bitcount="32" />
+            <integer name="checksum" type="u32" bitcount="32">
+               <category name="checksum-32" />
+            </integer>
          </members>
          <instructions>
             <integer value="unk0" type="u8" bitcount="8" />
@@ -863,6 +902,7 @@
          </instructions>
       </struct>
       <struct tag="BoxPokemon" c-alignment="4" c-sizeof="80">
+         <transform-options transformed-type="SerializedBoxPokemon" pack-function="PackBoxPokemonForSave" unpack-function="UnpackBoxPokemonForSave" />
          <members>
             <integer name="personality" type="u32" bitcount="32" />
             <integer name="otId" type="u32" bitcount="32" />
@@ -883,33 +923,17 @@
             <integer name="markings" type="u8" bitcount="8" />
             <integer name="checksum" type="u16" bitcount="16" />
             <integer name="unknown" type="u16" bitcount="16" />
-            <buffer name="secure" bytecount="48">
+            <unknown name="secure">
                <members>
                   <integer name="raw" type="u32[12]" bitcount="32">
                      <array-rank extent="12" />
                   </integer>
-                  <buffer name="substructs" type="PokemonSubstruct[4]" bytecount="12">
+                  <unknown name="substructs" type="PokemonSubstruct[4]">
                      <array-rank extent="4" />
-                  </buffer>
+                  </unknown>
                </members>
-            </buffer>
+            </unknown>
          </members>
-         <instructions>
-            <integer value="personality" type="u32" bitcount="32" />
-            <integer value="otId" type="u32" bitcount="32" />
-            <string value="nickname" type="u8[10]" length="10" nonstring="true" />
-            <integer value="language" type="LanguageID" bitcount="4" min="0" max="7" />
-            <integer value="isBadEgg" type="u8" bitcount="1" />
-            <integer value="hasSpecies" type="u8" bitcount="1" />
-            <integer value="isEgg" type="u8" bitcount="1" />
-            <integer value="blockBoxRS" type="u8" bitcount="1" />
-            <integer value="unused" type="u8" bitcount="4" />
-            <string value="otName" type="u8[7]" length="7" nonstring="true" />
-            <integer value="markings" type="u8" bitcount="8" />
-            <integer value="checksum" type="u16" bitcount="16" />
-            <integer value="unknown" type="u16" bitcount="16" />
-            <buffer value="secure" type="&lt;unnamed&gt;" bytecount="48" />
-         </instructions>
       </struct>
       <struct tag="ContestWinner" c-alignment="4" c-sizeof="32">
          <members>
@@ -991,12 +1015,14 @@
       </struct>
       <struct tag="DaycareMon" c-alignment="4" c-sizeof="140">
          <members>
-            <struct name="mon" type="BoxPokemon" />
+            <transformed name="mon" type="BoxPokemon" transformed-type="SerializedBoxPokemon" pack-function="PackBoxPokemonForSave" unpack-function="UnpackBoxPokemonForSave" />
             <struct name="mail" type="DaycareMail" />
             <integer name="steps" type="u32" bitcount="32" />
          </members>
          <instructions>
-            <struct value="mon" type="BoxPokemon" />
+            <transform value="mon" transformed-type="SerializedBoxPokemon" transformed-value="__transformed_var_0">
+               <struct value="__transformed_var_0" type="SerializedBoxPokemon" />
+            </transform>
             <struct value="mail" type="DaycareMail" />
             <integer value="steps" type="u32" bitcount="32" />
          </instructions>
@@ -1073,7 +1099,9 @@
             <integer name="language" type="LanguageID" bitcount="4" min="0" max="7">
                <category name="language" />
             </integer>
-            <integer name="checksum" type="u32" bitcount="32" />
+            <integer name="checksum" type="u32" bitcount="32">
+               <category name="checksum-32" />
+            </integer>
          </members>
          <instructions>
             <integer value="lvlMode" type="u8" bitcount="8" />
@@ -1107,7 +1135,9 @@
             </integer>
             <integer name="holdEffect" type="u8" bitcount="8" />
             <integer name="holdEffectParam" type="u8" bitcount="8" />
-            <integer name="checksum" type="u32" bitcount="32" />
+            <integer name="checksum" type="u32" bitcount="32">
+               <category name="checksum-32" />
+            </integer>
          </members>
          <instructions>
             <struct value="berry" type="Berry2" />
@@ -1768,11 +1798,53 @@
             </loop>
          </instructions>
       </struct>
+      <struct tag="PokemonSubstruct0" c-alignment="4" c-sizeof="12">
+         <members>
+            <integer name="species" type="PokemonSpeciesID" bitcount="11" min="0" max="2047">
+               <category name="species-id" />
+            </integer>
+            <integer name="heldItem" type="ItemIDGlobal" bitcount="16">
+               <category name="global-item-id" />
+            </integer>
+            <integer name="experience" type="u32" bitcount="32" />
+            <integer name="ppBonuses" type="u8" bitcount="8" />
+            <integer name="friendship" type="u8" bitcount="8" />
+            <omitted name="filler" type="u16" />
+         </members>
+         <instructions>
+            <integer value="species" type="PokemonSpeciesID" bitcount="11" min="0" max="2047" />
+            <integer value="heldItem" type="ItemIDGlobal" bitcount="16" />
+            <integer value="experience" type="u32" bitcount="32" />
+            <integer value="ppBonuses" type="u8" bitcount="8" />
+            <integer value="friendship" type="u8" bitcount="8" />
+         </instructions>
+      </struct>
+      <struct tag="PokemonSubstruct1" c-alignment="4" c-sizeof="12">
+         <members>
+            <integer name="moves" type="MoveID[4]" bitcount="9">
+               <array-rank extent="4" />
+               <category name="move-id" />
+            </integer>
+            <integer name="pp" type="u8[4]" bitcount="8">
+               <array-rank extent="4" />
+            </integer>
+         </members>
+         <instructions>
+            <loop array="moves" start="0" count="4" counter-var="__a">
+               <integer value="moves[__a]" type="MoveID" bitcount="9" />
+            </loop>
+            <loop array="pp" start="0" count="4" counter-var="__b">
+               <integer value="pp[__b]" type="u8" bitcount="8" />
+            </loop>
+         </instructions>
+      </struct>
       <struct tag="Pokemon" c-alignment="4" c-sizeof="100">
          <members>
-            <struct name="box" type="BoxPokemon" />
+            <transformed name="box" type="BoxPokemon" transformed-type="SerializedBoxPokemon" pack-function="PackBoxPokemonForSave" unpack-function="UnpackBoxPokemonForSave" />
             <integer name="status" type="u32" bitcount="32" />
-            <integer name="level" type="u8" bitcount="8" />
+            <integer name="level" type="PokemonLevel" bitcount="7" min="0" max="100">
+               <category name="pokemon-level" />
+            </integer>
             <integer name="mail" type="u8" bitcount="8" />
             <integer name="hp" type="u16" bitcount="16" />
             <integer name="maxHP" type="u16" bitcount="16" />
@@ -1783,9 +1855,11 @@
             <integer name="spDefense" type="u16" bitcount="16" />
          </members>
          <instructions>
-            <struct value="box" type="BoxPokemon" />
+            <transform value="box" transformed-type="SerializedBoxPokemon" transformed-value="__transformed_var_0">
+               <struct value="__transformed_var_0" type="SerializedBoxPokemon" />
+            </transform>
             <integer value="status" type="u32" bitcount="32" />
-            <integer value="level" type="u8" bitcount="8" />
+            <integer value="level" type="PokemonLevel" bitcount="7" min="0" max="100" />
             <integer value="mail" type="u8" bitcount="8" />
             <integer value="hp" type="u16" bitcount="16" />
             <integer value="maxHP" type="u16" bitcount="16" />
@@ -1817,40 +1891,15 @@
       <struct tag="PokemonStorage" c-alignment="4" c-sizeof="33744">
          <members>
             <integer name="currentBox" type="u8" bitcount="4" min="0" max="13" />
-            <struct name="boxes" type="BoxPokemon[30][14]">
+            <transformed name="boxes" type="BoxPokemon[30][14]" transformed-type="SerializedBoxPokemon" pack-function="PackBoxPokemonForSave" unpack-function="UnpackBoxPokemonForSave">
                <array-rank extent="14" />
                <array-rank extent="30" />
-            </struct>
+            </transformed>
             <string name="boxNames" type="u8[9][14]" length="8" nonstring="false">
                <array-rank extent="14" />
             </string>
             <integer name="boxWallpapers" type="u8[14]" bitcount="8">
                <array-rank extent="14" />
-            </integer>
-         </members>
-      </struct>
-      <struct tag="PokemonSubstruct0" c-alignment="4" c-sizeof="12">
-         <members>
-            <integer name="species" type="PokemonSpeciesID" bitcount="11" min="0" max="2047">
-               <category name="species-id" />
-            </integer>
-            <integer name="heldItem" type="ItemIDGlobal" bitcount="16">
-               <category name="global-item-id" />
-            </integer>
-            <integer name="experience" type="u32" bitcount="32" />
-            <integer name="ppBonuses" type="u8" bitcount="8" />
-            <integer name="friendship" type="u8" bitcount="8" />
-            <integer name="filler" type="u16" bitcount="16" />
-         </members>
-      </struct>
-      <struct tag="PokemonSubstruct1" c-alignment="4" c-sizeof="12">
-         <members>
-            <integer name="moves" type="MoveID[4]" bitcount="9">
-               <array-rank extent="4" />
-               <category name="move-id" />
-            </integer>
-            <integer name="pp" type="u8[4]" bitcount="8">
-               <array-rank extent="4" />
             </integer>
          </members>
       </struct>
@@ -1869,6 +1918,20 @@
             <integer name="tough" type="u8" bitcount="8" />
             <integer name="sheen" type="u8" bitcount="8" />
          </members>
+         <instructions>
+            <integer value="hpEV" type="u8" bitcount="8" />
+            <integer value="attackEV" type="u8" bitcount="8" />
+            <integer value="defenseEV" type="u8" bitcount="8" />
+            <integer value="speedEV" type="u8" bitcount="8" />
+            <integer value="spAttackEV" type="u8" bitcount="8" />
+            <integer value="spDefenseEV" type="u8" bitcount="8" />
+            <integer value="cool" type="u8" bitcount="8" />
+            <integer value="beauty" type="u8" bitcount="8" />
+            <integer value="cute" type="u8" bitcount="8" />
+            <integer value="smart" type="u8" bitcount="8" />
+            <integer value="tough" type="u8" bitcount="8" />
+            <integer value="sheen" type="u8" bitcount="8" />
+         </instructions>
       </struct>
       <struct tag="PokemonSubstruct3" c-alignment="4" c-sizeof="12">
          <members>
@@ -1906,19 +1969,42 @@
             <integer name="unusedRibbons" type="u32" c-bitfield-offset="27" c-bitfield-width="4" bitcount="4" />
             <integer name="modernFatefulEncounter" type="u32" c-bitfield-offset="31" c-bitfield-width="1" bitcount="1" />
          </members>
+         <instructions>
+            <integer value="pokerus" type="u8" bitcount="8" />
+            <integer value="metLocation" type="u8" bitcount="8" />
+            <integer value="metLevel" type="u16" bitcount="7" />
+            <integer value="metGame" type="u16" bitcount="4" />
+            <integer value="pokeball" type="u16" bitcount="4" />
+            <integer value="otGender" type="u16" bitcount="1" />
+            <integer value="hpIV" type="u32" bitcount="5" />
+            <integer value="attackIV" type="u32" bitcount="5" />
+            <integer value="defenseIV" type="u32" bitcount="5" />
+            <integer value="speedIV" type="u32" bitcount="5" />
+            <integer value="spAttackIV" type="u32" bitcount="5" />
+            <integer value="spDefenseIV" type="u32" bitcount="5" />
+            <integer value="isEgg" type="u32" bitcount="1" />
+            <integer value="abilityNum" type="u32" bitcount="1" />
+            <integer value="coolRibbon" type="u32" bitcount="3" />
+            <integer value="beautyRibbon" type="u32" bitcount="3" />
+            <integer value="cuteRibbon" type="u32" bitcount="3" />
+            <integer value="smartRibbon" type="u32" bitcount="3" />
+            <integer value="toughRibbon" type="u32" bitcount="3" />
+            <integer value="championRibbon" type="u32" bitcount="1" />
+            <integer value="winningRibbon" type="u32" bitcount="1" />
+            <integer value="victoryRibbon" type="u32" bitcount="1" />
+            <integer value="artistRibbon" type="u32" bitcount="1" />
+            <integer value="effortRibbon" type="u32" bitcount="1" />
+            <integer value="marineRibbon" type="u32" bitcount="1" />
+            <integer value="landRibbon" type="u32" bitcount="1" />
+            <integer value="skyRibbon" type="u32" bitcount="1" />
+            <integer value="countryRibbon" type="u32" bitcount="1" />
+            <integer value="nationalRibbon" type="u32" bitcount="1" />
+            <integer value="earthRibbon" type="u32" bitcount="1" />
+            <integer value="worldRibbon" type="u32" bitcount="1" />
+            <integer value="unusedRibbons" type="u32" bitcount="4" />
+            <integer value="modernFatefulEncounter" type="u32" bitcount="1" />
+         </instructions>
       </struct>
-      <union tag="PokemonSubstruct" c-alignment="4" c-sizeof="12">
-         <opaque-buffer-options bytecount="12" />
-         <members>
-            <struct name="type0" type="PokemonSubstruct0" />
-            <struct name="type1" type="PokemonSubstruct1" />
-            <struct name="type2" type="PokemonSubstruct2" />
-            <struct name="type3" type="PokemonSubstruct3" />
-            <integer name="raw" type="u16[6]" bitcount="16">
-               <array-rank extent="6" />
-            </integer>
-         </members>
-      </union>
       <struct name="PokeNews" c-alignment="4" c-sizeof="4">
          <members>
             <integer name="kind" type="u8" bitcount="8" />
@@ -1978,7 +2064,9 @@
       </struct>
       <struct tag="RamScript" c-alignment="4" c-sizeof="1004">
          <members>
-            <integer name="checksum" type="u32" bitcount="32" />
+            <integer name="checksum" type="u32" bitcount="32">
+               <category name="checksum-crc16" />
+            </integer>
             <struct name="data" type="RamScriptData" />
          </members>
          <instructions>
@@ -2043,6 +2131,18 @@
             <integer value="language" type="LanguageID" bitcount="4" min="0" max="7" />
          </instructions>
       </struct>
+      <struct tag="RecordMixingGift" c-alignment="4" c-sizeof="16">
+         <members>
+            <integer name="checksum" type="int" bitcount="32">
+               <category name="checksum-a32u8" />
+            </integer>
+            <struct name="data" type="RecordMixingGiftData" />
+         </members>
+         <instructions>
+            <integer value="checksum" type="int" bitcount="32" />
+            <struct value="data" type="RecordMixingGiftData" />
+         </instructions>
+      </struct>
       <struct tag="RecordMixingGiftData" c-alignment="4" c-sizeof="12">
          <members>
             <integer name="unk0" type="u8" bitcount="8" />
@@ -2061,16 +2161,6 @@
             <loop array="filler4" start="0" count="8" counter-var="__a">
                <integer value="filler4[__a]" type="u8" bitcount="8" />
             </loop>
-         </instructions>
-      </struct>
-      <struct tag="RecordMixingGift" c-alignment="4" c-sizeof="16">
-         <members>
-            <integer name="checksum" type="int" bitcount="32" />
-            <struct name="data" type="RecordMixingGiftData" />
-         </members>
-         <instructions>
-            <integer value="checksum" type="int" bitcount="32" />
-            <struct value="data" type="RecordMixingGiftData" />
          </instructions>
       </struct>
       <struct tag="RentalMon" c-alignment="4" c-sizeof="12">
@@ -2524,6 +2614,63 @@
             <loop array="EVs" start="0" count="6" counter-var="__f">
                <integer value="EVs[__f]" type="u8" bitcount="8" />
             </loop>
+         </instructions>
+      </struct>
+      <struct tag="SerializedBoxPokemon" c-alignment="4" c-sizeof="84">
+         <stats>
+            <bitcounts total-unpacked="0" total-packed="0" />
+         </stats>
+         <members>
+            <integer name="personality" type="u32" bitcount="32" />
+            <integer name="otId" type="u32" bitcount="32" />
+            <string name="nickname" type="u8[10]" length="10" nonstring="true">
+               <category name="pokemon-name" />
+            </string>
+            <integer name="language" type="LanguageID" bitcount="4" min="0" max="7">
+               <category name="language" />
+            </integer>
+            <integer name="isBadEgg" type="bool8" c-bitfield-offset="24" c-bitfield-width="1" bitcount="1" />
+            <integer name="hasSpecies" type="bool8" c-bitfield-offset="25" c-bitfield-width="1" bitcount="1" />
+            <integer name="isEgg" type="bool8" c-bitfield-offset="26" c-bitfield-width="1" bitcount="1" />
+            <integer name="blockBoxRS" type="bool8" c-bitfield-offset="27" c-bitfield-width="1" bitcount="1" />
+            <string name="otName" type="u8[7]" length="7" nonstring="true">
+               <category name="player-name" />
+            </string>
+            <integer name="markings" type="u8" bitcount="8" />
+            <integer name="unknown" type="u16" bitcount="16" />
+            <struct name="substructs" type="SerializedBoxPokemonSubstructs" />
+         </members>
+         <instructions>
+            <integer value="personality" type="u32" bitcount="32" />
+            <integer value="otId" type="u32" bitcount="32" />
+            <string value="nickname" type="u8[10]" length="10" nonstring="true" />
+            <integer value="language" type="LanguageID" bitcount="4" min="0" max="7" />
+            <integer value="isBadEgg" type="bool8" bitcount="1" />
+            <integer value="hasSpecies" type="bool8" bitcount="1" />
+            <integer value="isEgg" type="bool8" bitcount="1" />
+            <integer value="blockBoxRS" type="bool8" bitcount="1" />
+            <string value="otName" type="u8[7]" length="7" nonstring="true" />
+            <integer value="markings" type="u8" bitcount="8" />
+            <integer value="unknown" type="u16" bitcount="16" />
+            <struct value="substructs" type="SerializedBoxPokemonSubstructs" />
+         </instructions>
+      </struct>
+      <struct tag="SerializedBoxPokemonSubstructs" c-alignment="4" c-sizeof="52">
+         <members>
+            <struct name="type0" type="PokemonSubstruct0" />
+            <struct name="type1" type="PokemonSubstruct1" />
+            <struct name="type2" type="PokemonSubstruct2" />
+            <struct name="type3" type="PokemonSubstruct3" />
+            <integer name="checksum" type="u16" bitcount="16">
+               <category name="checksum-16" />
+            </integer>
+         </members>
+         <instructions>
+            <struct value="type0" type="PokemonSubstruct0" />
+            <struct value="type1" type="PokemonSubstruct1" />
+            <struct value="type2" type="PokemonSubstruct2" />
+            <struct value="type3" type="PokemonSubstruct3" />
+            <integer value="checksum" type="u16" bitcount="16" />
          </instructions>
       </struct>
       <struct tag="Time" c-alignment="4" c-sizeof="8">
@@ -3516,7 +3663,7 @@
       </sector>
       <sector>
          <stats>
-            <bitcounts total-packed="31744" />
+            <bitcounts total-packed="31740" />
          </stats>
          <instructions>
             <struct value="(*gSaveBlock1Ptr).pos" type="Coords16" />
@@ -3577,30 +3724,30 @@
             <loop array="(*gSaveBlock1Ptr).objectEvents" start="0" count="16" counter-var="__n">
                <struct value="(*gSaveBlock1Ptr).objectEvents[__n]" type="ObjectEvent" />
             </loop>
-            <loop array="(*gSaveBlock1Ptr).objectEventTemplates" start="0" count="43" counter-var="__o">
+            <loop array="(*gSaveBlock1Ptr).objectEventTemplates" start="0" count="45" counter-var="__o">
                <struct value="(*gSaveBlock1Ptr).objectEventTemplates[__o]" type="ObjectEventTemplate" />
             </loop>
-            <integer value="(*gSaveBlock1Ptr).objectEventTemplates[43].localId" type="u8" bitcount="8" />
-            <integer value="(*gSaveBlock1Ptr).objectEventTemplates[43].graphicsId" type="u8" bitcount="8" />
+            <integer value="(*gSaveBlock1Ptr).objectEventTemplates[45].localId" type="u8" bitcount="8" />
+            <integer value="(*gSaveBlock1Ptr).objectEventTemplates[45].graphicsId" type="u8" bitcount="8" />
          </instructions>
       </sector>
       <sector>
          <stats>
-            <bitcounts total-packed="31744" />
+            <bitcounts total-packed="31740" />
          </stats>
          <instructions>
-            <integer value="(*gSaveBlock1Ptr).objectEventTemplates[43].kind" type="u8" bitcount="8" />
-            <integer value="(*gSaveBlock1Ptr).objectEventTemplates[43].x" type="s16" bitcount="16" />
-            <integer value="(*gSaveBlock1Ptr).objectEventTemplates[43].y" type="s16" bitcount="16" />
-            <integer value="(*gSaveBlock1Ptr).objectEventTemplates[43].elevation" type="u8" bitcount="8" />
-            <integer value="(*gSaveBlock1Ptr).objectEventTemplates[43].movementType" type="u8" bitcount="8" />
-            <integer value="(*gSaveBlock1Ptr).objectEventTemplates[43].movementRangeX" type="u16" bitcount="4" />
-            <integer value="(*gSaveBlock1Ptr).objectEventTemplates[43].movementRangeY" type="u16" bitcount="4" />
-            <integer value="(*gSaveBlock1Ptr).objectEventTemplates[43].trainerType" type="u16" bitcount="16" />
-            <integer value="(*gSaveBlock1Ptr).objectEventTemplates[43].trainerRange_berryTreeId" type="u16" bitcount="16" />
-            <pointer value="(*gSaveBlock1Ptr).objectEventTemplates[43].script" type="const u8*" />
-            <integer value="(*gSaveBlock1Ptr).objectEventTemplates[43].flagId" type="u16" bitcount="16" />
-            <loop array="(*gSaveBlock1Ptr).objectEventTemplates" start="44" count="20" counter-var="__a">
+            <integer value="(*gSaveBlock1Ptr).objectEventTemplates[45].kind" type="u8" bitcount="8" />
+            <integer value="(*gSaveBlock1Ptr).objectEventTemplates[45].x" type="s16" bitcount="16" />
+            <integer value="(*gSaveBlock1Ptr).objectEventTemplates[45].y" type="s16" bitcount="16" />
+            <integer value="(*gSaveBlock1Ptr).objectEventTemplates[45].elevation" type="u8" bitcount="8" />
+            <integer value="(*gSaveBlock1Ptr).objectEventTemplates[45].movementType" type="u8" bitcount="8" />
+            <integer value="(*gSaveBlock1Ptr).objectEventTemplates[45].movementRangeX" type="u16" bitcount="4" />
+            <integer value="(*gSaveBlock1Ptr).objectEventTemplates[45].movementRangeY" type="u16" bitcount="4" />
+            <integer value="(*gSaveBlock1Ptr).objectEventTemplates[45].trainerType" type="u16" bitcount="16" />
+            <integer value="(*gSaveBlock1Ptr).objectEventTemplates[45].trainerRange_berryTreeId" type="u16" bitcount="16" />
+            <pointer value="(*gSaveBlock1Ptr).objectEventTemplates[45].script" type="const u8*" />
+            <integer value="(*gSaveBlock1Ptr).objectEventTemplates[45].flagId" type="u16" bitcount="16" />
+            <loop array="(*gSaveBlock1Ptr).objectEventTemplates" start="46" count="18" counter-var="__a">
                <struct value="(*gSaveBlock1Ptr).objectEventTemplates[__a]" type="ObjectEventTemplate" />
             </loop>
             <loop array="(*gSaveBlock1Ptr).flags" start="0" count="300" counter-var="__b">
@@ -3615,57 +3762,40 @@
             <loop array="(*gSaveBlock1Ptr).berryTrees" start="0" count="128" counter-var="__e">
                <struct value="(*gSaveBlock1Ptr).berryTrees[__e]" type="BerryTree" />
             </loop>
-            <loop array="(*gSaveBlock1Ptr).secretBases" start="0" count="12" counter-var="__f">
+            <loop array="(*gSaveBlock1Ptr).secretBases" start="0" count="13" counter-var="__f">
                <struct value="(*gSaveBlock1Ptr).secretBases[__f]" type="SecretBase" />
             </loop>
-            <integer value="(*gSaveBlock1Ptr).secretBases[12].secretBaseId" type="u8" bitcount="8" />
-            <integer value="(*gSaveBlock1Ptr).secretBases[12].toRegister" type="bool8" bitcount="4" />
-            <integer value="(*gSaveBlock1Ptr).secretBases[12].gender" type="u8" bitcount="1" />
-            <integer value="(*gSaveBlock1Ptr).secretBases[12].battledOwnerToday" type="u8" bitcount="1" />
-            <integer value="(*gSaveBlock1Ptr).secretBases[12].registryStatus" type="u8" bitcount="2" />
-            <string value="(*gSaveBlock1Ptr).secretBases[12].trainerName" type="u8[7]" length="7" nonstring="true" />
-            <loop array="(*gSaveBlock1Ptr).secretBases[12].trainerId" start="0" count="4" counter-var="__g">
-               <integer value="(*gSaveBlock1Ptr).secretBases[12].trainerId[__g]" type="u8" bitcount="8" />
+            <integer value="(*gSaveBlock1Ptr).secretBases[13].secretBaseId" type="u8" bitcount="8" />
+            <integer value="(*gSaveBlock1Ptr).secretBases[13].toRegister" type="bool8" bitcount="4" />
+            <integer value="(*gSaveBlock1Ptr).secretBases[13].gender" type="u8" bitcount="1" />
+            <integer value="(*gSaveBlock1Ptr).secretBases[13].battledOwnerToday" type="u8" bitcount="1" />
+            <integer value="(*gSaveBlock1Ptr).secretBases[13].registryStatus" type="u8" bitcount="2" />
+            <string value="(*gSaveBlock1Ptr).secretBases[13].trainerName" type="u8[7]" length="7" nonstring="true" />
+            <loop array="(*gSaveBlock1Ptr).secretBases[13].trainerId" start="0" count="4" counter-var="__g">
+               <integer value="(*gSaveBlock1Ptr).secretBases[13].trainerId[__g]" type="u8" bitcount="8" />
             </loop>
-            <integer value="(*gSaveBlock1Ptr).secretBases[12].language" type="LanguageID" bitcount="4" min="0" max="7" />
-            <integer value="(*gSaveBlock1Ptr).secretBases[12].numSecretBasesReceived" type="u16" bitcount="16" />
-            <integer value="(*gSaveBlock1Ptr).secretBases[12].numTimesEntered" type="u8" bitcount="8" />
-            <integer value="(*gSaveBlock1Ptr).secretBases[12].unused" type="u8" bitcount="8" />
-            <loop array="(*gSaveBlock1Ptr).secretBases[12].decorations" start="0" count="16" counter-var="__h">
-               <integer value="(*gSaveBlock1Ptr).secretBases[12].decorations[__h]" type="u8" bitcount="8" />
+            <integer value="(*gSaveBlock1Ptr).secretBases[13].language" type="LanguageID" bitcount="4" min="0" max="7" />
+            <integer value="(*gSaveBlock1Ptr).secretBases[13].numSecretBasesReceived" type="u16" bitcount="16" />
+            <integer value="(*gSaveBlock1Ptr).secretBases[13].numTimesEntered" type="u8" bitcount="8" />
+            <integer value="(*gSaveBlock1Ptr).secretBases[13].unused" type="u8" bitcount="8" />
+            <loop array="(*gSaveBlock1Ptr).secretBases[13].decorations" start="0" count="16" counter-var="__h">
+               <integer value="(*gSaveBlock1Ptr).secretBases[13].decorations[__h]" type="u8" bitcount="8" />
             </loop>
-            <loop array="(*gSaveBlock1Ptr).secretBases[12].decorationPositions" start="0" count="16" counter-var="__i">
-               <integer value="(*gSaveBlock1Ptr).secretBases[12].decorationPositions[__i]" type="u8" bitcount="8" />
-            </loop>
-            <loop array="(*gSaveBlock1Ptr).secretBases[12].party.personality" start="0" count="6" counter-var="__j">
-               <integer value="(*gSaveBlock1Ptr).secretBases[12].party.personality[__j]" type="u32" bitcount="32" />
-            </loop>
-            <loop array="(*gSaveBlock1Ptr).secretBases[12].party.moves" start="0" count="24" counter-var="__k">
-               <integer value="(*gSaveBlock1Ptr).secretBases[12].party.moves[__k]" type="MoveID" bitcount="9" />
-            </loop>
-            <loop array="(*gSaveBlock1Ptr).secretBases[12].party.species" start="0" count="6" counter-var="__l">
-               <integer value="(*gSaveBlock1Ptr).secretBases[12].party.species[__l]" type="PokemonSpeciesID" bitcount="11" min="0" max="2047" />
-            </loop>
-            <loop array="(*gSaveBlock1Ptr).secretBases[12].party.heldItems" start="0" count="6" counter-var="__m">
-               <integer value="(*gSaveBlock1Ptr).secretBases[12].party.heldItems[__m]" type="ItemIDGlobal" bitcount="16" />
-            </loop>
-            <loop array="(*gSaveBlock1Ptr).secretBases[12].party.levels" start="0" count="6" counter-var="__n">
-               <integer value="(*gSaveBlock1Ptr).secretBases[12].party.levels[__n]" type="PokemonLevel" bitcount="7" min="0" max="100" />
-            </loop>
-            <loop array="(*gSaveBlock1Ptr).secretBases[12].party.EVs" start="0" count="4" counter-var="__o">
-               <integer value="(*gSaveBlock1Ptr).secretBases[12].party.EVs[__o]" type="u8" bitcount="8" />
+            <loop array="(*gSaveBlock1Ptr).secretBases[13].decorationPositions" start="0" count="4" counter-var="__i">
+               <integer value="(*gSaveBlock1Ptr).secretBases[13].decorationPositions[__i]" type="u8" bitcount="8" />
             </loop>
          </instructions>
       </sector>
       <sector>
          <stats>
-            <bitcounts total-packed="31742" />
+            <bitcounts total-packed="31744" />
          </stats>
          <instructions>
-            <loop array="(*gSaveBlock1Ptr).secretBases[12].party.EVs" start="4" count="2" counter-var="__loop_var_0">
-               <integer value="(*gSaveBlock1Ptr).secretBases[12].party.EVs[__loop_var_0]" type="u8" bitcount="8" />
+            <loop array="(*gSaveBlock1Ptr).secretBases[13].decorationPositions" start="4" count="12" counter-var="__loop_var_0">
+               <integer value="(*gSaveBlock1Ptr).secretBases[13].decorationPositions[__loop_var_0]" type="u8" bitcount="8" />
             </loop>
-            <loop array="(*gSaveBlock1Ptr).secretBases" start="13" count="7" counter-var="__loop_var_1">
+            <struct value="(*gSaveBlock1Ptr).secretBases[13].party" type="SecretBaseParty" />
+            <loop array="(*gSaveBlock1Ptr).secretBases" start="14" count="6" counter-var="__loop_var_1">
                <struct value="(*gSaveBlock1Ptr).secretBases[__loop_var_1]" type="SecretBase" />
             </loop>
             <loop array="(*gSaveBlock1Ptr).playerRoomDecorations" start="0" count="12" counter-var="__loop_var_2">
@@ -3758,52 +3888,45 @@
             <loop array="(*gSaveBlock1Ptr).mysteryGift.news.titleText" start="0" count="40" counter-var="__loop_var_24">
                <integer value="(*gSaveBlock1Ptr).mysteryGift.news.titleText[__loop_var_24]" type="u8" bitcount="8" />
             </loop>
-            <loop array="(*gSaveBlock1Ptr).mysteryGift.news.bodyText" start="0" count="7" counter-var="__loop_var_25">
+            <loop array="(*gSaveBlock1Ptr).mysteryGift.news.bodyText" start="0" count="9" counter-var="__loop_var_25">
                <loop array="(*gSaveBlock1Ptr).mysteryGift.news.bodyText[__loop_var_25]" start="0" count="40" counter-var="__loop_var_26">
                   <integer value="(*gSaveBlock1Ptr).mysteryGift.news.bodyText[__loop_var_25][__loop_var_26]" type="u8" bitcount="8" />
                </loop>
             </loop>
-            <loop array="(*gSaveBlock1Ptr).mysteryGift.news.bodyText[7]" start="0" count="28" counter-var="__loop_var_27">
-               <integer value="(*gSaveBlock1Ptr).mysteryGift.news.bodyText[7][__loop_var_27]" type="u8" bitcount="8" />
-            </loop>
+            <integer value="(*gSaveBlock1Ptr).mysteryGift.news.bodyText[9][0]" type="u8" bitcount="8" />
          </instructions>
       </sector>
       <sector>
          <stats>
-            <bitcounts total-packed="20002" />
+            <bitcounts total-packed="19578" />
          </stats>
          <instructions>
-            <loop array="(*gSaveBlock1Ptr).mysteryGift.news.bodyText[7]" start="28" count="12" counter-var="__a">
-               <integer value="(*gSaveBlock1Ptr).mysteryGift.news.bodyText[7][__a]" type="u8" bitcount="8" />
-            </loop>
-            <loop array="(*gSaveBlock1Ptr).mysteryGift.news.bodyText" start="8" count="2" counter-var="__b">
-               <loop array="(*gSaveBlock1Ptr).mysteryGift.news.bodyText[__b]" start="0" count="40" counter-var="__c">
-                  <integer value="(*gSaveBlock1Ptr).mysteryGift.news.bodyText[__b][__c]" type="u8" bitcount="8" />
-               </loop>
+            <loop array="(*gSaveBlock1Ptr).mysteryGift.news.bodyText[9]" start="1" count="39" counter-var="__a">
+               <integer value="(*gSaveBlock1Ptr).mysteryGift.news.bodyText[9][__a]" type="u8" bitcount="8" />
             </loop>
             <integer value="(*gSaveBlock1Ptr).mysteryGift.cardCrc" type="u32" bitcount="32" />
             <struct value="(*gSaveBlock1Ptr).mysteryGift.card" type="WonderCard" />
             <integer value="(*gSaveBlock1Ptr).mysteryGift.cardMetadataCrc" type="u32" bitcount="32" />
             <struct value="(*gSaveBlock1Ptr).mysteryGift.cardMetadata" type="WonderCardMetadata" />
-            <loop array="(*gSaveBlock1Ptr).mysteryGift.questionnaireWords" start="0" count="4" counter-var="__d">
-               <integer value="(*gSaveBlock1Ptr).mysteryGift.questionnaireWords[__d]" type="u16" bitcount="16" />
+            <loop array="(*gSaveBlock1Ptr).mysteryGift.questionnaireWords" start="0" count="4" counter-var="__b">
+               <integer value="(*gSaveBlock1Ptr).mysteryGift.questionnaireWords[__b]" type="u16" bitcount="16" />
             </loop>
             <struct value="(*gSaveBlock1Ptr).mysteryGift.newsMetadata" type="WonderNewsMetadata" />
-            <loop array="(*gSaveBlock1Ptr).mysteryGift.trainerIds" start="0" count="2" counter-var="__e">
-               <loop array="(*gSaveBlock1Ptr).mysteryGift.trainerIds[__e]" start="0" count="5" counter-var="__f">
-                  <integer value="(*gSaveBlock1Ptr).mysteryGift.trainerIds[__e][__f]" type="u32" bitcount="32" />
+            <loop array="(*gSaveBlock1Ptr).mysteryGift.trainerIds" start="0" count="2" counter-var="__c">
+               <loop array="(*gSaveBlock1Ptr).mysteryGift.trainerIds[__c]" start="0" count="5" counter-var="__d">
+                  <integer value="(*gSaveBlock1Ptr).mysteryGift.trainerIds[__c][__d]" type="u32" bitcount="32" />
                </loop>
             </loop>
-            <loop array="(*gSaveBlock1Ptr).unused_3598" start="0" count="384" counter-var="__g">
-               <integer value="(*gSaveBlock1Ptr).unused_3598[__g]" type="u8" bitcount="8" />
+            <loop array="(*gSaveBlock1Ptr).unused_3598" start="0" count="384" counter-var="__e">
+               <integer value="(*gSaveBlock1Ptr).unused_3598[__e]" type="u8" bitcount="8" />
             </loop>
-            <loop array="(*gSaveBlock1Ptr).trainerHillTimes" start="0" count="4" counter-var="__h">
-               <integer value="(*gSaveBlock1Ptr).trainerHillTimes[__h]" type="u32" bitcount="32" />
+            <loop array="(*gSaveBlock1Ptr).trainerHillTimes" start="0" count="4" counter-var="__f">
+               <integer value="(*gSaveBlock1Ptr).trainerHillTimes[__f]" type="u32" bitcount="32" />
             </loop>
             <struct value="(*gSaveBlock1Ptr).ramScript" type="RamScript" />
             <struct value="(*gSaveBlock1Ptr).recordMixingGift" type="RecordMixingGift" />
-            <loop array="(*gSaveBlock1Ptr).seen2" start="0" count="52" counter-var="__i">
-               <integer value="(*gSaveBlock1Ptr).seen2[__i]" type="u8" bitcount="8" />
+            <loop array="(*gSaveBlock1Ptr).seen2" start="0" count="52" counter-var="__g">
+               <integer value="(*gSaveBlock1Ptr).seen2[__g]" type="u8" bitcount="8" />
             </loop>
             <integer value="(*gSaveBlock1Ptr).lilycoveLady.quiz.id" type="u8" bitcount="8" />
             <switch operand="(*gSaveBlock1Ptr).lilycoveLady.quiz.id">
@@ -3830,14 +3953,14 @@
                </case>
                <case value="0">
                   <integer value="(*gSaveBlock1Ptr).lilycoveLady.quiz.state" type="u8" bitcount="8" />
-                  <loop array="(*gSaveBlock1Ptr).lilycoveLady.quiz.question" start="0" count="9" counter-var="__j">
-                     <integer value="(*gSaveBlock1Ptr).lilycoveLady.quiz.question[__j]" type="u16" bitcount="16" />
+                  <loop array="(*gSaveBlock1Ptr).lilycoveLady.quiz.question" start="0" count="9" counter-var="__h">
+                     <integer value="(*gSaveBlock1Ptr).lilycoveLady.quiz.question[__h]" type="u16" bitcount="16" />
                   </loop>
                   <integer value="(*gSaveBlock1Ptr).lilycoveLady.quiz.correctAnswer" type="u16" bitcount="16" />
                   <integer value="(*gSaveBlock1Ptr).lilycoveLady.quiz.playerAnswer" type="u16" bitcount="16" />
                   <string value="(*gSaveBlock1Ptr).lilycoveLady.quiz.playerName" type="u8[8]" length="7" nonstring="false" />
-                  <loop array="(*gSaveBlock1Ptr).lilycoveLady.quiz.playerTrainerId" start="0" count="4" counter-var="__k">
-                     <integer value="(*gSaveBlock1Ptr).lilycoveLady.quiz.playerTrainerId[__k]" type="u8" bitcount="8" />
+                  <loop array="(*gSaveBlock1Ptr).lilycoveLady.quiz.playerTrainerId" start="0" count="4" counter-var="__i">
+                     <integer value="(*gSaveBlock1Ptr).lilycoveLady.quiz.playerTrainerId[__i]" type="u8" bitcount="8" />
                   </loop>
                   <integer value="(*gSaveBlock1Ptr).lilycoveLady.quiz.prize" type="u16" bitcount="16" />
                   <integer value="(*gSaveBlock1Ptr).lilycoveLady.quiz.waitingForChallenger" type="bool8" bitcount="8" />
@@ -3849,16 +3972,16 @@
                   <padding bitcount="316" />
                </fallback-case>
             </switch>
-            <loop array="(*gSaveBlock1Ptr).trainerNameRecords" start="0" count="20" counter-var="__l">
-               <struct value="(*gSaveBlock1Ptr).trainerNameRecords[__l]" type="TrainerNameRecord" />
+            <loop array="(*gSaveBlock1Ptr).trainerNameRecords" start="0" count="20" counter-var="__j">
+               <struct value="(*gSaveBlock1Ptr).trainerNameRecords[__j]" type="TrainerNameRecord" />
             </loop>
-            <loop array="(*gSaveBlock1Ptr).registeredTexts" start="0" count="10" counter-var="__m">
-               <loop array="(*gSaveBlock1Ptr).registeredTexts[__m]" start="0" count="21" counter-var="__n">
-                  <integer value="(*gSaveBlock1Ptr).registeredTexts[__m][__n]" type="u8" bitcount="8" />
+            <loop array="(*gSaveBlock1Ptr).registeredTexts" start="0" count="10" counter-var="__k">
+               <loop array="(*gSaveBlock1Ptr).registeredTexts[__k]" start="0" count="21" counter-var="__l">
+                  <integer value="(*gSaveBlock1Ptr).registeredTexts[__k][__l]" type="u8" bitcount="8" />
                </loop>
             </loop>
-            <loop array="(*gSaveBlock1Ptr).unused_3D5A" start="0" count="10" counter-var="__o">
-               <integer value="(*gSaveBlock1Ptr).unused_3D5A[__o]" type="u8" bitcount="8" />
+            <loop array="(*gSaveBlock1Ptr).unused_3D5A" start="0" count="10" counter-var="__m">
+               <integer value="(*gSaveBlock1Ptr).unused_3D5A[__m]" type="u8" bitcount="8" />
             </loop>
             <struct value="(*gSaveBlock1Ptr).trainerHill" type="TrainerHillSave" />
             <struct value="(*gSaveBlock1Ptr).waldaPhrase" type="WaldaPhrase" />
@@ -3866,244 +3989,164 @@
       </sector>
       <sector>
          <stats>
-            <bitcounts total-packed="31420" />
+            <bitcounts total-packed="31486" />
          </stats>
          <instructions>
             <integer value="(*gPokemonStoragePtr).currentBox" type="u8" bitcount="4" min="0" max="13" />
             <loop array="(*gPokemonStoragePtr).boxes[0]" start="0" count="30" counter-var="__a">
-               <struct value="(*gPokemonStoragePtr).boxes[0][__a]" type="BoxPokemon" />
+               <transform value="(*gPokemonStoragePtr).boxes[0][__a]" transformed-type="SerializedBoxPokemon" transformed-value="__transformed_var_0">
+                  <struct value="__transformed_var_0" type="SerializedBoxPokemon" />
+               </transform>
             </loop>
-            <loop array="(*gPokemonStoragePtr).boxes[1]" start="0" count="19" counter-var="__b">
-               <struct value="(*gPokemonStoragePtr).boxes[1][__b]" type="BoxPokemon" />
+            <loop array="(*gPokemonStoragePtr).boxes[1]" start="0" count="24" counter-var="__b">
+               <transform value="(*gPokemonStoragePtr).boxes[1][__b]" transformed-type="SerializedBoxPokemon" transformed-value="__transformed_var_1">
+                  <struct value="__transformed_var_1" type="SerializedBoxPokemon" />
+               </transform>
             </loop>
-            <integer value="(*gPokemonStoragePtr).boxes[1][19].personality" type="u32" bitcount="32" />
-            <integer value="(*gPokemonStoragePtr).boxes[1][19].otId" type="u32" bitcount="32" />
-            <string value="(*gPokemonStoragePtr).boxes[1][19].nickname" type="u8[10]" length="10" nonstring="true" />
-            <integer value="(*gPokemonStoragePtr).boxes[1][19].language" type="LanguageID" bitcount="4" min="0" max="7" />
-            <integer value="(*gPokemonStoragePtr).boxes[1][19].isBadEgg" type="u8" bitcount="1" />
-            <integer value="(*gPokemonStoragePtr).boxes[1][19].hasSpecies" type="u8" bitcount="1" />
-            <integer value="(*gPokemonStoragePtr).boxes[1][19].isEgg" type="u8" bitcount="1" />
-            <integer value="(*gPokemonStoragePtr).boxes[1][19].blockBoxRS" type="u8" bitcount="1" />
-            <integer value="(*gPokemonStoragePtr).boxes[1][19].unused" type="u8" bitcount="4" />
-            <string value="(*gPokemonStoragePtr).boxes[1][19].otName" type="u8[7]" length="7" nonstring="true" />
-            <integer value="(*gPokemonStoragePtr).boxes[1][19].markings" type="u8" bitcount="8" />
-            <integer value="(*gPokemonStoragePtr).boxes[1][19].checksum" type="u16" bitcount="16" />
-            <integer value="(*gPokemonStoragePtr).boxes[1][19].unknown" type="u16" bitcount="16" />
          </instructions>
       </sector>
       <sector>
          <stats>
-            <bitcounts total-packed="31704" />
+            <bitcounts total-packed="31482" />
          </stats>
          <instructions>
-            <buffer value="(*gPokemonStoragePtr).boxes[1][19].secure" type="&lt;unnamed&gt;" bytecount="48" />
-            <loop array="(*gPokemonStoragePtr).boxes[1]" start="20" count="10" counter-var="__a">
-               <struct value="(*gPokemonStoragePtr).boxes[1][__a]" type="BoxPokemon" />
+            <loop array="(*gPokemonStoragePtr).boxes[1]" start="24" count="6" counter-var="__a">
+               <transform value="(*gPokemonStoragePtr).boxes[1][__a]" transformed-type="SerializedBoxPokemon" transformed-value="__transformed_var_0">
+                  <struct value="__transformed_var_0" type="SerializedBoxPokemon" />
+               </transform>
             </loop>
             <loop array="(*gPokemonStoragePtr).boxes[2]" start="0" count="30" counter-var="__b">
-               <struct value="(*gPokemonStoragePtr).boxes[2][__b]" type="BoxPokemon" />
+               <transform value="(*gPokemonStoragePtr).boxes[2][__b]" transformed-type="SerializedBoxPokemon" transformed-value="__transformed_var_1">
+                  <struct value="__transformed_var_1" type="SerializedBoxPokemon" />
+               </transform>
             </loop>
-            <loop array="(*gPokemonStoragePtr).boxes[3]" start="0" count="9" counter-var="__c">
-               <struct value="(*gPokemonStoragePtr).boxes[3][__c]" type="BoxPokemon" />
-            </loop>
-            <integer value="(*gPokemonStoragePtr).boxes[3][9].personality" type="u32" bitcount="32" />
-            <integer value="(*gPokemonStoragePtr).boxes[3][9].otId" type="u32" bitcount="32" />
-            <string value="(*gPokemonStoragePtr).boxes[3][9].nickname" type="u8[10]" length="10" nonstring="true" />
-            <integer value="(*gPokemonStoragePtr).boxes[3][9].language" type="LanguageID" bitcount="4" min="0" max="7" />
-            <integer value="(*gPokemonStoragePtr).boxes[3][9].isBadEgg" type="u8" bitcount="1" />
-            <integer value="(*gPokemonStoragePtr).boxes[3][9].hasSpecies" type="u8" bitcount="1" />
-            <integer value="(*gPokemonStoragePtr).boxes[3][9].isEgg" type="u8" bitcount="1" />
-            <integer value="(*gPokemonStoragePtr).boxes[3][9].blockBoxRS" type="u8" bitcount="1" />
-            <integer value="(*gPokemonStoragePtr).boxes[3][9].unused" type="u8" bitcount="4" />
-         </instructions>
-      </sector>
-      <sector>
-         <stats>
-            <bitcounts total-packed="31708" />
-         </stats>
-         <instructions>
-            <string value="(*gPokemonStoragePtr).boxes[3][9].otName" type="u8[7]" length="7" nonstring="true" />
-            <integer value="(*gPokemonStoragePtr).boxes[3][9].markings" type="u8" bitcount="8" />
-            <integer value="(*gPokemonStoragePtr).boxes[3][9].checksum" type="u16" bitcount="16" />
-            <integer value="(*gPokemonStoragePtr).boxes[3][9].unknown" type="u16" bitcount="16" />
-            <buffer value="(*gPokemonStoragePtr).boxes[3][9].secure" type="&lt;unnamed&gt;" bytecount="48" />
-            <loop array="(*gPokemonStoragePtr).boxes[3]" start="10" count="20" counter-var="__a">
-               <struct value="(*gPokemonStoragePtr).boxes[3][__a]" type="BoxPokemon" />
-            </loop>
-            <loop array="(*gPokemonStoragePtr).boxes[4]" start="0" count="29" counter-var="__b">
-               <struct value="(*gPokemonStoragePtr).boxes[4][__b]" type="BoxPokemon" />
-            </loop>
-            <integer value="(*gPokemonStoragePtr).boxes[4][29].personality" type="u32" bitcount="32" />
-            <integer value="(*gPokemonStoragePtr).boxes[4][29].otId" type="u32" bitcount="32" />
-         </instructions>
-      </sector>
-      <sector>
-         <stats>
-            <bitcounts total-packed="31736" />
-         </stats>
-         <instructions>
-            <string value="(*gPokemonStoragePtr).boxes[4][29].nickname" type="u8[10]" length="10" nonstring="true" />
-            <integer value="(*gPokemonStoragePtr).boxes[4][29].language" type="LanguageID" bitcount="4" min="0" max="7" />
-            <integer value="(*gPokemonStoragePtr).boxes[4][29].isBadEgg" type="u8" bitcount="1" />
-            <integer value="(*gPokemonStoragePtr).boxes[4][29].hasSpecies" type="u8" bitcount="1" />
-            <integer value="(*gPokemonStoragePtr).boxes[4][29].isEgg" type="u8" bitcount="1" />
-            <integer value="(*gPokemonStoragePtr).boxes[4][29].blockBoxRS" type="u8" bitcount="1" />
-            <integer value="(*gPokemonStoragePtr).boxes[4][29].unused" type="u8" bitcount="4" />
-            <string value="(*gPokemonStoragePtr).boxes[4][29].otName" type="u8[7]" length="7" nonstring="true" />
-            <integer value="(*gPokemonStoragePtr).boxes[4][29].markings" type="u8" bitcount="8" />
-            <integer value="(*gPokemonStoragePtr).boxes[4][29].checksum" type="u16" bitcount="16" />
-            <integer value="(*gPokemonStoragePtr).boxes[4][29].unknown" type="u16" bitcount="16" />
-            <buffer value="(*gPokemonStoragePtr).boxes[4][29].secure" type="&lt;unnamed&gt;" bytecount="48" />
-            <loop array="(*gPokemonStoragePtr).boxes[5]" start="0" count="30" counter-var="__a">
-               <struct value="(*gPokemonStoragePtr).boxes[5][__a]" type="BoxPokemon" />
-            </loop>
-            <loop array="(*gPokemonStoragePtr).boxes[6]" start="0" count="19" counter-var="__b">
-               <struct value="(*gPokemonStoragePtr).boxes[6][__b]" type="BoxPokemon" />
+            <loop array="(*gPokemonStoragePtr).boxes[3]" start="0" count="18" counter-var="__c">
+               <transform value="(*gPokemonStoragePtr).boxes[3][__c]" transformed-type="SerializedBoxPokemon" transformed-value="__transformed_var_2">
+                  <struct value="__transformed_var_2" type="SerializedBoxPokemon" />
+               </transform>
             </loop>
          </instructions>
       </sector>
       <sector>
          <stats>
-            <bitcounts total-packed="31416" />
+            <bitcounts total-packed="31482" />
          </stats>
          <instructions>
-            <integer value="(*gPokemonStoragePtr).boxes[6][19].personality" type="u32" bitcount="32" />
-            <integer value="(*gPokemonStoragePtr).boxes[6][19].otId" type="u32" bitcount="32" />
-            <string value="(*gPokemonStoragePtr).boxes[6][19].nickname" type="u8[10]" length="10" nonstring="true" />
-            <integer value="(*gPokemonStoragePtr).boxes[6][19].language" type="LanguageID" bitcount="4" min="0" max="7" />
-            <integer value="(*gPokemonStoragePtr).boxes[6][19].isBadEgg" type="u8" bitcount="1" />
-            <integer value="(*gPokemonStoragePtr).boxes[6][19].hasSpecies" type="u8" bitcount="1" />
-            <integer value="(*gPokemonStoragePtr).boxes[6][19].isEgg" type="u8" bitcount="1" />
-            <integer value="(*gPokemonStoragePtr).boxes[6][19].blockBoxRS" type="u8" bitcount="1" />
-            <integer value="(*gPokemonStoragePtr).boxes[6][19].unused" type="u8" bitcount="4" />
-            <string value="(*gPokemonStoragePtr).boxes[6][19].otName" type="u8[7]" length="7" nonstring="true" />
-            <integer value="(*gPokemonStoragePtr).boxes[6][19].markings" type="u8" bitcount="8" />
-            <integer value="(*gPokemonStoragePtr).boxes[6][19].checksum" type="u16" bitcount="16" />
-            <integer value="(*gPokemonStoragePtr).boxes[6][19].unknown" type="u16" bitcount="16" />
-            <buffer value="(*gPokemonStoragePtr).boxes[6][19].secure" type="&lt;unnamed&gt;" bytecount="48" />
-            <loop array="(*gPokemonStoragePtr).boxes[6]" start="20" count="10" counter-var="__a">
-               <struct value="(*gPokemonStoragePtr).boxes[6][__a]" type="BoxPokemon" />
+            <loop array="(*gPokemonStoragePtr).boxes[3]" start="18" count="12" counter-var="__a">
+               <transform value="(*gPokemonStoragePtr).boxes[3][__a]" transformed-type="SerializedBoxPokemon" transformed-value="__transformed_var_0">
+                  <struct value="__transformed_var_0" type="SerializedBoxPokemon" />
+               </transform>
             </loop>
-            <loop array="(*gPokemonStoragePtr).boxes[7]" start="0" count="30" counter-var="__b">
-               <struct value="(*gPokemonStoragePtr).boxes[7][__b]" type="BoxPokemon" />
+            <loop array="(*gPokemonStoragePtr).boxes[4]" start="0" count="30" counter-var="__b">
+               <transform value="(*gPokemonStoragePtr).boxes[4][__b]" transformed-type="SerializedBoxPokemon" transformed-value="__transformed_var_1">
+                  <struct value="__transformed_var_1" type="SerializedBoxPokemon" />
+               </transform>
             </loop>
-            <loop array="(*gPokemonStoragePtr).boxes[8]" start="0" count="8" counter-var="__c">
-               <struct value="(*gPokemonStoragePtr).boxes[8][__c]" type="BoxPokemon" />
-            </loop>
-            <integer value="(*gPokemonStoragePtr).boxes[8][8].personality" type="u32" bitcount="32" />
-            <integer value="(*gPokemonStoragePtr).boxes[8][8].otId" type="u32" bitcount="32" />
-            <string value="(*gPokemonStoragePtr).boxes[8][8].nickname" type="u8[10]" length="10" nonstring="true" />
-            <integer value="(*gPokemonStoragePtr).boxes[8][8].language" type="LanguageID" bitcount="4" min="0" max="7" />
-            <integer value="(*gPokemonStoragePtr).boxes[8][8].isBadEgg" type="u8" bitcount="1" />
-            <integer value="(*gPokemonStoragePtr).boxes[8][8].hasSpecies" type="u8" bitcount="1" />
-            <integer value="(*gPokemonStoragePtr).boxes[8][8].isEgg" type="u8" bitcount="1" />
-            <integer value="(*gPokemonStoragePtr).boxes[8][8].blockBoxRS" type="u8" bitcount="1" />
-            <integer value="(*gPokemonStoragePtr).boxes[8][8].unused" type="u8" bitcount="4" />
-            <string value="(*gPokemonStoragePtr).boxes[8][8].otName" type="u8[7]" length="7" nonstring="true" />
-            <integer value="(*gPokemonStoragePtr).boxes[8][8].markings" type="u8" bitcount="8" />
-            <integer value="(*gPokemonStoragePtr).boxes[8][8].checksum" type="u16" bitcount="16" />
-            <integer value="(*gPokemonStoragePtr).boxes[8][8].unknown" type="u16" bitcount="16" />
-         </instructions>
-      </sector>
-      <sector>
-         <stats>
-            <bitcounts total-packed="31704" />
-         </stats>
-         <instructions>
-            <buffer value="(*gPokemonStoragePtr).boxes[8][8].secure" type="&lt;unnamed&gt;" bytecount="48" />
-            <loop array="(*gPokemonStoragePtr).boxes[8]" start="9" count="21" counter-var="__a">
-               <struct value="(*gPokemonStoragePtr).boxes[8][__a]" type="BoxPokemon" />
-            </loop>
-            <loop array="(*gPokemonStoragePtr).boxes[9]" start="0" count="28" counter-var="__b">
-               <struct value="(*gPokemonStoragePtr).boxes[9][__b]" type="BoxPokemon" />
-            </loop>
-            <integer value="(*gPokemonStoragePtr).boxes[9][28].personality" type="u32" bitcount="32" />
-            <integer value="(*gPokemonStoragePtr).boxes[9][28].otId" type="u32" bitcount="32" />
-            <string value="(*gPokemonStoragePtr).boxes[9][28].nickname" type="u8[10]" length="10" nonstring="true" />
-            <integer value="(*gPokemonStoragePtr).boxes[9][28].language" type="LanguageID" bitcount="4" min="0" max="7" />
-            <integer value="(*gPokemonStoragePtr).boxes[9][28].isBadEgg" type="u8" bitcount="1" />
-            <integer value="(*gPokemonStoragePtr).boxes[9][28].hasSpecies" type="u8" bitcount="1" />
-            <integer value="(*gPokemonStoragePtr).boxes[9][28].isEgg" type="u8" bitcount="1" />
-            <integer value="(*gPokemonStoragePtr).boxes[9][28].blockBoxRS" type="u8" bitcount="1" />
-            <integer value="(*gPokemonStoragePtr).boxes[9][28].unused" type="u8" bitcount="4" />
-         </instructions>
-      </sector>
-      <sector>
-         <stats>
-            <bitcounts total-packed="31708" />
-         </stats>
-         <instructions>
-            <string value="(*gPokemonStoragePtr).boxes[9][28].otName" type="u8[7]" length="7" nonstring="true" />
-            <integer value="(*gPokemonStoragePtr).boxes[9][28].markings" type="u8" bitcount="8" />
-            <integer value="(*gPokemonStoragePtr).boxes[9][28].checksum" type="u16" bitcount="16" />
-            <integer value="(*gPokemonStoragePtr).boxes[9][28].unknown" type="u16" bitcount="16" />
-            <buffer value="(*gPokemonStoragePtr).boxes[9][28].secure" type="&lt;unnamed&gt;" bytecount="48" />
-            <struct value="(*gPokemonStoragePtr).boxes[9][29]" type="BoxPokemon" />
-            <loop array="(*gPokemonStoragePtr).boxes[10]" start="0" count="30" counter-var="__a">
-               <struct value="(*gPokemonStoragePtr).boxes[10][__a]" type="BoxPokemon" />
-            </loop>
-            <loop array="(*gPokemonStoragePtr).boxes[11]" start="0" count="18" counter-var="__b">
-               <struct value="(*gPokemonStoragePtr).boxes[11][__b]" type="BoxPokemon" />
-            </loop>
-            <integer value="(*gPokemonStoragePtr).boxes[11][18].personality" type="u32" bitcount="32" />
-            <integer value="(*gPokemonStoragePtr).boxes[11][18].otId" type="u32" bitcount="32" />
-         </instructions>
-      </sector>
-      <sector>
-         <stats>
-            <bitcounts total-packed="31736" />
-         </stats>
-         <instructions>
-            <string value="(*gPokemonStoragePtr).boxes[11][18].nickname" type="u8[10]" length="10" nonstring="true" />
-            <integer value="(*gPokemonStoragePtr).boxes[11][18].language" type="LanguageID" bitcount="4" min="0" max="7" />
-            <integer value="(*gPokemonStoragePtr).boxes[11][18].isBadEgg" type="u8" bitcount="1" />
-            <integer value="(*gPokemonStoragePtr).boxes[11][18].hasSpecies" type="u8" bitcount="1" />
-            <integer value="(*gPokemonStoragePtr).boxes[11][18].isEgg" type="u8" bitcount="1" />
-            <integer value="(*gPokemonStoragePtr).boxes[11][18].blockBoxRS" type="u8" bitcount="1" />
-            <integer value="(*gPokemonStoragePtr).boxes[11][18].unused" type="u8" bitcount="4" />
-            <string value="(*gPokemonStoragePtr).boxes[11][18].otName" type="u8[7]" length="7" nonstring="true" />
-            <integer value="(*gPokemonStoragePtr).boxes[11][18].markings" type="u8" bitcount="8" />
-            <integer value="(*gPokemonStoragePtr).boxes[11][18].checksum" type="u16" bitcount="16" />
-            <integer value="(*gPokemonStoragePtr).boxes[11][18].unknown" type="u16" bitcount="16" />
-            <buffer value="(*gPokemonStoragePtr).boxes[11][18].secure" type="&lt;unnamed&gt;" bytecount="48" />
-            <loop array="(*gPokemonStoragePtr).boxes[11]" start="19" count="11" counter-var="__a">
-               <struct value="(*gPokemonStoragePtr).boxes[11][__a]" type="BoxPokemon" />
-            </loop>
-            <loop array="(*gPokemonStoragePtr).boxes[12]" start="0" count="30" counter-var="__b">
-               <struct value="(*gPokemonStoragePtr).boxes[12][__b]" type="BoxPokemon" />
-            </loop>
-            <loop array="(*gPokemonStoragePtr).boxes[13]" start="0" count="8" counter-var="__c">
-               <struct value="(*gPokemonStoragePtr).boxes[13][__c]" type="BoxPokemon" />
+            <loop array="(*gPokemonStoragePtr).boxes[5]" start="0" count="12" counter-var="__c">
+               <transform value="(*gPokemonStoragePtr).boxes[5][__c]" transformed-type="SerializedBoxPokemon" transformed-value="__transformed_var_2">
+                  <struct value="__transformed_var_2" type="SerializedBoxPokemon" />
+               </transform>
             </loop>
          </instructions>
       </sector>
       <sector>
          <stats>
-            <bitcounts total-packed="15000" />
+            <bitcounts total-packed="31482" />
          </stats>
          <instructions>
-            <integer value="(*gPokemonStoragePtr).boxes[13][8].personality" type="u32" bitcount="32" />
-            <integer value="(*gPokemonStoragePtr).boxes[13][8].otId" type="u32" bitcount="32" />
-            <string value="(*gPokemonStoragePtr).boxes[13][8].nickname" type="u8[10]" length="10" nonstring="true" />
-            <integer value="(*gPokemonStoragePtr).boxes[13][8].language" type="LanguageID" bitcount="4" min="0" max="7" />
-            <integer value="(*gPokemonStoragePtr).boxes[13][8].isBadEgg" type="u8" bitcount="1" />
-            <integer value="(*gPokemonStoragePtr).boxes[13][8].hasSpecies" type="u8" bitcount="1" />
-            <integer value="(*gPokemonStoragePtr).boxes[13][8].isEgg" type="u8" bitcount="1" />
-            <integer value="(*gPokemonStoragePtr).boxes[13][8].blockBoxRS" type="u8" bitcount="1" />
-            <integer value="(*gPokemonStoragePtr).boxes[13][8].unused" type="u8" bitcount="4" />
-            <string value="(*gPokemonStoragePtr).boxes[13][8].otName" type="u8[7]" length="7" nonstring="true" />
-            <integer value="(*gPokemonStoragePtr).boxes[13][8].markings" type="u8" bitcount="8" />
-            <integer value="(*gPokemonStoragePtr).boxes[13][8].checksum" type="u16" bitcount="16" />
-            <integer value="(*gPokemonStoragePtr).boxes[13][8].unknown" type="u16" bitcount="16" />
-            <buffer value="(*gPokemonStoragePtr).boxes[13][8].secure" type="&lt;unnamed&gt;" bytecount="48" />
-            <loop array="(*gPokemonStoragePtr).boxes[13]" start="9" count="21" counter-var="__a">
-               <struct value="(*gPokemonStoragePtr).boxes[13][__a]" type="BoxPokemon" />
+            <loop array="(*gPokemonStoragePtr).boxes[5]" start="12" count="18" counter-var="__a">
+               <transform value="(*gPokemonStoragePtr).boxes[5][__a]" transformed-type="SerializedBoxPokemon" transformed-value="__transformed_var_0">
+                  <struct value="__transformed_var_0" type="SerializedBoxPokemon" />
+               </transform>
             </loop>
-            <loop array="(*gPokemonStoragePtr).boxNames" start="0" count="14" counter-var="__b">
-               <string value="(*gPokemonStoragePtr).boxNames[__b]" type="u8[9]" length="8" nonstring="false" />
+            <loop array="(*gPokemonStoragePtr).boxes[6]" start="0" count="30" counter-var="__b">
+               <transform value="(*gPokemonStoragePtr).boxes[6][__b]" transformed-type="SerializedBoxPokemon" transformed-value="__transformed_var_1">
+                  <struct value="__transformed_var_1" type="SerializedBoxPokemon" />
+               </transform>
             </loop>
-            <loop array="(*gPokemonStoragePtr).boxWallpapers" start="0" count="14" counter-var="__c">
-               <integer value="(*gPokemonStoragePtr).boxWallpapers[__c]" type="u8" bitcount="8" />
+            <loop array="(*gPokemonStoragePtr).boxes[7]" start="0" count="6" counter-var="__c">
+               <transform value="(*gPokemonStoragePtr).boxes[7][__c]" transformed-type="SerializedBoxPokemon" transformed-value="__transformed_var_2">
+                  <struct value="__transformed_var_2" type="SerializedBoxPokemon" />
+               </transform>
+            </loop>
+         </instructions>
+      </sector>
+      <sector>
+         <stats>
+            <bitcounts total-packed="31482" />
+         </stats>
+         <instructions>
+            <loop array="(*gPokemonStoragePtr).boxes[7]" start="6" count="24" counter-var="__a">
+               <transform value="(*gPokemonStoragePtr).boxes[7][__a]" transformed-type="SerializedBoxPokemon" transformed-value="__transformed_var_0">
+                  <struct value="__transformed_var_0" type="SerializedBoxPokemon" />
+               </transform>
+            </loop>
+            <loop array="(*gPokemonStoragePtr).boxes[8]" start="0" count="30" counter-var="__b">
+               <transform value="(*gPokemonStoragePtr).boxes[8][__b]" transformed-type="SerializedBoxPokemon" transformed-value="__transformed_var_1">
+                  <struct value="__transformed_var_1" type="SerializedBoxPokemon" />
+               </transform>
+            </loop>
+         </instructions>
+      </sector>
+      <sector>
+         <stats>
+            <bitcounts total-packed="31482" />
+         </stats>
+         <instructions>
+            <loop array="(*gPokemonStoragePtr).boxes[9]" start="0" count="30" counter-var="__a">
+               <transform value="(*gPokemonStoragePtr).boxes[9][__a]" transformed-type="SerializedBoxPokemon" transformed-value="__transformed_var_0">
+                  <struct value="__transformed_var_0" type="SerializedBoxPokemon" />
+               </transform>
+            </loop>
+            <loop array="(*gPokemonStoragePtr).boxes[10]" start="0" count="24" counter-var="__b">
+               <transform value="(*gPokemonStoragePtr).boxes[10][__b]" transformed-type="SerializedBoxPokemon" transformed-value="__transformed_var_1">
+                  <struct value="__transformed_var_1" type="SerializedBoxPokemon" />
+               </transform>
+            </loop>
+         </instructions>
+      </sector>
+      <sector>
+         <stats>
+            <bitcounts total-packed="31482" />
+         </stats>
+         <instructions>
+            <loop array="(*gPokemonStoragePtr).boxes[10]" start="24" count="6" counter-var="__a">
+               <transform value="(*gPokemonStoragePtr).boxes[10][__a]" transformed-type="SerializedBoxPokemon" transformed-value="__transformed_var_0">
+                  <struct value="__transformed_var_0" type="SerializedBoxPokemon" />
+               </transform>
+            </loop>
+            <loop array="(*gPokemonStoragePtr).boxes[11]" start="0" count="30" counter-var="__b">
+               <transform value="(*gPokemonStoragePtr).boxes[11][__b]" transformed-type="SerializedBoxPokemon" transformed-value="__transformed_var_1">
+                  <struct value="__transformed_var_1" type="SerializedBoxPokemon" />
+               </transform>
+            </loop>
+            <loop array="(*gPokemonStoragePtr).boxes[12]" start="0" count="18" counter-var="__c">
+               <transform value="(*gPokemonStoragePtr).boxes[12][__c]" transformed-type="SerializedBoxPokemon" transformed-value="__transformed_var_2">
+                  <struct value="__transformed_var_2" type="SerializedBoxPokemon" />
+               </transform>
+            </loop>
+         </instructions>
+      </sector>
+      <sector>
+         <stats>
+            <bitcounts total-packed="25494" />
+         </stats>
+         <instructions>
+            <loop array="(*gPokemonStoragePtr).boxes[12]" start="18" count="12" counter-var="__a">
+               <transform value="(*gPokemonStoragePtr).boxes[12][__a]" transformed-type="SerializedBoxPokemon" transformed-value="__transformed_var_0">
+                  <struct value="__transformed_var_0" type="SerializedBoxPokemon" />
+               </transform>
+            </loop>
+            <loop array="(*gPokemonStoragePtr).boxes[13]" start="0" count="30" counter-var="__b">
+               <transform value="(*gPokemonStoragePtr).boxes[13][__b]" transformed-type="SerializedBoxPokemon" transformed-value="__transformed_var_1">
+                  <struct value="__transformed_var_1" type="SerializedBoxPokemon" />
+               </transform>
+            </loop>
+            <loop array="(*gPokemonStoragePtr).boxNames" start="0" count="14" counter-var="__c">
+               <string value="(*gPokemonStoragePtr).boxNames[__c]" type="u8[9]" length="8" nonstring="false" />
+            </loop>
+            <loop array="(*gPokemonStoragePtr).boxWallpapers" start="0" count="14" counter-var="__d">
+               <integer value="(*gPokemonStoragePtr).boxWallpapers[__d]" type="u8" bitcount="8" />
             </loop>
          </instructions>
       </sector>

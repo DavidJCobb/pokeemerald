@@ -2,6 +2,7 @@
 #define GUARD_POKEMON_H
 
 #include "lu/bitpack_options.h"
+#include "lu/bitpack_transform_BoxPokemon.h"
 #include "lu/game_typedefs.h"
 #include "sprite.h"
 
@@ -105,7 +106,7 @@ struct PokemonSubstruct0
     u32 experience;
     u8 ppBonuses;
     u8 friendship;
-    u16 filler;
+    LU_BP_OMIT u16 filler;
 };
 
 struct PokemonSubstruct1
@@ -186,7 +187,7 @@ struct PokemonSubstruct3
                              max(sizeof(struct PokemonSubstruct2),     \
                                  sizeof(struct PokemonSubstruct3)))))
 
-union LU_BP_AS_OPAQUE_BUFFER PokemonSubstruct
+union PokemonSubstruct
 {
     struct PokemonSubstruct0 type0;
     struct PokemonSubstruct1 type1;
@@ -195,7 +196,7 @@ union LU_BP_AS_OPAQUE_BUFFER PokemonSubstruct
     u16 raw[NUM_SUBSTRUCT_BYTES / 2]; // /2 because it's u16, not u8
 };
 
-struct BoxPokemon
+struct LU_BP_TRANSFORM_AND_NEVER_SPLIT(PackBoxPokemonForSave,UnpackBoxPokemonForSave) BoxPokemon
 {
     u32 personality;
     u32 otId;
@@ -211,7 +212,7 @@ struct BoxPokemon
     u16 checksum;
     u16 unknown;
 
-    LU_BP_AS_OPAQUE_BUFFER union
+    union
     {
         u32 raw[(NUM_SUBSTRUCT_BYTES * 4) / 4]; // *4 because there are 4 substructs, /4 because it's u32, not u8
         union PokemonSubstruct substructs[4];
@@ -222,7 +223,7 @@ struct Pokemon
 {
     struct BoxPokemon box;
     u32 status;
-    u8 level;
+    PokemonLevel level;
     u8 mail;
     u16 hp;
     u16 maxHP;

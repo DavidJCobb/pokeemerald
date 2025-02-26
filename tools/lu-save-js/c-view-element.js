@@ -145,12 +145,14 @@ class CViewElement extends TreeRowViewElement {
             if (!(inst instanceof CValueInstance)) {
                return null;
             }
+            let decl = inst.decl;
+            console.assert(!!decl);
+            if (decl.type == "omitted") {
+               return _style("deemphasize", "[omitted]");
+            }
             if (inst.value === null) {
                return _style("deemphasize", "[empty]");
             }
-            
-            let decl = inst.decl;
-            console.assert(!!decl);
             switch (decl.type) {
                case "boolean":
                   return _style("value-text", ""+inst.value);
@@ -184,8 +186,6 @@ class CViewElement extends TreeRowViewElement {
                      return _style("value-text", text);
                   }
                   break;
-               case "omitted":
-                  return _style("deemphasize", "[omitted]");
             }
          } else if (col == 2) { // type
             if (inst instanceof CTypeInstance) {

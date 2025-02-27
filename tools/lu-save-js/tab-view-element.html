@@ -1,0 +1,70 @@
+<!doctype html>
+<html>
+   <head>
+      <title>TabViewElement test</title>
+      <script src="tab-view-element.js"></script>
+      <style>
+*:first-child { margin-top: 0 }
+*:last-child { margin-bottom: 0 }
+
+tab-view {
+   --active-area-border-width: 1px;
+   --active-area-border-color: #808080;
+   --active-area-frame-width:  .25em;
+   --active-area-inner-border: 1px inset #C0C0C0;
+   --collapse-tab-borders:     1;
+   
+}
+
+tab-view::part(tab) {
+   cursor:  pointer;
+   background: #E8E8E8;
+   padding: .25em 1em;
+}
+tab-view::part(tab):hover {
+   background: #F8F8F8;
+}
+tab-view::part(tab selected) {
+   font-weight: bold;
+   background:  #FFF !important; /* important so we don't use the :hover color above */
+}
+
+/*
+   page layout
+*/
+
+body {
+   display: flex;
+   flex-flow: column nowrap;
+   padding: 1em;
+   margin: 0;
+   box-sizing: border-box;
+   min-height: 100vh;
+}
+tab-view {
+   flex: 1 1 auto;
+}
+tab-view>* {
+   padding: 1em;
+}
+      </style>
+   </head>
+   <body>
+      <tab-view>
+         <div data-title="Tab 1">
+            <p>This is tab 1</p>
+         </div>
+         <div data-title="Tab 2">
+            <p>This is tab 2</p>
+         </div>
+      </tab-view>
+      <script>
+// test scrolling the tab strip
+for(let i = 3; i < 30; ++i) {
+   let body = document.createElement("div");
+   body.setAttribute("data-title", "Tab " + i);
+   document.querySelector("tab-view").append(body);
+}
+      </script>
+   </body>
+</html>

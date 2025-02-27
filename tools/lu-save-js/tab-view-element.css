@@ -1,0 +1,144 @@
+
+:host([hidden]) {
+   display: none !important;
+}
+:host {
+   display: flex;
+   flex-flow: column nowrap;
+}
+
+.tab-strip>li {
+   overflow: hidden;
+}
+:where(.tab-strip>li) {
+   overflow:      hidden;
+   text-overflow: ellipsis;
+   white-space:   nowrap;
+   
+   box-sizing: border-box;
+   max-width:  100%;
+   flex-shrink: 0;
+}
+
+.tab-strip-wrap {
+   display:   flex;
+   flex-flow: row nowrap;
+   
+   position: relative;
+   
+   .tab-strip {
+      flex: 1 1 auto;
+   }
+}
+
+.tab-strip {
+   list-style: none;
+   padding:    0;
+   margin:     0;
+   
+   display:     flex;
+   flex-flow:   row nowrap;
+   align-items: end;
+   
+   overflow-y: hidden;
+   scrollbar-width: none;
+}
+
+.scroll-buttons {
+   display:   flex;
+   flex-flow: row nowrap;
+   align-items: center;
+   padding-left: .25em;
+}
+
+.current-tab-body {
+   flex: 1 1 auto;
+   display: flex;
+   flex-flow: column nowrap;
+}
+.current-tab-body>div {
+   flex: 1 1 auto;
+}
+
+/*
+   ACTIVE AREA FRAME STYLES
+   
+   Convenience styles for drawing a border around the tab body and the 
+   current tab, such that no line separates the current tab from the 
+   tab body.
+   
+   This works by taking what would normally be the top border of the 
+   tab body, and instead making it the bottom border of the tab strip. 
+   (Well, actually, in order to display scroll buttons properly, we 
+   need to wrap the tab strip, and apply the border to each individual 
+   element in that wrapper.)
+*/
+.tab-strip-wrap>span {
+   /*
+      Add a flex item to the end of the tab strip, and put our border 
+      on it.
+   */
+   content: "";
+   flex: 0 1000000000 100%;
+   border-bottom: var(--active-area-border-width) solid var(--active-area-border-color,currentcolor);
+}
+.scroll-buttons {
+   align-self: stretch;
+   border-bottom: var(--active-area-border-width) solid var(--active-area-border-color,currentcolor);
+}
+.scroll-buttons:not(.can-scroll) button {
+   visibility: hidden !important;
+}
+.tab-strip>li {
+   border: var(--active-area-border-width,0px) solid var(--active-area-border-color,currentcolor);
+}
+/*
+   Delete the lefthand border off of the first tab, and move it to the 
+   tab strip itself. This way, if we scroll the tabstrip, the lefthand 
+   edge will always have a visible border (i.e. tabs that are partially 
+   scrolled off the left edge will appear clipped, rather than there 
+   just being a missing border on the tab strip).
+   
+   Ditto for the righthand edge.
+*/
+.tab-strip {
+   border-left:  var(--active-area-border-width,0px) solid var(--active-area-border-color,currentcolor);
+   border-right: var(--active-area-border-width,0px) solid var(--active-area-border-color,currentcolor);
+}
+.tab-strip>li:first-child {
+   border-left-width: 0;
+}
+.tab-strip>li:last-child {
+   border-right-width: 0;
+}
+/*
+   If collapsing tab borders are enabled, then have all non-leftmost 
+   tabs share their previous siblings' righthand borders; and use 
+   scroll-margin-left to ensure that when a non-leftmost tab is 
+   scrolled into view, that shared border belonging to their previous 
+   sibling is also scrolled into view.
+*/
+.tab-strip>li+li {
+   border-left-width: calc(
+      var(--active-area-border-width,0px) -
+      var(--active-area-border-width,0px) * var(--collapse-tab-borders,0)
+   );
+   scroll-margin-left: var(--active-area-border-width,0px) * var(--collapse-tab-borders,0);
+}
+/*
+   Join the selected tab with the [frame around the] current tab body.
+*/
+.tab-strip>li[part~=selected] {
+   border-bottom-color: transparent;
+}
+
+.current-tab-body {
+   border: var(--active-area-border-width,0px) solid var(--active-area-border-color,currentcolor);
+   border-top-width: 0;
+   
+   padding: var(--active-area-frame-width,0px);
+   padding-top: calc(var(--active-area-frame-width,0px) + var(--active-area-border-width,0px));
+}
+.current-tab-body>div {
+   border: var(--active-area-inner-border,0);
+}

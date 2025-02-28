@@ -87,6 +87,13 @@ class TabViewElement extends HTMLElement {
       let tab = e.target.closest(".tab-strip>li");
       if (!tab)
          return;
+      if (e.target.closest(".tab-strip>li>button.close")) {
+         if (e.type != "click")
+            return;
+         e.preventDefault();
+         this.#remove_tab(tab);
+         return;
+      }
       if (e instanceof KeyboardEvent) {
          switch (e.key) {
             case "Enter":
@@ -130,21 +137,29 @@ class TabViewElement extends HTMLElement {
             continue;
          changed = true;
          tab.textContent = body.getAttribute("data-title");
+         if (body.hasAttribute("data-tab-is-closable")) {
+            let close = tab.querySelector("button.close");
+            if (!close) {
+               tab.append(this.#make_tab_close_button());
+            }
+         }
       }
       if (changed)
          this.#update_scroll_button_visibility();
    }
    
    #on_tree_mutations_observed(records) {
-      let removed   = new Set();
-      let switch_to = null; // if the active tab is removed, switch to this tab
-      let added     = false;
-      let reordered = false;
+      let removed    = new Set();
+      let switch_tab = false;
+      let switch_to  = null; // if the active tab is removed, switch to this tab
+      let added      = false;
+      let reordered  = false;
       for(const record of records) {
          for(const node of record.removedNodes) {
             removed.add(node);
             if (node === this.#active_tab_body) {
-               switch_to = record.previousSibling || record.nextSibling;
+               switch_tab = true;
+               switch_to  = record.previousSibling || record.nextSibling;
             }
          }
          for(const node of record.addedNodes) {
@@ -166,11 +181,11 @@ class TabViewElement extends HTMLElement {
          // tab), then select our first tab.
          //
          if (!switch_to && !this.#active_tab_body) {
-            switch_to = this.children[0];
+            switch_tab = true;
+            switch_to  = this.children[0];
          }
       }
-      if (switch_to) {
-         this.#active_tab_body = null;
+      if (switch_tab) {
          this.#select_tab(switch_to);
       }
    }
@@ -182,6 +197,31 @@ class TabViewElement extends HTMLElement {
    //
    // Internals (tab-strip nodes)
    //
+   
+   #remove_tab(tab) {
+      let body = this.#tab_nodes.tabs_to_bodies.get(tab);
+      if (!body) {
+         return;
+      }
+      this.#destroy_tab_node(body);
+      let switch_tab = false;
+      let switch_to  = null;
+      if (body === this.#active_tab_body) {
+         switch_tab = true;
+         switch_to  = body.previousSibling || body.nextSibling;
+      }
+      body.remove();
+      this.dispatchEvent(new CustomEvent("tabremove", { detail: {
+         tabBody: body,
+      }}));
+      if (switch_tab) {
+         this.#active_tab_body = null;
+         this.#select_tab(switch_to);
+         if (!switch_to) {
+            this.#dispatch_tab_change(null);
+         }
+      }
+   }
    
    #destroy_tab_node(body) {
       let node = this.#tab_nodes.bodies_to_tabs.get(body);
@@ -195,6 +235,14 @@ class TabViewElement extends HTMLElement {
       this.#tab_nodes.tabs_to_bodies.delete(node);
    }
    
+   #make_tab_close_button() {
+      let close = document.createElement("button");
+      close.classList.add("close");
+      close.setAttribute("part", "close-button");
+      close.textContent = "Close";
+      return close;
+   }
+   
    #make_tab_node(body) {
       let node  = document.createElement("li");
       node.setAttribute("aria-role", "tab");
@@ -206,11 +254,14 @@ class TabViewElement extends HTMLElement {
       } else {
          node.textContent = "unnamed";
       }
+      if (body.hasAttribute("data-tab-is-closable")) {
+         node.append(this.#make_tab_close_button());
+      }
       this.#tab_nodes.bodies_to_tabs.set(body, node);
       this.#tab_nodes.tabs_to_bodies.set(node, body);
       this.#title_observer.observe(body, {
          attributes: true,
-         attributeFilter: [ "data-title" ],
+         attributeFilter: [ "data-title", "data-tab-is-closable" ],
       });
       return node;
    }
@@ -252,6 +303,12 @@ class TabViewElement extends HTMLElement {
    // Internals (behavior)
    //
    
+   #dispatch_tab_change(body) {
+      this.dispatchEvent(new CustomEvent("tabchange", { detail: {
+         tabBody: body,
+      }}));
+   }
+   
    static #REGEX_TAB_IS_CURRENT = /(?:^|\s)selected(?:\s|$)/;
    static #REGEX_MAKE_TAB_NON_CURRENT = /^selected$|selected\s|\sselected$/;
    
@@ -272,6 +329,7 @@ class TabViewElement extends HTMLElement {
          throw new Error("The tab view does not own the given tab-body element.");
       }
       
+      let changed = this.#active_tab_body !== body;
       this.#active_tab_body = body;
       
       let tab    = this.#tab_nodes.bodies_to_tabs.get(body);
@@ -291,11 +349,9 @@ class TabViewElement extends HTMLElement {
          }
       }
       slot.assign(body);
-      
-      this.dispatchEvent(new CustomEvent("tabchange", { detail: {
-         tab:     null,
-         tabBody: body,
-      }}));
+      if (changed) {
+         this.#dispatch_tab_change(body);
+      }
    }
    
    // NOTE: Does not account for the presence/absence of scroll-margin on the 

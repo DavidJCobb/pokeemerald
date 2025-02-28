@@ -30,6 +30,15 @@ menu {
    li {
       padding: .25em .5em;
       border-right: 1px solid #808080;
+      user-select:  none;
+      
+      &[disabled] {
+         color: #808080;
+      }
+      
+      &:not([disabled]):hover {
+         background: #DEF;
+      }
    }
 }
 

@@ -23,6 +23,7 @@ class SaveFileElement extends HTMLElement {
    }
    
    connectedCallback() {
+      this.setAttribute("data-tab-is-closable", "");
       this.#update_title();
    }
    

@@ -1,31 +1,21 @@
 {
-   async function _get_save_format() {
-      let data_x = null;
-      {
-         let node_x = document.getElementById("file-xml");
-         if (!node_x.files.length) {
-            alert("Error: no save file format given");
-            return;
-         }
-         let file = node_x.files[0];
-         
-         let parser = new DOMParser();
-         let text   = await file.text();
-         data_x = parser.parseFromString(text, "text/xml");
-      }
-      let format = new SaveFormat();
-      format.from_xml(data_x.documentElement);
-      console.log("Save format: ", format);
-      for(let name in EDITOR_ENUMS) {
-         format.enums[name] = EDITOR_ENUMS[name];
-      }
-      return format;
-   };
+   const tab_view = document.getElementById("save-files");
+   tab_view.addEventListener("tabchange", function(e) {
+      let disable = !e.detail.tabBody;
+      document.querySelectorAll("menu [data-acts-on-save-file]").forEach(function(node) {
+         node[disable ? "setAttribute" : "removeAttribute"]("disabled", "disabled");
+      });
+   });
+   document.querySelectorAll("menu [data-acts-on-save-file]").forEach(function(node) {
+      node.setAttribute("disabled", "disabled");
+   });
    
    {  // Import save file
       let trigger = document.querySelector("menu [data-action='import']");
       let modal   = document.getElementById("dialog-import");
-      trigger.addEventListener("click", function() {
+      trigger.addEventListener("click", function(e) {
+         if (e.target.hasAttribute("disabled"))
+            return;
          modal.showModal();
       });
       
@@ -65,8 +55,7 @@
          let file = format.load(sav_buffer);
          console.log("Save dump: ", file);
          
-         let node     = document.createElement("save-file-element");
-         let tab_view = document.getElementById("save-files");
+         let node = document.createElement("save-file-element");
          tab_view.append(node);
          node.saveFile = file;
          tab_view.selectedTabBody = node;
@@ -77,7 +66,9 @@
    {  // Translate current save file
       let trigger = document.querySelector("menu [data-action='translate']");
       let modal   = document.getElementById("dialog-translate");
-      trigger.addEventListener("click", function() {
+      trigger.addEventListener("click", function(e) {
+         if (e.target.hasAttribute("disabled"))
+            return;
          modal.showModal();
       });
       
@@ -87,7 +78,6 @@
          modal.close();
       });
       modal.querySelector("button[data-action='activate']").addEventListener("click", async function() {
-         let tab_view = document.getElementById("save-files");
          let src_node = tab_view.selectedTabBody;
          if (!src_node || !(src_node instanceof SaveFileElement))
             return;
@@ -186,8 +176,9 @@
    {  // Import save file
       let trigger = document.querySelector("menu [data-action='export']");
       let modal   = document.getElementById("dialog-export");
-      trigger.addEventListener("click", function() {
-         let tab_view = document.getElementById("save-files");
+      trigger.addEventListener("click", function(e) {
+         if (e.target.hasAttribute("disabled"))
+            return;
          let src_node = tab_view.selectedTabBody;
          if (!src_node || !(src_node instanceof SaveFileElement))
             return;

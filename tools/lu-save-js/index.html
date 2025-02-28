@@ -46,7 +46,7 @@ console.assert = function(condition, ...args) {
    window.addEventListener("unhandledrejection", handler); // errors in promises
 }
       </script>
-      <script src="charset.js"></script>
+      <script src="charset.js" charset="utf-8"></script>
       <script src="common.js"></script>
       <script src="poke-string.js"></script>
       <script src="poke-string-printer.js"></script>
@@ -74,9 +74,6 @@ console.assert = function(condition, ...args) {
       <script src="save-slot.js"></script>
       <script src="save-file.js"></script>
       <script src="save-format.js"></script>
-      
-      <!-- helper for pasting `charmap.txt` in and getting something usable -->
-      <script src="parse-charset.js"></script>
       
       <script src="bitstream.js"></script>
       <script src="instructions-applier.js"></script>

@@ -251,7 +251,7 @@ class TreeRowViewElement extends HTMLElement {
       transition-property: color, width, height;
    }
 }
-:where([part="twisty"]) {
+:where([part~="twisty"]) {
    width:  1em;
    height: 1em;
    color:  #888;
@@ -492,7 +492,7 @@ class TreeRowViewElement extends HTMLElement {
       
       addenda.row_content_height = Math.max(
          styles["cell"].font_size,
-         styles["twisty"].height,
+         styles["twisty"].height||0,
          styles["selected-cell"].font_size,
          styles["selected-twisty"].height
       );
@@ -1144,24 +1144,30 @@ class TreeRowViewElement extends HTMLElement {
    
    #styles_unavailable() {
       //
-      // Hey, did you know that the isConnected property is borderline 
-      // worthless? There's tons of element state that SHOULD be updated 
-      // BEFORE the property is set to true, but which is only actually 
-      // updated AFTER... For example, the computed styles.
-      // 
-      // See, if we try to get the computed styles when the element isn't 
-      // connected, then we risk getting empty strings (which we convert 
-      // to NaNs) for various important measurements. So naturally, we'd 
-      // want to guard against that by checking isConnected... but that 
-      // doesn't protect us from anything! And this is a cross-browser 
-      // problem, so my guess is it's a hole in the spec. Web development 
-      // is so cool and normal! :D :D :D :D :D
+      // We can end up with NaNs if any computed styles were irretrievable, 
+      // generally because the element wasn't connected when we recached 
+      // them or because the browser did something stupid.
       //
       return isNaN(this.#cached_styles.cell.font_size);
    }
+   #can_cache_styles_and_repaint() {
+      if (!this.isConnected)
+         return false;
+      if (Element.prototype.checkVisibility) {
+         //
+         // Chrome implements <details/> using content-visibility, and 
+         // gives us wildly incorrect computed styles when we're being 
+         // hidden within <details/> (e.g. giving us Times New Roman 
+         // font instead of our actual inherited font).
+         //
+         if (!this.checkVisibility({ contentVisibilityAuto: true }))
+            return false;
+      }
+      return true;
+   }
    
    repaint() {
-      if (!this.isConnected) { // 2% chance this is meaningfully accurate, so check it
+      if (!this.#can_cache_styles_and_repaint()) {
          return;
       }
       this.#repaint_queued = false;
@@ -1172,6 +1178,9 @@ class TreeRowViewElement extends HTMLElement {
             //
             // Re-cache failed. Bail out and hope we try again later.
             //
+            if (this.isConnected) {
+               this.#queue_repaint();
+            }
             return;
          }
       }

@@ -186,9 +186,7 @@ class SaveFormat {
       
       function _copy_sector(src_view, n) {
          let dst_view = new DataView(view.buffer, FLASH_SECTOR_SIZE * n, FLASH_SECTOR_SIZE);
-         for(let i = 0; i < dst_view.byteLength; i += 4) {
-            dst_view.setUint32(i, src_view.getUint32(i, true), true);
-         }
+         memcpy(dst_view, src_view, dst_view.byteLength);
       }
       
       for(let i = 0; i < data.slots.length; ++i) {
@@ -211,6 +209,9 @@ class SaveFormat {
                      header.checksum = checksumA32R16(sector_view, SAVE_SECTOR_DATA_SIZE);
                   }
                }
+            } else {
+               memcpy(sector_view, header.raw_sector, SAVE_SECTOR_FULL_SIZE);
+               continue;
             }
             //
             // Serialize header.

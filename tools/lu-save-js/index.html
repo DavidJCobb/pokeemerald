@@ -114,26 +114,35 @@ console.assert = function(condition, ...args) {
       <tab-view id="save-files"></tab-view>
       
       <dialog id="dialog-import">
-         <label for="file-xml">Save file format (XML):</label>
-         <input type="file" class="xml" />
-         
-         <label for="file-sav">Save file (SAV):</label>
-         <input type="file" class="sav" />
-         
-         <button data-action="activate">Load</button>
-         <button data-action="cancel">Cancel</button>
+         <div class="body">
+            <label for="file-xml">Save file format (XML):</label>
+            <input type="file" class="xml" />
+            
+            <label for="file-sav">Save file (SAV):</label>
+            <input type="file" class="sav" />
+         </div>
+         <div class="buttons">
+            <button data-action="activate">Load</button>
+            <button data-action="cancel">Cancel</button>
+         </div>
       </dialog>
       <dialog id="dialog-translate">
-         <label for="file-xml">Save file format (XML):</label>
+         <div class="body">
+            <label for="file-xml">Save file format (XML):</label>
          <input type="file" class="xml" />
-         
-         <button data-action="activate">Translate</button>
-         <button data-action="cancel">Cancel</button>
+         </div>
+         <div class="buttons">
+            <button data-action="activate">Translate</button>
+            <button data-action="cancel">Cancel</button>
+         </div>
       </dialog>
       <dialog id="dialog-export">
-         <a download>Click here to save the file.</a>
-         
-         <button data-action="cancel">Cancel</button>
+         <div class="body">
+            <a download>Click here to save the file.</a>
+         </div>
+         <div class="buttons">
+            <button data-action="cancel">Cancel</button>
+         </div>
       </dialog>
       
       <section class="slots">

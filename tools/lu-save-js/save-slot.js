@@ -45,6 +45,18 @@ class SaveSlot extends CStructInstance {
       let computed = checksumA32R16(sector_view, SAVE_SECTOR_DATA_SIZE);
       header.checksum_is_valid = computed == header.checksum;
       
+      header.raw_sector = null;
+      if (header.signature != SAVE_SECTOR_SIGNATURE) {
+         //
+         // HACK: Save the raw sector content for later export, so that 
+         // round-tripped SAV files are byte-identical.
+         //
+         header.raw_sector = sector_view.buffer.slice(
+            sector_view.byteOffset,
+            sector_view.byteOffset + SAVE_SECTOR_FULL_SIZE
+         );
+      }
+      
       return header;
    }
    

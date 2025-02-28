@@ -38,6 +38,18 @@ function assert_type(condition, message) {
       throw new TypeError(message);
 }
 
+function memcpy(/*Variant<DataView, ArrayBuffer>*/ dst, /*Variant<DataView, ArrayBuffer>*/ src, size) {
+   let dst_view = dst instanceof DataView ? dst : new DataView(dst);
+   let src_view = src instanceof DataView ? src : new DataView(src);
+   let i;
+   for(i = 0; i + 3 < size; i += 4) {
+      dst_view.setUint32(i, src_view.getUint32(i));
+   }
+   for(; i < size; ++i) {
+      dst_view.setUint8(i, src_view.getUint8(i));
+   }
+}
+
 //
 // CHECKSUM CODE:
 //

@@ -56,3 +56,32 @@ menu {
 save-file-element {
    padding: 1em;
 }
+
+dialog {
+   flex-flow: column nowrap;
+   gap: .5em;
+   
+   .body {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: .5em 1em;
+   }
+   
+   .buttons {
+      display:   flex;
+      flex-flow: row nowrap;
+      justify-content: center;
+      gap: .5em;
+      
+      padding-top: 1em;
+      margin-top: .5em;
+      border-top: 1px solid #888;
+      
+      button {
+         flex: 0 1 10em;
+      }
+   }
+}
+dialog[open] {
+   display: flex;
+}

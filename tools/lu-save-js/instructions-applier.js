@@ -145,13 +145,12 @@ class InstructionsApplier {
                      break;
                      
                   case "integer":
-                     if (value.type.is_signed) {
-                        value.value = this.bitstream.read_signed(node.options.bitcount);
-                     } else {
-                        value.value = this.bitstream.read_unsigned(node.options.bitcount);
+                     {
+                        let o = value.decl.compute_integer_bounds();
+                        let v = this.bitstream.read_unsigned(o.bitcount);
+                        v += o.min;
+                        value.value = v;
                      }
-                     if (node.options.min !== null)
-                        value.value += node.options.min;
                      break;
                      
                   case "pointer":
@@ -259,10 +258,9 @@ class InstructionsApplier {
                      
                   case "integer":
                      {
-                        let v = value.value;
-                        if (node.options.min !== null)
-                           v -= node.options.min;
-                        this.bitstream.write_unsigned(node.options.bitcount, v);
+                        let o = value.decl.compute_integer_bounds();
+                        let v = value.value - o.min;
+                        this.bitstream.write_unsigned(o.bitcount, v)
                      }
                      break;
                      

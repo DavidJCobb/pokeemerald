@@ -118,9 +118,7 @@
             }
          }
          let dst_file = new SaveFile();
-         //
-         // TODO: Copy special sectors
-         //
+         dst_file.special_sectors = structuredClone(src_file.special_sectors);
          for(let i = 0; i < src_file.slots.length; ++i) {
             let slot = new SaveSlot(dst_format);
             slot.sectors = structuredClone(src_file.slots[i].sectors);
@@ -179,6 +177,7 @@
             }
          }
          
+console.log(dst_file);
          let node = document.createElement("save-file-element");
          tab_view.append(node);
          node.saveFile = dst_file;

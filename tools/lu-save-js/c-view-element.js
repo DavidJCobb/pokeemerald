@@ -48,6 +48,7 @@ class CViewElement extends TreeRowViewElement {
                return null;
             let map = new Map();
             map.set(inst.value.decl.name, inst.value);
+            return map;
          }
          return null;
       }

@@ -91,6 +91,15 @@ class CUnionInstance extends CTypeInstance {
    // This is used when loading data from a SAV file. Do not use this in a user-
    // defined translator.
    /*CInstance*/ _emplace_for_load(/*Variant<String, CDeclDefinition>*/ member) {
+      if (this.value) {
+         if (member instanceof CDeclDefinition) {
+            if (this.value.decl == member)
+               return this.value;
+         } else {
+            if (this.value.decl.name == member)
+               return this.value;
+         }
+      }
       let common_members = null;
       if (this.type.internal_tag_name) {
          //

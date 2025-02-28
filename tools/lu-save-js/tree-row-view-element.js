@@ -399,8 +399,16 @@ class TreeRowViewElement extends HTMLElement {
          this.#resize_observer = new ResizeObserver(this.#on_observe_resize.bind(this));
          this.#resize_observer.observe(this);
       }
+      //
+      // Browsers are dumb, and will set isConnected and friends to true 
+      // before actually updating computed styles. If we recache and repaint 
+      // too soon, we may get stuck with NaNs.
+      //
+      /*//
       this.#recache_styles();
       this.repaint();
+      //*/
+      this.#queue_repaint(true);
    }
    
    //
@@ -1134,11 +1142,38 @@ class TreeRowViewElement extends HTMLElement {
       }
    }
    
+   #styles_unavailable() {
+      //
+      // Hey, did you know that the isConnected property is borderline 
+      // worthless? There's tons of element state that SHOULD be updated 
+      // BEFORE the property is set to true, but which is only actually 
+      // updated AFTER... For example, the computed styles.
+      // 
+      // See, if we try to get the computed styles when the element isn't 
+      // connected, then we risk getting empty strings (which we convert 
+      // to NaNs) for various important measurements. So naturally, we'd 
+      // want to guard against that by checking isConnected... but that 
+      // doesn't protect us from anything! And this is a cross-browser 
+      // problem, so my guess is it's a hole in the spec. Web development 
+      // is so cool and normal! :D :D :D :D :D
+      //
+      return isNaN(this.#cached_styles.cell.font_size);
+   }
+   
    repaint() {
+      if (!this.isConnected) { // 2% chance this is meaningfully accurate, so check it
+         return;
+      }
       this.#repaint_queued = false;
-      if (this.#recache_queued) {
+      if (this.#recache_queued || this.#styles_unavailable()) {
          this.#recache_queued = false;
          this.#recache_styles();
+         if (this.#styles_unavailable()) {
+            //
+            // Re-cache failed. Bail out and hope we try again later.
+            //
+            return;
+         }
       }
       
       let canvas    = this.#canvas;

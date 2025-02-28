@@ -192,9 +192,9 @@ struct UCoords32
 struct Time
 {
     /*0x00*/ s16 days;
-    LU_BP_MINMAX(0,24) /*0x02*/ s8 hours;
-    LU_BP_MINMAX(0,60) /*0x03*/ s8 minutes;
-    LU_BP_MINMAX(0,60) /*0x04*/ s8 seconds;
+    LU_BP_MINMAX(-24,24) /*0x02*/ s8 hours;
+    LU_BP_MINMAX(-60,60) /*0x03*/ s8 minutes;
+    LU_BP_MINMAX(-60,60) /*0x04*/ s8 seconds;
 };
 
 struct Pokedex

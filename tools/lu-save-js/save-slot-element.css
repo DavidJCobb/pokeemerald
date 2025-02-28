@@ -1,10 +1,13 @@
 :host {
    display: block;
 }
+:where(:host) {
+   margin: 1em 0;
+}
 
 details {
    border: 1px solid #666;
-   margin: 1em 0;
+   margin: 0;
 }
 summary {
    background: #666;

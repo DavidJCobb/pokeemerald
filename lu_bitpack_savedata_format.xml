@@ -2676,15 +2676,15 @@
       <struct tag="Time" c-alignment="4" c-sizeof="8">
          <members>
             <integer name="days" type="s16" bitcount="16" />
-            <integer name="hours" type="s8" bitcount="5" min="0" max="24" />
-            <integer name="minutes" type="s8" bitcount="6" min="0" max="60" />
-            <integer name="seconds" type="s8" bitcount="6" min="0" max="60" />
+            <integer name="hours" type="s8" bitcount="6" min="-24" max="24" />
+            <integer name="minutes" type="s8" bitcount="7" min="-60" max="60" />
+            <integer name="seconds" type="s8" bitcount="7" min="-60" max="60" />
          </members>
          <instructions>
             <integer value="days" type="s16" bitcount="16" />
-            <integer value="hours" type="s8" bitcount="5" min="0" max="24" />
-            <integer value="minutes" type="s8" bitcount="6" min="0" max="60" />
-            <integer value="seconds" type="s8" bitcount="6" min="0" max="60" />
+            <integer value="hours" type="s8" bitcount="6" min="-24" max="24" />
+            <integer value="minutes" type="s8" bitcount="7" min="-60" max="60" />
+            <integer value="seconds" type="s8" bitcount="7" min="-60" max="60" />
          </instructions>
       </struct>
       <struct tag="TrainerHillSave" c-alignment="4" c-sizeof="12">
@@ -3655,7 +3655,7 @@
    <sectors>
       <sector>
          <stats>
-            <bitcounts total-packed="27181" />
+            <bitcounts total-packed="27187" />
          </stats>
          <instructions>
             <struct value="(*gSaveBlock2Ptr)" type="SaveBlock2" />

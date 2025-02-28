@@ -83,9 +83,11 @@ console.assert = function(condition, ...args) {
       
       <script src="parse-bbcode.js"></script>
       <script src="tree-row-view-element.js"></script>
+      <script src="tab-view-element.js"></script>
       <script src="c-view-element.js"></script>
       <script src="c-value-editor-element.js"></script>
       <script src="save-slot-element.js"></script>
+      <script src="save-file-element.js"></script>
       
       <script src="data-format-translator.js"></script>
       <script src="c-bufferifier.js"></script>
@@ -97,23 +99,38 @@ console.assert = function(condition, ...args) {
       <p>
          Given an XML file which describes a bitpacked save format, and an emulator SAV file made with that format, this page is intended to dump the contents of that save file.
       </p>
-      <div class="form">
+      
+      <menu>
+         <li data-action="import">
+            Import save file
+         </li>
+         <li data-action="translate">
+            Translate current save file
+         </li>
+         <li data-action="export">
+            Export save file
+         </li>
+      </menu>
+      <tab-view id="save-files"></tab-view>
+      
+      <dialog id="dialog-import">
          <label for="file-xml">Save file format (XML):</label>
-         <input type="file" id="file-xml" />
+         <input type="file" class="xml" />
          
          <label for="file-sav">Save file (SAV):</label>
-         <input type="file" id="file-sav" />
+         <input type="file" class="sav" />
          
-         <button data-action="load">Load</button>
-         <button data-action="roundtrip">Test round-trip load-and-save</button>
+         <button data-action="activate">Load</button>
+         <button data-action="cancel">Cancel</button>
+      </dialog>
+      <dialog id="dialog-translate">
+         <label for="file-xml">Save file format (XML):</label>
+         <input type="file" class="xml" />
          
-         <hr />
-         
-         <label for="translate-xml">Translate to format (XML):</label>
-         <input type="file" id="translate-xml" />
-         
-         <button data-action="translate">Translate to new format</button>
-      </div>
+         <button data-action="activate">Translate</button>
+         <button data-action="cancel">Cancel</button>
+      </dialog>
+      
       <section class="slots">
       </section>
       <script src="index.js"></script>

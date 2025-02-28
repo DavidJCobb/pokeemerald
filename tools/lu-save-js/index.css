@@ -1,3 +1,6 @@
+*:first-child { margin-top: 0 }
+*:last-child { margin-bottom: 0 }
+
 html {
    font-family: Calibri, sans-serif;
 }
@@ -12,4 +15,44 @@ html {
    button {
       grid-column: 1 / span 2;
    }
+}
+
+menu {
+   list-style: none;
+   padding:    0;
+   margin:     1em 0;
+   
+   display:    flex;
+   flex-flow:  row nowrap;
+   border:     1px solid #808080;
+   background: #EEE;
+   
+   li {
+      padding: .25em .5em;
+      border-right: 1px solid #808080;
+   }
+}
+
+#save-files {
+   --active-area-border-width: 1px;
+   --active-area-border-color: #808080;
+   --active-area-frame-width:  .25em;
+   --active-area-inner-border: 1px inset #C0C0C0;
+   --collapse-tab-borders:     1;
+   
+   &::part(tab) {
+      cursor:  pointer;
+      background: #E8E8E8;
+      padding: .25em 1em;
+   }
+   &::part(tab):hover {
+      background: #F8F8F8;
+   }
+   &::part(tab selected) {
+      font-weight: bold;
+      background:  #FFF !important; /* important so we don't use the :hover color above */
+   }
+}
+save-file-element {
+   padding: 1em;
 }

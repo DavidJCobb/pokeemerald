@@ -19,7 +19,7 @@ class AbstractDataFormatTranslator {
             inst.value = PASS;
          return;
       }
-      if (inst instanceof CValueInstanceArray) {
+      if (inst instanceof CArrayInstance) {
          for(let value of inst.values)
             this.pass(value);
          return;
@@ -117,7 +117,7 @@ class TranslationOperation {
          }
          return false;
       }
-      if (dst instanceof CValueInstanceArray) {
+      if (dst instanceof CArrayInstance) {
          let all_present = true;
          for(let value of dst.values) {
             if (!this.#default_init_dst(value))
@@ -158,7 +158,7 @@ class TranslationOperation {
             return !!allow_PASS;
          return inst.value !== null;
       }
-      if (inst instanceof CValueInstanceArray) {
+      if (inst instanceof CArrayInstance) {
          for(let value of inst.values)
             if (!this.#instance_is_filled(value, allow_PASS))
                return false;
@@ -210,7 +210,7 @@ class TranslationOperation {
          return true;
       }
       
-      if (dst instanceof CValueInstance) {
+      if (dst instanceof CArrayInstance) {
          for(let i = 0; i < dst.values; ++i) {
             const dst_e = dst.values[i];
             if (!_member_is_intact(dst_e)) {
@@ -277,7 +277,7 @@ class TranslationOperation {
             dst.value = null;
          return;
       }
-      if (dst instanceof CValueInstanceArray) {
+      if (dst instanceof CArrayInstance) {
          for(let i = 0; i < dst.values.length; ++i)
             this.#clear_pass_state(dst.values[i]);
          return;
@@ -418,7 +418,7 @@ class TranslationOperation {
             this.#report_failure_to_translate(src, dst);
          }
          return;
-      } else if (dst instanceof CValueInstanceArray) {
+      } else if (dst instanceof CArrayInstance) {
          for(let i = 0; i < dst.values.length; ++i) {
             let src_e = src.values[i];
             let dst_e = dst.values[i];
@@ -666,7 +666,7 @@ class TranslationOperation {
                _typecheck(inst.members[name]);
             return;
          }
-         if (inst instanceof CValueInstanceArray) {
+         if (inst instanceof CArrayInstance) {
             if (!inst.values) {
                errors.push(new Error(`Value ${inst.build_value_path()} is missing its values array.`));
                return;

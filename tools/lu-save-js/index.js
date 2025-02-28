@@ -22,104 +22,118 @@
       return format;
    };
    
-   document.querySelector(".form button[data-action='load']").addEventListener("click", async function() {
-      let data_s = null;
-      {
-         let node_s = document.getElementById("file-sav");
-         if (!node_s.files.length) {
-            alert("Error: no save file given");
-            return;
-         }
-         let file = node_s.files[0];
-         data_s = new DataView(await file.arrayBuffer());
-      }
-      
-      let format  = await _get_save_format();
-      let decoded = format.load(data_s);
-      console.log("Save dump: ", decoded);
-      
-      let section = document.querySelector("section.slots");
-      let frag    = new DocumentFragment();
-      for(let i = 0; i < decoded.slots.length; ++i) {
-         let slot = decoded.slots[i];
-         let element = document.createElement("save-slot-element");
-         element.title = `Save slot ${i + 1}`;
-         frag.append(element);
-         element.slotData = slot;
-      }
-      section.replaceChildren(frag);
+   document.querySelector("menu [data-action='translate']").addEventListener("click", function() {
+      document.getElementById("dialog-translate").showModal();
    });
    
-   document.querySelector(".form button[data-action='roundtrip']").addEventListener("click", async function() {
-      let data_s = null;
-      {
-         let node_s = document.getElementById("file-sav");
-         if (!node_s.files.length) {
-            alert("Error: no save file given");
+   {  // Import save file
+      let trigger = document.querySelector("menu [data-action='import']");
+      let modal   = document.getElementById("dialog-import");
+      trigger.addEventListener("click", function() {
+         modal.showModal();
+      });
+      
+      let file_node_xml = modal.querySelector("input.xml");
+      let file_node_sav = modal.querySelector("input.sav");
+      
+      modal.querySelector("button[data-action='cancel']").addEventListener("click", function() {
+         modal.close();
+      });
+      modal.querySelector("button[data-action='activate']").addEventListener("click", async function() {
+         if (!file_node_xml.files.length) {
+            alert("Error: no save file format given.");
             return;
          }
-         let file = node_s.files[0];
-         data_s = new DataView(await file.arrayBuffer());
-      }
-      
-      let format = await _get_save_format();
-      format.test_round_tripping(data_s);
-   });
-   
-   document.querySelector(".form button[data-action='translate']").addEventListener("click", async function() {
-      const USE_NEW_TRANSLATION = true;
-      
-      let data_s = null;
-      {
-         let node_s = document.getElementById("file-sav");
-         if (!node_s.files.length) {
-            alert("Error: no save file given");
+         if (!file_node_sav.files.length) {
+            alert("Error: no save file given.");
             return;
          }
-         let file = node_s.files[0];
-         data_s = new DataView(await file.arrayBuffer());
-      }
-      
-      let src_format = await _get_save_format();
-      let dst_format;
-      {
-         let node_x = document.getElementById("translate-xml");
-         if (!node_x.files.length) {
-            alert("Error: no save file format given");
-            return;
-         }
-         let file = node_x.files[0];
-         
-         let parser = new DOMParser();
-         let text   = await file.text();
-         let data_x = parser.parseFromString(text, "text/xml");
-         
-         dst_format = new SaveFormat();
-         dst_format.from_xml(data_x.documentElement);
-         for(let name in EDITOR_ENUMS) {
-            dst_format.enums[name] = EDITOR_ENUMS[name];
-         }
-      }
-      
-      let loaded   = src_format.load(data_s);
-      let dst_data = {
-         slots: [],
-         special_sectors: loaded.special_sectors,
-      };
-      for(let i = 0; i < loaded.slots.length; ++i) {
-         let slot = new SaveSlot(dst_format);
-         slot.sectors = structuredClone(loaded.slots[i].sectors);
-         dst_data.slots.push(slot);
-         
-         let present = false;
-         for(let header of loaded.slots[i].sectors) {
-            if (header.signature == SAVE_SECTOR_SIGNATURE) {
-               present = true;
-               break;
+         let format;
+         let sav_buffer;
+         {
+            let xml    = file_node_xml.files[0];
+            let parser = new DOMParser();
+            let text   = await xml.text();
+            let data   = parser.parseFromString(text, "text/xml");
+            
+            format = new SaveFormat();
+            format.from_xml(data.documentElement);
+            for(let name in EDITOR_ENUMS) {
+               format.enums[name] = EDITOR_ENUMS[name];
             }
          }
-         if (present) {
-            if (USE_NEW_TRANSLATION) {
+         {
+            let sav = file_node_sav.files[0];
+            sav_buffer = new DataView(await sav.arrayBuffer());
+         }
+         let file = format.load(sav_buffer);
+         console.log("Save dump: ", file);
+         
+         let node     = document.createElement("save-file-element");
+         let tab_view = document.getElementById("save-files");
+         tab_view.append(node);
+         node.saveFile = file;
+         tab_view.selectedTabBody = node;
+         
+         modal.close();
+      });
+   }
+   {  // Translate current save file
+      let trigger = document.querySelector("menu [data-action='translate']");
+      let modal   = document.getElementById("dialog-translate");
+      trigger.addEventListener("click", function() {
+         modal.showModal();
+      });
+      
+      let file_node_xml = modal.querySelector("input.xml");
+      
+      modal.querySelector("button[data-action='cancel']").addEventListener("click", function() {
+         modal.close();
+      });
+      modal.querySelector("button[data-action='activate']").addEventListener("click", async function() {
+         let tab_view = document.getElementById("save-files");
+         let src_node = tab_view.selectedTabBody;
+         if (!src_node || !(src_node instanceof SaveFileElement))
+            return;
+         let src_file = src_node.saveFile;
+         if (!src_file)
+            return;
+         let src_format = src_file.slots[0].save_format;
+         
+         if (!file_node_xml.files.length) {
+            alert("Error: no save file format given.");
+            return;
+         }
+         let dst_format;
+         {
+            let xml    = file_node_xml.files[0];
+            let parser = new DOMParser();
+            let text   = await xml.text();
+            let data   = parser.parseFromString(text, "text/xml");
+            
+            dst_format = new SaveFormat();
+            dst_format.from_xml(data.documentElement);
+            for(let name in EDITOR_ENUMS) {
+               dst_format.enums[name] = EDITOR_ENUMS[name];
+            }
+         }
+         let dst_file = new SaveFile();
+         //
+         // TODO: Copy special sectors
+         //
+         for(let i = 0; i < src_file.slots.length; ++i) {
+            let slot = new SaveSlot(dst_format);
+            slot.sectors = structuredClone(src_file.slots[i].sectors);
+            dst_file.slots.push(slot);
+            
+            let present = false;
+            for(let header of src_file.slots[i].sectors) {
+               if (header.signature == SAVE_SECTOR_SIGNATURE) {
+                  present = true;
+                  break;
+               }
+            }
+            if (present) {
                let operation = new TranslationOperation();
 /*//
 {
@@ -158,31 +172,19 @@
    operation.translators_for_top_level_values.add("dst", "gSaveBlock2Ptr", tran);
 }
 //*/
-               operation.translate(loaded.slots[i], slot);
+               operation.translate(src_file.slots[i], slot);
                console.log(`Slot ${i + 1} translated.`, slot);
             } else {
-               let info = translate_value_instance_tree(src_format, loaded.slots[i], dst_format, slot);
-               console.log(`Translation result for slot ${i + 1}`, info);
+               console.log(`Slot ${i + 1} is absent.`);
             }
-         } else {
-            console.log(`Slot ${i + 1} is absent.`);
          }
-      }
-      let repacked = dst_format.save(dst_data);
-      console.log("Repacked: ", repacked);
-      
-      let roundtripped = dst_format.load(repacked);
-      console.log("Round-tripped: ", roundtripped);
-      
-      let section = document.querySelector("section.slots");
-      let frag    = new DocumentFragment();
-      for(let i = 0; i < roundtripped.slots.length; ++i) {
-         let slot = roundtripped.slots[i];
-         let element = document.createElement("save-slot-element");
-         element.title = `Save slot ${i + 1} after translation and reload`;
-         frag.append(element);
-         element.slotData = slot;
-      }
-      section.replaceChildren(frag);
-   });
+         
+         let node = document.createElement("save-file-element");
+         tab_view.append(node);
+         node.saveFile = dst_file;
+         tab_view.selectedTabBody = node;
+         
+         modal.close();
+      });
+   }
 }

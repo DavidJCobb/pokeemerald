@@ -1,6 +1,5 @@
 class TabViewElement extends HTMLElement {
    #active_tab_body  = null;
-   #active_tab_index = -1; // stored separately so we can react to the body being removed
    #child_observer   = null;
    #resize_observer  = null;
    #title_observer   = null;
@@ -57,6 +56,27 @@ class TabViewElement extends HTMLElement {
       let scroll = this.#scroll_button_container = this.#shadow.querySelector(".scroll-buttons");
       scroll.children[0].addEventListener("click", this.#scroll_tab_strip.bind(this, -1));
       scroll.children[1].addEventListener("click", this.#scroll_tab_strip.bind(this, 1));
+   }
+   
+   //
+   // Accessors
+   //
+   
+   get selectedTabBody() {
+      return this.#active_tab_body;
+   }
+   get selectedTabIndex() {
+      if (!this.#active_tab_body)
+         return -1;
+      return this.children.indexOf(this.#active_tab_body);
+   }
+   set selectedTabBody(node) {
+      this.#select_tab(node);
+   }
+   set selectedTabIndex(i) {
+      if (i < 0 || i >= this.children.length)
+         throw new Error("Out-of-bounds tab index.");
+      this.#select_tab(this.children[i]);
    }
    
    //
@@ -150,8 +170,7 @@ class TabViewElement extends HTMLElement {
          }
       }
       if (switch_to) {
-         this.#active_tab_body  = null;
-         this.#active_tab_index = -1;
+         this.#active_tab_body = null;
          this.#select_tab(switch_to);
       }
    }

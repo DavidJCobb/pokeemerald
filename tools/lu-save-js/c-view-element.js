@@ -67,6 +67,169 @@ class CViewElement extends TreeRowViewElement {
          return false;
       }
       
+      stringify_value(inst, is_selected) {
+         function _style(name, text) {
+            text = (text+"").replaceAll("[", "[raw][[/raw]");
+            if (is_selected)
+               return text;
+            return `[style=${name}]${text}[/style]`;
+         }
+         
+         if (inst instanceof CStructInstance) {
+            let type      = inst.type;
+            let typename  = type.tag || type.symbol;
+            let formatter = this.typed_value_formatters[typename];
+            if (formatter) {
+               let text;
+               try {
+                  text = formatter(inst);
+               } catch (e) {
+                  console.log(e);
+                  return _style("error", "[custom formatter error]");
+               }
+               if (is_selected) {
+                  let parsed    = parseBBCode(text);
+                  let plaintext = "";
+                  
+                  function _render(items) {
+                     for(let item of items) {
+                        if (item+"" === item) {
+                           plaintext += item;
+                           continue;
+                        }
+                        if (item.children)
+                           _render(item.children);
+                     }
+                  }
+                  _render(parsed);
+                  
+                  text = plaintext;
+               } else {
+                  text = `[style=value-text]${text}[/style]`;
+               }
+               return text;
+            }
+         }
+         if (inst instanceof CArrayInstance) {
+            let decl = inst.decl;
+            switch (decl.type) {
+               case "boolean":
+               case "integer":
+               case "string":
+                  break;
+               default:
+                  return _style("value-text", "[ ") + _style("deemphasize", "...") + _style("value-text", " ]");
+            }
+            if (inst.rank + 1 < decl.array_extents.length)
+               return null;
+            let text   = _style("value-text", "[ ");
+            let extent = decl.array_extents[inst.rank];
+            for(let i = 0; i < extent; ++i) {
+               if (i > 0)
+                  text += ", ";
+               let element = inst.values[i];
+               text += this.getItemCellContent(element, 1, is_selected);
+            }
+            text += _style("value-text", " ]");
+            return text;
+         }
+         if (!(inst instanceof CValueInstance)) {
+            return null;
+         }
+         let decl = inst.decl;
+         console.assert(!!decl);
+         if (decl.type == "omitted") {
+            return _style("deemphasize", "[omitted]");
+         }
+         if (inst.value === null) {
+            return _style("deemphasize", "[empty]");
+         }
+         switch (decl.type) {
+            case "boolean":
+               return _style("value-text", ""+inst.value);
+            case "integer":
+               {
+                  let typename = decl.c_types.serialized.name;
+                  let format   = inst.save_format;
+                  let enum_def = format.enums[typename];
+                  if (enum_def) {
+                     for(const [name, value] of enum_def)
+                        if (value == inst.value)
+                           return _style("value-text", name);
+                  }
+               }
+               return _style("value-text", ""+inst.value);
+            case "pointer":
+               return _style("value-text", "0x" + inst.value.toString(16).padStart(8, '0').toUpperCase());
+            case "string":
+               let printer = new LiteralPokeStringPrinter();
+               printer.escape_quotes = true;
+               printer.print(inst.value);
+               let text = printer.result;
+               return _style("value-text", `"${text}"`);
+            case "buffer":
+               {
+                  let text = "";
+                  for(let i = 0; i < inst.value.byteLength; ++i) {
+                     let e = inst.value.getUint8(i);
+                     text += e.toString(16).padStart(2, '0').toUpperCase() + ' ';
+                  }
+                  return _style("value-text", text);
+               }
+               break;
+         }
+      }
+      stringify_type(inst, is_selected) {
+         function _style(name, text) {
+            text = (text+"").replaceAll("[", "[raw][[/raw]");
+            if (is_selected)
+               return text;
+            return `[style=${name}]${text}[/style]`;
+         }
+         
+         function _stringify_string_length(decl) {
+            let len = "...";
+            if (decl.options.length) {
+               len = decl.options.length;
+               if (decl.options.needs_terminator) {
+                  len += " + sizeof('\\0')";
+               }
+            }
+            return len;
+         }
+         
+         if (inst instanceof CTypeInstance) {
+            let type = inst.type;
+            if (type) {
+               if (type.tag) {
+                  return type.tag;
+               } else if (type.symbol) {
+                  return type.symbol;
+               }
+            }
+         } else if (inst instanceof CArrayInstance) {
+            let typename = inst.decl.c_types.serialized.name;
+            if (inst.decl.type == "string") {
+               typename = `string<${typename}[raw][[/raw]${_stringify_string_length(inst.decl)}]>`;
+            }
+            for(let i = 0; i < inst.decl.array_extents.length; ++i) {
+               if (i < inst.rank)
+                  continue;
+               typename += "[raw][[/raw]" + inst.decl.array_extents[i] + "]";
+            }
+            return typename;
+         } else if (inst instanceof CValueInstance) {
+            let decl     = inst.decl;
+            let typename = decl.c_types.serialized.name;
+            if (decl.type == "string") {
+               typename = `string<${typename}[raw][[/raw]${_stringify_string_length(inst.decl)}]>`;
+            } else if (decl.bitfield_info) {
+               typename += ":" + decl.bitfield_info.size;
+            }
+            return typename;
+         }
+      }
+      
       /*String*/ getItemCellContent(/*const CInstance*/ inst, col, is_selected) /*const*/ {
          function _style(name, text) {
             text = (text+"").replaceAll("[", "[raw][[/raw]");
@@ -85,144 +248,9 @@ class CViewElement extends TreeRowViewElement {
             }
             return "[raw][[/raw]unnamed]";
          } else if (col == 1) { // value
-            if (inst instanceof CStructInstance) {
-               let type      = inst.type;
-               let typename  = type.tag || type.symbol;
-               let formatter = this.typed_value_formatters[typename];
-               if (formatter) {
-                  let text;
-                  try {
-                     text = formatter(inst);
-                  } catch (e) {
-                     console.log(e);
-                     return _style("error", "[custom formatter error]");
-                  }
-                  if (is_selected) {
-                     let parsed    = parseBBCode(text);
-                     let plaintext = "";
-                     
-                     function _render(items) {
-                        for(let item of items) {
-                           if (item+"" === item) {
-                              plaintext += item;
-                              continue;
-                           }
-                           if (item.children)
-                              _render(item.children);
-                        }
-                     }
-                     _render(parsed);
-                     
-                     text = plaintext;
-                  } else {
-                     text = `[style=value-text]${text}[/style]`;
-                  }
-                  return text;
-               }
-            }
-            if (inst instanceof CArrayInstance) {
-               let decl = inst.decl;
-               switch (decl.type) {
-                  case "boolean":
-                  case "integer":
-                  case "string":
-                     break;
-                  default:
-                     return _style("value-text", "[ ") + _style("deemphasize", "...") + _style("value-text", " ]");
-               }
-               if (inst.rank + 1 < decl.array_extents.length)
-                  return null;
-               let text   = _style("value-text", "[ ");
-               let extent = decl.array_extents[inst.rank];
-               for(let i = 0; i < extent; ++i) {
-                  if (i > 0)
-                     text += ", ";
-                  let element = inst.values[i];
-                  text += this.getItemCellContent(element, 1, is_selected);
-               }
-               text += _style("value-text", " ]");
-               return text;
-            }
-            if (!(inst instanceof CValueInstance)) {
-               return null;
-            }
-            let decl = inst.decl;
-            console.assert(!!decl);
-            if (decl.type == "omitted") {
-               return _style("deemphasize", "[omitted]");
-            }
-            if (inst.value === null) {
-               return _style("deemphasize", "[empty]");
-            }
-            switch (decl.type) {
-               case "boolean":
-                  return _style("value-text", ""+inst.value);
-               case "integer":
-                  {
-                     let typename = decl.c_types.serialized.name;
-                     let format   = inst.save_format;
-                     let enum_def = format.enums[typename];
-                     if (enum_def) {
-                        for(const [name, value] of enum_def)
-                           if (value == inst.value)
-                              return _style("value-text", name);
-                     }
-                  }
-                  return _style("value-text", ""+inst.value);
-               case "pointer":
-                  return _style("value-text", "0x" + inst.value.toString(16).padStart(8, '0').toUpperCase());
-               case "string":
-                  let printer = new LiteralPokeStringPrinter();
-                  printer.escape_quotes = true;
-                  printer.print(inst.value);
-                  let text = printer.result;
-                  return _style("value-text", `"${text}"`);
-               case "buffer":
-                  {
-                     let text = "";
-                     for(let i = 0; i < inst.value.byteLength; ++i) {
-                        let e = inst.value.getUint8(i);
-                        text += e.toString(16).padStart(2, '0').toUpperCase() + ' ';
-                     }
-                     return _style("value-text", text);
-                  }
-                  break;
-            }
+            return this.stringify_value(inst, is_selected);
          } else if (col == 2) { // type
-            if (inst instanceof CTypeInstance) {
-               let type = inst.type;
-               if (type) {
-                  if (type.tag) {
-                     return type.tag;
-                  } else if (type.symbol) {
-                     return type.symbol;
-                  }
-               }
-            } else if (inst instanceof CArrayInstance) {
-               let typename = inst.decl.c_types.serialized.name;
-               for(let i = 0; i < inst.decl.array_extents.length; ++i) {
-                  if (i < inst.rank)
-                     continue;
-                  typename += "[raw][[/raw]" + inst.decl.array_extents[i] + "]";
-               }
-               return typename;
-            } else if (inst instanceof CValueInstance) {
-               let decl     = inst.decl;
-               let typename = decl.c_types.serialized.name;
-               if (decl.type == "string") {
-                  let len = "...";
-                  if (decl.options.length) {
-                     len = decl.options.length;
-                     if (decl.options.needs_terminator) {
-                        len += " + sizeof('\\0')";
-                     }
-                  }
-                  typename += `[raw][[/raw]${len}]`;
-               } else if (decl.bitfield_info) {
-                  typename += ":" + decl.bitfield_info.size;
-               }
-               return typename;
-            }
+            return this.stringify_type(inst, is_selected);
          }
          return null;
       }

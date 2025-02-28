@@ -11,6 +11,8 @@ const SAVE_SECTOR_SIGNATURE = 0x08012025;
 const SAVE_SLOT_COUNT       = 2;
 const SAVE_SECTORS_PER_SLOT = 14;
 
+const RTC_DATA_SIZE = 16;
+
 /*[[noreturn]]*/ function refuse_abstract_instantiation(cls) {
    if (new.target === cls) {
       throw new Error(cls.name + " is an abstract class and cannot be directly instantiated.");

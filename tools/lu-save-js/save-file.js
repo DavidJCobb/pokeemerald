@@ -7,5 +7,6 @@ class SaveFile {
          trainer_hill:    null, // DataView
          recorded_battle: null, // DataView
       };
+      this.rtc = null; // Optional<std::array<uint8_t,0x10>>
    }
 };

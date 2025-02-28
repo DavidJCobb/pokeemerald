@@ -165,12 +165,23 @@ class SaveFormat {
          out.special_sectors.trainer_hill = new DataView(sav.buffer, FLASH_SECTOR_SIZE*30, FLASH_SECTOR_SIZE);
          out.special_sectors.recorded_battle = new DataView(sav.buffer, FLASH_SECTOR_SIZE*31, FLASH_SECTOR_SIZE);
       }
+      if (sav.byteLength >= FLASH_MEMORY_SIZE + RTC_DATA_SIZE) {
+         //
+         // Load RTC data.
+         //
+         let rtc  = [];
+         let view = new DataView(sav.buffer, FLASH_MEMORY_SIZE, RTC_DATA_SIZE);
+         for(let i = 0; i < RTC_DATA_SIZE; ++i) {
+            rtc.push(view.getUint8(i));
+         }
+         out.rtc = rtc;
+      }
       
       return out;
    }
    
    /*DataView*/ save(/*SaveFile*/ data) {
-      let buffer = new ArrayBuffer(FLASH_MEMORY_SIZE);
+      let buffer = new ArrayBuffer(FLASH_MEMORY_SIZE + (data.rtc ? RTC_DATA_SIZE : 0));
       let view   = new DataView(buffer);
       
       function _copy_sector(src_view, n) {
@@ -232,6 +243,13 @@ class SaveFormat {
       _copy_sector(data.special_sectors.hall_of_fame[1], 29);
       _copy_sector(data.special_sectors.trainer_hill, 30);
       _copy_sector(data.special_sectors.recorded_battle, 31);
+      //
+      if (data.rtc && data.rtc.length == RTC_DATA_SIZE) {
+         let subview = new DataView(buffer, FLASH_MEMORY_SIZE, RTC_DATA_SIZE);
+         for(let i = 0; i < RTC_DATA_SIZE; ++i) {
+            subview.setUint8(i, data.rtc[i]);
+         }
+      }
       
       return view;
    }

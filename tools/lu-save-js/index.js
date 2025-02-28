@@ -22,10 +22,6 @@
       return format;
    };
    
-   document.querySelector("menu [data-action='translate']").addEventListener("click", function() {
-      document.getElementById("dialog-translate").showModal();
-   });
-   
    {  // Import save file
       let trigger = document.querySelector("menu [data-action='import']");
       let modal   = document.getElementById("dialog-import");
@@ -177,12 +173,47 @@
             }
          }
          
-console.log(dst_file);
+         console.log("Translated save file: ", dst_file);
+
          let node = document.createElement("save-file-element");
          tab_view.append(node);
          node.saveFile = dst_file;
          tab_view.selectedTabBody = node;
          
+         modal.close();
+      });
+   }
+   {  // Import save file
+      let trigger = document.querySelector("menu [data-action='export']");
+      let modal   = document.getElementById("dialog-export");
+      trigger.addEventListener("click", function() {
+         let tab_view = document.getElementById("save-files");
+         let src_node = tab_view.selectedTabBody;
+         if (!src_node || !(src_node instanceof SaveFileElement))
+            return;
+         let src_file = src_node.saveFile;
+         if (!src_file)
+            return;
+         let src_format = src_file.slots[0].save_format;
+         
+         let link = modal.querySelector("a[download]");
+         {
+            let uri = link.href;
+            if (uri)
+               URL.revokeObjectURL(uri);
+         }
+         
+         let data_view = src_format.save(src_file);
+         let blob      = new Blob([data_view.buffer]);
+         let uri       = URL.createObjectURL(blob);
+         link.href = uri;
+         
+         modal.showModal();
+      });
+      
+      let file_link = modal.querySelector("a[download]");
+      
+      modal.querySelector("button[data-action='cancel']").addEventListener("click", function() {
          modal.close();
       });
    }

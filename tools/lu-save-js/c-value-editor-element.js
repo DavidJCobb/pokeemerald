@@ -169,6 +169,26 @@ class CValueEditorElement extends HTMLElement {
       const decl = this.#target.decl;
       this.setAttribute("data-type", decl.type);
       
+      {
+         let format  = decl.save_format;
+         let display = null;
+         for(let item of format.display_overrides) {
+            if (!item.overrides.make_editor_element)
+               continue;
+            if (item.matches(this.#target)) {
+               display = item;
+               break;
+            }
+         }
+         if (display) {
+            this.#input = display.overrides.make_editor_element(this.#target);
+            this.#input.value = this.#target.value;
+            this.#body.replaceChildren(this.#input);
+            this.update_preview();
+            return;
+         }
+      }
+      
       let frag = new DocumentFragment();
       let type = decl.type;
       if (type == "integer") {

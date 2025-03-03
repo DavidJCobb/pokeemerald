@@ -10,6 +10,15 @@
       node.setAttribute("disabled", "disabled");
    });
    
+   // Define editor enums as necessary. This is a HACK until we get 
+   // the full build system in place for save editing.
+   function preprocess_save_format(/*SaveFormat*/ format) {
+      for(let name in EDITOR_ENUMS) {
+         format.enums[name] = EDITOR_ENUMS[name];
+      }
+      format.display_overrides.push(EMERALD_FLAGS_DISPLAY_OVERRIDE);
+   }
+   
    {  // Import save file
       let trigger = document.querySelector("menu [data-action='import']");
       let modal   = document.getElementById("dialog-import");
@@ -44,9 +53,7 @@
             
             format = new SaveFormat();
             format.from_xml(data.documentElement);
-            for(let name in EDITOR_ENUMS) {
-               format.enums[name] = EDITOR_ENUMS[name];
-            }
+            preprocess_save_format(format);
          }
          {
             let sav = file_node_sav.files[0];
@@ -99,9 +106,7 @@
             
             dst_format = new SaveFormat();
             dst_format.from_xml(data.documentElement);
-            for(let name in EDITOR_ENUMS) {
-               dst_format.enums[name] = EDITOR_ENUMS[name];
-            }
+            preprocess_save_format(dst_format);
          }
          let dst_file = new SaveFile(dst_format);
          dst_file.special_sectors = structuredClone(src_file.special_sectors);

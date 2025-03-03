@@ -25,6 +25,8 @@ class SaveFormat {
          unions:    [], // Array<CUnionDefinition>
       };
       this.top_level_values = []; // Array<CDeclDefinition>
+      
+      this.display_overrides = []; // Array<CInstanceDisplayOverrides>
    }
    
    // `node` should be the root `data` node

@@ -1,0 +1,23 @@
+<!doctype html>
+<html>
+   <head>
+      <title>Test: BitsetInputElement</title>
+      <script src="bitset-input-element.js"></script>
+   </head>
+   <body>
+      <bitset-input></bitset-input>
+      <script>
+{
+   let node = document.querySelector("bitset-input");
+   node.bitcount = 6;
+   node.labels = [
+      "Alpha",
+      "Bravo",
+      "Charlie",
+      "Delta",
+      "Echo",
+   ];
+}
+      </script>
+   </body>
+</html>

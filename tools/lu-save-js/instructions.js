@@ -51,7 +51,7 @@ class RootInstructionNode extends ParentInstructionNode {
 class LoopInstructionNode extends ParentInstructionNode {
    constructor() {
       super();
-      this.array = new CValuePath();
+      this.array = new InstructionNodeValuePath();
       this.indices = {
          start: 0,
          count: 0,
@@ -72,7 +72,7 @@ class LoopInstructionNode extends ParentInstructionNode {
 class TransformInstructionNode extends ParentInstructionNode {
    constructor() {
       super();
-      this.to_be_transformed = new CValuePath();
+      this.to_be_transformed = new InstructionNodeValuePath();
       this.transformed_type  = null; // String typename
       this.transform_through = [];   // Array<String> of typenames
       this.transformed_var   = null; // String variable name
@@ -89,7 +89,7 @@ class TransformInstructionNode extends ParentInstructionNode {
 class UnionSwitchInstructionNode extends InstructionNode {
    constructor() {
       super();
-      this.tag       = new CValuePath();
+      this.tag       = new InstructionNodeValuePath();
       this.cases     = {}; // this.cases[rhs] == ParentInstructionNode
       this.else_case = null;
    }
@@ -126,7 +126,7 @@ class SingleInstructionNode extends InstructionNode {
    constructor() {
       super();
       this.type    = null;
-      this.value   = new CValuePath(); // value to serialize
+      this.value   = new InstructionNodeValuePath(); // value to serialize
       this.options = new CBitpackOptions();
    }
    from_xml(node) {

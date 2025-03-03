@@ -150,3 +150,22 @@ function parseBBCode(str) {
    _commit_text();
    return out;
 }
+
+function parseBBCodeToPlainText(bbcode) {
+   let parsed    = parseBBCode(bbcode);
+   let plaintext = "";
+   
+   function _render(items) {
+      for(let item of items) {
+         if (item+"" === item) {
+            plaintext += item;
+            continue;
+         }
+         if (item.children)
+            _render(item.children);
+      }
+   }
+   _render(parsed);
+   
+   return plaintext;
+}

@@ -68,6 +68,28 @@ class CViewElement extends TreeRowViewElement {
       }
       
       stringify_value(inst, is_selected) {
+         {
+            let format  = inst.decl.save_format;
+            let display = null;
+            for(let item of format.display_overrides) {
+               if (!item.overrides.display_string)
+                  continue;
+               if (item.matches(inst)) {
+                  display = item;
+                  break;
+               }
+            }
+            if (display) {
+               let text = display.overrides.display_string(inst);
+               if (text !== null) {
+                  if (is_selected) {
+                     text = parseBBCodeToPlainText(text).replaceAll("[", "[raw][[/raw]");
+                  }
+                  return text;
+               }
+            }
+         }
+         
          function _style(name, text) {
             text = (text+"").replaceAll("[", "[raw][[/raw]");
             if (is_selected)
@@ -88,22 +110,7 @@ class CViewElement extends TreeRowViewElement {
                   return _style("error", "[custom formatter error]");
                }
                if (is_selected) {
-                  let parsed    = parseBBCode(text);
-                  let plaintext = "";
-                  
-                  function _render(items) {
-                     for(let item of items) {
-                        if (item+"" === item) {
-                           plaintext += item;
-                           continue;
-                        }
-                        if (item.children)
-                           _render(item.children);
-                     }
-                  }
-                  _render(parsed);
-                  
-                  text = plaintext;
+                  text = parseBBCodeToPlainText(text).replaceAll("[", "[raw][[/raw]");
                } else {
                   text = `[style=value-text]${text}[/style]`;
                }

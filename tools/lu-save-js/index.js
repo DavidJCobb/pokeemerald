@@ -103,10 +103,10 @@
                dst_format.enums[name] = EDITOR_ENUMS[name];
             }
          }
-         let dst_file = new SaveFile();
+         let dst_file = new SaveFile(dst_format);
          dst_file.special_sectors = structuredClone(src_file.special_sectors);
          for(let i = 0; i < src_file.slots.length; ++i) {
-            let slot = new SaveSlot(dst_format);
+            let slot = dst_file.slots[i];
             slot.sectors = structuredClone(src_file.slots[i].sectors);
             dst_file.slots.push(slot);
             

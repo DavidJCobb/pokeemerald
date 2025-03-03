@@ -5,6 +5,7 @@ class TabViewElement extends HTMLElement {
    #title_observer   = null;
    #shadow;
    
+   #fake_tab_if_empty;
    #scroll_button_container;
    #tab_nodes = {
       list: [], // tabs, not bodies
@@ -20,6 +21,7 @@ class TabViewElement extends HTMLElement {
          <link rel="stylesheet" href="tab-view-element.css" />
          <div class="tab-strip-wrap" part="tab-strip">
             <ul class="tab-strip" aria-role="tablist">
+               <li part="tab dummy-for-no-tabs selected disabled"> </li>
             </ul>
             <span></span>
             <div class="scroll-buttons">
@@ -53,6 +55,11 @@ class TabViewElement extends HTMLElement {
          this.#on_tabstrip_wheel.bind(this)
       );
       
+      this.#fake_tab_if_empty = this.#tab_strip.querySelector("li");
+      this.#fake_tab_if_empty.addEventListener("click", function(e) {
+         e.preventDefault();
+      });
+      
       let scroll = this.#scroll_button_container = this.#shadow.querySelector(".scroll-buttons");
       scroll.children[0].addEventListener("click", this.#scroll_tab_strip.bind(this, -1));
       scroll.children[1].addEventListener("click", this.#scroll_tab_strip.bind(this, 1));
@@ -84,6 +91,9 @@ class TabViewElement extends HTMLElement {
    //
    
    #on_tab_interaction(e) {
+      if (e.defaultPrevented) {
+         return;
+      }
       let tab = e.target.closest(".tab-strip>li");
       if (!tab)
          return;
@@ -176,6 +186,7 @@ class TabViewElement extends HTMLElement {
       }
       this.#update_tab_node_list();
       if (added) {
+         this.#fake_tab_if_empty.remove();
          //
          // If we were previously empty (or otherwise had no selected 
          // tab), then select our first tab.
@@ -184,6 +195,9 @@ class TabViewElement extends HTMLElement {
             switch_tab = true;
             switch_to  = this.children[0];
          }
+      }
+      if (this.children.length == 0) {
+         this.#tab_strip.append(this.#fake_tab_if_empty);
       }
       if (switch_tab) {
          this.#select_tab(switch_to);

@@ -133,10 +133,9 @@ class SaveFormat {
          throw new Error("The SAV file is truncated.");
       }
       
-      let out = new SaveFile();
+      let out = new SaveFile(this);
       for(let i = 0; i < SAVE_SLOT_COUNT; ++i) {
-         let slot = new SaveSlot(this);
-         out.slots.push(slot);
+         let slot = out.slots[i];
          
          for(let j = 0; j < SAVE_SECTORS_PER_SLOT; ++j) {
             let pos  = FLASH_SECTOR_SIZE * (SAVE_SECTORS_PER_SLOT * i + j);

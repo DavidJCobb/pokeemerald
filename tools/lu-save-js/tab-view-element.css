@@ -20,6 +20,9 @@
    flex-shrink: 0;
    line-height: 1.25em;
 }
+:where(.tab-strip>li[part~=dummy-for-no-tabs])::before {
+   content: "...";
+}
 
 .tab-strip-wrap {
    display:   flex;

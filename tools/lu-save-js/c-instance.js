@@ -1,4 +1,6 @@
 class CInstance {
+   #cached_owner_save_slot = null;
+   
    constructor(decl, type) {
       refuse_abstract_instantiation(CInstance);
       this.decl = decl;         // CDeclDefinition
@@ -14,6 +16,18 @@ class CInstance {
    
    get save_format() {
       return this.decl.save_format;
+   }
+   get save_slot() {
+      if (this.#cached_owner_save_slot)
+         return this.#cached_owner_save_slot;
+      let inst = this.is_member_of;
+      if (!inst)
+         return null;
+      if (inst instanceof SaveSlot) {
+         this.#cached_owner_save_slot = inst;
+         return inst;
+      }
+      return inst.save_slot;
    }
    
    build_path_string() {

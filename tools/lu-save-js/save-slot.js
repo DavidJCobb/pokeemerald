@@ -1,13 +1,13 @@
 
 // For a loaded save slot.
 class SaveSlot extends CStructInstance {
-   #save_format;
+   #save_file;
    
-   constructor(/*SaveFormat*/ save_format) {
-      assert_type(save_format instanceof SaveFormat);
+   constructor(/*SaveFile*/ save_file) {
+      assert_type(save_file instanceof SaveFile);
       super(/*CStructDefinition*/ null);
-      this.sectors      = [];
-      this.#save_format = save_format;
+      this.sectors    = [];
+      this.#save_file = save_file;
       for(let tlv of this.save_format.top_level_values) {
          let value = tlv.make_instance_representation();
          value.is_member_of = this;
@@ -15,13 +15,11 @@ class SaveSlot extends CStructInstance {
       }
    }
    
-   get save_format() {
-      return this.#save_format;
+   get save_file() {
+      return this.#save_file;
    }
-   set save_format(v) {
-      if (v)
-         assert_type(v instanceof SaveFormat);
-      this.#save_format = v;
+   get save_format() {
+      return this.#save_file.save_format;
    }
    
    loadSectorMetadata(/*const DataView*/ sector_view) {
@@ -73,5 +71,115 @@ class SaveSlot extends CStructInstance {
          if (sector.signature == SAVE_SECTOR_SIGNATURE)
             version = Math.max(version, sector.version);
       return version >= 0 ? version : null;
+   }
+   
+   /*Optional<CInstance>*/ lookupCInstanceByPath(/*String*/ path) {
+      if (!path)
+         return;
+      
+      let value = this;
+      let segm  = "";
+      function _enter_segment() {
+         if (!segm)
+            return false;
+         if (value instanceof CStructInstance) {
+            value = value.members[segm];
+            if (!value)
+               return false;
+         } else if (value instanceof CUnionInstance) {
+            if (!value.value)
+               return null;
+            if (value.value.decl.name != segm)
+               return null;
+            value = value.value;
+         } else {
+            return false;
+         }
+         segm = "";
+         return true;
+      }
+      
+      let i = 0;
+      {  // Handle leading segments of the form "(*foo)"
+         let match = path.match(/^\((\**)([^\*\.\)]+)\)(->)?/);
+         if (match) {
+            i = match[0].length;
+            
+            let name  = match[2];
+            let deref = match[1].length;
+            if (match[3] == "->")
+               ++deref;
+            
+            let memb = this.members[name];
+            if (!memb)
+               return null;
+            let req = +memb.decl.dereference_count || 0;
+            if (deref !== req)
+               return null;
+            value = memb;
+         }
+      }
+      for(; i < path.length; ++i) {
+         let c = path[i];
+         if (c == '.') {
+            let may_require_dereference = value === this;
+            if (!_enter_segment())
+               return null;
+            if (may_require_dereference) {
+               if (value.decl.dereference_count > 0)
+                  return null;
+            }
+            continue;
+         }
+         if (c == "-" && path[i + 1] == ">") {
+            if (value != this)
+               return null;
+            if (!_enter_segment())
+               return null;
+            if (value.decl.dereference_count != 1)
+               return null;
+            ++i; // since this token is two characters long, not just one
+            continue;
+         }
+         if (c == "[") {
+            if (segm) {
+               if (!_enter_segment())
+                  return null;
+            }
+            if (!value instanceof CArrayInstance)
+               return null; // cannot index into a non-array aggregate
+            let j = path.indexOf("]", i + 1);
+            let k = path.indexOf(".", i + 1);
+            if (k >= 0 && k < j)
+               return null; // ill-formed path e.g. "abc[1.2]"
+            if (j < 0)
+               return null; // ill-formed path e.g. "abc["
+            let index = path.substring(i + 1, j);
+            if (index == "")
+               return null; // ill-formed path e.g. "abc[]"
+            index = +index;
+            if (isNaN(index))
+               return null; // ill-formed path e.g. "abc[foo]"
+            if (index !== Math.floor(index) || index < 0)
+               return null; // ill-formed path (not a positive or zero integer)
+            value = value.values[index];
+            if (!value)
+               return null; // out-of-bounds index
+            //
+            // Skip to and past the "]".
+            //
+            i = j; // and we'll +1 as part of the loop
+            if (path[i + 1] == '.') {
+               ++i; // so "a[0].b" doesn't fail on '.', seeing nothing between ']' and '.'
+            }
+         } else {
+            segm += c;
+         }
+      }
+      if (segm)
+         if (!_enter_segment())
+            return null;
+      
+      return value;
    }
 };

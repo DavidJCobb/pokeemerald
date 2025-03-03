@@ -9,7 +9,7 @@ class Bitstream {
    #advance_by_bits(count) {
       this.shift += count;
       if (this.shift >= 8) {
-         this.target += this.shift / 8;
+         this.target += Math.floor(this.shift / 8);
          this.shift  %= 8;
       }
    }

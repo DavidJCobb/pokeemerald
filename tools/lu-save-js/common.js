@@ -50,6 +50,27 @@ function memcpy(/*Variant<DataView, ArrayBuffer>*/ dst, /*Variant<DataView, Arra
    }
 }
 
+// browsers don't give you a good way to inspect DataViews
+function debug_dump_buffer(/*DataView*/ view, bytes_per_row) {
+   if (isNaN(+bytes_per_row) || bytes_per_row <= 0) {
+      bytes_per_row = 16;
+   }
+   let str = "";
+   for(let i = 0; i < view.byteLength; ++i) {
+      if (!(i % bytes_per_row)) {
+         if (i)
+            str += '\n';
+         str += i.toString(16).toUpperCase().padStart(8, '0');
+         str += " | ";
+      }
+      let byte = view.getUint8(i);
+      if (i % bytes_per_row)
+         str += ' ';
+      str += byte.toString(16).toUpperCase().padStart(2, '0');
+   }
+   console.log(str);
+}
+
 //
 // CHECKSUM CODE:
 //
@@ -115,7 +136,7 @@ function checksum(
    if (!length)
       length = blob.byteLength;
    let checksum = 0;
-   for(let i = 0; i < length; i += 2) {
+   for(let i = 0; i + 1 < length; i += 2) {
       checksum += blob.getUint16(i, true);
       checksum &= 0xFFFF; // constrain to 16-bit int
    }
@@ -126,7 +147,7 @@ function checksum(
    if (!length)
       length = blob.byteLength;
    let checksum = 0;
-   for(let i = 0; i < length; i += 4) {
+   for(let i = 0; i + 3 < length; i += 4) {
       checksum += blob.getUint32(i, true);
       checksum |= 0; // constrain to 32-bit int
    }

@@ -9,6 +9,8 @@ class CValueEditorElement extends HTMLElement {
    
    #target_options = {};
    
+   #checksum_recalc_helper = null; // ChecksumRecalcHelper
+   
    constructor() {
       super();
       this.#shadow = this.attachShadow({ mode: "open" });
@@ -21,7 +23,9 @@ class CValueEditorElement extends HTMLElement {
       
       // Count on the event bubbling, since we may replace/destroy our input element.
       this.#body.addEventListener("input", this.#on_change.bind(this));
-      this.#body.addEventListener("change", this.#on_change.bind(this));
+      //this.#body.addEventListener("change", this.#on_change.bind(this));
+      
+      this.#checksum_recalc_helper = new ChecksumRecalcHelper();
    }
    
    get target() { return this.#target; }
@@ -38,6 +42,7 @@ class CValueEditorElement extends HTMLElement {
             return;
       }
       this.#target = v || null;
+      this.#checksum_recalc_helper.subject = v;
       this.rebuild();
    }
    
@@ -99,9 +104,14 @@ class CValueEditorElement extends HTMLElement {
          return;
       this.update_preview();
       this.#target.value = this.value;
+      this.#checksum_recalc_helper.recalc();
       
-      let copy = new e.constructor(e.type, e);
-      this.dispatchEvent(copy);
+      this.dispatchEvent(new CustomEvent("edit", {
+         detail: {
+            subject: this.#target,
+            value:   this.#target.value,
+         },
+      }));
    }
    
    #update_target_options() {
@@ -134,24 +144,56 @@ class CValueEditorElement extends HTMLElement {
       }
    }
    
+   #update_displayed_path() {
+      let node = this.#shadow.querySelector("header");
+      if (!this.#target) {
+         node.textContent = "";
+         return;
+      }
+      let path = this.#target.build_path_string();
+      path = path.replaceAll(".", "\u200B.");
+      node.textContent = path;
+   }
+   
    // Rebuild form controls, etc..
    rebuild() {
       this.#update_target_options();
       this.setAttribute("has-target", !!this.#target);
       this.#input   = null;
       this.#preview = null;
+      this.#update_displayed_path();
       if (!this.#target || !this.#target.decl) {
-         this.#shadow.querySelector("header").textContent = "";
          this.#body.replaceChildren();
          return;
       }
-      
-      this.#shadow.querySelector("header").textContent = this.#target.build_path_string();
       const decl = this.#target.decl;
       this.setAttribute("data-type", decl.type);
       
       let frag = new DocumentFragment();
-      switch (decl.type) {
+      let type = decl.type;
+      if (type == "integer") {
+         if (decl.options.bitcount == 1)
+            type = "boolean";
+      }
+      switch (type) {
+         case "boolean":
+            {
+               const input = this.#input = document.createElement("select");
+               {
+                  let opt = document.createElement("option");
+                  opt.value = 0;
+                  opt.textContent = "false";
+                  input.append(opt);
+               }
+               {
+                  let opt = document.createElement("option");
+                  opt.value = 1;
+                  opt.textContent = "true";
+                  input.append(opt);
+               }
+               input.value = this.#target.value;
+            }
+            break;
          case "integer":
             if (this.#target_options.enumeration) {
                const input = this.#input = document.createElement("input");

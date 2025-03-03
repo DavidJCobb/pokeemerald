@@ -73,7 +73,7 @@ class SaveSlotElement extends HTMLElement {
          else
             this.#editor.target = null;
       }).bind(this));
-      this.#editor.addEventListener("change", this.#view.repaint.bind(this.#view));
+      this.#editor.addEventListener("edit", this.#on_value_edited.bind(this));
       
       {
          let aside = this.#shadow.querySelector("aside");
@@ -101,6 +101,9 @@ class SaveSlotElement extends HTMLElement {
       this.#slot_data = v;
       this.#view.scope = v;
       window.setTimeout(this.#view.repaint.bind(this.#view), 1);
+      if (!v) {
+         return;
+      }
       
       let s_frag  = new DocumentFragment();
       for(let sector of v.sectors) {
@@ -130,5 +133,19 @@ class SaveSlotElement extends HTMLElement {
    
    get scope() { return this.#view.scope; }
    set scope(v) { this.#view.scope = v; }
+   
+   #on_value_edited(e) {
+      {  // BoxPokemon substructs checksum
+         if (e.detail.subject.decl.name == "checksum") {
+            return; // don't recalc the checksum if the user is editing it directly
+         }
+         let inst = get_enclosing_SerializedBoxPokemon(e.detail.subject);
+         if (inst) {
+            let sum = recalc_SerializedBoxPokemon_checksum(inst);
+            inst.members.substructs.members.checksum.value = sum;
+         }
+      }
+      this.#view.repaint();
+   }
 };
 customElements.define("save-slot-element", SaveSlotElement);

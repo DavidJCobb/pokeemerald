@@ -49,6 +49,13 @@ menu {
    --active-area-inner-border: 1px inset #C0C0C0;
    --collapse-tab-borders:     1;
    
+   /*
+      All ::part()s are equally specific, even in cases where 
+      one rule's parts are a superset of another rule's parts; 
+      and at least in Firefox, ::part():not() doesn't work; so 
+      unfortunately we need !important and the like here.
+   */
+   
    &::part(tab) {
       cursor:  pointer;
       background: #E8E8E8;
@@ -56,6 +63,10 @@ menu {
    }
    &::part(tab):hover {
       background: #F8F8F8;
+   }
+   &::part(tab disabled) {
+      background: #E8E8E8 !important;
+      color: #808080 !important;
    }
    &::part(tab selected) {
       font-weight: bold;

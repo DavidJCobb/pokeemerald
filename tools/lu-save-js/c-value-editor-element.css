@@ -13,6 +13,7 @@ header {
    font-weight:   bold;
    border-bottom: 1px solid #808080;
    margin-bottom: .5em;
+   overflow-wrap: anywhere;
 }
 input, select {
    grid-area: editor;

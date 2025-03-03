@@ -10,7 +10,11 @@ struct SerializedBoxPokemonSubstructs {
    struct PokemonSubstruct1 type1;
    struct PokemonSubstruct2 type2;
    struct PokemonSubstruct3 type3;
-   LU_BP_CATEGORY("checksum-16") u16 checksum;
+   
+   // don't annotate this as a checksum. it requires special logic to handle 
+   // in the JS-based save editor, since we don't pad the substructs above to 
+   // consistent lengths, so annotating it as a checksum has no benefit
+   u16 checksum;
 };
 
 struct SerializedBoxPokemon {

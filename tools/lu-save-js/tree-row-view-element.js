@@ -388,6 +388,28 @@ class TreeRowViewElement extends HTMLElement {
       this.#queue_repaint(true);
    }
    
+   areItemsInView(items) {
+      const rows = this.#last_repaint_result.rows;
+      if (Array.isArray(items)) {
+         for(const row of rows)
+            if (items.includes(row.item))
+               return true;
+      } else if (items instanceof Set) {
+         for(const row of rows)
+            if (items.has(row.item))
+               return true;
+      } else {
+         throw new TypeError("Array or Set expected.");
+      }
+      return false;
+   }
+   isItemInView(item) {
+      for(const row of this.#last_repaint_result.rows)
+         if (row.item === item)
+            return true;
+      return false;
+   }
+   
    //
    // Lifecycle:
    //

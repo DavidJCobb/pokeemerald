@@ -11,11 +11,27 @@ class CValueEditorElement extends HTMLElement {
    
    #checksum_recalc_helper = null; // ChecksumRecalcHelper
    
+   static #base_path = "";
+   static {
+      if (document.currentScript) {
+         let src = (function() {
+            try {
+               return new URL(".", document.currentScript.src);
+            } catch (e) {
+               return "";
+            }
+         })();
+         if (src) {
+            this.#base_path = src + "/";
+         }
+      }
+   }
+   
    constructor() {
       super();
       this.#shadow = this.attachShadow({ mode: "open" });
       this.#shadow.innerHTML = `
-         <link rel="stylesheet" href="c-value-editor-element.css" />
+         <link rel="stylesheet" href="${CValueEditorElement.#base_path}c-value-editor-element.css" />
          <header></header>
          <div></div>
       `.trim();
@@ -25,7 +41,9 @@ class CValueEditorElement extends HTMLElement {
       this.#body.addEventListener("input", this.#on_change.bind(this));
       //this.#body.addEventListener("change", this.#on_change.bind(this));
       
-      this.#checksum_recalc_helper = new ChecksumRecalcHelper();
+      if (globalThis.ChecksumRecalcHelper) {
+         this.#checksum_recalc_helper = new ChecksumRecalcHelper();
+      }
    }
    
    get target() { return this.#target; }
@@ -42,7 +60,8 @@ class CValueEditorElement extends HTMLElement {
             return;
       }
       this.#target = v || null;
-      this.#checksum_recalc_helper.subject = v;
+      if (this.#checksum_recalc_helper)
+         this.#checksum_recalc_helper.subject = v;
       this.rebuild();
    }
    
@@ -104,7 +123,8 @@ class CValueEditorElement extends HTMLElement {
          return;
       this.update_preview();
       this.#target.value = this.value;
-      this.#checksum_recalc_helper.recalc();
+      if (this.#checksum_recalc_helper)
+         this.#checksum_recalc_helper.recalc();
       
       this.dispatchEvent(new CustomEvent("edit", {
          detail: {

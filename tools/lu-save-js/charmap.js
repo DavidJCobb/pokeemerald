@@ -1,12 +1,12 @@
 class CharmapSubset {
    constructor() {
       this.entities = {
-         canonical: {}, // this.entities[name] == [byte, byte, ...]
-         lowercase: {},
+         canonical: Object.create(null), // this.entities[name] == [byte, byte, ...]
+         lowercase: Object.create(null),
       };
       this.glyphs = {
-         by_byte: {},
-         by_name: {},
+         by_byte: Object.create(null),
+         by_name: Object.create(null),
       };
    }
    define_entity(name, /*Array*/ bytes) {

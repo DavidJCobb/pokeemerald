@@ -32,11 +32,27 @@ class SaveSlotElement extends HTMLElement {
       },
    };
    
+   static #base_path = "";
+   static {
+      if (document.currentScript) {
+         let src = (function() {
+            try {
+               return new URL(".", document.currentScript.src);
+            } catch (e) {
+               return "";
+            }
+         })();
+         if (src) {
+            this.#base_path = src + "/";
+         }
+      }
+   }
+   
    constructor() {
       super();
       this.#shadow = this.attachShadow({ mode: "open" });
       this.#shadow.innerHTML = `
-<link rel="stylesheet" href="save-slot-element.css" />
+<link rel="stylesheet" href="${SaveSlotElement.#base_path}save-slot-element.css" />
 <details>
    <summary>Save slot</summary>
    <div>

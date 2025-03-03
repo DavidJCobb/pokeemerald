@@ -14,11 +14,27 @@ class TabViewElement extends HTMLElement {
    };
    #tab_strip;
    
+   static #base_path = "";
+   static {
+      if (document.currentScript) {
+         let src = (function() {
+            try {
+               return new URL(".", document.currentScript.src);
+            } catch (e) {
+               return "";
+            }
+         })();
+         if (src) {
+            this.#base_path = src + "/";
+         }
+      }
+   }
+   
    constructor() {
       super();
       this.#shadow = this.attachShadow({ mode: "open", slotAssignment: "manual" });
       this.#shadow.innerHTML = `
-         <link rel="stylesheet" href="tab-view-element.css" />
+         <link rel="stylesheet" href="${TabViewElement.#base_path}tab-view-element.css" />
          <div class="tab-strip-wrap" part="tab-strip">
             <ul class="tab-strip" aria-role="tablist">
                <li part="tab dummy-for-no-tabs selected disabled"> </li>

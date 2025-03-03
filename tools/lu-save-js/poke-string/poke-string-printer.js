@@ -8,6 +8,7 @@ class AbstractPokeStringPrinter {
    }
    
    print(/*const PokeString*/ str) {
+      this.pre_print_handler();
       let   i    = 0;
       const size = str.length;
       do {
@@ -139,6 +140,8 @@ class AbstractPokeStringPrinter {
       this.post_print_handler();
    }
    
+   pre_print_handler() {}
+   
    // for invalid control codes, etc.
    handle_raw_byte(value) {}
    
@@ -149,7 +152,14 @@ class AbstractPokeStringPrinter {
    
    // F9 xx or FC 0C xx
    // `escape_type` is 0xF9 or 0xFC
-   handle_extra_symbol(index, escape_type) {}
+   handle_extra_symbol(index, escape_type) {
+      //
+      // For simply displaying a string, it's generally fine to just defer 
+      // to this implementation here. If you want to e.g. display escape 
+      // sequences for the raw bytes, then you'd override this.
+      //
+      this.handle_char(0x0100 | index);
+   }
    
    // FC 00
    handle_ctrl_location_end() {}
@@ -225,10 +235,19 @@ class AbstractPokeStringPrinter {
 };
 
 class LiteralPokeStringPrinter extends AbstractPokeStringPrinter {
+   #current_charset;
    constructor() {
       super();
-      this.result        = "";
+      this.charset       = "latin";
       this.escape_quotes = false;
+      //
+      this.result = "";
+   }
+   pre_print_handler() {
+      this.#current_charset = this.charset;
+   }
+   post_print_handler() {
+      this.#current_charset = this.charset;
    }
    
    #format_byte(b) {
@@ -245,10 +264,27 @@ class LiteralPokeStringPrinter extends AbstractPokeStringPrinter {
    }
    
    handle_char(cc) {
-      let ch = CHARSET_ENGLISH.bytes_to_chars[cc];
+      let ch = CHARMAP.codepoint_to_character(cc, this.#current_charset);
       if (ch && ch.length == 1) {
-         if (ch == '\\' || (ch == '"' && this.escape_quotes)) {
-            this.result += '\\';
+         switch (ch) {
+            case '\\':
+               this.result += "\\\\";
+               return;
+            case '\v':
+               this.result += "\\l";
+               return;
+            case '\f':
+               this.result += "\\p";
+               return;
+            case '\n':
+               this.result += "\\n";
+               return;
+            case '"':
+               if (this.escape_quotes) {
+                  this.result += "\\\"";
+                  return;
+               }
+               break;
          }
          this.result += ch;
          return;
@@ -366,6 +402,7 @@ class LiteralPokeStringPrinter extends AbstractPokeStringPrinter {
    // FC 16 for "latin"
    handle_ctrl_set_character_set(what) {
       this.result += `\\xFD\\x${this.#format_byte(what == "japanese" ? 0x15 : 0x16)}`;
+      this.#current_charset = what;
    }
    
    // FC 17

@@ -7,8 +7,16 @@ class PokeString {
       return this.bytes.length;
    }
    
+   static #simple_escape_sequences = {
+      '\\': CHARMAP.common.glyphs.by_char['\\'],
+      '0':  CHARMAP.common.glyphs.by_char['\0'],
+      'l':  CHARMAP.common.glyphs.by_char['\v'],
+      'p':  CHARMAP.common.glyphs.by_char['\f'],
+      'n':  CHARMAP.common.glyphs.by_char['\n'],
+   };
+   
    // May throw.
-   static /*void*/ from_text(/*String*/ str) {
+   static /*void*/ from_text(/*String*/ str, charset) {
       const out = new PokeString();
       for(let i = 0; i < str.length; ++i) {
          let c = str[i];
@@ -16,21 +24,13 @@ class PokeString {
             if (str.length == i + 1)
                throw new Error("Truncated escape sequence.");
             let d = str[i + 1];
-            switch (d) {
-               case '\\':
-                  out.bytes.push(CHARSET_CONTROL_CODES.chars_to_bytes['\\']);
+            {
+               let resolved = PokeString.#simple_escape_sequences[d];
+               if (resolved) {
+                  out.bytes.push(resolved);
                   ++i;
                   continue;
-               case "0":
-                  out.bytes.push(CHARSET_CONTROL_CODES.chars_to_bytes["\0"]);
-                  ++i;
-                  continue;
-               case "l":
-               case "p":
-               case "n":
-                  out.bytes.push(CHARSET_CONTROL_CODES.chars_to_bytes[c + d]);
-                  ++i;
-                  continue;
+               }
             }
             if (d != "x") {
                throw new Error(`Invalid escape sequence (\${d}...) at position ${i}.`);
@@ -49,21 +49,17 @@ class PokeString {
             if (j < 0)
                throw new Error(`Truncated XML entity at position ${i}.`);
             let entity = str.substring(i + 1, j);
-            let bytes  = CHARSET_ENGLISH.get_entity(entity);
+            let bytes  = CHARMAP.lookup_entity(entity, charset);
             if (!bytes) {
-               bytes = CHARSET_CONTROL_CODES.get_entity(entity);
-               if (!bytes)
-                  throw new Error(`Unrecognized XML entity ${str.substring(i, j + 1)} at position ${i}.`);
+               throw new Error(`Unrecognized XML entity ${str.substring(i, j + 1)} at position ${i}.`);
             }
             out.bytes = out.bytes.concat(bytes);
             i = j;
             continue;
          }
-         let cc = CHARSET_ENGLISH.chars_to_bytes[c];
+         let cc = CHARMAP.character_to_codepoint(c, charset);
          if (cc === null) {
-            cc = CHARSET_CONTROL_CODES.chars_to_bytes[c];
-            if (cc === null)
-               throw new Error("Character code 0x${c.charCodeAt(0).toString(16).toUpperCase()} is not representable in the game's encodings.");
+            throw new Error("Character code 0x${c.charCodeAt(0).toString(16).toUpperCase()} is not representable in the game's encodings.");
          }
          out.bytes.push(cc);
       }

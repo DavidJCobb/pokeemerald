@@ -121,8 +121,8 @@ class CValueEditorElement extends HTMLElement {
          return;
       if (!this.is_valid())
          return;
-      this.update_preview();
       this.#target.value = this.value;
+      this.update_preview();
       if (this.#checksum_recalc_helper)
          this.#checksum_recalc_helper.recalc();
       
@@ -300,7 +300,15 @@ class CValueEditorElement extends HTMLElement {
       const decl = this.#target.decl;
       if (decl.type == "string") {
          let printer = new DOMPokeStringPrinter();
-         printer.print(this.#target.value);
+         try {
+            printer.print(this.#target.value);
+         } catch (e) {
+            //
+            // Invalid control code, entity name, etc.. The user may still be 
+            // in the middle of typing it.
+            //
+            return;
+         }
          this.#preview.replaceChildren(printer.result);
       }
       

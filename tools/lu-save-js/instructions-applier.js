@@ -276,13 +276,13 @@ class InstructionsApplier {
                         if (text === null) {
                            bytes = [];
                            for(let i = 0; i < length; ++i)
-                              bytes[i] = CHARSET_CONTROL_CODES.chars_to_bytes["\0"];
+                              bytes[i] = CHARMAP.string_terminator;
                         } else {
                            bytes = text.bytes;
                            if (bytes.length < length) {
                               bytes = ([]).concat(text.bytes);
                               for(let i = bytes.length; i < length; ++i)
-                                 bytes[i] = CHARSET_CONTROL_CODES.chars_to_bytes["\0"];
+                                 bytes[i] = CHARMAP.string_terminator;
                            }
                         }
                         this.bitstream.write_string(length, bytes);

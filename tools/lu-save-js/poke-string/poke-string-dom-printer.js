@@ -8,6 +8,7 @@ class DOMPokeStringPrinter extends AbstractPokeStringPrinter {
       this.result    = new DocumentFragment();
       this.container = this.result;
       this.pending   = "";
+      this.charset   = "latin";
       this.forced_fixed_width = 0;
    }
    
@@ -65,69 +66,97 @@ class DOMPokeStringPrinter extends AbstractPokeStringPrinter {
       this.#commit_pending_text();
    }
    
-   handle_char(cc) {
-      let ch = CHARSET_ENGLISH.bytes_to_chars[cc];
-      if (!ch) {
+   #handle_ligature_entity(content) {
+      let node = document.createElement("span");
+      node.classList.add("ligature");
+      node.textContent = content;
+      this.container.append(node);
+   }
+   #handle_pokeblock_entity(name) {
+      name = name.substring(("Pokeblock").length);
+      let node = document.createElement("span");
+      node.classList.add("ligature");
+      node.classList.add("skinny");
+      node.style.setProperty("--char-count", ch.length);
+      node.textContent = ch;
+      this.container.append(node);
+   }
+   #handle_superscript_entity(name) {
+      name = name.substring(("super").length);
+      let node = document.createElement("sup");
+      node.classList.add("ligature");
+      node.textContent = name;
+      this.container.append(node);
+   }
+   #handle_super_subscript_entity(char_a, char_b) {
+      let node = document.createElement("span");
+      node.classList.add("ligature");
+      node.classList.add("sup-sub");
+      node.style.setProperty("--sup-char", `"${char_a}"`);
+      node.style.setProperty("--sub-char", `"${char_b || " "}"`);
+      this.container.append(node);
+   }
+   #handle_entity(name) {
+      this.#commit_pending_text();
+      switch (name) {
+         case "PokeblockPO":
+         case "PokeblockKE":
+            this.#handle_super_subscript_entity(name[name.length - 2], name[name.length - 1]);
+            return;
+         case "PokeblockBL":
+         case "PokeblockOC":
+         case "PokeblockK":
+            this.#handle_pokeblock_entity(name);
+            return;
+         case "pk":
+         case "mn":
+            this.#handle_super_subscript_entity(
+               name[0].toUpperCase(),
+               name[1].toUpperCase()
+            );
+            return;
+         case "Lv":
+            this.#handle_ligature_entity("Lv");
+            return;
+      }
+      if (name.startsWith("super")) {
+         this.#handle_superscript_entity(name);
          return;
       }
-      if (ch == "TALL_PLUS") {
-         ch = "＋";
+   }
+   
+   handle_char(cc) {
+      let ch = CHARMAP.codepoint_to_character(cc, this.charset);
+      if (!ch) {
+         let bytes = ch;
+         if (bytes >= 0x0100) {
+            bytes = [0xF9, ch & 0xFF];
+         }
+         let name = CHARMAP.get_character_set(this.charset).canonical_entity_name_for(bytes);
+         if (name) {
+            this.#handle_entity(name);
+         }
+         return;
       }
-      if (ch && ch.length == 1) {
+      switch (ch) {
+         case '\v':
+         case '\f':
+         case '\n':
+            this.#commit_pending_text();
+            //
+            // TODO: Check what font, etc., we have, and preserve those settings.
+            //
+            // TODO: Change how we handle "inline" formatting (i.e. anything that 
+            //       doesn't shift/skip coordinates): store it as state on the 
+            //       printer, so we can restore it here.
+            //
+            this.container = this.result;
+            this.container.append(document.createElement("br"));
+            return;
+      }
+      if (ch) {
          this.pending += ch;
          return;
-      }
-      if (ch.startsWith("SUPER_")) {
-         let what = ch.split("_")[1];
-         let node = document.createElement("sup");
-         node.classList.add("ligature");
-         node.textContent = ({
-            "ER": "er",
-            "RE": "re",
-            "E":  "e",
-         })[what];
-         this.container.append(node);
-         return;
-      }
-      if (ch.startsWith("PKMN_") || ch == "POKEBLOCK_PO" || ch == "POKEBLOCK_KE") {
-         ch = ch.split("_")[1];
-         let a = ch[0];
-         let b = ch[1] || "";
-         
-         this.#commit_pending_text();
-         let node = document.createElement("span");
-         node.classList.add("ligature");
-         node.classList.add("sup-sub");
-         node.style.setProperty("--sup-char", `"${a}"`);
-         node.style.setProperty("--sub-char", `"${b || " "}"`);
-         this.container.append(node);
-         
-         return;
-      }
-      if (ch.startsWith("POKEBLOCK_")) {
-         ch = ch.split("_")[1];
-         
-         this.#commit_pending_text();
-         let node = document.createElement("span");
-         node.classList.add("ligature");
-         node.classList.add("skinny");
-         node.style.setProperty("--char-count", ch.length);
-         node.textContent = ch;
-         this.container.append(node);
-         
-         return;
-      }
-      if (cc == 0xFA || cc == 0xFB || cc == 0xFE) {
-         this.#commit_pending_text();
-         //
-         // TODO: Check what font, etc., we have, and preserve those settings.
-         //
-         // TODO: Change how we handle "inline" formatting (i.e. anything that 
-         //       doesn't shift/skip coordinates): store it as state on the 
-         //       printer, so we can restore it here.
-         //
-         this.container = this.result;
-         this.container.append(document.createElement("br"));
       }
    }
    
@@ -136,7 +165,7 @@ class DOMPokeStringPrinter extends AbstractPokeStringPrinter {
    }
    
    handle_extra_symbol(index) {
-      // TODO
+      this.handle_char(0x0100 | index);
    }
    
    handle_ctrl_location_end() {}
@@ -210,7 +239,7 @@ class DOMPokeStringPrinter extends AbstractPokeStringPrinter {
    }
    
    handle_ctrl_set_character_set(what) {
-      // TODO
+      this.charset = what;
    }
    
    handle_ctrl_pause_music() {}

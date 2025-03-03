@@ -183,7 +183,7 @@ class CBufferifier {
                   for(i = 0; i < end; ++i)
                      this.view.setUint8(this.byte_offset + i, inst.value.bytes[i]);
                   for(; i < max; ++i)
-                     this.view.setUint8(this.byte_offset + i, CHARSET_CONTROL_CODES.chars_to_bytes["\0"]);
+                     this.view.setUint8(this.byte_offset + i, CHARMAP.string_terminator);
                   this.#advance_by_bytes(max);
                   if (inst.decl.options.needs_terminator)
                      this.#advance_by_bytes(1);

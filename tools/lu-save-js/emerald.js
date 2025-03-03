@@ -142,7 +142,7 @@ function get_pokemon_info(/*CStructInstance<SerializedBoxPokemon>*/ inst) {
          for(let i = 0; i < Math.min(a.length, b.length); ++i) {
             if (a.bytes[i] != b.bytes[i])
                return false;
-            if (a.bytes[i] == CHARSET_CONTROL_CODES.chars_to_bytes["\0"])
+            if (a.bytes[i] == CHARMAP.string_terminator)
                break;
          }
       }

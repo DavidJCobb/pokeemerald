@@ -17,6 +17,7 @@
          format.enums[name] = EDITOR_ENUMS[name];
       }
       format.display_overrides.push(EMERALD_FLAGS_DISPLAY_OVERRIDE);
+      format.display_overrides = format.display_overrides.concat(EMERALD_DISPLAY_OVERRIDES);
    }
    
    {  // Import save file

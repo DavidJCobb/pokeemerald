@@ -117,7 +117,7 @@ c-view {
    }
    
    &::part(deemphasize) {
-      color: #707070;
+      color: #909090;
    }
    &::part(error) {
       color: #A22;

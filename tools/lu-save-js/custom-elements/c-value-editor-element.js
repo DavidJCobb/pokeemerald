@@ -149,7 +149,7 @@ class CValueEditorElement extends HTMLElement {
          case "integer":
             this.#target_options.enumeration = null;
             {
-               let typename = decl.typename;
+               let typename = decl.c_types.serialized.name;
                let format   = this.#target?.save_format;
                let enum_def = format.enums[typename];
                if (enum_def) {
@@ -236,33 +236,9 @@ class CValueEditorElement extends HTMLElement {
             break;
          case "integer":
             if (this.#target_options.enumeration) {
-               const input = this.#input = document.createElement("input");
-               input.setAttribute("type", "text");
-               
-               let enum_def   = this.#target_options.enumeration;
-               let datalist   = document.createElement("datalist");
-               let value_name = null;
-               for(const [name, val] of enum_def) {
-                  if (val == this.#target.value) {
-                     value_name = name;
-                  }
-                  let opt = document.createElement("option");
-                  opt.value       = val;
-                  opt.textContent = name;
-                  datalist.append(opt);
-               }
-               let now  = Date.now();
-               let rand = Math.floor(Math.random() * 65535);
-               let id = "c-value-editor-datalist-" + ((now << 16) | rand);
-               datalist.setAttribute("id", id);
-               input.setAttribute("list", id);
-               frag.append(datalist);
-               
-               if (value_name !== null) {
-                  input.value = value_name;
-               } else {
-                  input.value = this.#target.value;
-               }
+               const input = this.#input = document.createElement("enum-input");
+               input.valueNames = this.#target_options.enumeration;
+               input.value      = this.#target.value;
             } else {
                const input = this.#input = document.createElement("input");
                input.setAttribute("type", "number");

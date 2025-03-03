@@ -125,11 +125,11 @@ class CViewElement extends TreeRowViewElement {
                case "string":
                   break;
                default:
-                  return _style("value-text", "[ ") + _style("deemphasize", "...") + _style("value-text", " ]");
+                  return "[raw][[/raw] " + _style("deemphasize", "...") + " ]";
             }
             if (inst.rank + 1 < decl.array_extents.length)
                return null;
-            let text   = _style("value-text", "[ ");
+            let text   = "[raw][[/raw] ";
             let extent = decl.array_extents[inst.rank];
             for(let i = 0; i < extent; ++i) {
                if (i > 0)
@@ -137,7 +137,7 @@ class CViewElement extends TreeRowViewElement {
                let element = inst.values[i];
                text += this.getItemCellContent(element, 1, is_selected);
             }
-            text += _style("value-text", " ]");
+            text += " ]";
             return text;
          }
          if (!(inst instanceof CValueInstance)) {

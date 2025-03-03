@@ -1,12 +1,55 @@
+class CInstanceDisplayOverrideCriteria {
+   constructor(o) {
+      this.decl = o?.decl || null; // Optional<CDeclInstance>
+      this.path = o?.path || null; // Optional<String>
+      this.type = o?.type || null; // Optional<Variant<CTypeInstance, String typename>>
+      if (this.path && !(this.path instanceof CValuePath)) {
+         this.path = new CValuePath(this.path);
+      }
+   }
+   
+   #instance_type_matches(/*CInstance*/ inst) {
+      if (!this.type)
+         return true;
+      let inst_type;
+      if (inst instanceof CTypeInstance) {
+         inst_type = inst.type;
+      } else {
+         inst_type = inst.decl.c_types.serialized_type;
+      }
+      if (this.type+"" === this.type) {
+         return inst_type && (inst_type.tag == this.type || inst_type.symbol == this.type);
+      }
+      return inst_type === this.type;
+   }
+   
+   matches(/*CInstance*/ inst) {
+      let desired_decl = this.decl;
+      let desired_path = this.path;
+      let desired_type = this.type;
+      if (!desired_path) {
+         if (desired_decl && inst.decl !== desired_decl)
+            return false;
+         if (desired_type)
+            return this.#instance_type_matches(inst);
+         return false;
+      }
+      return desired_path.matches(
+         inst,
+         (function(base) {
+            if (desired_decl && base.decl !== desired_decl)
+               return false;
+            return this.#instance_type_matches(base);
+         }).bind(this)
+      );
+   }
+};
+
 // Control how certain CInstances are displayed. Specify criteria 
 // that a CInstance must match, and then overrides for their display.
 class CInstanceDisplayOverrides {
    constructor(o) {
-      this.criteria = {
-         decl: o?.criteria?.decl || null, // Optional<CDeclInstance>
-         path: o?.criteria?.path || null, // Optional<String>
-         type: o?.criteria?.type || null, // Optional<CTypeInstance>
-      };
+      this.criteria  = o?.criteria || []; // Array<CInstanceDisplayOverrideCriteria>
       this.overrides = {
          // A function which returns a BBCode string. The following tags are 
          // supported: b; i; u; color; style; where `style` takes a single 
@@ -20,41 +63,20 @@ class CInstanceDisplayOverrides {
          // edited as its sole argument.
          make_editor_element: o?.overrides?.make_editor_element || null,
       };
-      if (this.criteria.path && !(this.criteria.path instanceof CValuePath)) {
-         this.criteria.path = new CValuePath(this.criteria.path);
+      
+      if (!Array.isArray(this.criteria)) {
+         if (this.criteria instanceof CInstanceDisplayOverrideCriteria) {
+            this.criteria = [this.criteria];
+         } else {
+            this.criteria = [ new CInstanceDisplayOverrideCriteria(this.criteria) ];
+         }
       }
    }
    
    matches(/*CInstance*/ inst) {
-      let desired_decl = this.criteria.decl;
-      let desired_path = this.criteria.path;
-      let desired_type = this.criteria.type;
-      if (!desired_path) {
-         if (desired_decl && inst.decl !== desired_decl)
-            return false;
-         if (desired_type) {
-            if (inst instanceof CTypeInstance) {
-               return inst.type === desired_type;
-            } else {
-               return inst.decl.c_types.serialized.definition === desired_type;
-            }
-         }
-         return false;
-      }
-      return desired_path.matches(
-         inst,
-         function(base) {
-            if (desired_decl && base.decl !== desired_decl)
-               return false;
-            if (desired_type) {
-               if (base instanceof CTypeInstance) {
-                  return base.type === desired_type;
-               } else {
-                  return base.decl.c_types.serialized.definition === desired_type;
-               }
-            }
+      for(let crit of this.criteria)
+         if (crit.matches(inst))
             return true;
-         }
-      );
+      return false;
    }
 };

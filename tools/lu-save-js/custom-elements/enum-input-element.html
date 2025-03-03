@@ -1,0 +1,22 @@
+<!doctype html>
+<html>
+   <head>
+      <title>EnumInputElement tests</title>
+      <script src="enum-input-element.js"></script>
+   </head>
+   <body>
+      <enum-input></enum-input>
+      <script>
+{
+   let node = document.querySelector("enum-input");
+   node.valueNames = [
+      "Alpha",
+      "Bravo",
+      "Charlie",
+      "Delta",
+      "Echo",
+   ];
+}
+      </script>
+   </body>
+</html>

@@ -2,7 +2,7 @@
 class TreeRowViewModel/*<T>*/ {
    constructor() {
       this.columns = [
-         { name: "Items", width: "1fr" }
+         { name: "Items", width: "1fr", minWidth: "20px" }
       ];
    }
    
@@ -34,13 +34,12 @@ class TreeRowViewModel/*<T>*/ {
 
 class TreeRowViewElement extends HTMLElement {
    static #Column = class Column {
-      constructor(name, width) {
+      constructor(name, width, resizable) {
          this.name  = name || "";
          this.width = width;
          if (!width && width !== 0)
             this.width = "1fr";
-         
-         this.computed_width = null;
+         this.resizable = !!resizable;
       }
    };
    
@@ -174,17 +173,22 @@ class TreeRowViewElement extends HTMLElement {
       }
    };
    
+   #internals;
    #shadow;
    #canvas;
    #scroll_pane;
    #scroll_sizer;
+   #resize_cursor_container;
    #tooltip_region_container;
+   
+   #model = null; // Optional<TreeRowViewModel>
    
    #allow_selection = false;
    #selected_item   = null;
    #expanded_items  = new Set();
    
    #computed_column_widths = []; // Array<double>
+   #altered_column_widths  = []; // Array<Variant<double, null>>
    
    #resize_observer = null;
    
@@ -205,6 +209,7 @@ class TreeRowViewElement extends HTMLElement {
    
    #last_repaint_result = {
       sticky_header: {
+         x: 0, // canvas-relative
          y: 0, // canvas-relative
          h: 0,
       },
@@ -222,11 +227,15 @@ class TreeRowViewElement extends HTMLElement {
    
    constructor() {
       super();
+      this.#internals = this.attachInternals();
       this.#shadow = this.attachShadow({ mode: "open" });
       this.#shadow.innerHTML = `
       <style>
 :host {
    display: block;
+}
+:host(:state(resizing-column)) {
+   cursor: ew-resize;
 }
 :where(:host) {
    width:  100%;
@@ -285,6 +294,27 @@ class TreeRowViewElement extends HTMLElement {
          position: absolute;
       }
    }
+   .resize-handle-stubs {
+      position: sticky;
+      float:    left;
+      left:     0;
+      top:      0;
+      width:    0;
+      height:   0;
+      
+      div {
+         position:  absolute;
+         width:     8px;
+         height:    var(--height);
+         cursor:    ew-resize;
+         transform: translate(-50%, 0);
+      }
+      div:last-child {
+         transform: none;
+         width: 4px;
+         transform: translate(-100%, 0);
+      }
+   }
 }
       </style>
       <div class="parts">
@@ -292,6 +322,7 @@ class TreeRowViewElement extends HTMLElement {
       <div class="scroll">
          <canvas></canvas>
          <div class="tooltip-stubs"></div>
+         <div class="resize-handle-stubs"></div>
          <div class="sizer"></div>
       </div>
       `;
@@ -299,6 +330,7 @@ class TreeRowViewElement extends HTMLElement {
       this.#scroll_pane  = this.#shadow.querySelector(".scroll");
       this.#scroll_sizer = this.#shadow.querySelector(".scroll .sizer");
       this.#tooltip_region_container = this.#shadow.querySelector(".tooltip-stubs");
+      this.#resize_cursor_container = this.#shadow.querySelector(".resize-handle-stubs");
       
       {
          const BoxStyle  = TreeRowViewElement.BoxStyle;
@@ -330,10 +362,11 @@ class TreeRowViewElement extends HTMLElement {
       
       this.#shadow.addEventListener("transitionend", this.#on_observe_css_change.bind(this));
       
+      this.addEventListener("pointerdown", this.#on_pointer_down.bind(this));
       this.addEventListener("click", this.#on_click.bind(this));
       this.#scroll_pane.addEventListener("scroll", this.#on_scroll.bind(this));
       
-      this.model = null; // Optional<TreeRowViewModel>
+      this.#set_up_resize_cursor_styles();
    }
    
    //
@@ -347,6 +380,25 @@ class TreeRowViewElement extends HTMLElement {
          this.#selected_item = null;
          this.repaint();
       }
+   }
+   
+   get model() { return this.#model; }
+   set model(v) {
+      if (!v) {
+         if (!this.#model)
+            return;
+         this.#model = null;
+         this.#altered_column_widths = [];
+         this.#queue_repaint();
+         return;
+      }
+      if (v === this.#model)
+         return;
+      if (!(v instanceof TreeRowViewModel))
+         throw new TypeError("TreeRowViewElement models must be instances of TreeRowViewModel or subclasses thereof.");
+      this.#model = v;
+      this.#altered_column_widths = null;
+      this.#queue_repaint();
    }
    
    get selectedItem() { return this.#selected_item; }
@@ -434,6 +486,108 @@ class TreeRowViewElement extends HTMLElement {
    }
    
    //
+   // Column-resize drag:
+   //
+   
+   static #resize_cursor_styles_set_up_for = []; // node name list
+   #set_up_resize_cursor_styles() {
+      //
+      // Called when we're constructed. The goal is to make it so that 
+      // while you're dragging to resize a column, the cursor used is 
+      // the resize cursor even when the mouse isn't physically above 
+      // this element. This ugly hack should be sufficient. (We could 
+      // set `document.body.style.cursor`, but that would blow away a 
+      // value that some other script may potentially have written.)
+      //
+      let list    = TreeRowViewElement.#resize_cursor_styles_set_up_for;
+      let tagname = this.nodeName;
+      if (list.includes(tagname))
+         return;
+      list.push(tagname);
+      let style = document.createElement("style");
+      style.innerHTML = `html:has(${tagname}:state(resizing-column)) { cursor: ew-resize !important }`;
+      document.documentElement.append(style);
+   }
+   
+   #bound_column_drag_move_listener = null;
+   #bound_column_drag_stop_listener = null;
+   #resizing_column_index = null;
+   
+   #on_pointer_down(e) {
+      const HANDLE_WIDTH = 8;
+      
+      let rect = this.getBoundingClientRect();
+      let x    = e.clientX - rect.x - this.#last_repaint_result.sticky_header.x;
+      let y    = e.clientY - rect.y;
+      {  // Check Y-coordinate.
+         let header = this.#last_repaint_result.sticky_header;
+         if (y < header.y)
+            return;
+         if (y > header.y + header.h)
+            return;
+      }
+      if (x < 0 || x > rect.width)
+         return;
+      
+      this.#resizing_column_index = null;
+      let col_x = 0;
+      for(let i = 0; i < this.#computed_column_widths.length; ++i) {
+         col_x += this.#computed_column_widths[i];
+         if (x >= col_x - (HANDLE_WIDTH / 2) && x <= col_x + (HANDLE_WIDTH / 2)) {
+            this.#resizing_column_index = i;
+            break;
+         }
+      }
+      if (this.#resizing_column_index !== null) {
+         this.#start_column_drag();
+      }
+   }
+   #on_column_drag_move(e) {
+      const MIN_COLUMN_WIDTH = 4;
+      
+      let rect = this.getBoundingClientRect();
+      let x    = e.clientX - rect.x;
+      
+      let min_x = 0;
+      for(let i = 0; i < this.#resizing_column_index; ++i) {
+         min_x += this.#computed_column_widths[i] || 0;
+      }
+      
+      let width = Math.max(MIN_COLUMN_WIDTH, x - min_x);
+      this.#altered_column_widths[this.#resizing_column_index] = width;
+      this.repaint();
+   }
+   #on_column_drag_stop(e) {
+      this.#stop_column_drag();
+      this.#resizing_column_index = null;
+   }
+   
+   #start_column_drag() {
+      if (!this.#bound_column_drag_stop_listener) {
+         this.#bound_column_drag_move_listener = this.#on_column_drag_move.bind(this);
+         this.#bound_column_drag_stop_listener = this.#on_column_drag_stop.bind(this);
+      }
+      window.addEventListener("pointermove", this.#bound_column_drag_move_listener);
+      //
+      window.addEventListener("blur",      this.#bound_column_drag_stop_listener);
+      window.addEventListener("pointerup", this.#bound_column_drag_stop_listener);
+      window.addEventListener("keydown",   this.#bound_column_drag_stop_listener);
+      
+      if (this.#internals.states)
+         this.#internals.states.add("resizing-column");
+   }
+   #stop_column_drag() {
+      window.removeEventListener("pointermove", this.#bound_column_drag_move_listener);
+      //
+      window.removeEventListener("blur",      this.#bound_column_drag_stop_listener);
+      window.removeEventListener("pointerup", this.#bound_column_drag_stop_listener);
+      window.removeEventListener("keydown",   this.#bound_column_drag_stop_listener);
+      
+      if (this.#internals.states)
+         this.#internals.states.delete("resizing-column");
+   }
+   
+   //
    // Event handlers:
    //
    
@@ -511,6 +665,7 @@ class TreeRowViewElement extends HTMLElement {
          styles["header-cell"].contentInsetVertical +
          addenda.header_content_height
       );
+      this.#resize_cursor_container.style.setProperty("--height", `${addenda.header_height}px`);
       
       addenda.row_content_height = Math.max(
          styles["cell"].font_size,
@@ -633,8 +788,8 @@ class TreeRowViewElement extends HTMLElement {
    
    #paint_box(/*BoxStyle*/ style, /*DOMRect*/ border_box, row, col, content_paint_functor) {
       let column_count = 1;
-      if (this.model)
-         column_count = this.model.columns.length;
+      if (this.#model)
+         column_count = this.#model.columns.length;
       
       const canvas  = this.#canvas;
       const context = canvas.getContext("2d");
@@ -785,6 +940,7 @@ class TreeRowViewElement extends HTMLElement {
       
       let x = 0;
       let y = 0;
+      this.#last_repaint_result.sticky_header.x = x;
       this.#last_repaint_result.sticky_header.y = y;
       this.#last_repaint_result.sticky_header.h = addenda.header_height;
       
@@ -801,21 +957,24 @@ class TreeRowViewElement extends HTMLElement {
       
       context.font = styles["header-cell"].font;
       
-      let col_x     = 0;
+      let col_x     = -this.#scroll_pos.x;
       let col_names = [];
-      if (this.model) {
-         for(let c of this.model.columns)
+      if (this.#model) {
+         for(let c of this.#model.columns)
             col_names.push(c.name);
       }
       for(let i = 0; i < this.#computed_column_widths.length; ++i) {
-         let w = this.#computed_column_widths[i];
+         let inset = 0;
+         let w     = this.#computed_column_widths[i];
          if (i > 0) {
             x = col_x;
             if (i == this.#computed_column_widths.length - 1) {
                w = r - x;
             }
          } else {
-            w -= x;
+            w -= styles["header-row"].contentLeft;
+            w -= this.#scroll_pos.x;
+            inset = this.#scroll_pos.x;
          }
          this.#paint_box(
             this.#cached_styles["header-cell"],
@@ -825,7 +984,7 @@ class TreeRowViewElement extends HTMLElement {
             function(content_box) {
                const text = col_names[i];
                context.fillStyle = styles["header-cell"].color;
-               context.fillText(text, 0, 0);
+               context.fillText(text, -inset, 0);
                let width = context.measureText(text).width;
                if (width > content_box.w) {
                   // TODO: implement tooltips on headers
@@ -901,7 +1060,7 @@ class TreeRowViewElement extends HTMLElement {
                if (i == 0) {
                   let x = indent * indent_width;
                   let y = 0;
-                  if (is_expanded || this.model.itemHasChildren(item)) {
+                  if (is_expanded || this.#model.itemHasChildren(item)) {
                      //
                      // Item can have children. Draw a twisty.
                      //
@@ -941,8 +1100,8 @@ class TreeRowViewElement extends HTMLElement {
                   (function(content_box) {
                      let overflowed = false;
                      
-                     let data = this.model.getItemCellContent(item, i, is_selected);
-                     tooltip = this.model.getItemTooltip(item, i);
+                     let data = this.#model.getItemCellContent(item, i, is_selected);
+                     tooltip = this.#model.getItemTooltip(item, i);
                      if (data || data === 0) {
                         let fulltext = this.#draw_cell_content(content_box, data, is_selected, !!tooltip);
                         tooltip = tooltip || fulltext;
@@ -1119,37 +1278,45 @@ class TreeRowViewElement extends HTMLElement {
       let base_width = canvas.width;
       let flex_width = base_width;
       let flex_sum   = 0;
-      if (!this.model) {
+      if (!this.#model) {
          this.#computed_column_widths = [ base_width ];
          return;
       }
       
-      const columns = this.model.columns;
+      const columns = this.#model.columns;
+      
       this.#computed_column_widths = [];
+      if (!this.#altered_column_widths) {
+         this.#altered_column_widths = [];
+         for(let i = 0; i < columns.length; ++i)
+            this.#altered_column_widths.push(null);
+      }
       
       for(let i = 0; i < columns.length; ++i) {
+         this.#computed_column_widths[i] = null;
+         
          const col     = columns[i];
+         let   width   = this.#altered_column_widths[i];
          let   desired = col.width;
          
-         this.#computed_column_widths[i] = null;
-         if (desired.endsWith("fr")) {
-            flex_sum += Math.max(0, parseFloat(desired));
-            continue;
-         }
-         
-         let width;
-         if (desired.endsWith("%")) {
-            width = base_width * parseFloat(desired) / 100;
-         } else if (desired.endsWith("px")) {
-            width = parseFloat(desired);
-         } else if (desired.endsWith("ch")) {
-            width = CH * parseFloat(desired);
-         } else if (desired.endsWith("em")) {
-            width = EM * parseFloat(desired);
+         if (!width || width < 0) {
+            if (desired.endsWith("fr")) {
+               flex_sum += Math.max(0, parseFloat(desired));
+               continue;
+            }
+            if (desired.endsWith("%")) {
+               width = base_width * parseFloat(desired) / 100;
+            } else if (desired.endsWith("px")) {
+               width = parseFloat(desired);
+            } else if (desired.endsWith("ch")) {
+               width = CH * parseFloat(desired);
+            } else if (desired.endsWith("em")) {
+               width = EM * parseFloat(desired);
+            }
          }
          if (+width > 0) {
-            this.#computed_column_widths[i] = width;
             flex_width -= width;
+            this.#computed_column_widths[i] = width;
          } else {
             col.width = "1fr"; // correct width
             flex_sum += 1;
@@ -1162,6 +1329,18 @@ class TreeRowViewElement extends HTMLElement {
          let flex = parseFloat(col.width) / flex_sum;
          this.#computed_column_widths[i] = flex_width * flex;
       }
+      
+      let total = 0;
+      let frag  = new DocumentFragment();
+      for(let width of this.#computed_column_widths) {
+         total += width;
+         
+         let node = document.createElement("div");
+         node.style.left = `${total}px`;
+         frag.append(node);
+      }
+      this.#resize_cursor_container.replaceChildren(frag);
+      this.#scroll_sizer.style.width = `${total}px`;
    }
    
    #styles_unavailable() {
@@ -1239,7 +1418,7 @@ class TreeRowViewElement extends HTMLElement {
       
       let paint_item;
       let paint_children = (function(/*Optional<T>*/ item) {
-         let children = this.model.getItemChildren(item);
+         let children = this.#model.getItemChildren(item);
          if (children) {
             if (Array.isArray(children)) {
                for(let i = 0; i < children.length; ++i) {
@@ -1271,7 +1450,7 @@ class TreeRowViewElement extends HTMLElement {
          }
       }).bind(this);
       
-      if (this.model) {
+      if (this.#model) {
          paint_children(null);
       }
       

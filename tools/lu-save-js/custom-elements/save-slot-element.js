@@ -90,6 +90,7 @@ class SaveSlotElement extends HTMLElement {
             this.#editor.target = null;
       }).bind(this));
       this.#editor.addEventListener("edit", this.#on_value_edited.bind(this));
+      this.#editor.addEventListener("edit-emplaced-containing-union", this.#on_value_reunioned.bind(this));
       
       {
          let aside = this.#shadow.querySelector("aside");
@@ -162,6 +163,17 @@ class SaveSlotElement extends HTMLElement {
          }
       }
       this.#view.repaint();
+   }
+   #on_value_reunioned(e) {
+      let prior = true;
+      if (e.detail.discarded) {
+         prior = this.#view.isItemExpanded(e.detail.discarded);
+         this.#view.setItemExpanded(e.detail.discarded, false);
+      }
+      if (e.detail.emplaced) {
+         this.#view.setItemExpanded(e.detail.emplaced, prior);
+      }
+      this.#view.selectedItem = e.detail.subject;
    }
 };
 customElements.define("save-slot-element", SaveSlotElement);

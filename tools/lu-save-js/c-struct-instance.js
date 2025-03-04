@@ -45,7 +45,9 @@ class CStructInstance extends CTypeInstance {
       dst.is_member_of = this;
       this.members[decl.name] = dst;
       if (decl.type == "union-external-tag") {
-         dst.external_tag = this.members[decl.options.tag];
+         let tag = this.members[decl.options.tag];
+         dst.external_tag = tag;
+         tag.is_tag_of_unions.push(dst);
       }
    }
 };

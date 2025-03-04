@@ -7,6 +7,8 @@ class CValueInstance extends CDeclInstance {
       let dv = decl.default_value;
       if (dv !== undefined && dv !== null)
          this.value = dv;
+      
+      this.is_tag_of_unions = []; // Array<CUnionInstance>
    }
    
    copy_contents_of(/*const CValueInstance*/ other) {

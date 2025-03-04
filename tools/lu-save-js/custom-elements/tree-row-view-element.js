@@ -1,5 +1,5 @@
 // Subclass this, and give your subclass to the view element.
-class TreeRowViewModel/*<T>*/ {
+class TreeRowViewModel/*<T extends Object>*/ {
    constructor() {
       this.columns = [
          { name: "Items", width: "1fr", minWidth: "20px" }
@@ -175,7 +175,7 @@ class TreeRowViewElement extends HTMLElement {
    
    #allow_selection = false;
    #selected_item   = null;
-   #expanded_items  = new Set();
+   #expanded_items  = new WeakSet();
    
    #computed_column_widths = []; // Array<double>
    #computed_column_mins   = []; // Array<double>
@@ -393,6 +393,23 @@ class TreeRowViewElement extends HTMLElement {
    }
    
    get selectedItem() { return this.#selected_item; }
+   set selectedItem(item) {
+      if (this.#selected_item === item)
+         return;
+      this.#selected_item = item;
+      this.#queue_repaint();
+   }
+   
+   isItemExpanded(item) {
+      return this.#expanded_items.has(item);
+   }
+   setItemExpanded(item, expanded) {
+      let prior = this.#expanded_items.has(item);
+      if (prior === expanded)
+         return;
+      this.#expanded_items[expanded ? "add" : "delete"](item);
+      this.#queue_repaint();
+   }
    
    //
    // Accessors (painting):

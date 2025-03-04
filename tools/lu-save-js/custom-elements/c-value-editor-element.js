@@ -116,12 +116,45 @@ class CValueEditorElement extends HTMLElement {
       return true;
    }
    
+   #update_unions_tagged_by_target() {
+      if (this.#target.value === null) {
+         return;
+      }
+      for(let u of this.#target.is_tag_of_unions) {
+         //
+         // Update externally-tagged union.
+         //
+         u.emplace();
+      }
+      //
+      // Are we inside of a union?
+      //
+      let u = this.#target.is_member_of?.is_member_of;
+      if (u instanceof CUnionInstance && !u.external_tag && u.type.internal_tag_name == this.#target.decl.name) {
+         let decl = u.type.members_by_tag_value[+this.#target.value];
+         let old  = u.value;
+         u.emplace(decl);
+         
+         this.#target = u.value.members[this.#target.decl.name];
+         this.dispatchEvent(new CustomEvent("edit-emplaced-containing-union", {
+            detail: {
+               subject:   this.#target,
+               value:     this.#target.value,
+               union:     u,
+               emplaced:  u.value,
+               discarded: old,
+            },
+         }));
+      }
+   }
+   
    #on_change(e) {
       if (!this.#input)
          return;
       if (!this.is_valid())
          return;
       this.#target.value = this.value;
+      this.#update_unions_tagged_by_target();
       this.update_preview();
       if (this.#checksum_recalc_helper)
          this.#checksum_recalc_helper.recalc();

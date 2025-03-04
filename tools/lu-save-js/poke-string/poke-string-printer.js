@@ -11,6 +11,10 @@ class AbstractPokeStringPrinter {
       this.pre_print_handler();
       let   i    = 0;
       const size = str.length;
+      if (size == 0) {
+         this.post_print_handler();
+         return;
+      }
       do {
          let c = str.bytes[i];
          switch (c) {

@@ -96,6 +96,17 @@ class CValueEditorElement extends HTMLElement {
       return v;
    }
    
+   #get_target_containing_internally_tagged_union() {
+      let u = this.#target.is_member_of?.is_member_of;
+      if (!u)
+         return null;
+      if (!(u instanceof CUnionInstance) || u.external_tag)
+         return null;
+      if (u.type.internal_tag_name != this.#target.decl.name)
+         return null;
+      return u;
+   }
+   
    is_valid() {
       let v = this.value;
       if (v === null)
@@ -113,6 +124,26 @@ class CValueEditorElement extends HTMLElement {
                return false;
             break;
       }
+      
+      // If the target is the tag of any union, treat the value as invalid 
+      // if any of those unions lack a member corresponding to the value.
+      if (this.#target.type == "integer" || this.#target.type == "boolean") {
+         v = +v;
+         for(let u of this.#target.is_tag_of_unions) {
+            let memb = u.type.members_by_tag_value[v];
+            if (!memb)
+               return false;
+         }
+         {
+            let u = this.#get_target_containing_internally_tagged_union();
+            if (u) {
+               let memb = u.type.members_by_tag_value[v];
+               if (!memb)
+                  return false;
+            }
+         }
+      }
+      
       return true;
    }
    
@@ -129,8 +160,8 @@ class CValueEditorElement extends HTMLElement {
       //
       // Are we inside of a union?
       //
-      let u = this.#target.is_member_of?.is_member_of;
-      if (u instanceof CUnionInstance && !u.external_tag && u.type.internal_tag_name == this.#target.decl.name) {
+      let u = this.#get_target_containing_internally_tagged_union();
+      if (u) {
          let decl = u.type.members_by_tag_value[+this.#target.value];
          let old  = u.value;
          u.emplace(decl);

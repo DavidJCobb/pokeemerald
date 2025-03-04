@@ -8,9 +8,9 @@ class CViewElement extends TreeRowViewElement {
          this.typed_value_formatters = formatters;
          
          this.columns = [
-            { name: "Name",  width: "3fr" },
-            { name: "Value", width: "1fr" },
-            { name: "Type",  width: "30ch" },
+            { name: "Name",  width:  "3fr", minWidth: "6em" },
+            { name: "Value", width:  "1fr", minWidth: "6em" },
+            { name: "Type",  width: "30ch", minWidth: "6em" },
          ];
       }
       

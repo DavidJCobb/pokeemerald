@@ -28,11 +28,12 @@ c-value-editor:not([has-target="true"]) {
 }
 details>div:has(c-value-editor[has-target="true"]) {
    display: grid;
+   width:   100%;
    grid-template:
       "info info"
       "view edit" 1fr
       /
-      2fr 1fr
+      minmax(20em, 2fr) 1fr
    ;
 }
 
@@ -85,8 +86,12 @@ aside {
 c-view {
    grid-area: view;
    
+   box-sizing: border-box;
    height: 300px;
    border: 1px solid #888;
+   
+   width: auto;
+   max-width: 100%;
    
    font-family: Consolas, Lucida Console, monospace;
    font-size:   .8em;

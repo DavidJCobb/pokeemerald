@@ -252,10 +252,11 @@ class CValueEditorElement extends HTMLElement {
             {
                const input = this.#input = document.createElement("textarea");
                //input.setAttribute("maxlength", this.#target_options.max_length); // fails for escape codes and XML entities
-               
-               let printer = new LiteralPokeStringPrinter();
-               printer.print(this.#target.value);
-               input.value = printer.result;
+               if (this.#target.value) {
+                  let printer = new LiteralPokeStringPrinter();
+                  printer.print(this.#target.value);
+                  input.value = printer.result;
+               }
             }
             this.#preview = document.createElement("div");
             break;

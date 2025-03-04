@@ -33,16 +33,6 @@ class TreeRowViewModel/*<T>*/ {
 };
 
 class TreeRowViewElement extends HTMLElement {
-   static #Column = class Column {
-      constructor(name, width, resizable) {
-         this.name  = name || "";
-         this.width = width;
-         if (!width && width !== 0)
-            this.width = "1fr";
-         this.resizable = !!resizable;
-      }
-   };
-   
    static TextStyle = class TextStyle {
       constructor(name) {
          this.part_node = document.createElement("div");
@@ -188,6 +178,7 @@ class TreeRowViewElement extends HTMLElement {
    #expanded_items  = new Set();
    
    #computed_column_widths = []; // Array<double>
+   #computed_column_mins   = []; // Array<double>
    #altered_column_widths  = []; // Array<Variant<double, null>>
    
    #resize_observer = null;
@@ -512,11 +503,12 @@ class TreeRowViewElement extends HTMLElement {
    #bound_column_drag_move_listener = null;
    #bound_column_drag_stop_listener = null;
    #resizing_column_index = null;
+   #resizing_column_min   = 4;
    
    #on_pointer_down(e) {
       const HANDLE_WIDTH = 8;
       
-      let rect = this.getBoundingClientRect();
+      let rect = this.#canvas.getBoundingClientRect();
       let x    = e.clientX - rect.x - this.#last_repaint_result.sticky_header.x;
       let y    = e.clientY - rect.y;
       {  // Check Y-coordinate.
@@ -539,22 +531,28 @@ class TreeRowViewElement extends HTMLElement {
          }
       }
       if (this.#resizing_column_index !== null) {
+         this.#resizing_column_min = this.#computed_column_mins[this.#resizing_column_index] || 4;
          this.#start_column_drag();
       }
    }
    #on_column_drag_move(e) {
       const MIN_COLUMN_WIDTH = 4;
       
-      let rect = this.getBoundingClientRect();
+      let rect = this.#canvas.getBoundingClientRect();
       let x    = e.clientX - rect.x;
+      x -= this.#last_repaint_result.sticky_header.x;
       
       let min_x = 0;
       for(let i = 0; i < this.#resizing_column_index; ++i) {
          min_x += this.#computed_column_widths[i] || 0;
       }
       
-      let width = Math.max(MIN_COLUMN_WIDTH, x - min_x);
-      this.#altered_column_widths[this.#resizing_column_index] = width;
+      let width = Math.max(MIN_COLUMN_WIDTH, this.#resizing_column_min, x - min_x);
+      let mod   = width - this.#computed_column_widths[this.#resizing_column_index];
+      this.#altered_column_widths[this.#resizing_column_index] += mod;
+      if (this.#resizing_column_index < this.#computed_column_widths.length - 1) {
+         this.#altered_column_widths[this.#resizing_column_index + 1] -= mod;
+      }
       this.repaint();
    }
    #on_column_drag_stop(e) {
@@ -940,7 +938,7 @@ class TreeRowViewElement extends HTMLElement {
       
       let x = 0;
       let y = 0;
-      this.#last_repaint_result.sticky_header.x = x;
+      this.#last_repaint_result.sticky_header.x = -this.#scroll_pos.x;
       this.#last_repaint_result.sticky_header.y = y;
       this.#last_repaint_result.sticky_header.h = addenda.header_height;
       
@@ -1025,7 +1023,7 @@ class TreeRowViewElement extends HTMLElement {
       
       this.#paint_box(
          this.#cached_styles[is_selected ? "selected-row" : "row"],
-         new DOMRect(x, y, canvas_width, row_height)
+         new DOMRect(x, y, this.#content_size.width || canvas_width, row_height)
       );
       const row_style = this.#cached_styles["row"];
       let row_inset_l = row_style.border_width.left   + row_style.padding.left;
@@ -1272,49 +1270,55 @@ class TreeRowViewElement extends HTMLElement {
       const CH = context.measureText("0").width;
       const EM = (function() {
          let metrics = context.measureText("X");
-         return metrics.emHeightAscent - metrics.emHeightDescent;
+         return metrics.emHeightAscent + metrics.emHeightDescent;
       })();
       
       let base_width = canvas.width;
-      let flex_width = base_width;
-      let flex_sum   = 0;
       if (!this.#model) {
          this.#computed_column_widths = [ base_width ];
          return;
+      }
+      function _resolve_width(desired) {
+         if (desired.endsWith("%")) {
+            return base_width * parseFloat(desired) / 100;
+         } else if (desired.endsWith("px")) {
+            return parseFloat(desired);
+         } else if (desired.endsWith("ch")) {
+            return CH * parseFloat(desired);
+         } else if (desired.endsWith("em")) {
+            return EM * parseFloat(desired);
+         }
+         return -1;
       }
       
       const columns = this.#model.columns;
       
       this.#computed_column_widths = [];
+      this.#computed_column_mins   = [];
       if (!this.#altered_column_widths) {
          this.#altered_column_widths = [];
          for(let i = 0; i < columns.length; ++i)
-            this.#altered_column_widths.push(null);
+            this.#altered_column_widths.push(0);
       }
       
+      let flex_width = base_width;
+      let flex_sum   = 0;
       for(let i = 0; i < columns.length; ++i) {
          this.#computed_column_widths[i] = null;
          
          const col     = columns[i];
-         let   width   = this.#altered_column_widths[i];
+         let   width   = 0;
          let   desired = col.width;
+         this.#computed_column_mins[i] = _resolve_width(col.minWidth || "");
          
-         if (!width || width < 0) {
-            if (desired.endsWith("fr")) {
-               flex_sum += Math.max(0, parseFloat(desired));
-               continue;
-            }
-            if (desired.endsWith("%")) {
-               width = base_width * parseFloat(desired) / 100;
-            } else if (desired.endsWith("px")) {
-               width = parseFloat(desired);
-            } else if (desired.endsWith("ch")) {
-               width = CH * parseFloat(desired);
-            } else if (desired.endsWith("em")) {
-               width = EM * parseFloat(desired);
-            }
+         if (desired.endsWith("fr")) {
+            flex_sum   += Math.max(0, parseFloat(desired));
+            flex_width -= this.#altered_column_widths[i] || 0;
+            continue;
          }
-         if (+width > 0) {
+         width = _resolve_width(desired);
+         if (+width >= 0) {
+            width += this.#altered_column_widths[i];
             flex_width -= width;
             this.#computed_column_widths[i] = width;
          } else {
@@ -1326,8 +1330,13 @@ class TreeRowViewElement extends HTMLElement {
          const col = columns[i];
          if (this.#computed_column_widths[i] !== null)
             continue;
-         let flex = parseFloat(col.width) / flex_sum;
-         this.#computed_column_widths[i] = flex_width * flex;
+         let flex  = parseFloat(col.width) / flex_sum;
+         let width = flex_width * flex + (this.#altered_column_widths[i] || 0);
+         let min   = this.#computed_column_mins[i];
+         if (min < 0)
+            min = 0;
+         width = Math.max(4, min, width);
+         this.#computed_column_widths[i] = width;
       }
       
       let total = 0;
@@ -1336,9 +1345,10 @@ class TreeRowViewElement extends HTMLElement {
          total += width;
          
          let node = document.createElement("div");
-         node.style.left = `${total}px`;
+         node.style.left = `${total - this.#scroll_pos.x}px`;
          frag.append(node);
       }
+      this.#content_size.width = total;
       this.#resize_cursor_container.replaceChildren(frag);
       this.#scroll_sizer.style.width = `${total}px`;
    }

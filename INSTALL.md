@@ -1,6 +1,6 @@
 # Instructions
 
-These instructions explain how to set up the tools required to build **pokeemerald**, which assembles the source files into a ROM.
+These instructions explain how to set up the tools required to build this fork of **pokeemerald**, which assembles the source files into a ROM.
 
 These instructions come with notes which can be expanded by clicking the "<i>Note...</i>" text.
 In general, you should not need to open these unless if you get an error or if you need additional clarification.
@@ -455,9 +455,9 @@ If you aren't in the pokeemerald directory already, then **change directory** to
 ```bash
 cd pokeemerald
 ```
-To build **pokeemerald.gba** (Note: to speed up builds, see [Parallel builds](#parallel-builds)):
+To build **pokeemerald.gba**:
 ```bash
-make
+bash build.sh
 ```
 If it has built successfully you will have the output file **pokeemerald.gba** in your project folder.
 <details>
@@ -466,22 +466,6 @@ If it has built successfully you will have the output file **pokeemerald.gba** i
 </details>
 
 # Building guidance
-
-## Parallel builds
-
-See [the GNU docs](https://www.gnu.org/software/make/manual/html_node/Parallel.html) and [this Stack Exchange thread](https://unix.stackexchange.com/questions/208568) for more information.
-
-To speed up building, first get the value of `nproc` by running the following command:
-```bash
-nproc
-```
-Builds can then be sped up by running the following command:
-```bash
-make -j<output of nproc>
-```
-Replace `<output of nproc>` with the number that the `nproc` command returned.
-
-`nproc` is not available on macOS. The alternative is `sysctl -n hw.ncpu` ([relevant Stack Overflow thread](https://stackoverflow.com/questions/1715580)).
 
 ## Compare ROM to the original
 

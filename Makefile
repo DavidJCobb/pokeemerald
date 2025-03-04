@@ -113,7 +113,6 @@ INCLUDE_CPP_ARGS := $(INCLUDE_DIRS:%=-iquote %)
 INCLUDE_SCANINC_ARGS := $(INCLUDE_DIRS:%=-I %)
 
 # Compiler plug-ins (modern builds only)
-include make_plugins.mk
 CC_PLUGIN_LU_BITPACK := $(PLUGINS_DIR)/lu_bitpack/lu_bitpack.so
 
 O_LEVEL ?= 2

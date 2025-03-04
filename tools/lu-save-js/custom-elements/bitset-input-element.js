@@ -6,6 +6,7 @@ class BitsetInputElement extends HTMLElement {
    #value    = 0;
    
    #checkboxes = []; // Array<HTMLInputElement>
+   #textbox;
    #internals;
    #shadow;
    
@@ -23,16 +24,23 @@ ul {
    padding:    0;
    margin:     0;
 }
-label {
+ul label {
    display:     flex;
    flex-flow:   row nowrap;
    align-items: start;
 }
 </style>
 <ul></ul>
+<label>
+   Raw integer:
+   <input type="number" min="0" step="1" value="0" />
+</label>
       `.trim();
       
+      this.#textbox = this.#shadow.querySelector("input[type='number' i]");
+      
       this.#shadow.querySelector("ul").addEventListener("input", this.#on_checkbox_edited.bind(this));
+      this.#textbox.addEventListener("input", this.#on_textbox_edited.bind(this));
    }
    
    get bitcount() { return this.#bitcount; }
@@ -90,6 +98,7 @@ label {
       if (v === this.#value)
          return;
       this.#value = v;
+      this.#textbox.value = v;
       this.#internals.setFormValue(v);
       for(let i = 0; i < this.#checkboxes.length; ++i) {
          let checked = v & (1 << i);
@@ -142,6 +151,10 @@ label {
             this.#value &= mask;
          }
       }
+      let max = (1 << this.#bitcount) - 1;
+      if (this.#bitcount == 32)
+         max = 0xFFFFFFFF;
+      this.#textbox.setAttribute("max", max);
    }
    
    #on_labels_changed() {
@@ -179,6 +192,10 @@ label {
          this.#value &= ~node.value;
       }
       this.#internals.setFormValue(this.#value);
+      this.#textbox.value = this.#value;
+   }
+   #on_textbox_edited(e) {
+      this.value = e.target.value;
    }
 }
 customElements.define("bitset-input", BitsetInputElement);

@@ -170,7 +170,7 @@ class Charmap {
          charset.define_glyph_run(0xBB, "ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ"); // [BB, EE]
          
          // Extended characters.
-         charset.define_glyph(0x01CC, "×"); // R button
+         //charset.define_glyph(0x01CC, "×"); // R button
          charset.define_glyph_run(0x01CD, "大小゛");
       }
       this.string_terminator = this.common.glyphs.by_byte['\0'];

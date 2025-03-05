@@ -1,0 +1,16 @@
+
+//
+// This is a C language file, but avoids using the .c file extension to avoid 
+// being compiled as part of the normal project. It #includes several files that 
+// define macros of interest. Tell GCC to "compile" this file with the -E command 
+// line switch in order to have it stop after preprocessing and print the values 
+// of those macros.
+//
+
+#include "constants/flags.h"
+#include "constants/global.h"
+#include "constants/items.h"
+#include "constants/moves.h"
+#include "constants/pokemon.h"
+#include "constants/species.h"
+//#include "../data/pokemon/species_info.h"

@@ -54,7 +54,8 @@ local found_vars_of_interest = {}
 -- a macro we don't care about.
 local all_found_macros = {}
 
-function parse_macro_value(value, line)
+-- The `name` and `line` arguments are just here to aid with debugging.
+function parse_macro_value(value, name, line)
    local n = tonumber(value)
    if n then
       return n
@@ -64,9 +65,6 @@ function parse_macro_value(value, line)
       local lexed  = lex_c(value)
       local parser = c_parser:new()
       local parsed = parser:parse(lexed)
-      if parser.has_garbage then
-         print(line)
-      end
       
       local computed = 0
       local function _exec(ast_node)
@@ -82,7 +80,7 @@ function parse_macro_value(value, line)
                error("missing identifier")
             end
             if ast_node.case == "parenthetical" then
-               return _exec(ast_node.data)
+               return _exec(ast_node.data.expression)
             end
             if ast_node.case == "string-literal" then
                error("string literal (not an integral constant)")
@@ -143,20 +141,20 @@ function parse_macro_value(value, line)
          end
          if ast_node.type == "operator-tree" then
             local function _operate(node)
-               local accum = 0
-               if node.operator == "*" then
-                  accum = 1
-               end
-               for i = 1, #node.terms do
-                  local term = node.terms[i]
+               function _term_to_number(term)
                   if term.item_type == "node" then
-                     term = _operate(term)
-                  else
-                     term = term.data
-                     if type(term) == "table" then
-                        term = _exec(term)
-                     end
+                     return _operate(term)
                   end
+                  term = term.data
+                  if type(term) == "table" then
+                     term = _exec(term)
+                  end
+                  return term
+               end
+            
+               local accum = _term_to_number(node.terms[1])
+               for i = 2, #node.terms do
+                  local term = _term_to_number(node.terms[i])
                   local comparison = nil
                   if node.operator == "+" then
                      accum = accum + term
@@ -292,7 +290,7 @@ for line in data:gmatch("[^\r\n]+") do
          end
       end
       if name and value then
-         value = parse_macro_value(value, line)
+         value = parse_macro_value(value, name, line)
          all_found_macros[name] = value
          try_handle_macro(name, value)
       end
@@ -319,6 +317,20 @@ debug_print_enum("NATURE")
 --
 -- DEBUG: print flags that we know require parsing C constant expressions
 --
+function debug_print_macro(name)
+   local v = all_found_macros[name]
+   if v then
+      print(name .. " == " .. v)
+   else
+      print(name .. " == <not found or unparseable>")
+   end
+end
+debug_print_macro("TEMP_FLAGS_START")
+debug_print_macro("TRAINER_FLAGS_START") -- 0x500
+debug_print_macro("MAX_TRAINERS_COUNT")
+debug_print_macro("TRAINER_FLAGS_END")   -- 0x85F == (TRAINER_FLAGS_START + MAX_TRAINERS_COUNT - 1)
+debug_print_macro("SYSTEM_FLAGS")        -- 0x860 == (TRAINER_FLAGS_END + 1)
+debug_print_macro("DAILY_FLAGS_START")
 function debug_print_flag(name)
    local data = enums.FLAG[name]
    if data then
@@ -332,4 +344,11 @@ debug_print_flag("FLAG_TEMP_1F")
 debug_print_flag("FLAG_UNUSED_0x020")
 debug_print_flag("FLAG_REGISTERED_ROSE")
 debug_print_flag("FLAG_HIDDEN_ITEM_LAVARIDGE_TOWN_ICE_HEAL")
+debug_print_flag("FLAG_UNUSED_0x91F")
 debug_print_flag("FLAG_UNUSED_0x920")
+
+--
+-- TODO: FLAG_REGISTERED_ROSE fails because values like REMATCH_ROSE aren't 
+-- preprocessor macros; they're enumeration members (in `constants/rematch.h`).
+-- Don't suppose GCC has a flag to print *those* for us too? :\ 
+--

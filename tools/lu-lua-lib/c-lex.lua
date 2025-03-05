@@ -16,6 +16,9 @@ c_lexed_token = make_class({
       if self.type == "identifier" then
          return self.data
       end
+      if self.type == "constant" then
+         return tostring(self.data)
+      end
       if self.type == "string-literal" then
          return self.data:gsub("\\", "\\\\"):gsub('"', "\\\"")
       end
@@ -23,6 +26,12 @@ c_lexed_token = make_class({
    end
 })
 
+--[[--
+
+   A function which, given a string, lexes it into a sequence of c_lexed_token 
+   instances.
+
+--]]--
 lex_c = nil
 do
    local CHARS = {

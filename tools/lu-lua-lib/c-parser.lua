@@ -1,4 +1,33 @@
 
+--[[--
+
+   A class (though it doesn't use our new class system) that accepts 
+   (as input to its `parse` member function) a list of c_lex_token 
+   objects, and returns an AST.
+   
+   Each primary node in the AST has `type`, `case`, and `data` 
+   properties, and most of them correspond to grammar rules as named 
+   in the ISO C spec. The main exceptions are AST nodes for two-term 
+   operators like addition and division: where ISO C uses separate 
+   grammar rules for each operator (taking advantage of precedence 
+   climbing), we instead use a single `type` value ("operator-tree"). 
+   The `data` member of an operator-tree AST node is a subtree of 
+   special "operator nodes" and their terms, which may be AST nodes.
+   
+   Currently, code for attempting to execute a parsed AST (to compute 
+   an integer constant expression) is in `lu-save-js-indexer/main.lua`. 
+   We should probably update this parser to:
+   
+    - Use our class system for the parser itself.
+    
+    - Use our class system for the AST nodes.
+    
+    - Use our class system for operator nodes.
+    
+    - Define the "compute constant integer expression" code in a 
+      function in a separate file, to keep `main.lua` clean.
+
+--]]--
 c_parser = {}
 do
    c_parser.__index = c_parser

@@ -83,6 +83,11 @@ do
                return v
             end
          end
+         for k, v in pairs(clas_meta.__instance_getters) do
+            if k == key then
+               return v(inst)
+            end
+         end
          class     = clas_meta.__superclass
          clas_meta = getmetatable(class)
       until not class
@@ -267,11 +272,13 @@ do
       local constructor
       local static_members   = {}
       local instance_members = {}
+      local instance_getters = {}
       local superclass
       local calls_super = false
       if type(options) == "table" then
          constructor      = options.constructor      or nil
          instance_members = options.instance_members or {}
+         instance_getters = options.getters          or {}
          static_members   = options.static_members   or {}
          superclass       = options.superclass       or nil
          if options.calls_super then
@@ -300,6 +307,7 @@ do
          __constructor             = constructor,
          __constructor_calls_super = calls_super,
          __instance_members        = instance_members,
+         __instance_getters        = instance_getters,
          __instance_metatable      = instance_metatable,
          __superclass              = superclass,
       }

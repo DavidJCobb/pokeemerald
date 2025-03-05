@@ -1,4 +1,7 @@
 function include(path) -- because require is janky
+   --
+   -- Abuse debug info to find out where the current file is located.
+   --
    local this_path = debug.getinfo(1, 'S').source
       :sub(2)
       :gsub("^([^/])", "./%1")
@@ -8,15 +11,16 @@ function include(path) -- because require is janky
       :gsub("^([^/])", "./%1")
       :gsub("[^/]*$", "")
    local dst_file = path:gsub("([^/]*)$", "%1")
-   
+   --
+   -- Override `package.path` to tell it to look for an exact file.
+   --
    local prior = package.path
    package.path = this_path .. dst_file
-   
    local status, err = pcall(function()
       require(dst_file)
    end)
    package.path = prior
-   if err then
+   if not status then
       error(err)
    end
 end

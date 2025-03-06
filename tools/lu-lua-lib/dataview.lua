@@ -4,7 +4,7 @@
 -- the JavaScript implementation). We should investigate building a C++ 
 -- library to help Lua out here.
 dataview = make_class({
-   constructor = function(value)
+   constructor = function(self)
       self._bytes = {}
    end,
    getters = {
@@ -21,14 +21,63 @@ dataview = make_class({
             error("offset out of bounds")
          end
          if size then
-            if offset + size >= #self.value then
+            if offset + size > #self._bytes then
                error("offset out of bounds")
             end
          else
-            if offset >= #self.value then
+            if offset >= #self._bytes then
                error("offset out of bounds")
             end
          end
+      end,
+      
+      print = function(self, octets_per_row)
+         if not octets_per_row then
+            octets_per_row = 16
+         end
+         if #self._bytes == 0 then
+            io.write("00000000 | <empty>")
+         end
+         local i = 1
+         function _print_char(b)
+            local c = string.char(b)
+            if not c:match("%g") then
+               io.write(".")
+            else
+               io.write(c)
+            end
+         end
+         while i <= #self._bytes do
+            if (i - 1) % octets_per_row == 0 then
+               if i > 1 then
+                  io.write("| ")
+                  for j = (i - octets_per_row), i do
+                     _print_char(self._bytes[j])
+                  end
+                  io.write(" |\n")
+               end
+               io.write(string.format("%08X | ", i - 1))
+            end
+            io.write(string.format("%02X ", self._bytes[i]))
+            i = i + 1
+         end
+         while (i - 1) % octets_per_row ~= 0 do
+            io.write("   ")
+            i = i + 1
+         end
+         io.write("|")
+         if i > octets_per_row then
+            io.write(" ")
+            for j = (i - octets_per_row), i do
+               if j > #self._bytes then
+                  io.write(" ")
+               else
+                  _print_char(self._bytes[j])
+               end
+            end
+            io.write(" |")
+         end
+         io.write("\n")
       end,
       
       resize = function(self, size)
@@ -69,6 +118,7 @@ dataview = make_class({
       end,
       set_uint8 = function(self, offset, value)
          self:_validate_offset(offset)
+         offset = offset + 1
          if value < 0 then
             value = value + 255 -- cast from signed to unsigned
          end
@@ -80,7 +130,7 @@ dataview = make_class({
       append_uint8 = function(self, value)
          local size = #self._bytes
          self._bytes[size + 1] = 0
-         self.set_uint8(size, value)
+         self:set_uint8(size, value)
       end,
       
       get_uint16 = function(self, offset, big_endian)
@@ -88,7 +138,7 @@ dataview = make_class({
          offset = offset + 1
          local a = self._bytes[offset]
          local b = self._bytes[offset + 1]
-         if big_endian
+         if big_endian then
             return b | (a << 16)
          else
             return a | (b << 16)
@@ -117,7 +167,7 @@ dataview = make_class({
          local size = #self._bytes
          self._bytes[size + 1] = 0
          self._bytes[size + 2] = 0
-         self.set_uint16(size, value, big_endian)
+         self:set_uint16(size, value, big_endian)
       end,
       
       get_uint32 = function(self, offset, big_endian)
@@ -140,18 +190,20 @@ dataview = make_class({
       end,
       set_uint32 = function(self, offset, value, big_endian)
          self:_validate_offset(offset, 4)
+         offset = offset + 1
          
          local units = {} -- 0xAABBCCDD -> DD, CC, BB, AA
          for i = 1, 4 do
-            units[i] = (offset >> (8 * (i - 1))) & 0xFF
+            local sh = (i - 1) * 8
+            units[i] = (value >> sh) & 0xFF
          end
          if big_endian then
             for i = 1, 4 do
-               self._bytes[offset + i] = units[4 - i + 1]
+               self._bytes[offset + i - 1] = units[4 - i + 1]
             end
          else
             for i = 1, 4 do
-               self._bytes[offset + i] = units[i]
+               self._bytes[offset + i - 1] = units[i]
             end
          end
       end,
@@ -161,7 +213,47 @@ dataview = make_class({
          self._bytes[size + 2] = 0
          self._bytes[size + 3] = 0
          self._bytes[size + 4] = 0
-         self.set_uint32(size, value, big_endian)
+         self:set_uint32(size, value, big_endian)
+      end,
+      
+      append_four_cc = function(self, value)
+         local size = #self._bytes
+         for i = 1, 4 do
+            self._bytes[size + i] = value:byte(i)
+         end
+      end,
+      append_eight_cc = function(self, value)
+         local size = #self._bytes
+         for i = 1, 8 do
+            self._bytes[size + i] = value:byte(i)
+         end
+      end,
+      
+      append_length_prefixed_string = function(self, prefix_width, value, big_endian_prefix)
+         local length = #value
+         local max    = (1 << (prefix_width * 8)) - 1
+         if prefix_width < 4 and length > max then
+            error("string cannot fit in the given width")
+         end
+         do -- append prefix
+            local size = #self._bytes
+            if big_endian_prefix then
+               for i = 1, prefix_width do
+                  local n = prefix_width - i + 1
+                  local b = length >> (8 * (n - 1))
+                  self._bytes[size + i] = b
+               end
+            else
+               for i = 1, prefix_width do
+                  local b = length >> (8 * (i - 1))
+                  self._bytes[size + i] = b
+               end
+            end
+         end
+         local size = #self._bytes
+         for i = 1, length do
+            self._bytes[size + i] = value:byte(i)
+         end
       end,
    }
 })

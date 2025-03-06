@@ -47,6 +47,7 @@ local enums = {
    SPECIES = {}, -- Pokemon species
 }
 local desired_vars = {
+   "NUM_NATURES",
    "SHINY_ODDS",
    
    -- Pokemon gender ratio sentinel values
@@ -203,3 +204,94 @@ debug_print_flag("FLAG_UNUSED_0x920")
 -- preprocessor macros; they're enumeration members (in `constants/rematch.h`).
 -- Don't suppose GCC has a flag to print *those* for us too? :\ 
 --
+
+include("../lu-lua-lib/dataview.lua")
+do -- TEST: natures.dat
+   local dst_path = "../lu-save-js/formats/1/natures.dat"
+   local view     = dataview()
+   
+   function _write_subrecord(signature, version, functor)
+      signature = tostring(signature)
+      assert(#signature == 8)
+      view:append_eight_cc(signature)
+      view:append_uint32(version)
+      local size_offset = view.size
+      view:append_uint32(0) -- dummy for size
+      functor(view)
+      assert(view.size >= size_offset)
+      local subrecord_size = view.size - size_offset
+      view:set_uint32(size_offset, subrecord_size)
+   end
+   
+   _write_subrecord("ENUMDATA", 1, function(view)
+      local enumeration = enums.NATURE
+   
+      local prefix = "NATURE_"
+      local sparse = false
+      local count  = 0
+      local signed = false
+      local lowest = nil
+      local names  = {} -- array of names
+      local values = {} -- values[value] == name
+      do
+         local highest = nil
+         for k, v in pairs(enumeration) do
+            count = count + 1
+            names[count] = k
+            values[v] = k
+            if not highest or v > highest then
+               highest = v
+            end
+            if not lowest or v < lowest then
+               lowest = v
+            end
+         end
+         if lowest then
+            signed = lowest < 0
+            if highest == lowest + count - 1 then
+               for i = lowest, highest do
+                  if not values[i] then
+                     sparse = true
+                     break
+                  end
+               end
+            else
+               sparse = true
+            end
+         end
+      end
+      
+      view:append_uint8(signed and 0x01 or 0x00) -- signed ? 0x01 : 0x00
+      view:append_length_prefixed_string(1, prefix)
+      view:append_uint8(sparse and 0x00 or 0x01) -- sparse ? 0x00 : 0x01 -- "is contiguous" byte
+      if sparse then
+         view:append_uint32(count)
+         for k, v in pairs(enumeration) do -- TODO: sort by values
+            local name = k:sub(#prefix + 1)
+            view:append_length_prefixed_string(2, name)
+            view:append_uint32(v)
+         end
+      else
+         view:append_uint32(count)
+         view:append_uint32(lowest or 0)
+         for i = lowest, lowest + count - 1 do
+            local name = values[i]:sub(#prefix + 1)
+            view:append_length_prefixed_string(2, name)
+         end
+      end
+   end)
+   _write_subrecord("VARIABLS", 1, function(view)
+      function _write_variable(name, value)
+         if not value then
+            return
+         end
+         view:append_length_prefixed_string(2, name)
+         view:append_uint8((value < 0) and 0x01 or 0x00) -- value < 0 ? 1 : 0 -- "is signed" byte
+         view:append_uint32(value)
+      end
+      
+      _write_variable("NUM_NATURES", all_found_macros["NUM_NATURES"])
+   end)
+   
+   view:print()
+end

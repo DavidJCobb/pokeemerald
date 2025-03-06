@@ -1,0 +1,4 @@
+# Now that the source is in-tree, exclude the compiled plug-in from the repo.
+# We want to ensure that anyone who clones this repo compiles the plug-in from 
+# scratch for whatever version of devkitARM they have installed.
+lu_bitpack.so

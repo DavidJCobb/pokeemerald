@@ -38,14 +38,20 @@ include("../lu-lua-lib/c-ast.lua")
 include("../lu-lua-lib/c-parser.lua")
 include("../lu-lua-lib/c-exec-integer-constant-expression.lua")
 
-local macros = {}
+include("enumeration.lua")
 
-local enums = {
-   FLAG    = {}, -- overworld script flags
-   GROWTH  = {}, -- EXP growth rates
-   NATURE  = {}, -- Pokemon natures
-   SPECIES = {}, -- Pokemon species
-}
+local enums = {}
+do
+   local NAMES = {
+      "FLAG",    -- overworld script flags
+      "GROWTH",  -- EXP growth rates
+      "NATURE",  -- Pokemon natures
+      "SPECIES", -- Pokemon species
+   }
+   for _, name in ipairs(NAMES) do
+      enums[name] = enumeration(name)
+   end
+end
 local desired_vars = {
    "NUM_NATURES",
    "SHINY_ODDS",
@@ -93,7 +99,7 @@ function try_handle_enumeration_member(name, value)
    end
    for k, v in pairs(enums) do
       if name:startswith(k .. "_") then
-         v[name] = value
+         v:set(name, value)
          return true
       end
    end
@@ -159,13 +165,10 @@ end
 -- DEBUG: print some of the smaller enums
 --
 function debug_print_enum(name)
-   print(name .. ":")
-   for k, v in pairs(enums[name]) do
-      print("   " .. k .. " == " .. v)
-   end
+   enums[name]:print()
 end
-debug_print_enum("GROWTH")
-debug_print_enum("NATURE")
+enums.GROWTH:print()
+enums.NATURE:print()
 --
 -- DEBUG: print flags that we know require parsing C constant expressions
 --
@@ -184,7 +187,7 @@ debug_print_macro("TRAINER_FLAGS_END")   -- 0x85F == (TRAINER_FLAGS_START + MAX_
 debug_print_macro("SYSTEM_FLAGS")        -- 0x860 == (TRAINER_FLAGS_END + 1)
 debug_print_macro("DAILY_FLAGS_START")
 function debug_print_flag(name)
-   local data = enums.FLAG[name]
+   local data = enums.FLAG:get(name)
    if data then
       print(name .. " == " .. data)
    else
@@ -225,58 +228,55 @@ do -- TEST: natures.dat
    
    _write_subrecord("ENUMDATA", 1, function(view)
       local enumeration = enums.NATURE
-   
-      local prefix = "NATURE_"
-      local sparse = false
-      local count  = 0
-      local signed = false
-      local lowest = nil
-      local names  = {} -- array of names
-      local values = {} -- values[value] == name
+      enumeration:update_cache()
+      local signed = enumeration.cache.lowest < 0
+      local prefix = enumeration.name .. "_"
+      local sorted = enumeration:to_sorted_pairs()
+      
       do
-         local highest = nil
-         for k, v in pairs(enumeration) do
-            count = count + 1
-            names[count] = k
-            values[v] = k
-            if not highest or v > highest then
-               highest = v
-            end
-            if not lowest or v < lowest then
-               lowest = v
-            end
+         local flags = 0
+         if signed then
+            flags = flags | 1 -- FLAG: Enum values should be interpreted as signed.
          end
-         if lowest then
-            signed = lowest < 0
-            if highest == lowest + count - 1 then
-               for i = lowest, highest do
-                  if not values[i] then
-                     sparse = true
-                     break
-                  end
-               end
-            else
-               sparse = true
-            end
+         if enumeration.cache.sparse then
+            flags = flags | 2 -- FLAG: Enum is sparse.
+         end
+         if enumeration.cache.lowest ~= 0 then
+            flags = flags | 3 -- FLAG: Enum's lowest value is non-zero.
+         end
+         view:append_uint8(flags)
+      end
+      view:append_length_prefixed_string(1, prefix)
+      view:append_uint32(enumeration.cache.count)
+      
+      local names_start = nil
+      if enumeration.cache.sparse then
+         names_start = view.size
+         view:append_uint32(0)
+      else
+         if enumeration.cache.lowest ~= 0 then
+            view:append_uint32(enumeration.cache.lowest or 0)
          end
       end
-      
-      view:append_uint8(signed and 0x01 or 0x00) -- signed ? 0x01 : 0x00
-      view:append_length_prefixed_string(1, prefix)
-      view:append_uint8(sparse and 0x00 or 0x01) -- sparse ? 0x00 : 0x01 -- "is contiguous" byte
-      if sparse then
-         view:append_uint32(count)
-         for k, v in pairs(enumeration) do -- TODO: sort by values
-            local name = k:sub(#prefix + 1)
-            view:append_length_prefixed_string(2, name)
-            view:append_uint32(v)
+      do -- Serialize enum member names as a block
+         local first = true
+         for _, pair in ipairs(sorted) do
+            if first then
+               first = false
+            else
+               view:append_uint8(0x00) -- separator
+            end
+            local name = pair[1]:sub(#prefix + 1)
+            view:append_raw_string(name)
          end
-      else
-         view:append_uint32(count)
-         view:append_uint32(lowest or 0)
-         for i = lowest, lowest + count - 1 do
-            local name = values[i]:sub(#prefix + 1)
-            view:append_length_prefixed_string(2, name)
+      end
+      if enumeration.cache.sparse then
+         view:set_uint32(name_start, view.size - name_start)
+         --
+         -- Serialize enum values as a block
+         --
+         for _, pair in ipairs(sorted) do
+            view:append_uint32(pair[2])
          end
       end
    end)

@@ -250,7 +250,12 @@ dataview = make_class({
                end
             end
          end
-         local size = #self._bytes
+         self:append_raw_string(value)
+      end,
+      
+      append_raw_string = function(self, value)
+         local size   = #self._bytes
+         local length = #value
          for i = 1, length do
             self._bytes[size + i] = value:byte(i)
          end

@@ -100,6 +100,9 @@ dataview = make_class({
          local AVOID_LUA_STRING_INTERNING = true
       
          local file = io.open(path, "wb")
+         if not file then
+            error("unable to save dataview: failed to open file: " .. tostring(path))
+         end
          if AVOID_LUA_STRING_INTERNING then
             for i = 1, #self._bytes do
                local s = string.char(self._bytes[i])

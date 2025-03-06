@@ -16,3 +16,4 @@
 #include "constants/pokemon.h"
 #include "constants/species.h"
 //#include "../data/pokemon/species_info.h"
+#include "./savedata-serialization-version.h" // for SAVEDATA_SERIALIZATION_VERSION

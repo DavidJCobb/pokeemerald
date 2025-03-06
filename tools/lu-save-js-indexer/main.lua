@@ -45,14 +45,19 @@ do
    local NAMES = {
       "FLAG",    -- overworld script flags
       "GROWTH",  -- EXP growth rates
+      "ITEM",    -- items
+      "MOVE",    -- battle moves
       "NATURE",  -- Pokemon natures
       "SPECIES", -- Pokemon species
+      "TRAINER", -- trainer rematch flags
    }
    for _, name in ipairs(NAMES) do
       enums[name] = enumeration(name)
    end
 end
 local desired_vars = {
+   "SAVEDATA_SERIALIZATION_VERSION",
+
    "NUM_NATURES",
    "SHINY_ODDS",
    
@@ -60,6 +65,15 @@ local desired_vars = {
    "MON_MALE",
    "MON_FEMALE",
    "MON_GENDERLESS",
+   
+   -- Flag info
+   "TEMP_FLAGS_START",
+   "TEMP_FLAGS_END", -- actually "last", not "end"
+   "TRAINER_FLAGS_START",
+   "TRAINER_FLAGS_END", -- actually "last", not "end"
+   "TRAINERS_COUNT",
+   "DAILY_FLAGS_START",
+   "DAILY_FLAGS_END", -- actually "last", not "end"
 }
 local found_vars_of_interest = {}
 
@@ -94,9 +108,29 @@ function parse_macro_value(value, name, line)
 end
 
 function try_handle_enumeration_member(name, value)
+   --
+   -- Exclude a few things from the enums.
+   --
    if name:startswith("SPECIES_UNOWN_") then
       return true
    end
+   if name == "MOVE_UNAVAILABLE" then
+      return true
+   end
+   if name:startswith("FLAG_") then
+      --
+      -- Exclude "special flags," as these aren't actually present in 
+      -- the savegame.
+      --
+      local special = all_found_macros["SPECIAL_FLAGS_START"]
+      if special and value >= special then
+         return true
+      end
+   end
+   --
+   -- Check if this name matches any enum and if so, remember the 
+   -- name/value pair.
+   --
    for k, v in pairs(enums) do
       if name:startswith(k .. "_") then
          v:set(name, value)
@@ -149,8 +183,10 @@ for line in data:gmatch("[^\r\n]+") do
       end
       if name and value then
          value = parse_macro_value(value, name, line)
-         all_found_macros[name] = value
-         try_handle_macro(name, value)
+         if value then
+            all_found_macros[name] = value
+            try_handle_macro(name, value)
+         end
       end
    end
 end
@@ -208,27 +244,39 @@ debug_print_flag("FLAG_UNUSED_0x920")
 -- Don't suppose GCC has a flag to print *those* for us too? :\ 
 --
 
+if not found_vars_of_interest["SAVEDATA_SERIALIZATION_VERSION"] then
+   error("Unable to find the SAVEDATA_SERIALIZATION_VERSION macro, or its value could not be resolved to an integer constant.")
+end
+
 include("../lu-lua-lib/dataview.lua")
-do -- TEST: natures.dat
-   local dst_path = "../lu-save-js/formats/1/natures.dat"
-   local view     = dataview()
-   
-   function _write_subrecord(signature, version, functor)
-      signature = tostring(signature)
-      assert(#signature == 8)
-      view:append_eight_cc(signature)
-      view:append_uint32(version)
-      local size_offset = view.size
-      view:append_uint32(0) -- dummy for size
-      functor(view)
-      assert(view.size >= size_offset)
-      local subrecord_size = view.size - size_offset
-      view:set_uint32(size_offset, subrecord_size)
-   end
-   
-   _write_subrecord("ENUMDATA", 1, function(view)
-      local enumeration = enums.NATURE
-      enumeration:update_cache()
+
+local this_dir = (function()
+   return debug.getinfo(1, 'S').source
+      :sub(2)
+      :gsub("^([^/])", "./%1")
+      :gsub("[^/]*$", "")
+end)()
+
+local format_version = found_vars_of_interest["SAVEDATA_SERIALIZATION_VERSION"]
+local base_dir       = this_dir .. "/" .. "../lu-save-js/formats/" .. tostring(format_version) .. "/"
+
+function write_subrecord(view, signature, version, functor)
+   assert(dataview.is(view), "write_subrecord must be given a dataview to write to")
+   signature = tostring(signature)
+   assert(#signature == 8, "write_subrecord must be given an eight-CC signature")
+   view:append_eight_cc(signature)
+   view:append_uint32(version)
+   local size_offset = view.size
+   view:append_uint32(0) -- dummy for size
+   functor(view)
+   assert(view.size >= size_offset, "your subrecord-writing functor shouldn't rewind the dataview into or before the subrecord header")
+   local subrecord_size = view.size - size_offset
+   view:set_uint32(size_offset, subrecord_size)
+end
+
+function write_ENUMDATA_subrecord(view, enumeration)
+   enumeration:update_cache()
+   write_subrecord(view, "ENUMDATA", 1, function(view)
       local signed = enumeration.cache.lowest < 0
       local prefix = enumeration.name .. "_"
       local sorted = enumeration:to_sorted_pairs()
@@ -271,7 +319,7 @@ do -- TEST: natures.dat
          end
       end
       if enumeration.cache.sparse then
-         view:set_uint32(name_start, view.size - name_start)
+         view:set_uint32(names_start, view.size - names_start)
          --
          -- Serialize enum values as a block
          --
@@ -280,18 +328,89 @@ do -- TEST: natures.dat
          end
       end
    end)
-   _write_subrecord("VARIABLS", 1, function(view)
-      function _write_variable(name, value)
-         if not value then
-            return
-         end
-         view:append_length_prefixed_string(2, name)
-         view:append_uint8((value < 0) and 0x01 or 0x00) -- value < 0 ? 1 : 0 -- "is signed" byte
-         view:append_uint32(value)
+end
+function write_VARIABLS_subrecord(view, names)
+   function write_variable(name, value)
+      if not value then
+         return
       end
-      
-      _write_variable("NUM_NATURES", all_found_macros["NUM_NATURES"])
+      view:append_length_prefixed_string(2, name)
+      view:append_uint8((value < 0) and 0x01 or 0x00) -- value < 0 ? 1 : 0 -- "is signed" byte
+      view:append_uint32(value)
+   end
+   write_subrecord(view, "VARIABLS", 1, function()
+      for _, v in ipairs(names) do
+         write_variable(v, found_vars_of_interest[v])
+      end
    end)
+end
+
+--
+-- Output files:
+--
+
+do -- flags.dat
+   local dst_path = base_dir .. "flags.dat"
+   local view     = dataview()
    
-   view:print()
+   write_ENUMDATA_subrecord(view, enums.FLAG)
+   write_ENUMDATA_subrecord(view, enums.TRAINER)
+   write_VARIABLS_subrecord(view, {
+      "TEMP_FLAGS_START",
+      "TEMP_FLAGS_END", -- actually "last", not "end"
+      "TRAINER_FLAGS_START",
+      "TRAINER_FLAGS_END", -- actually "last", not "end"
+      "TRAINERS_COUNT",
+      "DAILY_FLAGS_START",
+      "DAILY_FLAGS_END", -- actually "last", not "end"
+   })
+   
+   view:save_to_file(dst_path)
+end
+do -- items.dat
+   local dst_path = base_dir .. "items.dat"
+   local view     = dataview()
+   
+   write_ENUMDATA_subrecord(view, enums.ITEM)
+   
+   view:save_to_file(dst_path)
+end
+do -- misc.dat
+   local dst_path = base_dir .. "misc.dat"
+   local view     = dataview()
+   
+   write_ENUMDATA_subrecord(view, enums.GROWTH)
+   write_VARIABLS_subrecord(view, {
+      "MON_MALE",
+      "MON_FEMALE",
+      "MON_GENDERLESS",
+      "SHINY_ODDS",
+   })
+   
+   view:save_to_file(dst_path)
+end
+do -- moves.dat
+   local dst_path = base_dir .. "moves.dat"
+   local view     = dataview()
+   
+   write_ENUMDATA_subrecord(view, enums.MOVE)
+   
+   view:save_to_file(dst_path)
+end
+do -- natures.dat
+   local dst_path = base_dir .. "natures.dat"
+   local view     = dataview()
+   
+   write_ENUMDATA_subrecord(view, enums.NATURE)
+   write_VARIABLS_subrecord(view, { "NUM_NATURES" })
+   
+   view:save_to_file(dst_path)
+end
+do -- species.dat
+   local dst_path = base_dir .. "species.dat"
+   local view     = dataview()
+   
+   write_ENUMDATA_subrecord(view, enums.SPECIES)
+   
+   view:save_to_file(dst_path)
 end

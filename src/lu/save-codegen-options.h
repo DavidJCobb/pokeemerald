@@ -1,5 +1,5 @@
 
-#define SAVEDATA_SERIALIZATION_VERSION 1
+#include "./savedata-serialization-version.h"
 
 #include "lu/bitstreams.h"
 #include "lu/bitpack_options.h"

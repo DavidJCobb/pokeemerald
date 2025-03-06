@@ -30,11 +30,17 @@ do -- methods
       }
    end
 
+   -- Returns an array of name/value pairs. If an enum value 
+   -- has multiple names, only the first we encounter is used.
    function instance_members:to_sorted_pairs()
       local list = {}
+      local seen = {}
       for k, v in pairs(self.data) do
-         local pair = { k, v }
-         list[#list + 1] = pair
+         if not seen[v] then
+            seen[v] = true
+            local pair = { k, v }
+            list[#list + 1] = pair
+         end
       end
       table.sort(list, function(a, b)
          return a[2] < b[2]

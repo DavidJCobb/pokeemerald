@@ -34,7 +34,9 @@ include("../lu-lua-lib/stdext.lua")
 local data = shell:run_and_read('$DEVKITARM/bin/arm-none-eabi-gcc -Iinclude -nostdinc -E -dD -DMODERN=1 -x c "src/lu/preprocessor-macros-of-interest.txt"')
 
 include("../lu-lua-lib/c-lex.lua")
+include("../lu-lua-lib/c-ast.lua")
 include("../lu-lua-lib/c-parser.lua")
+include("../lu-lua-lib/c-exec-integer-constant-expression.lua")
 
 local macros = {}
 
@@ -67,164 +69,9 @@ function parse_macro_value(value, name, line)
    
    local success, err = pcall(function()
       local lexed  = lex_c(value)
-      local parser = c_parser:new()
+      local parser = c_parser()
       local parsed = parser:parse(lexed)
-      
-      local computed = 0
-      local function _exec(ast_node)
-         if ast_node.type == "primary-expression" then
-            if ast_node.case == "constant" then
-               return ast_node.data
-            end
-            if ast_node.case == "identifier" then
-               local iv = all_found_macros[ast_node.data]
-               if iv then
-                  return iv
-               end
-               error("missing identifier")
-            end
-            if ast_node.case == "parenthetical" then
-               return _exec(ast_node.data.expression)
-            end
-            if ast_node.case == "string-literal" then
-               error("string literal (not an integral constant)")
-            end
-            error("unhandled "..ast_node.type.." case")
-         end
-         if ast_node.type == "postfix-expression" then
-            if ast_node.case == "compound-literal" then
-               error("not a valid constant expression (bare compound literal)")
-            end
-            if ast_node.case == "array-subscript" then
-               error("not a valid constant expression (array subscript)")
-            end
-            if ast_node.case == "call" then
-               error("not a valid constant expression (function call)")
-            end
-            if ast_node.case == "dereferencing-member-access" then
-               error("not a valid constant expression (dereference and member access)")
-            end
-            if ast_node.case == "member-access" then
-               error("not a valid constant expression (member access)")
-            end
-            if ast_node.case == "operator" then
-               error("not a valid constant expression (increment/decrement operator)")
-            end
-            error("unhandled "..ast_node.type.." case")
-         end
-         if ast_node.type == "unary-expression" then
-            if ast_node.case == "sizeof-type" or ast_node.case == "sizeof-expression" then
-               error("not a computable constant expression (we can't process sizeof here)")
-            end
-            if ast_node.case == "operator" then
-               local op = ast_node.data.operator
-               if op == "&" or op == "*" or op == "++" or op == "--" then
-                  error("not a valid constant expression (unary/prefix operator " .. op .. ")")
-               end
-               if op == "!" or op == "-" or op == "+" or op == "~" then
-                  local subject = _exec(ast_node.data.subject)
-                  if op == "!" then
-                     return subject == 0
-                  end
-                  if op == "-" then
-                     return -tonumber(subject)
-                  end
-                  if op == "+" then
-                     return tonumber(subject)
-                  end
-                  if op == "~" then
-                     return ~tonumber(subject)
-                  end
-               end
-               error("unhandled unary operator")
-            end
-            error("unhandled "..ast_node.type.." case")
-         end
-         if ast_node.type == "cast-expression" then
-            error("not a valid constant expression (static cast)")
-         end
-         if ast_node.type == "operator-tree" then
-            local function _operate(node)
-               function _term_to_number(term)
-                  if term.item_type == "node" then
-                     return _operate(term)
-                  end
-                  term = term.data
-                  if type(term) == "table" then
-                     term = _exec(term)
-                  end
-                  return term
-               end
-            
-               local accum = _term_to_number(node.terms[1])
-               for i = 2, #node.terms do
-                  local term = _term_to_number(node.terms[i])
-                  local comparison = nil
-                  if node.operator == "+" then
-                     accum = accum + term
-                  elseif node.operator == "-" then
-                     accum = accum - term
-                  elseif node.operator == "*" then
-                     accum = accum * term
-                  elseif node.operator == "/" then
-                     accum = accum / term
-                  elseif node.operator == "%" then
-                     accum = accum % term
-                  elseif node.operator == "<<" then
-                     accum = accum << term
-                  elseif node.operator == ">>" then
-                     accum = accum >> term
-                  elseif node.operator == "|" then
-                     accum = accum | term
-                  elseif node.operator == "&" then
-                     accum = accum & term
-                  elseif node.operator == "^" then
-                     accum = accum ~ term
-                  elseif node.operator == "==" then
-                     comparison = accum == term
-                  elseif node.operator == "!=" then
-                     comparison = accum ~= term
-                  elseif node.operator == "<" then
-                     comparison = accum < term
-                  elseif node.operator == ">" then
-                     comparison = accum > term
-                  elseif node.operator == "<=" then
-                     comparison = accum <= term
-                  elseif node.operator == ">=" then
-                     comparison = accum >= term
-                  elseif node.operator == "&&" then
-                     comparison = accum ~= 0 and term ~= 0
-                  elseif node.operator == "||" then
-                     comparison = accum ~= 0 or term ~= 0
-                  end
-                  if comparison ~= nil then
-                     accum = 0
-                     if comparison then
-                        accum = 1
-                     end
-                  end
-               end
-               return accum
-            end
-            return _operate(ast_node.data)
-         end
-         if ast_node.type == "conditional-expresion" then
-            local cond = _exec(ast_node.data.condition)
-            if cond and cond ~= 0 then
-               return _exec(ast_node.data.if_true)
-            else
-               return _exec(ast_node.data.if_false)
-            end
-         end
-         if ast_node.type == "assignment-expression" then
-            error("not a valid constant expression (assignment)")
-         end
-         if ast_node.type == "comma-expression" then
-            return _exec(ast_node.data.retained)
-         end
-         error("unhandled AST node type")
-      end
-      value = _exec(parsed)
+      value = try_execute_c_constant_integer_expression(parsed, all_found_macros)
    end)
    if not success then
       return nil

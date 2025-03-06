@@ -13,90 +13,70 @@
    climbing), we instead use a single `type` value ("operator-tree"). 
    The `data` member of an operator-tree AST node is a subtree of 
    special "operator nodes" and their terms, which may be AST nodes.
-   
-   Currently, code for attempting to execute a parsed AST (to compute 
-   an integer constant expression) is in `lu-save-js-indexer/main.lua`. 
-   We should probably update this parser to:
-   
-    - Use our class system for the parser itself.
-    
-    - Use our class system for the AST nodes.
-    
-    - Use our class system for operator nodes.
-    
-    - Define the "compute constant integer expression" code in a 
-      function in a separate file, to keep `main.lua` clean.
 
 --]]--
-c_parser = {}
+
+local instance_methods = {}
+c_parser = make_class({
+   instance_members = instance_methods,
+})
 do
-   c_parser.__index = c_parser
-   function c_parser:new()
-      if self ~= c_parser then
-         error("c_parser:new() is a static method and cannot be invoked on instances.")
-      end
-      local instance = setmetatable({}, self)
-      instance.tokens = nil
-      instance.i      = nil
-      return instance
-   end
-   
-   function c_parser:_require_instance()
-      if self == c_parser then
-         error("Instance methods must be invoked using ':' on an instance.")
-      end
-   end
-   
-   --
-   -- Instance methods
-   --
-   
-   function c_parser:parse(tokens)
-      self:_require_instance()
+   function instance_methods:parse(tokens)
       self.tokens = tokens
       self.index  = 1
-      
-      local result = self:parse_expression()
+      local result = self:_parse_expression()
       if self.index >= #self.tokens + 1 then
          self.has_garbage = false
          return result
       end
       error("garbage content at the end")
    end
-   
-   function c_parser:peek_token(n)
+
+   function instance_methods:_peek_token(n)
       if not n then
          n = 0
       end
       return self.tokens[self.index + n]
    end
-   function c_parser:consume_token()
+   function instance_methods:_consume_token()
       local token = self.tokens[self.index]
       self.index = self.index + 1
       return token
    end
+   function instance_methods:_consume_symbol(desired)
+      local token = self.tokens[self.index]
+      if token and token:is_symbol(desired) then
+         self.index = self.index + 1
+         return true
+      end
+      return false
+   end
    
-   function c_parser:advance(n)
+   function instance_methods:_advance(n)
       if not n then
          n = 1
       end
       self.index = self.index + n
    end
-   function c_parser:rewind(n)
+   function instance_methods:_rewind(n)
       if not n then
          n = 1
       end
       self.index = self.index - n
    end
-   function c_parser:error(text, detail)
+   function instance_methods:_error(text, detail)
       if detail and stringify_table then
          text = text .. "\n" .. stringify_table(detail)
       end
       error("C parse error at " .. tostring(self.index) .. ": " .. text)
    end
    
-   function c_parser:parse_typename()
-      local t = self:peek_token()
+   --
+   -- AST parsing
+   --
+   
+   function instance_methods:_parse_typename()
+      local t = self:_peek_token()
       if not t then
          return nil
       end
@@ -106,194 +86,137 @@ do
       return nil
    end
    
-   function c_parser:parse_primary_expression()
-      local t = self:peek_token()
+   function instance_methods:_parse_primary_expression()
+      local t = self:_peek_token()
       if not t then
          return nil
       end
       if t.type == "identifier" or t.type == "constant" or t.type == "string-literal" then
-         self:advance()
-         return {
-            type = "primary-expression",
-            case = t.type,
-            data = t.data
-         }
+         self:_advance()
+         return c_ast.primary_expression(t.type, t.data)
       end
-      if t.type == "token" and t.data == "(" then
-         self:advance()
-         local info = self:parse_expression()
+      if t:is_symbol("(") then
+         self:_advance()
+         local info = self:_parse_expression()
          if not info then
-            self:rewind()
+            self:_rewind()
             return nil
          end
-         t = self:peek_token()
-         if t and t.type == "token" and t.data == ")" then
-            self:advance()
-            return {
-               type = "primary-expression",
-               case = "parenthetical",
-               data = {
-                  expression = info
-               }
-            }
+         t = self:_peek_token()
+         if t and t:is_symbol(")") then
+            self:_advance()
+            return c_ast.primary_expression("parenthetical", { expression = info })
          end
-         self:rewind()
+         self:_rewind()
       end
       return nil
    end
-   function c_parser:_parse_compound_literal()
-      local t = self:peek_token()
-      if not t or t.type ~= "token" or t.data ~= "(" then
+   function instance_methods:_parse_compound_literal()
+      if not self:_consume_symbol("(") then
          return nil
       end
       
-      self:advance()
-      local typename = self:parse_typename()
+      local typename = self:_parse_typename()
       if not typename then
-         self:rewind()
+         self:_rewind()
          return nil
       end
       
-      local b = self:peek_token(0)
-      local c = self:peek_token(1)
-      if (not b or b.type ~= "token" ~= b.data ~= ")")
-      or (not c or c.type ~= "token" ~= c.data ~= "{") then
+      if not self:_consume_symbol(")") then
          return nil
       end
-      self:advance(2)
-      local initializer = self:parse_initializer_list()
+      if not self:_consume_symbol("{") then
+         self:_rewind()
+         return nil
+      end
+      local initializer = self:_parse_initializer_list()
       if not initializer then
-         self:rewind(2)
+         self:_rewind(2)
          return nil
       end
-      
-      local d = self:consume_token()
-      if d and d.type == "token" and d.data == "," then
-         d = self:consume_token()
+      self:_consume_symbol(",") -- swallow trailing comma
+      if not self:_consume_symbol("}") then
+         self:_error("Expected the end of a compound literal's initializer list.")
       end
-      if not d or d.type ~= "token" or d.data ~= "}" then
-         self:error("Expected the end of a compound literal's initializer list.")
-      end
-      return {
-         type = "postfix-expression",
-         case = "compound-literal",
-         data = {
-            typename    = typename,
-            initializer = initializer
-         }
-      }
+      return c_ast.compound_literal(typename, initializer)
    end
-   function c_parser:parse_postfix_expression()
-      local info = self:parse_primary_expression()
+   function instance_methods:_parse_postfix_expression()
+      local info = self:_parse_primary_expression()
       if not info then
          info = self:_parse_compound_literal()
          if not info then
             return nil
          end
       end
-      local t = self:peek_token()
+      local t = self:_peek_token()
       if not t or t.type ~= "token" then
          return info
       end
       if t.data == "[" then -- array subscript
-         self:advance()
+         self:_advance()
          local array = info
-         local index = self:parse_expression()
+         local index = self:_parse_expression()
          if not index then
-            self:rewind()
+            self:_rewind()
             return info
          end
-         local u = self:consume_token()
-         if not u or u.type ~= "token" or u.data ~= "]" then
-            self:error("Expected the end of an array subscript.")
+         if not self:_consume_symbol("]") then
+            self:_error("Expected the end of an array subscript.")
          end
-         return {
-            type = "postfix-expression",
-            case = "array-subscript",
-            data = {
-               array = array,
-               index = index
-            }
-         }
+         return c_ast.array_subscript_expression(array, index)
       elseif t.data == "(" then -- function call
-         self:advance()
+         self:_advance()
          local arguments = {}
          local arg = nil
          repeat
-            arg = self:parse_assignment_expression()
+            arg = self:_parse_assignment_expression()
             if arg then
                arguments[#arguments + 1] = arg
-               local t = self:peek_token()
-               if t and t.type == "token" and t.data == "," then
-                  self:consume_token()
-               else
+               if not self:_consume_symbol(",") then
                   break
                end
             end
          until not arg
-         local t = self:consume_token()
-         if not t or t.type ~= "token" or t.data ~= ")" then
-            self:error("Expected end of argument list.")
+         if not self:_consume_symbol(")") then
+            self:_error("Expected end of argument list.")
          end
-         return {
-            type = "postfix-expression",
-            case = "call",
-            data = {
-               func      = info,
-               arguments = arguments
-            }
-         }
+         return c_ast.call_expression(info, arguments)
       elseif t.data == "." or t.data == "->" then
-         self:advance()
-         local member = self:consume_token()
+         self:_advance()
+         local member = self:_consume_token()
          if not member or member.type ~= "identifier" then
-            self:error("Expected an identifier.")
+            self:_error("Expected an identifier.")
          end
          local case = "member-access"
          if t.data == "->" then
             case = "dereferencing-member-access"
          end
-         return {
-            type = "postfix-expression",
-            case = case,
-            data = {
-               struct = info,
-               member = member.data
-            }
-         }
+         return c_ast.postfix_expression(case, {
+            struct = info,
+            member = member.data
+         })
       elseif t.data == "++" or t.data == "--" then
-         self:consume_token()
-         return {
-            type = "postfix-expression",
-            case = "operator",
-            data = {
-               subject  = info,
-               operator = t.data
-            }
-         }
+         self:_consume_token()
+         return c_ast.postfix_expression("operator", {
+            subject  = info,
+            operator = t.data
+         })
       end
       return info
    end
-   function c_parser:parse_unary_expression()
-      local info = self:parse_postfix_expression()
+   function instance_methods:_parse_unary_expression()
+      local info = self:_parse_postfix_expression()
       if info then
          return info
       end
-      local t = self:peek_token()
+      local t = self:_peek_token()
       if not t then
-         self:error("Unexpected end of stream.")
+         self:_error("Unexpected end of stream.")
       end
       if t.type == "token" then
          if t.data == "++" or t.data == "--" then
-            self:advance()
-            return {
-               type = "unary-expression",
-               case = "operator",
-               data = {
-                  subject  = info,
-                  operator = t.data
-               }
-            }
+            self:_advance()
+            return c_ast.unary_operator_expression(info, t.data)
          end
          local OPERATORS = { "&", "*", "+", "-", "~", "!" }
          local found     = false
@@ -304,86 +227,58 @@ do
             end
          end
          if found then
-            self:advance()
-            local expr = self:parse_cast_expression()
+            self:_advance()
+            local expr = self:_parse_cast_expression()
             if not expr then
-               self:error("Expected an operand for a unary operator.")
+               self:_error("Expected an operand for a unary operator.")
             end
-            return {
-               type = "unary-expression",
-               case = "operator",
-               data = {
-                  subject  = info,
-                  operator = t.data
-               }
-            }
+            return c_ast.unary_operator_expression(expr, t.data)
          end
          return nil
       end
       if t.type == "identifier" then
          if t.data ~= "sizeof" then
-            self:error("Unexpected identifier.", { prior = { info, t } })
+            self:_error("Unexpected identifier.", { prior = { info, t } })
          end
-         self:advance()
-         local u = self:peek_token()
-         if u and u.type == "token" and u.data == "(" then
-            self:advance()
-            local typename = self:parse_typename()
+         self:_advance()
+         if self:_consume_symbol("(") then
+            local typename = self:_parse_typename()
             if not typename then
-               self:error("Expected typename for sizeof operator.")
+               self:_error("Expected typename for sizeof operator.")
             end
-            u = self:consume_token()
-            if not u or u.type ~= "token" or u.data ~= ")" then
-               self:error("Unterminated sizeof-typename expression.")
+            if not self:_consume_symbol(")") then
+               self:_error("Unterminated sizeof-typename expression.")
             end
-            return {
-               type = "unary-expression",
-               case = "sizeof-typename",
-               data = typename
-            }
+            return c_ast.sizeof_expression(true, typename)
          end
-         local info = self:parse_unary_expression()
+         local info = self:_parse_unary_expression()
          if not info then
-            self:error("Expected operand for sizeof operator.")
+            self:_error("Expected operand for sizeof operator.")
          end
-         return {
-            type = "unary-expression",
-            case = "sizeof-expression",
-            data = info
-         }
+         return c_ast.sizeof_expression(false, info)
       end
       return nil
    end
-   function c_parser:parse_cast_expression()
-      local info = self:parse_unary_expression()
+   function instance_methods:_parse_cast_expression()
+      local info = self:_parse_unary_expression()
       if info then
          return info
       end
-      local t = self:peek_token()
-      if not t or t.type ~= "token" or t.data ~= "(" then
+      if not self:_consume_symbol("(") then
          return nil
       end
-      self:consume_token()
-      local typename = self:parse_typename()
+      local typename = self:_parse_typename()
       if not typename then
-         self:error("Expected typename for cast operator.")
+         self:_error("Expected typename for cast operator.")
       end
-      t = self:consume_token()
-      if not t or t.type ~= "token" or t.data ~= ")" then
-         self:error("Expected terminating parenthesis for cast operator.")
+      if not self:_consume_symbol(")") then
+         self:_error("Expected terminating parenthesis for cast operator.")
       end
-      info = self:parse_cast_expression()
+      info = self:_parse_cast_expression()
       if not info then
-         self:error("Expected operand for cast operator.")
+         self:_error("Expected operand for cast operator.")
       end
-      return {
-         type = "cast-expression",
-         case = "cast",
-         data = {
-            typename = typename,
-            subject  = info
-         }
-      }
+      return c_ast.cast_expression(typename, info)
    end
    
    --
@@ -403,8 +298,8 @@ do
       { "&&" },
       { "||" },
    }
-   function c_parser:parse_two_term_expression()
-      local term = self:parse_cast_expression()
+   function instance_methods:_parse_two_term_expression()
+      local term = self:_parse_cast_expression()
       if not term then
          return nil
       end
@@ -413,7 +308,7 @@ do
       
       local t = nil
       repeat
-         t = self:peek_token()
+         t = self:_peek_token()
          if not t or t.type ~= "token" then
             break
          end
@@ -434,9 +329,9 @@ do
          if not operator then
             break
          end
-         self:advance()
+         self:_advance()
          
-         local rhs = self:parse_cast_expression()
+         local rhs = self:_parse_cast_expression()
          if not rhs then
             error("Expected righthand operand for operator " .. operator .. ".")
          end
@@ -528,51 +423,37 @@ do
       end
       
       local root = coalesced_shunting_yard(flat)
-      return {
-         type = "operator-tree",
-         case = nil,
-         data = root
-      }
+      return c_ast.operator_tree_expression(root)
    end
    
-   function c_parser:parse_conditional_expression()
-      local condition = self:parse_two_term_expression()
+   function instance_methods:_parse_conditional_expression()
+      local condition = self:_parse_two_term_expression()
       if not condition then
          return nil
       end
-      local t = self:peek_token()
-      if not (t and t.type == "token" and t.data == "?") then
+      if not self:_consume_symbol("?") then
          return condition
       end
-      self:advance()
-      local if_true = self:parse_expression()
-      t = self:consume_token()
-      if not (t and t.type == "token" and t.data == ":") then
-         error("Expected separator between the branches of a ternary.")
+      self:_advance()
+      local if_true = self:_parse_expression()
+      if not self:_consume_symbol(":") then
+         self:_error("Expected separator between the branches of a ternary.")
       end
-      local if_false = self:parse_conditional_expression()
+      local if_false = self:_parse_conditional_expression()
       if not if_false then
-         error("Expected false-branch for a ternary.")
+         self:_error("Expected false-branch for a ternary.")
       end
-      return {
-         type = "conditional-expresion",
-         case = nil,
-         data = {
-            condition = condition,
-            if_true   = if_true,
-            if_false  = if_false
-         }
-      }
+      return c_ast.conditional_expression(condition, if_true, if_false)
    end
-   function c_parser:parse_assignment_expression()
-      local ternary = self:parse_conditional_expression()
+   function instance_methods:_parse_assignment_expression()
+      local ternary = self:_parse_conditional_expression()
       if ternary then
          return ternary
       end
-      local unary = self:parse_unary_expression()
-      local t  = self:consume_token()
+      local unary = self:_parse_unary_expression()
+      local t     = self:_consume_token()
       if not t or t.type ~= "token" then
-         error("Assignment operator expected.")
+         self:_error("Assignment operator expected.")
       end
       
       local OPERATORS = { "=", "*=", "/=", "%=", "+=", "-=", "<<=", ">>=", "&=", "^=", "|=" }
@@ -584,38 +465,22 @@ do
          end
       end
       if not found then
-         error("Assignment operator expected.")
+         self:_error("Assignment operator expected.")
       end
-      local rhs = self:parse_assignment_expression()
+      local rhs = self:_parse_assignment_expression()
       if not rhs then
-         error("Assignment righthand operand expected.")
+         self:_error("Assignment righthand operand expected.")
       end
-      return {
-         type = "assignment-expression",
-         case = nil,
-         data = {
-            operator = t.data,
-            lhs      = unary,
-            rhs      = rhs
-         }
-      }
+      return c_ast.assignment_expression(t.data, unary, rhs)
    end
-   function c_parser:parse_expression()
-      local expr = self:parse_assignment_expression()
+   function instance_methods:_parse_expression()
+      local expr = self:_parse_assignment_expression()
       if not expr then
          return nil
       end
-      local t = self:peek_token()
-      if t and t.type == "token" and t.data == "," then
-         local other = self:parse_assignment_expression()
-         return {
-            type = "comma-expression",
-            case = nil,
-            data = {
-               discarded = expr,
-               retained  = other
-            }
-         }
+      if self:_consume_symbol(",") then
+         local other = self:_parse_assignment_expression()
+         return c_ast.comma_expression(expr, other)
       end
       return expr
    end

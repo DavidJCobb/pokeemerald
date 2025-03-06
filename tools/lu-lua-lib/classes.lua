@@ -69,7 +69,7 @@ do
    -- The __index metamethod for instances of any class.
    local function instance_meta_index(inst, key)
       do
-         local v = inst[key]
+         local v = rawget(inst, key)
          if v ~= nil then
             return v
          end
@@ -250,6 +250,9 @@ do
    -- instance of `class`.
    local function instance_is(inst, class)
       local inst_meta = getmetatable(inst)
+      if not inst_meta then
+         return false
+      end
       local inst_clas = inst_meta.__class
       while inst_clas do
          if inst_clas == class then

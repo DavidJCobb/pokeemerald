@@ -191,52 +191,54 @@ for line in data:gmatch("[^\r\n]+") do
    end
 end
 
---
--- DEBUG: print all found vars
---
-for k, v in pairs(found_vars_of_interest) do
-   print(k .. " == " .. v)
-end
---
--- DEBUG: print some of the smaller enums
---
-function debug_print_enum(name)
-   enums[name]:print()
-end
-enums.GROWTH:print()
-enums.NATURE:print()
---
--- DEBUG: print flags that we know require parsing C constant expressions
---
-function debug_print_macro(name)
-   local v = all_found_macros[name]
-   if v then
-      print(name .. " == " .. v)
-   else
-      print(name .. " == <not found or unparseable>")
+if false then
+   --
+   -- DEBUG: print all found vars
+   --
+   for k, v in pairs(found_vars_of_interest) do
+      print(k .. " == " .. v)
    end
-end
-debug_print_macro("TEMP_FLAGS_START")
-debug_print_macro("TRAINER_FLAGS_START") -- 0x500
-debug_print_macro("MAX_TRAINERS_COUNT")
-debug_print_macro("TRAINER_FLAGS_END")   -- 0x85F == (TRAINER_FLAGS_START + MAX_TRAINERS_COUNT - 1)
-debug_print_macro("SYSTEM_FLAGS")        -- 0x860 == (TRAINER_FLAGS_END + 1)
-debug_print_macro("DAILY_FLAGS_START")
-function debug_print_flag(name)
-   local data = enums.FLAG:get(name)
-   if data then
-      print(name .. " == " .. data)
-   else
-      print(name .. " == <unparsable>")
+   --
+   -- DEBUG: print some of the smaller enums
+   --
+   function debug_print_enum(name)
+      enums[name]:print()
    end
+   enums.GROWTH:print()
+   enums.NATURE:print()
+   --
+   -- DEBUG: print flags that we know require parsing C constant expressions
+   --
+   function debug_print_macro(name)
+      local v = all_found_macros[name]
+      if v then
+         print(name .. " == " .. v)
+      else
+         print(name .. " == <not found or unparseable>")
+      end
+   end
+   debug_print_macro("TEMP_FLAGS_START")
+   debug_print_macro("TRAINER_FLAGS_START") -- 0x500
+   debug_print_macro("MAX_TRAINERS_COUNT")
+   debug_print_macro("TRAINER_FLAGS_END")   -- 0x85F == (TRAINER_FLAGS_START + MAX_TRAINERS_COUNT - 1)
+   debug_print_macro("SYSTEM_FLAGS")        -- 0x860 == (TRAINER_FLAGS_END + 1)
+   debug_print_macro("DAILY_FLAGS_START")
+   function debug_print_flag(name)
+      local data = enums.FLAG:get(name)
+      if data then
+         print(name .. " == " .. data)
+      else
+         print(name .. " == <unparsable>")
+      end
+   end
+   debug_print_flag("FLAG_TEMP_1")
+   debug_print_flag("FLAG_TEMP_1F")
+   debug_print_flag("FLAG_UNUSED_0x020")
+   debug_print_flag("FLAG_REGISTERED_ROSE")
+   debug_print_flag("FLAG_HIDDEN_ITEM_LAVARIDGE_TOWN_ICE_HEAL")
+   debug_print_flag("FLAG_UNUSED_0x91F")
+   debug_print_flag("FLAG_UNUSED_0x920")
 end
-debug_print_flag("FLAG_TEMP_1")
-debug_print_flag("FLAG_TEMP_1F")
-debug_print_flag("FLAG_UNUSED_0x020")
-debug_print_flag("FLAG_REGISTERED_ROSE")
-debug_print_flag("FLAG_HIDDEN_ITEM_LAVARIDGE_TOWN_ICE_HEAL")
-debug_print_flag("FLAG_UNUSED_0x91F")
-debug_print_flag("FLAG_UNUSED_0x920")
 
 --
 -- TODO: FLAG_REGISTERED_ROSE fails because values like REMATCH_ROSE aren't 
@@ -270,7 +272,7 @@ function write_subrecord(view, signature, version, functor)
    view:append_uint32(0) -- dummy for size
    functor(view)
    assert(view.size >= size_offset, "your subrecord-writing functor shouldn't rewind the dataview into or before the subrecord header")
-   local subrecord_size = view.size - size_offset
+   local subrecord_size = view.size - size_offset - 4
    view:set_uint32(size_offset, subrecord_size)
 end
 

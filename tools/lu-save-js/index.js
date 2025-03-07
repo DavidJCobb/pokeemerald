@@ -13,11 +13,16 @@
    // Define editor enums as necessary. This is a HACK until we get 
    // the full build system in place for save editing.
    function preprocess_save_format(/*SaveFormat*/ format) {
+      /*//
       for(let name in EDITOR_ENUMS) {
          format.enums[name] = EDITOR_ENUMS[name];
       }
-      format.display_overrides.push(EMERALD_FLAGS_DISPLAY_OVERRIDE);
+      //*/
       format.display_overrides = format.display_overrides.concat(EMERALD_DISPLAY_OVERRIDES);
+      (async function() {
+         let coll = await ExtraDataIndexManager.load_version(1);
+         coll.apply(format);
+      })();
    }
    
    {  // Import save file

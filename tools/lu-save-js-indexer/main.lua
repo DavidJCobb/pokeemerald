@@ -43,13 +43,17 @@ include("enumeration.lua")
 local enums = {}
 do
    local NAMES = {
+      "CONTEST_CATEGORY",
+      "CONTEST_RANK",
       "FLAG",    -- overworld script flags
+      "GAME_STAT",
       "GROWTH",  -- EXP growth rates
       "ITEM",    -- items
       "MOVE",    -- battle moves
       "NATURE",  -- Pokemon natures
       "SPECIES", -- Pokemon species
       "TRAINER", -- trainer rematch flags
+      "VAR",     -- overworld script variables
    }
    for _, name in ipairs(NAMES) do
       enums[name] = enumeration(name)
@@ -66,6 +70,9 @@ local desired_vars = {
    "MON_FEMALE",
    "MON_GENDERLESS",
    
+   "NUM_USED_GAME_STATS",
+   "NUM_GAME_STATS",
+   
    -- Flag info
    "TEMP_FLAGS_START",
    "TEMP_FLAGS_END", -- actually "last", not "end"
@@ -74,6 +81,11 @@ local desired_vars = {
    "TRAINERS_COUNT",
    "DAILY_FLAGS_START",
    "DAILY_FLAGS_END", -- actually "last", not "end"
+   
+   -- Var info
+   "VARS_START",
+   "TEMP_VARS_START",
+   "TEMP_VARS_END", -- actually "last," not "end"
 }
 local found_vars_of_interest = {}
 
@@ -109,6 +121,12 @@ end
 
 function try_handle_enumeration_member(name, value)
    --
+   -- Prevent mistaking certain vars for enum members.
+   --
+   if name:startswith("TRAINER_FLAGS_") then
+      return false
+   end
+   --
    -- Exclude a few things from the enums.
    --
    if name:startswith("SPECIES_UNOWN_") then
@@ -124,6 +142,30 @@ function try_handle_enumeration_member(name, value)
       --
       local special = all_found_macros["SPECIAL_FLAGS_START"]
       if special and value >= special then
+         return true
+      end
+   end
+   if name:startswith("VAR_") then
+      --
+      -- Exclude "special vars," as these aren't actually present in 
+      -- the savegame.
+      --
+      local special = all_found_macros["SPECIAL_VARS_START"]
+      if special and value >= special then
+         return true
+      end
+   end
+   if name:startswith("ITEM_") then
+      if name == "ITEM_LIST_END"
+      or name == "ITEM_TO_BERRY"
+      or name == "ITEM_TO_MAIL"
+      or name == "ITEM_HAS_EFFECT"
+      then
+         return true
+      end
+      if name:startswith("ITEM_USE_")
+      or name:startswith("ITEM_B_USE_")
+      then
          return true
       end
    end
@@ -279,7 +321,7 @@ end
 function write_ENUMDATA_subrecord(view, enumeration)
    enumeration:update_cache()
    write_subrecord(view, "ENUMDATA", 1, function(view)
-      local signed = enumeration.cache.lowest < 0
+      local signed = (enumeration.cache.lowest or 0) < 0
       local prefix = enumeration.name .. "_"
       local sorted = enumeration:to_sorted_pairs()
       
@@ -292,12 +334,12 @@ function write_ENUMDATA_subrecord(view, enumeration)
             flags = flags | 2 -- FLAG: Enum is sparse.
          end
          if enumeration.cache.lowest ~= 0 then
-            flags = flags | 3 -- FLAG: Enum's lowest value is non-zero.
+            flags = flags | 4 -- FLAG: Enum's lowest value is non-zero.
          end
          view:append_uint8(flags)
       end
       view:append_length_prefixed_string(1, prefix)
-      view:append_uint32(enumeration.cache.count)
+      view:append_uint32(#sorted)
       
       local names_start = nil
       if enumeration.cache.sparse then
@@ -321,7 +363,7 @@ function write_ENUMDATA_subrecord(view, enumeration)
          end
       end
       if enumeration.cache.sparse then
-         view:set_uint32(names_start, view.size - names_start)
+         view:set_uint32(names_start, view.size - names_start - 4) -- subtract size of the size
          --
          -- Serialize enum values as a block
          --
@@ -369,6 +411,18 @@ do -- flags.dat
    
    view:save_to_file(dst_path)
 end
+do -- game-stats.dat
+   local dst_path = base_dir .. "game-stats.dat"
+   local view     = dataview()
+   
+   write_ENUMDATA_subrecord(view, enums.GAME_STAT)
+   write_VARIABLS_subrecord(view, {
+      "NUM_USED_GAME_STATS",
+      "NUM_GAME_STATS",
+   })
+   
+   view:save_to_file(dst_path)
+end
 do -- items.dat
    local dst_path = base_dir .. "items.dat"
    local view     = dataview()
@@ -381,6 +435,7 @@ do -- misc.dat
    local dst_path = base_dir .. "misc.dat"
    local view     = dataview()
    
+   write_ENUMDATA_subrecord(view, enums.CONTEST_RANK)
    write_ENUMDATA_subrecord(view, enums.GROWTH)
    write_VARIABLS_subrecord(view, {
       "MON_MALE",
@@ -413,6 +468,19 @@ do -- species.dat
    local view     = dataview()
    
    write_ENUMDATA_subrecord(view, enums.SPECIES)
+   
+   view:save_to_file(dst_path)
+end
+do -- vars.dat
+   local dst_path = base_dir .. "vars.dat"
+   local view     = dataview()
+   
+   write_ENUMDATA_subrecord(view, enums.VAR)
+   write_VARIABLS_subrecord(view, {
+      "VARS_START",
+      "TEMP_VARS_START",
+      "TEMP_VARS_END", -- actually "last", not "end"
+   })
    
    view:save_to_file(dst_path)
 end

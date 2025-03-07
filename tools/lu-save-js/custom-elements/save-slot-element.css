@@ -27,8 +27,9 @@ c-value-editor:not([has-target="true"]) {
    display: none;
 }
 details>div:has(c-value-editor[has-target="true"]) {
-   display: grid;
-   width:   100%;
+   display:    grid;
+   box-sizing: border-box;
+   width:      100%;
    grid-template:
       "info info"
       "view edit" 1fr

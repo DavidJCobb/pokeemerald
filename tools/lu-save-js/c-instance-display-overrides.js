@@ -55,7 +55,15 @@ class CInstanceDisplayOverrides {
          // supported: b; i; u; color; style; where `style` takes a single 
          // argument: `name-text` or `value-text`. The function will receive 
          // the CInstance being displayed as its sole argument.
+         //
+         // This function influences how a CInstance's value is rendered.
          display_string: o?.overrides?.display_string || null,
+         
+         // A function which returns a plaintext string.
+         //
+         // When a CInstance is an array element, this function overrides the 
+         // display of the array index.
+         display_index: o?.overrides?.display_index || null,
          
          // If set, a function which returns a new HTML element. The element 
          // will be used by CValueEditorElement and must allow [gs]etting its 

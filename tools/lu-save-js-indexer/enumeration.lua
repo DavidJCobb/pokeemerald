@@ -54,8 +54,10 @@ do -- methods
       local hi     = nil
       local values = {}
       for k, v in pairs(self.data) do
-         count = count + 1
-         values[v] = true
+         if not values[v] then
+            values[v] = true
+            count = count + 1
+         end
          if not hi or v > hi then
             hi = v
          end
@@ -65,10 +67,8 @@ do -- methods
       end
       
       local cache = self.cache
-      cache.count = count
       if not lo then
          cache.sparse = false
-         cache.count  = 0
          return
       end
       cache.lowest  = lo

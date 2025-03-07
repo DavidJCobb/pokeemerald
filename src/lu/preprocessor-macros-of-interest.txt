@@ -9,11 +9,14 @@
 
 #include "constants/opponents.h" // dependency of: constants/flags.h
 #include "constants/rematches.h" // dependency of: constants/flags.h
+#include "constants/contest.h"
 #include "constants/flags.h"
+#include "constants/game_stat.h"
 #include "constants/global.h"
 #include "constants/items.h"
 #include "constants/moves.h"
 #include "constants/pokemon.h"
 #include "constants/species.h"
+#include "constants/vars.h"
 //#include "../data/pokemon/species_info.h"
 #include "./savedata-serialization-version.h" // for SAVEDATA_SERIALIZATION_VERSION

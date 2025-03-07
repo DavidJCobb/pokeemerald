@@ -215,7 +215,7 @@ class CValueEditorElement extends HTMLElement {
             {
                let typename = decl.c_types.serialized.name;
                let format   = this.#target?.save_format;
-               let enum_def = format.enums[typename];
+               let enum_def = format.enums.get(typename);
                if (enum_def) {
                   this.#target_options.enumeration = enum_def;
                }

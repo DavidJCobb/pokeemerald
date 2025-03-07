@@ -67,6 +67,48 @@ class CViewElement extends TreeRowViewElement {
          return false;
       }
       
+      stringify_name(inst, is_selected) {
+         function _style(name, text) {
+            text = (text+"").replaceAll("[", "[raw][[/raw]");
+            if (is_selected)
+               return text;
+            return `[style=${name}]${text}[/style]`;
+         }
+         
+         if (inst.decl) {
+            let aggr = inst.is_member_of;
+            if (aggr instanceof CArrayInstance) {
+               //
+               // Check for a display override.
+               //
+               {
+                  let format  = inst.decl.save_format;
+                  let display = null;
+                  for(let item of format.display_overrides) {
+                     if (!item.overrides.display_index)
+                        continue;
+                     if (item.matches(inst)) {
+                        display = item;
+                        break;
+                     }
+                  }
+                  if (display) {
+                     let text = display.overrides.display_index(inst);
+                     if (text !== null) {
+                        return _style("name-text", text);
+                     }
+                  }
+               }
+               //
+               // No override.
+               //
+               return _style("name-text", aggr.values.indexOf(inst));
+            }
+            return _style("name-text", inst.decl.name);
+         }
+         return "[raw][[/raw]unnamed]";
+      }
+      
       stringify_value(inst, is_selected) {
          {
             let format  = inst.decl.save_format;
@@ -158,7 +200,7 @@ class CViewElement extends TreeRowViewElement {
                {
                   let typename = decl.c_types.serialized.name;
                   let format   = inst.save_format;
-                  let enum_def = format.enums[typename];
+                  let enum_def = format.enums.get(typename);
                   if (enum_def) {
                      for(const [name, value] of enum_def)
                         if (value == inst.value)
@@ -238,22 +280,8 @@ class CViewElement extends TreeRowViewElement {
       }
       
       /*String*/ getItemCellContent(/*const CInstance*/ inst, col, is_selected) /*const*/ {
-         function _style(name, text) {
-            text = (text+"").replaceAll("[", "[raw][[/raw]");
-            if (is_selected)
-               return text;
-            return `[style=${name}]${text}[/style]`;
-         }
-         
          if (col == 0) { // name
-            if (inst.decl) {
-               let aggr = inst.is_member_of;
-               if (aggr instanceof CArrayInstance) {
-                  return _style("name-text", aggr.values.indexOf(inst));
-               }
-               return _style("name-text", inst.decl.name);
-            }
-            return "[raw][[/raw]unnamed]";
+            return this.stringify_name(inst, is_selected);
          } else if (col == 1) { // value
             return this.stringify_value(inst, is_selected);
          } else if (col == 2) { // type

@@ -147,6 +147,7 @@ class EnumInputElement extends HTMLElement {
          this.#input.value = disp;
       else
          this.#input.value = raw;
+      this.#select.value = raw;
       this.#update_shape(!!disp);
    }
    
@@ -195,8 +196,10 @@ class EnumInputElement extends HTMLElement {
       let copy = frag.cloneNode(true);
       this.#datalist.replaceChildren(frag);
       this.#select.replaceChildren(copy);
-      if (name)
+      if (name) {
          this.#input.value = name;
+      }
+      this.#select.value = this.#value;
       this.#update_shape(!!name);
    }
    

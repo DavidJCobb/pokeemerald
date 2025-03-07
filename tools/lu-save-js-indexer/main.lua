@@ -1,4 +1,7 @@
-function include(path) -- because require is janky
+-- `require` is janky and seems to choke on relative paths, 
+-- so this shims it and allows lookups based on relative 
+-- paths
+function include(path)
    --
    -- Abuse debug info to find out where the current file is located.
    --

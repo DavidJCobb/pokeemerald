@@ -153,8 +153,10 @@ class ExtraDataCollection {
                   let names  = new Map();
                   for(let i = 0; i < bits_per; ++i) {
                      let name = _get_flag_name(offset + i);
-                     if (name)
+                     if (name) {
+                        name = name.replaceAll("_", "_\u200B"); // allow word-wrap at underscores
                         names.set(i, name);
+                     }
                   }
                   
                   let node = document.createElement("bitset-input");
@@ -276,7 +278,7 @@ let ExtraDataIndexManager = new (class ExtraDataIndexManager {
          
          coll.enums.CONTEST_CATEGORY = files.misc.found.enums.get("CONTEST_CATEGORY_") || null;
          coll.enums.CONTEST_RANK     = files.misc.found.enums.get("CONTEST_RANK_")     || null;
-         coll.enums.FLAG    = files.game_stats.found.enums.get("FLAG_")      || null;
+         coll.enums.FLAG    = files.flags.found.enums.get("FLAG_")      || null;
          coll.enums.GAME_STAT = files.game_stats.found.enums.get("GAME_STAT_") || null;
          coll.enums.GROWTH  = files.misc.found.enums.get("GROWTH_")     || null;
          coll.enums.ITEM    = files.items.found.enums.get("ITEM_")      || null;

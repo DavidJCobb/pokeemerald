@@ -397,3 +397,5 @@ for filename, info in pairs(goals) do
       os.remove(dst_path)
    end
 end
+
+io.write("Generated data files for the save editor.\n")

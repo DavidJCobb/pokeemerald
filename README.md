@@ -12,13 +12,25 @@ For contacts and other pret projects, see [pret.github.io](https://pret.github.i
 
 ## This fork
 
-This fork uses a custom compiler plug-in to generate code that can pack Emerald's save files in a format which is optimized for space. The following changes have been made:
+This fork uses a custom compiler plug-in to generate code that can pack Emerald's save files in a format which is optimized for space.
+
+
+### New dependencies
+
+* **`libgmp3-dev`:** Needed in order to compile GCC plug-ins. A GCC plug-in must be compiled for the specific instance of GCC (i.e. version, host architecture, and target architecture) that you intend to use the plug-in with.
+
+* **`lua5.4`:** Used for post-build scripts. Installable via `sudo apt install lua5.4`.
+
+  * The `lu-save-js-indexer` script generates data files for use by `lu-save-js`, a save editor for bitpacked savegames. These data files allow the save editor to understand and display data such as Pokemon species names and item names, without these having to be hardcoded into the editor.
+
+
+### Code changes
 
 * Everything in the `plugins` folder is new.
 
 * `Makefile` has been altered: the command-line parameters used for the compiler now specify the compiler plug-ins to use.
 
-* You are now meant to compile Emerald by running `bash build.sh`. This shell script invokes the makefile for all extant compiler plug-ins, including any shell scripts needed to set up their dependencies, before then invoking the makefile for Emerald itself.
+* You are now meant to compile Emerald by running `bash build.sh`. This shell script invokes the makefile for all extant compiler plug-ins, checking and erroring on any missing dependencies (recommending commands to install them), before then invoking the makefile for Emerald and the post-build scripts.
 
 * Source files have been added or edited as necessary to define bitpacking options for savedata.
 
@@ -53,3 +65,11 @@ This fork uses a custom compiler plug-in to generate code that can pack Emerald'
 * `src/save.c` has been rewritten to invoke the generated code.
 
 * `src/save.h` has been altered to remove macros that are no longer meaningful (i.e. macros whose proper values are no longer knowable without invoking code generation). Additionally, a `version` field has been added to the save sector footer.
+
+* New tools have been added to the `tools` folder.
+
+  * **`lu-save-js`:** A web-based editor for bitpacked saves, using the data format produced when compiling the game.
+  
+  * **`lu-save-js-indexer`:** Post-build scripts written in Lua, which generate important data files for the save editor.
+  
+  * **`lu-lua-lib`:** Lua libraries used by post-build scripts.

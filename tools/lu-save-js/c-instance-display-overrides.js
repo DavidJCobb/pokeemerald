@@ -3,6 +3,9 @@ class CInstanceDisplayOverrideCriteria {
       this.decl = o?.decl || null; // Optional<CDeclInstance>
       this.path = o?.path || null; // Optional<String>
       this.type = o?.type || null; // Optional<Variant<CTypeInstance, String typename>>
+      if (o+"" === o) {
+         this.path = o;
+      }
       if (this.path && !(this.path instanceof CValuePath)) {
          this.path = new CValuePath(this.path);
       }

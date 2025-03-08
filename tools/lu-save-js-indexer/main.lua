@@ -438,6 +438,7 @@ do -- misc.dat
    local dst_path = base_dir .. "misc.dat"
    local view     = dataview()
    
+   write_ENUMDATA_subrecord(view, enums.CONTEST_CATEGORY)
    write_ENUMDATA_subrecord(view, enums.CONTEST_RANK)
    write_ENUMDATA_subrecord(view, enums.GROWTH)
    write_VARIABLS_subrecord(view, {

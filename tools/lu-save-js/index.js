@@ -21,6 +21,7 @@
       format.display_overrides = format.display_overrides.concat(EMERALD_DISPLAY_OVERRIDES);
       (async function() {
          let coll = await ExtraDataIndexManager.load_version(1);
+         await coll.readyPromise;
          coll.apply(format);
       })();
    }

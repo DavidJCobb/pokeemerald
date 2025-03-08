@@ -8,12 +8,11 @@ let ExtraDataIndexManager = new (class ExtraDataIndexManager {
       if (coll)
          return coll;
       
-      let pi     = Promise.withResolvers();
-      let errors = [];
-      try {
-         coll = new ExtraDataCollection(pi.promise);
-         this.collections_by_serialization_version.set(v, coll);
+      let pi = Promise.withResolvers();
+      coll = new ExtraDataCollection(pi.promise);
+      this.collections_by_serialization_version.set(v, coll);
          
+      (async function() {
          let base_path = `./formats/${v}/`;
          
          let filenames = [
@@ -38,8 +37,9 @@ let ExtraDataIndexManager = new (class ExtraDataIndexManager {
             return coll;
          }
          
-         let files = new Map();
-         let any   = false;
+         let errors = [];
+         let files  = new Map();
+         let any    = false;
          for(let name of filenames) {
             let blob = await (await promises[name]).arrayBuffer();
             let file;
@@ -64,9 +64,8 @@ let ExtraDataIndexManager = new (class ExtraDataIndexManager {
             let err = new AggregateError(errors, "All extra-data files in a collection failed to load.");
             pi.reject(err);
          }
-      } catch (e) {
-         pi.reject(e);
-      }
+      })();
+         
       return coll;
    }
 })();

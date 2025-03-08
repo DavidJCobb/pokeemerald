@@ -4,6 +4,7 @@ class ExtraDataCollection {
    #ready_promise;
    
    constructor(ready_promise) {
+      this.constants    = new Map();
       this.enums        = new Map();
       this.game_stats   = new ExtraGameStats();
       this.script_flags = new ExtraScriptFlags();
@@ -40,6 +41,29 @@ class ExtraDataCollection {
       this.game_stats.finalize(files.get("game-stats.dat"));
       this.script_flags.finalize(files.get("flags.dat"));
       this.script_vars.finalize(files.get("vars.dat"));
+      {
+         let desired_constants = {
+            "misc.dat": [
+               // Sentinel values for Pokemon species gender ratios, indicating 
+               // that all members of the species have a fixed gender.
+               "MON_MALE",
+               "MON_FEMALE",
+               "MON_GENDERLESS",
+               
+               "SHINY_ODDS",
+            ],
+         };
+         for(let filename in desired_constants) {
+            let file = files.get(filename);
+            if (!file)
+               continue;
+            for(let name of desired_constants[filename]) {
+               let data = file.found.vars.get(name);
+               if (data || data === 0)
+                  this.constants.set(name, data);
+            }
+         }
+      }
       {
          let desired_enums = {
             "misc.dat": [

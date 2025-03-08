@@ -363,6 +363,10 @@ local base_dir       = this_dir .. "/" .. "../lu-save-js/formats/" .. tostring(f
 -- Output files:
 --
 
+-- Format XML
+shell:exec("cp "..this_dir.."/../../lu_bitpack_savedata_format.xml " .. base_dir .. "format.xml")
+
+-- Extra-data files
 for filename, info in pairs(goals) do
    local dst_path = base_dir .. filename
    local view     = dataview()

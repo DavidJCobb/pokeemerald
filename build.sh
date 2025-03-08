@@ -28,7 +28,7 @@ if is_installed "lua5.4"; then
 else
    >&2 echo "The lua5.4 package must be installed in order to run post-build scripts. Please run the following command, which will likely prompt you for your password: "
    >&2 echo "   sudo apt-get install lua5.4"
-   echo ""
+   exit 1
 fi
 
 make modern -j$(nproc)

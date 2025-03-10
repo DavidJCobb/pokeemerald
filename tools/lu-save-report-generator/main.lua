@@ -1,24 +1,27 @@
+this_dir = (function()
+   --
+   -- Abuse debug info to find out where the current file is located.
+   --
+   return debug.getinfo(1, 'S').source
+      :sub(2)
+      :gsub("^([^/])", "./%1")
+      :gsub("[^/]*$", "")
+end)()
+
 -- `require` is janky and seems to choke on relative paths, 
 -- so this shims it and allows lookups based on relative 
 -- paths
 function include(path)
-   --
-   -- Abuse debug info to find out where the current file is located.
-   --
-   local this_path = debug.getinfo(1, 'S').source
-      :sub(2)
-      :gsub("^([^/])", "./%1")
-      :gsub("[^/]*$", "")
-   
-   local dst_folder = path
-      :gsub("^([^/])", "./%1")
-      :gsub("[^/]*$", "")
    local dst_file = path:gsub("([^/]*)$", "%1")
    --
    -- Override `package.path` to tell it to look for an exact file.
    --
    local prior = package.path
-   package.path = this_path .. dst_file
+   if path:sub(1, 1) == "/" then
+      package.path = path
+   else
+      package.path = this_dir .. path
+   end
    local status, err = pcall(function()
       require(dst_file)
    end)
@@ -34,7 +37,7 @@ include("../lu-lua-lib/xml.lua")
 
 local root_node
 do
-   local file = io.open("../../lu_bitpack_savedata_format.xml", "r")
+   local file = io.open(this_dir.."../../lu_bitpack_savedata_format.xml", "r")
    if not file then
       error("XML file could not be opened.")
    end
@@ -212,7 +215,7 @@ do
    end
 end
 
-local out_file = io.open("../../reports/savedata.md.tmp", "w")
+local out_file = io.open(this_dir.."../../reports/savedata.md.tmp", "w")
 if not out_file then
    error("Unable to open the output file for writing.")
 end
@@ -360,181 +363,163 @@ function print_size_and_count_stats(base)
    do
       out_file:write("#### Size info\n\n")
       if is_categories then
-         out_file:write("The **% used** column indicates how much of the total save file space is consumed by values of a given category. The **% size reduction** column is relative to the total unpacked size consumed by a given category.\n\n")
+         out_file:write("All sizes listed are totals. The **% used** column indicates how much of the total save file space is consumed by values of a given category. The **% size reduction** column is relative to the total unpacked size consumed by a given category.\n\n")
+         out_file:write("| Categories | Count | Unpacked bytes | Packed bits | % used | % size reduction |\n")
+         out_file:write("| :- | -: | -: | -: | -: | -: |\n")
+         for i = 1, #items do
+            local item = items[i]
+            out_file:write("|**")
+            out_file:write(item.name)
+            out_file:write("**|")
+            out_file:write(item.counts.total)
+            out_file:write("|")
+            out_file:write(item.sizes.total_unpacked / 8)
+            out_file:write("|")
+            out_file:write(item.sizes.total_packed)
+            out_file:write("|")
+            out_file:write(to_percentage(item.sizes.total_packed / (sector_size * 8 * sector_count)))
+            out_file:write("|")
+            out_file:write(to_percentage(1 - (item.sizes.total_packed / item.sizes.total_unpacked)))
+            out_file:write("|\n")
+         end
+         out_file:write("\n")
       else
          out_file:write("The **% used** column indicates how much of the total save file space is consumed by values of a given type.\n\n")
-      end
-      out_file:write("<table>\n")
-      out_file:write("<thead>\n")
-      out_file:write("<tr>\n")
-      out_file:write("<th></th>")
-      if not is_categories then
+         out_file:write("<table>\n")
+         out_file:write("<thead>\n")
+         out_file:write("<tr>\n")
+         out_file:write("<th></th>")
          out_file:write("<th colspan='3'>Sizes per instance</th>")
-      end
-      out_file:write("<th></th>")
-      if is_categories then
-         out_file:write("<th colspan='4'>Total sizes</th>")
-      else
+         out_file:write("<th></th>")
          out_file:write("<th colspan='3'>Total sizes</th>")
-      end
-      out_file:write("</tr>\n")
-      out_file:write("<tr>\n")
-      out_file:write("<th style='text-align:left'>")
-      out_file:write(name_col_header)
-      out_file:write("</th>")
-      if not is_categories then
+         out_file:write("</tr>\n")
+         out_file:write("<tr>\n")
+         out_file:write("<th style='text-align:left'>Typename</th>")
          out_file:write("<th>Unpacked bytes</th>")
          out_file:write("<th>Packed bits</th>")
          out_file:write("<th>Savings</th>")
-      end
-      out_file:write("<th>Count</th>")
-      out_file:write("<th>Unpacked bytes</th>")
-      out_file:write("<th>Packed bits</th>")
-      out_file:write("<th>% used</th>")
-      if is_categories then
-         out_file:write("<th>% size reduction</th>")
-      end
-      out_file:write("</tr>\n")
-      out_file:write("</thead>\n")
-      out_file:write("<tbody style='text-align:right'>\n")
-      for i = 1, #items do
-         local item = items[i]
-         out_file:write("<tr>")
-         out_file:write("<th style='text-align:left'>")
-         out_file:write(item.name)
-         out_file:write("</th>")
-         if not is_categories then
-            out_file:write("<td>")
-            out_file:write(item.sizes.single_unpacked / 8)
-            out_file:write("</td>")
-            out_file:write("<td>")
-            out_file:write(item.sizes.single_packed)
-            out_file:write("</td>")
-            out_file:write("<td>")
-            out_file:write(to_percentage(1 - (item.sizes.single_packed / item.sizes.single_unpacked)))
-            out_file:write("</td>")
-         end
-         out_file:write("<td>")
-         out_file:write(item.counts.total)
-         out_file:write("</td>")
-         out_file:write("<td>")
-         out_file:write(item.sizes.total_unpacked / 8)
-         out_file:write("</td>")
-         out_file:write("<td>")
-         out_file:write(item.sizes.total_packed)
-         out_file:write("</td>")
-         out_file:write("<td>")
-         out_file:write(to_percentage(item.sizes.total_packed / (sector_size * 8 * sector_count)))
-         out_file:write("</td>")
-         if is_categories then
-            out_file:write("<td>")
-            out_file:write(to_percentage(1 - (item.sizes.total_packed / item.sizes.total_unpacked)))
-            out_file:write("</td>")
-         end
+         out_file:write("<th>Count</th>")
+         out_file:write("<th>Unpacked bytes</th>")
+         out_file:write("<th>Packed bits</th>")
+         out_file:write("<th>% used</th>")
          out_file:write("</tr>\n")
+         out_file:write("</thead>\n")
+         out_file:write("<tbody style='text-align:right'>\n")
+         for i = 1, #items do
+            local item = items[i]
+            out_file:write("<tr>")
+            out_file:write("<th style='text-align:left'>")
+            out_file:write(item.name)
+            out_file:write("</th>")
+            if not is_categories then
+               out_file:write("<td>")
+               out_file:write(item.sizes.single_unpacked / 8)
+               out_file:write("</td>")
+               out_file:write("<td>")
+               out_file:write(item.sizes.single_packed)
+               out_file:write("</td>")
+               out_file:write("<td>")
+               out_file:write(to_percentage(1 - (item.sizes.single_packed / item.sizes.single_unpacked)))
+               out_file:write("</td>")
+            end
+            out_file:write("<td>")
+            out_file:write(item.counts.total)
+            out_file:write("</td>")
+            out_file:write("<td>")
+            out_file:write(item.sizes.total_unpacked / 8)
+            out_file:write("</td>")
+            out_file:write("<td>")
+            out_file:write(item.sizes.total_packed)
+            out_file:write("</td>")
+            out_file:write("<td>")
+            out_file:write(to_percentage(item.sizes.total_packed / (sector_size * 8 * sector_count)))
+            out_file:write("</td>")
+            if is_categories then
+               out_file:write("<td>")
+               out_file:write(to_percentage(1 - (item.sizes.total_packed / item.sizes.total_unpacked)))
+               out_file:write("</td>")
+            end
+            out_file:write("</tr>\n")
+         end
+         out_file:write("</tbody>\n")
+         out_file:write("</table>\n\n")
       end
-      out_file:write("</tbody>\n")
-      out_file:write("</table>\n\n")
    end
    
    -- Counts per sector
    do
-      out_file:write("#### By sector\n\n")
-      out_file:write("<table>\n")
-      out_file:write("<thead>\n")
-      out_file:write("<tr>\n")
-      out_file:write("<th></th>")
-      out_file:write("<th colspan='")
-      out_file:write(sector_count)
-      out_file:write("'>Counts per sector</th>")
-      out_file:write("<th></th>")
-      out_file:write("</tr>\n")
-      out_file:write("<tr>\n")
-      out_file:write("<th style='text-align:left'>")
+      out_file:write("#### Counts by sector\n\n")
+      out_file:write("| ")
       out_file:write(name_col_header)
-      out_file:write("</th>")
+      out_file:write(" ")
       for i = 1, sector_count do
-         out_file:write("<th>")
+         out_file:write("| ")
          out_file:write(i - 1)
-         out_file:write("</th>")
+         out_file:write(" ")
       end
-      out_file:write("<th>Total</th>")
-      out_file:write("</tr>\n")
-      out_file:write("</thead>\n")      
-      out_file:write("<tbody style='text-align:right'>\n")
+      out_file:write("| Total |\n")
+      out_file:write("| :- ")
+      for i = 1, sector_count do
+         out_file:write("| -: ")
+      end
+      out_file:write("| -: |\n")
       for i = 1, #items do
          local item = items[i]
-         out_file:write("<tr>")
-         out_file:write("<th style='text-align:left'>")
+         out_file:write("|**")
          out_file:write(item.name)
-         out_file:write("</th>")
+         out_file:write("**")
          for i = 1, sector_count do
             local c = item.counts.by_sector[i]
             if c and c > 0 then
-               out_file:write("<td>")
+               out_file:write("|")
                out_file:write(c)
-               out_file:write("</td>")
             else
-               out_file:write("<td></td>")
+               out_file:write("|")
             end
          end
-         out_file:write("<td>")
+         out_file:write("|")
          out_file:write(item.counts.total)
-         out_file:write("</td>")
-         out_file:write("</tr>\n")
+         out_file:write("|\n")
       end
-      out_file:write("</tbody>\n")
-      out_file:write("</table>\n\n")
+      out_file:write("\n")
    end
    
    -- Counts by top-level value
    do
-      out_file:write("#### By top-level value\n\n")
-      out_file:write("<table>\n")
-      out_file:write("<thead>\n")
-      out_file:write("<tr>\n")
-      out_file:write("<th></th>")
-      out_file:write("<th colspan='")
-      out_file:write(#top_level_values)
-      out_file:write("'>Counts per top-level value</th>")
-      out_file:write("<th></th>")
-      out_file:write("</tr>\n")
-      out_file:write("<tr>\n")
-      out_file:write("<th style='text-align:left'>")
+      out_file:write("#### Counts by top-level value\n\n")
+      out_file:write("| ")
       out_file:write(name_col_header)
-      out_file:write("</th>")
+      out_file:write(" ")
       for i = 1, #top_level_values do
-         out_file:write("<th>")
+         out_file:write("| ")
          out_file:write(top_level_values[i].name)
-         out_file:write("</th>")
+         out_file:write(" ")
       end
-      out_file:write("<th>Total</th>")
-      out_file:write("</tr>\n")
-      out_file:write("</thead>\n")
-      out_file:write("<tbody style='text-align:right'>\n")
+      out_file:write("| Total |\n")
+      out_file:write("| :- ")
+      for i = 1, #top_level_values do
+         out_file:write("| -: ")
+      end
+      out_file:write("| -: |\n")
       for i = 1, #items do
          local item = items[i]
-         out_file:write("<tr>")
-         out_file:write("<th style='text-align:left'>")
+         out_file:write("|**")
          out_file:write(item.name)
-         out_file:write("</th>")
+         out_file:write("**")
          for i = 1, #top_level_values do
             local c = item.counts.by_top_level_value[top_level_values[i].name]
             if c and c > 0 then
-               out_file:write("<td>")
+               out_file:write("|")
                out_file:write(c)
-               out_file:write("</td>")
             else
-               out_file:write("<td></td>")
+               out_file:write("|")
             end
          end
-         out_file:write("<td>")
+         out_file:write("|")
          out_file:write(item.counts.total)
-         out_file:write("</td>")
-         out_file:write("</tr>\n")
+         out_file:write("|\n")
       end
-      out_file:write("</tbody>\n")
-      out_file:write("</table>\n\n")
+      out_file:write("\n")
    end
 end
 
@@ -549,9 +534,25 @@ end
 
 do -- Stats per type
    out_file:write("### Stats per struct/union type\n\n")
-   out_file:write("**Note:** These listings make no effort to distinguish cases where one struct is transformed into another during serialization, nor to indicate when one struct commonly or only appears as a member of another struct.\n\n")
+   out_file:write("**Note:** These listings make no effort to distinguish cases where one struct is transformed into another during serialization (both types may be listed), nor to indicate when one struct commonly or only appears as a member of another struct.\n\n")
    
    local base = root_node:children_by_node_name("c-types")[1]
    assert(base, "Missing node: data:root > c-types")
    print_size_and_count_stats(base)
+end
+
+out_file:close()
+
+--
+-- Replace the last finished Markdown file with the temporary file we've generated.
+--
+
+include("../lu-lua-lib/shell.lua")
+
+local copy_exit_code = shell:exec("/bin/cp "..this_dir.."/../../reports/savedata.md.tmp "..this_dir.."/../../reports/savedata.md")
+if copy_exit_code == 0 then
+   os.remove(this_dir.."../../reports/savedata.md.tmp")
+   print("Wrote a report on the savedata format to /reports/savedata.md.")
+else
+   print("Warning: Failed to write the savedata report to /reports/savedata.md. The generated report should be in /reports/savedata.md.tmp.")
 end

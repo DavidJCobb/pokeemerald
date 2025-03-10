@@ -21,8 +21,6 @@ This fork uses a custom compiler plug-in to generate code that can pack Emerald'
 
 * **`lua5.4`:** Used for post-build scripts. Installable via `sudo apt install lua5.4`.
 
-  * The `lu-save-js-indexer` script generates data files for use by `lu-save-js`, a save editor for bitpacked savegames. These data files allow the save editor to understand and display data such as Pokemon species names and item names, without these having to be hardcoded into the editor.
-
 
 ### Code changes
 
@@ -70,6 +68,8 @@ This fork uses a custom compiler plug-in to generate code that can pack Emerald'
 
   * **`lu-save-js`:** A web-based editor for bitpacked saves, using the data format produced when compiling the game.
   
-  * **`lu-save-js-indexer`:** Post-build scripts written in Lua, which generate important data files for the save editor.
+  * **`lu-save-js-indexer`:** Post-build scripts written in Lua, which generate important data files for the save editor. These data files allow the save editor to understand things like Pokemon species names without that data being hardcoded into the save editor; it can be generated from the game's source code.
   
-  * **`lu-lua-lib`:** Lua libraries used by post-build scripts.
+  * **`lu-save-report-generator`:** A post-build script written in Lua, which analyzes the XML file produced by the bitpack plug-in in order to produce a human-readable report on how much space has been saved.
+  
+  * **`lu-lua-lib`:** Lua libraries used by the post-build scripts.

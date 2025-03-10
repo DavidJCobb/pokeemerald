@@ -37,6 +37,7 @@ if [ $? -eq 0 ]; then
    
    # Post-build script for savedata indexing.
    lua5.4 tools/lu-save-js-indexer/main.lua
+   lua5.4 tools/lu-save-report-generator/main.lua
    
    echo "Post-build steps have run."
 fi

@@ -32,7 +32,7 @@ namespace codegen::stats {
       if (out->node_name.empty())
          out->node_name = "unknown-type";
       
-      if (serializable::empty()) { // <stats>...</stats>
+      if (!serializable::empty()) { // <stats>...</stats>
          out->append_child(serializable::to_xml());
       }
       

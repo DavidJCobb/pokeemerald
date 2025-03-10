@@ -64,18 +64,6 @@ do
    assert(sector_size, "Missing node: data:root > config > option[name='max-sector-bytecount'].")
 end
 
-local out_file = io.open("../../reports/savedata.md.tmp", "w")
-if not out_file then
-   error("Unable to open the output file for writing.")
-end
-
-out_file:write([=[
-# Savedata format
-
-This project uses an automatically-generated savedata format.
-
-]=])
-
 local type_nodes = {}
 do
    local base = root_node:children_by_node_name("c-types")[1]
@@ -89,20 +77,14 @@ do
          end
       end
       type_nodes[name] = node
+      node:for_each_child_element(function(child)
+         if child.node_name ~= "typedef" then
+            return
+         end
+         type_nodes[child.attributes["name"]] = node
+      end)
    end)
 end
-
-function strip_c_type(name)
-   name = name:gsub("^const ", "")
-   name = name:gsub("^volatile ", "")
-   return name
-end
-function to_percentage(n)
-   n = n * 100
-   return tostring(math.floor(n * 100) / 100) .. "%"
-end
-
-out_file:write("## Stats\n\n")
 
 local top_level_values = {}
 do
@@ -123,6 +105,30 @@ do
       top_level_values[#top_level_values + 1] = entry
    end)
 end
+
+local out_file = io.open("../../reports/savedata.md.tmp", "w")
+if not out_file then
+   error("Unable to open the output file for writing.")
+end
+
+out_file:write([=[
+# Savedata format
+
+This project uses an automatically-generated savedata format.
+
+]=])
+
+function strip_c_type(name)
+   name = name:gsub("^const ", "")
+   name = name:gsub("^volatile ", "")
+   return name
+end
+function to_percentage(n)
+   n = n * 100
+   return string.format("%.2f%%", n)
+end
+
+out_file:write("## Stats\n\n")
 
 do -- Stats per sector
    out_file:write("### Stats per sector\n\n")
@@ -210,7 +216,7 @@ do -- Stats per sector
          
          total_unpacked_bytes = total_unpacked_bytes + total_size
       else
-         out_file:write("0|0%|")
+         out_file:write("0|0.00%|")
       end
       
       local node = list[i]
@@ -224,102 +230,300 @@ do -- Stats per sector
          out_file:write("|")
          
          total_packed_bits = total_packed_bits + bits
-         if not sector_forced_to_end then
+         if not sector_forced_to_end and i < #list then
             total_lost_bits = total_lost_bits + ((sector_size * 8) - bits)
          end
       else
-         out_file:write("|||")
+         out_file:write("0|0|0.00%|")
       end
       out_file:write("\n")
    end
-   out_file:write("\n")
-   
-   out_file:write("Totals:\n\n")
-   
-   out_file:write("* **Total unpacked bytes:** ")
+   out_file:write("|**Used**|")
    out_file:write(total_unpacked_bytes)
-   out_file:write(" (")
+   out_file:write("|")
    out_file:write(to_percentage(total_unpacked_bytes / (sector_size * sector_count)))
-   out_file:write(")\n")
-   
-   out_file:write("* **Total packed bits:** ")
+   out_file:write("|")
+   out_file:write(math.ceil(total_packed_bits / 8))
+   out_file:write("|")
    out_file:write(total_packed_bits)
-   out_file:write(" (")
+   out_file:write("|")
    out_file:write(to_percentage(total_packed_bits / (sector_size * 8 * sector_count)))
-   out_file:write(")\n")
-   out_file:write("* **Total lost bits:** ")
+   out_file:write("|\n")
+   out_file:write("|**Lost**|")
+   -- no bytes lost in vanilla, since that's just a memcpy in slices
+   out_file:write("|")
+   -- no % lost in vanilla, since that's just a memcpy in slices
+   out_file:write("|")
+   out_file:write(math.ceil(total_lost_bits / 8))
+   out_file:write("|")
    out_file:write(total_lost_bits)
-   out_file:write(" (")
+   out_file:write("|")
    out_file:write(to_percentage(total_lost_bits / (sector_size * 8 * sector_count)))
-   out_file:write(")\n")
-   out_file:write("  * Some values can't be split across sectors. If these values can't fit at the end of a sector, then they must be pushed to the start of the next sector &mdash; leaving unused space at the end of the sector they were pushed past.\n")
+   out_file:write("|\n\n")
+   out_file:write("Some values can't be split across sectors. If these values can't fit at the end of a sector, then they must be pushed to the start of the next sector &mdash; leaving unused space at the end of the sector they were pushed past. This space is listed as \"lost\" in the table above.[^vanilla-never-loses-space]\n\n")
+   out_file:write("[^vanilla-never-loses-space]: The vanilla game never produces \"lost\" space because it just uses `memcpy` to copy data directly between RAM and flash memory, blindly slicing values at sector boundaries. By contrast, the generating bitpacking code can only slice aggregates (e.g. arrays, structs, unions); it doesn't support slicing primitives (i.e. integers), strings, or opaque buffers.\n\n")
+   out_file:write("Some top-level values are also deliberately forced to align with the start of a sector, rather than sharing a sector with any preceding value. These values are not counted as creating \"lost\" space at the end of the previous sector.\n\n")
+end
+
+function print_size_and_count_stats(base)
+   local is_categories   = base.node_name == "categories"
+   local name_col_header = is_categories and "Category" or "Typename"
+
+   local items = {}
+   base:for_each_child_element(function(node)
+      local name
+      if is_categories then
+         if node.node_name ~= "category" then
+            return
+         end
+         name = node.attributes["name"]
+      else
+         if node.node_name ~= "struct" and node.node_name ~= "union" then
+            return
+         end
+         name = node.attributes["tag"] or node.attributes["name"]
+         node = node:children_by_node_name("stats")[1]
+         if not node then
+            return
+         end
+      end
+      if not name then
+         return
+      end
+      local counts    = node:children_by_node_name("counts")[1]
+      local bitcounts = node:children_by_node_name("bitcounts")[1]
+      if not counts or not bitcounts then
+         return
+      end
+      
+      local item = {
+         name  = name,
+         sizes = {
+            total_packed   = tonumber(bitcounts.attributes["total-packed"]),
+            total_unpacked = tonumber(bitcounts.attributes["total-unpacked"]),
+         },
+         counts = {
+            total = tonumber(counts.attributes["total"]),
+            by_sector = {},
+            by_top_level_value = {},
+         }
+      }
+      items[#items + 1] = item
+      if not is_categories then
+         item.sizes.single_packed   = item.sizes.total_packed / item.counts.total
+         item.sizes.single_unpacked = item.sizes.total_unpacked / item.counts.total
+      end
+      
+      counts:for_each_child_element(function(child)
+         local count = child.attributes["count"]
+         if not count then
+            return
+         end
+         count = tonumber(count)
+         if child.node_name == "in-sector" then
+            item.counts.by_sector[tonumber(child.attributes["index"]) + 1] = count
+         elseif child.node_name == "in-top-level-value" then
+            item.counts.by_top_level_value[child.attributes["name"]] = count
+         end
+      end)
+   end)
+
+   -- Size information
+   do
+      out_file:write("#### Size info\n\n")
+      if is_categories then
+         out_file:write("The **% used** column indicates how much of the total save file space is consumed by values of a given category. The **% size reduction** column is relative to the total unpacked size consumed by a given category.\n\n")
+      else
+         out_file:write("The **% used** column indicates how much of the total save file space is consumed by values of a given type.\n\n")
+      end
+      out_file:write("<table>\n")
+      out_file:write("<thead>\n")
+      out_file:write("<tr>\n")
+      out_file:write("<th></th>")
+      if not is_categories then
+         out_file:write("<th colspan='3'>Sizes per instance</th>")
+      end
+      out_file:write("<th></th>")
+      if is_categories then
+         out_file:write("<th colspan='4'>Total sizes</th>")
+      else
+         out_file:write("<th colspan='3'>Total sizes</th>")
+      end
+      out_file:write("</tr>\n")
+      out_file:write("<tr>\n")
+      out_file:write("<th style='text-align:left'>")
+      out_file:write(name_col_header)
+      out_file:write("</th>")
+      if not is_categories then
+         out_file:write("<th>Unpacked bytes</th>")
+         out_file:write("<th>Packed bits</th>")
+         out_file:write("<th>Savings</th>")
+      end
+      out_file:write("<th>Count</th>")
+      out_file:write("<th>Unpacked bytes</th>")
+      out_file:write("<th>Packed bits</th>")
+      out_file:write("<th>% used</th>")
+      if is_categories then
+         out_file:write("<th>% size reduction</th>")
+      end
+      out_file:write("</tr>\n")
+      out_file:write("</thead>\n")
+      out_file:write("<tbody style='text-align:right'>\n")
+      for i = 1, #items do
+         local item = items[i]
+         out_file:write("<tr>")
+         out_file:write("<th style='text-align:left'>")
+         out_file:write(item.name)
+         out_file:write("</th>")
+         if not is_categories then
+            out_file:write("<td>")
+            out_file:write(item.sizes.single_unpacked / 8)
+            out_file:write("</td>")
+            out_file:write("<td>")
+            out_file:write(item.sizes.single_packed)
+            out_file:write("</td>")
+            out_file:write("<td>")
+            out_file:write(to_percentage(1 - (item.sizes.single_packed / item.sizes.single_unpacked)))
+            out_file:write("</td>")
+         end
+         out_file:write("<td>")
+         out_file:write(item.counts.total)
+         out_file:write("</td>")
+         out_file:write("<td>")
+         out_file:write(item.sizes.total_unpacked / 8)
+         out_file:write("</td>")
+         out_file:write("<td>")
+         out_file:write(item.sizes.total_packed)
+         out_file:write("</td>")
+         out_file:write("<td>")
+         out_file:write(to_percentage(item.sizes.total_packed / (sector_size * 8 * sector_count)))
+         out_file:write("</td>")
+         if is_categories then
+            out_file:write("<td>")
+            out_file:write(to_percentage(1 - (item.sizes.total_packed / item.sizes.total_unpacked)))
+            out_file:write("</td>")
+         end
+         out_file:write("</tr>\n")
+      end
+      out_file:write("</tbody>\n")
+      out_file:write("</table>\n\n")
+   end
    
-   out_file:write("\n")
+   -- Counts per sector
+   do
+      out_file:write("#### By sector\n\n")
+      out_file:write("<table>\n")
+      out_file:write("<thead>\n")
+      out_file:write("<tr>\n")
+      out_file:write("<th></th>")
+      out_file:write("<th colspan='")
+      out_file:write(sector_count)
+      out_file:write("'>Counts per sector</th>")
+      out_file:write("<th></th>")
+      out_file:write("</tr>\n")
+      out_file:write("<tr>\n")
+      out_file:write("<th style='text-align:left'>")
+      out_file:write(name_col_header)
+      out_file:write("</th>")
+      for i = 1, sector_count do
+         out_file:write("<th>")
+         out_file:write(i - 1)
+         out_file:write("</th>")
+      end
+      out_file:write("<th>Total</th>")
+      out_file:write("</tr>\n")
+      out_file:write("</thead>\n")      
+      out_file:write("<tbody style='text-align:right'>\n")
+      for i = 1, #items do
+         local item = items[i]
+         out_file:write("<tr>")
+         out_file:write("<th style='text-align:left'>")
+         out_file:write(item.name)
+         out_file:write("</th>")
+         for i = 1, sector_count do
+            local c = item.counts.by_sector[i]
+            if c and c > 0 then
+               out_file:write("<td>")
+               out_file:write(c)
+               out_file:write("</td>")
+            else
+               out_file:write("<td></td>")
+            end
+         end
+         out_file:write("<td>")
+         out_file:write(item.counts.total)
+         out_file:write("</td>")
+         out_file:write("</tr>\n")
+      end
+      out_file:write("</tbody>\n")
+      out_file:write("</table>\n\n")
+   end
+   
+   -- Counts by top-level value
+   do
+      out_file:write("#### By top-level value\n\n")
+      out_file:write("<table>\n")
+      out_file:write("<thead>\n")
+      out_file:write("<tr>\n")
+      out_file:write("<th></th>")
+      out_file:write("<th colspan='")
+      out_file:write(#top_level_values)
+      out_file:write("'>Counts per top-level value</th>")
+      out_file:write("<th></th>")
+      out_file:write("</tr>\n")
+      out_file:write("<tr>\n")
+      out_file:write("<th style='text-align:left'>")
+      out_file:write(name_col_header)
+      out_file:write("</th>")
+      for i = 1, #top_level_values do
+         out_file:write("<th>")
+         out_file:write(top_level_values[i].name)
+         out_file:write("</th>")
+      end
+      out_file:write("<th>Total</th>")
+      out_file:write("</tr>\n")
+      out_file:write("</thead>\n")
+      out_file:write("<tbody style='text-align:right'>\n")
+      for i = 1, #items do
+         local item = items[i]
+         out_file:write("<tr>")
+         out_file:write("<th style='text-align:left'>")
+         out_file:write(item.name)
+         out_file:write("</th>")
+         for i = 1, #top_level_values do
+            local c = item.counts.by_top_level_value[top_level_values[i].name]
+            if c and c > 0 then
+               out_file:write("<td>")
+               out_file:write(c)
+               out_file:write("</td>")
+            else
+               out_file:write("<td></td>")
+            end
+         end
+         out_file:write("<td>")
+         out_file:write(item.counts.total)
+         out_file:write("</td>")
+         out_file:write("</tr>\n")
+      end
+      out_file:write("</tbody>\n")
+      out_file:write("</table>\n\n")
+   end
 end
 
 do -- Stats per value category
    out_file:write("### Bitpack value categories\n\n")
+   out_file:write("Types or values can be annotated with category names. Category names have no effect on how values are packed; they are purely an informational tool for external tools which read the bitpack format XML (e.g. the tool which produced this report).\n\n")
    
    local base = root_node:children_by_node_name("categories")[1]
    assert(base, "Missing node: data:root > categories")
-   local list = base:children_by_node_name("category")
-   for i = 1, #list do
-      local node = list[i]
-      local name = node.attributes["name"]
-      out_file:write("#### ")
-      out_file:write(name)
-      out_file:write("\n\n")
-      
-      local bc = node:children_by_node_name("bitcounts")[1]
-      local c  = node:children_by_node_name("counts")[1]
-      
-      local unpacked = bc.attributes["total-unpacked"]
-      local packed   = bc.attributes["total-packed"]
-      
-      out_file:write("* **Total unpacked size:** ")
-      out_file:write(unpacked)
-      out_file:write(" bits\n")
-      out_file:write("* **Total packed size:** ")
-      out_file:write(packed)
-      out_file:write(" bits\n")
-      out_file:write("* **Total size reduction:** ")
-      out_file:write(to_percentage(packed / unpacked))
-      out_file:write("\n")
-      do
-         local any = false
-         c:for_each_child_element(function(child)
-            if child.node_name ~= "in-sector" then
-               return
-            end
-            if not any then
-               any = true
-               out_file:write("* **Counts by sector:**\n")
-            end
-            out_file:write("  * **Sector ")
-            out_file:write(child.attributes["index"])
-            out_file:write(":** ")
-            out_file:write(child.attributes["count"])
-            out_file:write("\n")
-         end)
-      end
-      do
-         local any = false
-         c:for_each_child_element(function(child)
-            if child.node_name ~= "in-top-level-value" then
-               return
-            end
-            if not any then
-               any = true
-               out_file:write("* **Counts by top-level value:**\n")
-            end
-            out_file:write("  * **Value `")
-            out_file:write(child.attributes["name"])
-            out_file:write("`:** ")
-            out_file:write(child.attributes["count"])
-            out_file:write("\n")
-         end)
-      end
-      out_file:write("\n")
-   end
-   out_file:write("\n")
+   print_size_and_count_stats(base)
+end
+
+do -- Stats per type
+   out_file:write("### Stats per struct/union type\n\n")
+   out_file:write("**Note:** These listings make no effort to distinguish cases where one struct is transformed into another during serialization, nor to indicate when one struct commonly or only appears as a member of another struct.\n\n")
+   
+   local base = root_node:children_by_node_name("c-types")[1]
+   assert(base, "Missing node: data:root > c-types")
+   print_size_and_count_stats(base)
 end

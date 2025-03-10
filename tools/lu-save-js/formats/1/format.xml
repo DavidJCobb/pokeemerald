@@ -214,6 +214,13 @@
          <typedef name="PokemonLevel" />
       </integral>
       <struct tag="ApprenticeMon" c-alignment="4" c-sizeof="12">
+         <stats>
+            <bitcounts total-unpacked="1152" total-packed="756" />
+            <counts total="12">
+               <in-sector index="0" count="12" />
+               <in-top-level-value name="gSaveBlock2Ptr" count="12" />
+            </counts>
+         </stats>
          <members>
             <integer name="species" type="PokemonSpeciesID" bitcount="11" min="0" max="2047">
                <category name="species-id" />
@@ -235,6 +242,13 @@
          </instructions>
       </struct>
       <struct tag="Apprentice" c-alignment="4" c-sizeof="68">
+         <stats>
+            <bitcounts total-unpacked="2176" total-packed="1728" />
+            <counts total="4">
+               <in-sector index="0" count="4" />
+               <in-top-level-value name="gSaveBlock2Ptr" count="4" />
+            </counts>
+         </stats>
          <members>
             <integer name="id" type="u8" c-bitfield-offset="0" c-bitfield-width="5" bitcount="5" />
             <integer name="lvlMode" type="u8" c-bitfield-offset="5" c-bitfield-width="2" bitcount="2" />
@@ -281,6 +295,13 @@
          </instructions>
       </struct>
       <struct tag="ApprenticeQuestion" c-alignment="4" c-sizeof="4">
+         <stats>
+            <bitcounts total-unpacked="288" total-packed="216" />
+            <counts total="9">
+               <in-sector index="0" count="9" />
+               <in-top-level-value name="gSaveBlock2Ptr" count="9" />
+            </counts>
+         </stats>
          <members>
             <integer name="questionId" type="u8" c-bitfield-offset="0" c-bitfield-width="2" bitcount="2" />
             <integer name="monId" type="u8" c-bitfield-offset="2" c-bitfield-width="2" bitcount="2" />
@@ -297,6 +318,13 @@
          </instructions>
       </struct>
       <struct tag="BattleDomeTrainer" c-alignment="4" c-sizeof="4">
+         <stats>
+            <bitcounts total-unpacked="512" total-packed="256" />
+            <counts total="16">
+               <in-sector index="0" count="16" />
+               <in-top-level-value name="gSaveBlock2Ptr" count="16" />
+            </counts>
+         </stats>
          <members>
             <integer name="trainerId" type="u16" c-bitfield-offset="0" c-bitfield-width="10" bitcount="10">
                <category name="trainer-id" />
@@ -313,6 +341,13 @@
          </instructions>
       </struct>
       <struct tag="BattleFrontier" c-alignment="4" c-sizeof="2272">
+         <stats>
+            <bitcounts total-unpacked="18176" total-packed="16158" />
+            <counts total="1">
+               <in-sector index="0" count="1" />
+               <in-top-level-value name="gSaveBlock2Ptr" count="1" />
+            </counts>
+         </stats>
          <members>
             <struct name="towerPlayer" type="EmeraldBattleTowerRecord" />
             <struct name="towerRecords" type="EmeraldBattleTowerRecord[5]">
@@ -634,6 +669,13 @@
          </instructions>
       </struct>
       <struct tag="BattleTowerEReaderTrainer" c-alignment="4" c-sizeof="188">
+         <stats>
+            <bitcounts total-unpacked="1504" total-packed="1370" />
+            <counts total="1">
+               <in-sector index="0" count="1" />
+               <in-top-level-value name="gSaveBlock2Ptr" count="1" />
+            </counts>
+         </stats>
          <members>
             <integer name="unk0" type="u8" bitcount="8" />
             <integer name="facilityClass" type="u8" bitcount="8" />
@@ -688,6 +730,13 @@
          </instructions>
       </struct>
       <struct tag="BattleTowerInterview" c-alignment="4" c-sizeof="24">
+         <stats>
+            <bitcounts total-unpacked="192" total-packed="162" />
+            <counts total="1">
+               <in-sector index="0" count="1" />
+               <in-top-level-value name="gSaveBlock2Ptr" count="1" />
+            </counts>
+         </stats>
          <members>
             <integer name="playerSpecies" type="PokemonSpeciesID" bitcount="11" min="0" max="2047">
                <category name="species-id" />
@@ -714,6 +763,13 @@
          </instructions>
       </struct>
       <struct tag="BattleTowerPokemon" c-alignment="4" c-sizeof="44">
+         <stats>
+            <bitcounts total-unpacked="9504" total-packed="8370" />
+            <counts total="27">
+               <in-sector index="0" count="27" />
+               <in-top-level-value name="gSaveBlock2Ptr" count="27" />
+            </counts>
+         </stats>
          <members>
             <integer name="species" type="PokemonSpeciesID" bitcount="11" min="0" max="2047">
                <category name="species-id" />
@@ -781,6 +837,13 @@
          </instructions>
       </struct>
       <struct tag="Berry2" c-alignment="4" c-sizeof="28">
+         <stats>
+            <bitcounts total-unpacked="224" total-packed="208" />
+            <counts total="1">
+               <in-sector index="3" count="1" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="1" />
+            </counts>
+         </stats>
          <members>
             <string name="name" type="u8[7]" length="6" nonstring="false" />
             <integer name="firmness" type="u8" bitcount="8" />
@@ -815,6 +878,13 @@
          </instructions>
       </struct>
       <struct tag="BerryCrush" c-alignment="4" c-sizeof="16">
+         <stats>
+            <bitcounts total-unpacked="128" total-packed="128" />
+            <counts total="1">
+               <in-sector index="0" count="1" />
+               <in-top-level-value name="gSaveBlock2Ptr" count="1" />
+            </counts>
+         </stats>
          <members>
             <integer name="pressingSpeeds" type="u16[4]" bitcount="16">
                <array-rank extent="4" />
@@ -831,6 +901,13 @@
          </instructions>
       </struct>
       <struct tag="BerryPickingResults" c-alignment="4" c-sizeof="16">
+         <stats>
+            <bitcounts total-unpacked="128" total-packed="128" />
+            <counts total="1">
+               <in-sector index="0" count="1" />
+               <in-top-level-value name="gSaveBlock2Ptr" count="1" />
+            </counts>
+         </stats>
          <members>
             <integer name="bestScore" type="u32" bitcount="32" />
             <integer name="berriesPicked" type="u16" bitcount="16" />
@@ -859,6 +936,13 @@
          </instructions>
       </struct>
       <struct tag="BerryTree" c-alignment="4" c-sizeof="8">
+         <stats>
+            <bitcounts total-unpacked="8192" total-packed="6144" />
+            <counts total="128">
+               <in-sector index="2" count="128" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="128" />
+            </counts>
+         </stats>
          <members>
             <integer name="berry" type="u8" bitcount="8" />
             <integer name="stage" type="u8" c-bitfield-offset="8" c-bitfield-width="7" bitcount="7" />
@@ -885,6 +969,23 @@
          </instructions>
       </struct>
       <struct tag="BoxPokemon" c-alignment="4" c-sizeof="80">
+         <stats>
+            <bitcounts total-unpacked="273920" total-packed="249524" />
+            <counts total="428">
+               <in-sector index="1" count="6" />
+               <in-sector index="3" count="2" />
+               <in-sector index="5" count="54" />
+               <in-sector index="6" count="54" />
+               <in-sector index="7" count="54" />
+               <in-sector index="8" count="54" />
+               <in-sector index="9" count="54" />
+               <in-sector index="10" count="54" />
+               <in-sector index="11" count="54" />
+               <in-sector index="12" count="42" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="8" />
+               <in-top-level-value name="gPokemonStoragePtr" count="420" />
+            </counts>
+         </stats>
          <transform-options transformed-type="SerializedBoxPokemon" pack-function="PackBoxPokemonForSave" unpack-function="UnpackBoxPokemonForSave" />
          <members>
             <integer name="personality" type="u32" bitcount="32" />
@@ -919,6 +1020,13 @@
          </members>
       </struct>
       <struct tag="ContestWinner" c-alignment="4" c-sizeof="32">
+         <stats>
+            <bitcounts total-unpacked="3328" total-packed="2951" />
+            <counts total="13">
+               <in-sector index="3" count="13" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="13" />
+            </counts>
+         </stats>
          <members>
             <integer name="personality" type="u32" bitcount="32" />
             <integer name="trainerId" type="u32" bitcount="32">
@@ -947,6 +1055,13 @@
          </instructions>
       </struct>
       <struct tag="Coords16" c-alignment="4" c-sizeof="4">
+         <stats>
+            <bitcounts total-unpacked="1568" total-packed="1568" />
+            <counts total="49">
+               <in-sector index="1" count="49" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="49" />
+            </counts>
+         </stats>
          <members>
             <integer name="x" type="s16" bitcount="16" />
             <integer name="y" type="s16" bitcount="16" />
@@ -957,6 +1072,13 @@
          </instructions>
       </struct>
       <struct tag="DayCare" c-alignment="4" c-sizeof="288">
+         <stats>
+            <bitcounts total-unpacked="2304" total-packed="2076" />
+            <counts total="1">
+               <in-sector index="3" count="1" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="1" />
+            </counts>
+         </stats>
          <members>
             <struct name="mons" type="DaycareMon[2]">
                <array-rank extent="2" />
@@ -973,6 +1095,13 @@
          </instructions>
       </struct>
       <struct tag="DaycareMail" c-alignment="4" c-sizeof="56">
+         <stats>
+            <bitcounts total-unpacked="896" total-packed="806" />
+            <counts total="2">
+               <in-sector index="3" count="2" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="2" />
+            </counts>
+         </stats>
          <members>
             <struct name="message" type="Mail" />
             <string name="otName" type="u8[8]" length="7" nonstring="false">
@@ -997,6 +1126,13 @@
          </instructions>
       </struct>
       <struct tag="DaycareMon" c-alignment="4" c-sizeof="140">
+         <stats>
+            <bitcounts total-unpacked="2240" total-packed="2036" />
+            <counts total="2">
+               <in-sector index="3" count="2" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="2" />
+            </counts>
+         </stats>
          <members>
             <transformed name="mon" type="BoxPokemon" transformed-type="SerializedBoxPokemon" pack-function="PackBoxPokemonForSave" unpack-function="UnpackBoxPokemonForSave" />
             <struct name="mail" type="DaycareMail" />
@@ -1011,6 +1147,13 @@
          </instructions>
       </struct>
       <struct tag="DewfordTrend" c-alignment="4" c-sizeof="8">
+         <stats>
+            <bitcounts total-unpacked="320" total-packed="315" />
+            <counts total="5">
+               <in-sector index="3" count="5" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="5" />
+            </counts>
+         </stats>
          <members>
             <integer name="trendiness" type="u16" c-bitfield-offset="0" c-bitfield-width="7" bitcount="7" />
             <integer name="maxTrendiness" type="u16" c-bitfield-offset="7" c-bitfield-width="7" bitcount="7" />
@@ -1032,6 +1175,13 @@
          </instructions>
       </struct>
       <struct tag="DomeMonData" c-alignment="4" c-sizeof="16">
+         <stats>
+            <bitcounts total-unpacked="384" total-packed="276" />
+            <counts total="3">
+               <in-sector index="0" count="3" />
+               <in-top-level-value name="gSaveBlock2Ptr" count="3" />
+            </counts>
+         </stats>
          <members>
             <integer name="moves" type="MoveID[4]" bitcount="9">
                <array-rank extent="4" />
@@ -1053,6 +1203,13 @@
          </instructions>
       </struct>
       <struct tag="EmeraldBattleTowerRecord" c-alignment="4" c-sizeof="236">
+         <stats>
+            <bitcounts total-unpacked="11328" total-packed="10104" />
+            <counts total="6">
+               <in-sector index="0" count="6" />
+               <in-top-level-value name="gSaveBlock2Ptr" count="6" />
+            </counts>
+         </stats>
          <members>
             <integer name="lvlMode" type="u8" bitcount="8" />
             <integer name="facilityClass" type="u8" bitcount="8" />
@@ -1111,6 +1268,13 @@
          </instructions>
       </struct>
       <struct tag="EnigmaBerry" c-alignment="4" c-sizeof="52">
+         <stats>
+            <bitcounts total-unpacked="416" total-packed="400" />
+            <counts total="1">
+               <in-sector index="3" count="1" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="1" />
+            </counts>
+         </stats>
          <members>
             <struct name="berry" type="Berry2" />
             <integer name="itemEffect" type="u8[18]" bitcount="8">
@@ -1133,6 +1297,13 @@
          </instructions>
       </struct>
       <struct tag="ExternalEventData" c-alignment="1" c-sizeof="20">
+         <stats>
+            <bitcounts total-unpacked="160" total-packed="160" />
+            <counts total="1">
+               <in-sector index="3" count="1" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="1" />
+            </counts>
+         </stats>
          <members>
             <integer name="unknownExternalDataFields1" type="u8[7]" bitcount="8">
                <array-rank extent="7" />
@@ -1167,6 +1338,13 @@
          </instructions>
       </struct>
       <struct tag="ExternalEventFlags" c-alignment="1" c-sizeof="21">
+         <stats>
+            <bitcounts total-unpacked="168" total-packed="163" />
+            <counts total="1">
+               <in-sector index="3" count="1" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="1" />
+            </counts>
+         </stats>
          <members>
             <integer name="usedBoxRS" type="u8" c-bitfield-offset="0" c-bitfield-width="1" bitcount="1" />
             <integer name="boxRSEggsUnlocked" type="u8" c-bitfield-offset="1" c-bitfield-width="2" bitcount="2" />
@@ -1217,6 +1395,13 @@
          </instructions>
       </struct>
       <struct tag="GabbyAndTyData" c-alignment="4" c-sizeof="12">
+         <stats>
+            <bitcounts total-unpacked="96" total-packed="79" />
+            <counts total="1">
+               <in-sector index="3" count="1" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="1" />
+            </counts>
+         </stats>
          <members>
             <integer name="mon1" type="PokemonSpeciesID" bitcount="11" min="0" max="2047">
                <category name="species-id" />
@@ -1265,6 +1450,13 @@
          </instructions>
       </struct>
       <struct tag="ItemSlot" c-alignment="4" c-sizeof="4">
+         <stats>
+            <bitcounts total-unpacked="7552" total-packed="7552" />
+            <counts total="236">
+               <in-sector index="1" count="236" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="236" />
+            </counts>
+         </stats>
          <members>
             <integer name="itemId" type="ItemIDGlobal" bitcount="16">
                <category name="global-item-id" />
@@ -1277,6 +1469,13 @@
          </instructions>
       </struct>
       <struct tag="LilycoveLadyContest" c-alignment="4" c-sizeof="16">
+         <stats>
+            <bitcounts total-unpacked="128" total-packed="108" />
+            <counts total="1">
+               <in-sector index="4" count="1" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="1" />
+            </counts>
+         </stats>
          <members>
             <integer name="id" type="u8" bitcount="8" />
             <integer name="givenPokeblock" type="bool8" bitcount="8" />
@@ -1293,6 +1492,13 @@
          </members>
       </struct>
       <struct tag="LilycoveLadyFavor" c-alignment="4" c-sizeof="20">
+         <stats>
+            <bitcounts total-unpacked="160" total-packed="132" />
+            <counts total="1">
+               <in-sector index="4" count="1" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="1" />
+            </counts>
+         </stats>
          <members>
             <integer name="id" type="u8" bitcount="8" />
             <integer name="state" type="u8" bitcount="8" />
@@ -1314,6 +1520,13 @@
          </members>
       </struct>
       <struct tag="LilycoveLadyQuiz" c-alignment="4" c-sizeof="44">
+         <stats>
+            <bitcounts total-unpacked="352" total-packed="324" />
+            <counts total="1">
+               <in-sector index="4" count="1" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="1" />
+            </counts>
+         </stats>
          <members>
             <integer name="id" type="u8" bitcount="8" />
             <integer name="state" type="u8" bitcount="8" />
@@ -1339,6 +1552,13 @@
          </members>
       </struct>
       <union name="LilycoveLady" c-alignment="4" c-sizeof="64">
+         <stats>
+            <bitcounts total-unpacked="512" total-packed="324" />
+            <counts total="1">
+               <in-sector index="4" count="1" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="1" />
+            </counts>
+         </stats>
          <union-options is-internal="true" tag="id" />
          <members>
             <struct name="quiz" type="LilycoveLadyQuiz" union-tag-value="0" />
@@ -1351,6 +1571,13 @@
          </members>
       </union>
       <struct tag="LinkBattleRecord" c-alignment="4" c-sizeof="16">
+         <stats>
+            <bitcounts total-unpacked="640" total-packed="600" />
+            <counts total="5">
+               <in-sector index="3" count="5" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="5" />
+            </counts>
+         </stats>
          <members>
             <string name="name" type="u8[8]" length="7" nonstring="false">
                <category name="player-name" />
@@ -1371,6 +1598,13 @@
          </instructions>
       </struct>
       <struct tag="LinkBattleRecords" c-alignment="4" c-sizeof="88">
+         <stats>
+            <bitcounts total-unpacked="704" total-packed="620" />
+            <counts total="1">
+               <in-sector index="3" count="1" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="1" />
+            </counts>
+         </stats>
          <members>
             <struct name="entries" type="LinkBattleRecord[5]">
                <array-rank extent="5" />
@@ -1390,6 +1624,13 @@
          </instructions>
       </struct>
       <struct tag="Mail" c-alignment="4" c-sizeof="36">
+         <stats>
+            <bitcounts total-unpacked="5184" total-packed="4662" />
+            <counts total="18">
+               <in-sector index="3" count="18" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="18" />
+            </counts>
+         </stats>
          <members>
             <integer name="words" type="EasyChatWordID[9]" bitcount="16">
                <array-rank extent="9" />
@@ -1422,6 +1663,13 @@
          </instructions>
       </struct>
       <struct tag="MauvilleManBard" c-alignment="4" c-sizeof="44">
+         <stats>
+            <bitcounts total-unpacked="352" total-packed="324" />
+            <counts total="1">
+               <in-sector index="3" count="1" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="1" />
+            </counts>
+         </stats>
          <members>
             <integer name="id" type="u8" bitcount="8" />
             <integer name="songLyrics" type="EasyChatWordID[6]" bitcount="16">
@@ -1449,11 +1697,25 @@
          </members>
       </struct>
       <struct tag="MauvilleManCommon" c-alignment="4" c-sizeof="4">
+         <stats>
+            <bitcounts total-unpacked="32" total-packed="8" />
+            <counts total="1">
+               <in-sector index="3" count="1" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="1" />
+            </counts>
+         </stats>
          <members>
             <integer name="id" type="u8" bitcount="8" />
          </members>
       </struct>
       <struct tag="MauvilleManGiddy" c-alignment="4" c-sizeof="36">
+         <stats>
+            <bitcounts total-unpacked="288" total-packed="252" />
+            <counts total="1">
+               <in-sector index="3" count="1" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="1" />
+            </counts>
+         </stats>
          <members>
             <integer name="id" type="u8" bitcount="8" />
             <integer name="taleCounter" type="u8" bitcount="8" />
@@ -1471,6 +1733,13 @@
          </members>
       </struct>
       <struct tag="MauvilleManHipster" c-alignment="4" c-sizeof="4">
+         <stats>
+            <bitcounts total-unpacked="32" total-packed="20" />
+            <counts total="1">
+               <in-sector index="3" count="1" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="1" />
+            </counts>
+         </stats>
          <members>
             <integer name="id" type="u8" bitcount="8" />
             <integer name="taughtWord" type="bool8" bitcount="8" />
@@ -1480,6 +1749,13 @@
          </members>
       </struct>
       <struct tag="MauvilleManStoryteller" c-alignment="4" c-sizeof="60">
+         <stats>
+            <bitcounts total-unpacked="480" total-packed="432" />
+            <counts total="1">
+               <in-sector index="3" count="1" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="1" />
+            </counts>
+         </stats>
          <members>
             <integer name="id" type="u8" bitcount="8" />
             <integer name="alreadyRecorded" type="bool8" bitcount="8" />
@@ -1504,6 +1780,13 @@
          </members>
       </struct>
       <struct tag="MauvilleOldManTrader" c-alignment="4" c-sizeof="56">
+         <stats>
+            <bitcounts total-unpacked="448" total-packed="384" />
+            <counts total="1">
+               <in-sector index="3" count="1" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="1" />
+            </counts>
+         </stats>
          <members>
             <integer name="id" type="u8" bitcount="8" />
             <integer name="decorations" type="u8[4]" bitcount="8">
@@ -1521,6 +1804,13 @@
          </members>
       </struct>
       <struct tag="MysteryGiftSave" c-alignment="4" c-sizeof="876">
+         <stats>
+            <bitcounts total-unpacked="7008" total-packed="6966" />
+            <counts total="1">
+               <in-sector index="3" count="1" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="1" />
+            </counts>
+         </stats>
          <members>
             <integer name="newsCrc" type="u32" bitcount="32" />
             <struct name="news" type="WonderNews" />
@@ -1540,6 +1830,14 @@
          </members>
       </struct>
       <struct tag="ObjectEventTemplate" c-alignment="4" c-sizeof="24">
+         <stats>
+            <bitcounts total-unpacked="12288" total-packed="10240" />
+            <counts total="64">
+               <in-sector index="1" count="46" />
+               <in-sector index="2" count="18" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="64" />
+            </counts>
+         </stats>
          <members>
             <integer name="localId" type="u8" bitcount="8" />
             <integer name="graphicsId" type="u8" bitcount="8" />
@@ -1572,6 +1870,13 @@
          </instructions>
       </struct>
       <struct tag="ObjectEvent" c-alignment="4" c-sizeof="36">
+         <stats>
+            <bitcounts total-unpacked="4608" total-packed="4416" />
+            <counts total="16">
+               <in-sector index="1" count="16" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="16" />
+            </counts>
+         </stats>
          <members>
             <integer name="active" type="u32" c-bitfield-offset="0" c-bitfield-width="1" bitcount="1" />
             <integer name="singleMovementActive" type="u32" c-bitfield-offset="1" c-bitfield-width="1" bitcount="1" />
@@ -1684,6 +1989,13 @@
          </instructions>
       </struct>
       <union name="OldMan" c-alignment="4" c-sizeof="64">
+         <stats>
+            <bitcounts total-unpacked="512" total-packed="512" />
+            <counts total="1">
+               <in-sector index="3" count="1" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="1" />
+            </counts>
+         </stats>
          <opaque-buffer-options bytecount="64" />
          <members>
             <struct name="common" type="MauvilleManCommon" />
@@ -1698,6 +2010,13 @@
          </members>
       </union>
       <struct tag="PlayersApprentice" c-alignment="4" c-sizeof="44">
+         <stats>
+            <bitcounts total-unpacked="352" total-packed="269" />
+            <counts total="1">
+               <in-sector index="0" count="1" />
+               <in-top-level-value name="gSaveBlock2Ptr" count="1" />
+            </counts>
+         </stats>
          <members>
             <integer name="id" type="u8" bitcount="8" />
             <integer name="lvlMode" type="u8" c-bitfield-offset="8" c-bitfield-width="2" bitcount="2" />
@@ -1730,6 +2049,13 @@
          </instructions>
       </struct>
       <struct tag="Pokeblock" c-alignment="4" c-sizeof="8">
+         <stats>
+            <bitcounts total-unpacked="2560" total-packed="2240" />
+            <counts total="40">
+               <in-sector index="1" count="40" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="40" />
+            </counts>
+         </stats>
          <members>
             <integer name="color" type="u8" bitcount="8" />
             <integer name="spicy" type="u8" bitcount="8" />
@@ -1750,6 +2076,13 @@
          </instructions>
       </struct>
       <struct tag="Pokedex" c-alignment="4" c-sizeof="120">
+         <stats>
+            <bitcounts total-unpacked="960" total-packed="960" />
+            <counts total="1">
+               <in-sector index="0" count="1" />
+               <in-top-level-value name="gSaveBlock2Ptr" count="1" />
+            </counts>
+         </stats>
          <members>
             <integer name="order" type="u8" bitcount="8" />
             <integer name="mode" type="u8" bitcount="8" />
@@ -1782,6 +2115,13 @@
          </instructions>
       </struct>
       <struct tag="PokemonJumpRecords" c-alignment="4" c-sizeof="16">
+         <stats>
+            <bitcounts total-unpacked="128" total-packed="128" />
+            <counts total="1">
+               <in-sector index="0" count="1" />
+               <in-top-level-value name="gSaveBlock2Ptr" count="1" />
+            </counts>
+         </stats>
          <members>
             <integer name="jumpsInRow" type="u16" bitcount="16" />
             <integer name="unused1" type="u16" bitcount="16" />
@@ -1800,6 +2140,13 @@
          </instructions>
       </struct>
       <struct tag="PokemonStorage" c-alignment="4" c-sizeof="33744">
+         <stats>
+            <bitcounts total-unpacked="269952" total-packed="245872" />
+            <counts total="1">
+               <in-sector index="5" count="1" />
+               <in-top-level-value name="gPokemonStoragePtr" count="1" />
+            </counts>
+         </stats>
          <members>
             <integer name="currentBox" type="u8" bitcount="4" min="0" max="13" />
             <transformed name="boxes" type="BoxPokemon[30][14]" transformed-type="SerializedBoxPokemon" pack-function="PackBoxPokemonForSave" unpack-function="UnpackBoxPokemonForSave">
@@ -1815,6 +2162,23 @@
          </members>
       </struct>
       <struct tag="PokemonSubstruct0" c-alignment="4" c-sizeof="12">
+         <stats>
+            <bitcounts total-unpacked="41088" total-packed="32100" />
+            <counts total="428">
+               <in-sector index="1" count="6" />
+               <in-sector index="3" count="2" />
+               <in-sector index="5" count="54" />
+               <in-sector index="6" count="54" />
+               <in-sector index="7" count="54" />
+               <in-sector index="8" count="54" />
+               <in-sector index="9" count="54" />
+               <in-sector index="10" count="54" />
+               <in-sector index="11" count="54" />
+               <in-sector index="12" count="42" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="8" />
+               <in-top-level-value name="gPokemonStoragePtr" count="420" />
+            </counts>
+         </stats>
          <members>
             <integer name="species" type="PokemonSpeciesID" bitcount="11" min="0" max="2047">
                <category name="species-id" />
@@ -1836,6 +2200,23 @@
          </instructions>
       </struct>
       <struct tag="PokemonSubstruct1" c-alignment="4" c-sizeof="12">
+         <stats>
+            <bitcounts total-unpacked="41088" total-packed="29104" />
+            <counts total="428">
+               <in-sector index="1" count="6" />
+               <in-sector index="3" count="2" />
+               <in-sector index="5" count="54" />
+               <in-sector index="6" count="54" />
+               <in-sector index="7" count="54" />
+               <in-sector index="8" count="54" />
+               <in-sector index="9" count="54" />
+               <in-sector index="10" count="54" />
+               <in-sector index="11" count="54" />
+               <in-sector index="12" count="42" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="8" />
+               <in-top-level-value name="gPokemonStoragePtr" count="420" />
+            </counts>
+         </stats>
          <members>
             <integer name="moves" type="MoveID[4]" bitcount="9">
                <array-rank extent="4" />
@@ -1855,6 +2236,13 @@
          </instructions>
       </struct>
       <struct tag="Pokemon" c-alignment="4" c-sizeof="100">
+         <stats>
+            <bitcounts total-unpacked="4800" total-packed="4452" />
+            <counts total="6">
+               <in-sector index="1" count="6" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="6" />
+            </counts>
+         </stats>
          <members>
             <transformed name="box" type="BoxPokemon" transformed-type="SerializedBoxPokemon" pack-function="PackBoxPokemonForSave" unpack-function="UnpackBoxPokemonForSave" />
             <integer name="status" type="u32" bitcount="32" />
@@ -1887,6 +2275,23 @@
          </instructions>
       </struct>
       <struct tag="PokemonSubstruct2" c-alignment="4" c-sizeof="12">
+         <stats>
+            <bitcounts total-unpacked="41088" total-packed="41088" />
+            <counts total="428">
+               <in-sector index="1" count="6" />
+               <in-sector index="3" count="2" />
+               <in-sector index="5" count="54" />
+               <in-sector index="6" count="54" />
+               <in-sector index="7" count="54" />
+               <in-sector index="8" count="54" />
+               <in-sector index="9" count="54" />
+               <in-sector index="10" count="54" />
+               <in-sector index="11" count="54" />
+               <in-sector index="12" count="42" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="8" />
+               <in-top-level-value name="gPokemonStoragePtr" count="420" />
+            </counts>
+         </stats>
          <members>
             <integer name="hpEV" type="u8" bitcount="8" />
             <integer name="attackEV" type="u8" bitcount="8" />
@@ -1917,6 +2322,23 @@
          </instructions>
       </struct>
       <struct tag="PokemonSubstruct3" c-alignment="4" c-sizeof="12">
+         <stats>
+            <bitcounts total-unpacked="41088" total-packed="41088" />
+            <counts total="428">
+               <in-sector index="1" count="6" />
+               <in-sector index="3" count="2" />
+               <in-sector index="5" count="54" />
+               <in-sector index="6" count="54" />
+               <in-sector index="7" count="54" />
+               <in-sector index="8" count="54" />
+               <in-sector index="9" count="54" />
+               <in-sector index="10" count="54" />
+               <in-sector index="11" count="54" />
+               <in-sector index="12" count="42" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="8" />
+               <in-top-level-value name="gPokemonStoragePtr" count="420" />
+            </counts>
+         </stats>
          <members>
             <integer name="pokerus" type="u8" bitcount="8" />
             <integer name="metLocation" type="u8" bitcount="8" />
@@ -1989,6 +2411,13 @@
          </instructions>
       </struct>
       <struct name="PokeNews" c-alignment="4" c-sizeof="4">
+         <stats>
+            <bitcounts total-unpacked="512" total-packed="512" />
+            <counts total="16">
+               <in-sector index="3" count="16" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="16" />
+            </counts>
+         </stats>
          <members>
             <integer name="kind" type="u8" bitcount="8" />
             <integer name="state" type="u8" bitcount="8" />
@@ -2001,6 +2430,13 @@
          </instructions>
       </struct>
       <struct tag="PyramidBag" c-alignment="4" c-sizeof="60">
+         <stats>
+            <bitcounts total-unpacked="480" total-packed="480" />
+            <counts total="1">
+               <in-sector index="0" count="1" />
+               <in-top-level-value name="gSaveBlock2Ptr" count="1" />
+            </counts>
+         </stats>
          <members>
             <integer name="itemId" type="ItemIDGlobal[10][2]" bitcount="16">
                <array-rank extent="2" />
@@ -2026,6 +2462,13 @@
          </instructions>
       </struct>
       <struct tag="RamScriptData" c-alignment="4" c-sizeof="1000">
+         <stats>
+            <bitcounts total-unpacked="8000" total-packed="7992" />
+            <counts total="1">
+               <in-sector index="4" count="1" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="1" />
+            </counts>
+         </stats>
          <members>
             <integer name="magic" type="u8" bitcount="8" />
             <integer name="mapGroup" type="u8" bitcount="8" />
@@ -2046,6 +2489,13 @@
          </instructions>
       </struct>
       <struct tag="RamScript" c-alignment="4" c-sizeof="1004">
+         <stats>
+            <bitcounts total-unpacked="8032" total-packed="8024" />
+            <counts total="1">
+               <in-sector index="4" count="1" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="1" />
+            </counts>
+         </stats>
          <members>
             <integer name="checksum" type="u32" bitcount="32">
                <category name="checksum-crc16" />
@@ -2058,6 +2508,13 @@
          </instructions>
       </struct>
       <struct tag="RankingHall1P" c-alignment="4" c-sizeof="16">
+         <stats>
+            <bitcounts total-unpacked="6912" total-packed="5832" />
+            <counts total="54">
+               <in-sector index="0" count="54" />
+               <in-top-level-value name="gSaveBlock2Ptr" count="54" />
+            </counts>
+         </stats>
          <members>
             <integer name="id" type="u8[4]" bitcount="8">
                <array-rank extent="4" />
@@ -2081,6 +2538,13 @@
          </instructions>
       </struct>
       <struct tag="RankingHall2P" c-alignment="4" c-sizeof="28">
+         <stats>
+            <bitcounts total-unpacked="1344" total-packed="1176" />
+            <counts total="6">
+               <in-sector index="0" count="6" />
+               <in-top-level-value name="gSaveBlock2Ptr" count="6" />
+            </counts>
+         </stats>
          <members>
             <integer name="id1" type="u8[4]" bitcount="8">
                <array-rank extent="4" />
@@ -2115,6 +2579,13 @@
          </instructions>
       </struct>
       <struct tag="RecordMixingGift" c-alignment="4" c-sizeof="16">
+         <stats>
+            <bitcounts total-unpacked="128" total-packed="128" />
+            <counts total="1">
+               <in-sector index="4" count="1" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="1" />
+            </counts>
+         </stats>
          <members>
             <integer name="checksum" type="int" bitcount="32">
                <category name="checksum-a32u8" />
@@ -2127,6 +2598,13 @@
          </instructions>
       </struct>
       <struct tag="RecordMixingGiftData" c-alignment="4" c-sizeof="12">
+         <stats>
+            <bitcounts total-unpacked="96" total-packed="96" />
+            <counts total="1">
+               <in-sector index="4" count="1" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="1" />
+            </counts>
+         </stats>
          <members>
             <integer name="unk0" type="u8" bitcount="8" />
             <integer name="quantity" type="u8" bitcount="8" />
@@ -2147,6 +2625,13 @@
          </instructions>
       </struct>
       <struct tag="RentalMon" c-alignment="4" c-sizeof="12">
+         <stats>
+            <bitcounts total-unpacked="576" total-packed="354" />
+            <counts total="6">
+               <in-sector index="0" count="6" />
+               <in-top-level-value name="gSaveBlock2Ptr" count="6" />
+            </counts>
+         </stats>
          <members>
             <integer name="monId" type="PokemonSpeciesID" bitcount="11" min="0" max="2047">
                <category name="species-id" />
@@ -2163,6 +2648,13 @@
          </instructions>
       </struct>
       <struct tag="Roamer" c-alignment="4" c-sizeof="28">
+         <stats>
+            <bitcounts total-unpacked="224" total-packed="218" />
+            <counts total="1">
+               <in-sector index="3" count="1" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="1" />
+            </counts>
+         </stats>
          <members>
             <integer name="ivs" type="u32" bitcount="32" />
             <integer name="personality" type="u32" bitcount="32" />
@@ -2203,6 +2695,13 @@
          </instructions>
       </struct>
       <struct tag="SaveBlock1" c-alignment="4" c-sizeof="15752">
+         <stats>
+            <bitcounts total-unpacked="126016" total-packed="114802" />
+            <counts total="1">
+               <in-sector index="1" count="1" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="1" />
+            </counts>
+         </stats>
          <members>
             <struct name="pos" type="Coords16" />
             <struct name="location" type="WarpData" />
@@ -2398,6 +2897,13 @@
          </members>
       </struct>
       <struct tag="SaveBlock2" c-alignment="4" c-sizeof="3884">
+         <stats>
+            <bitcounts total-unpacked="31072" total-packed="27187" />
+            <counts total="1">
+               <in-sector index="0" count="1" />
+               <in-top-level-value name="gSaveBlock2Ptr" count="1" />
+            </counts>
+         </stats>
          <members>
             <string name="playerName" type="u8[8]" length="7" nonstring="false">
                <category name="player-name" />
@@ -2503,6 +3009,14 @@
          </instructions>
       </struct>
       <struct tag="SecretBase" c-alignment="4" c-sizeof="160">
+         <stats>
+            <bitcounts total-unpacked="25600" total-packed="21120" />
+            <counts total="20">
+               <in-sector index="2" count="14" />
+               <in-sector index="3" count="6" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="20" />
+            </counts>
+         </stats>
          <members>
             <integer name="secretBaseId" type="u8" bitcount="8" />
             <integer name="toRegister" type="bool8" c-bitfield-offset="8" c-bitfield-width="4" bitcount="4" />
@@ -2554,6 +3068,14 @@
          </instructions>
       </struct>
       <struct tag="SecretBaseParty" c-alignment="4" c-sizeof="108">
+         <stats>
+            <bitcounts total-unpacked="17280" total-packed="13200" />
+            <counts total="20">
+               <in-sector index="2" count="13" />
+               <in-sector index="3" count="7" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="20" />
+            </counts>
+         </stats>
          <members>
             <integer name="personality" type="u32[6]" bitcount="32">
                <array-rank extent="6" />
@@ -2600,9 +3122,6 @@
          </instructions>
       </struct>
       <struct tag="SerializedBoxPokemon" c-alignment="4" c-sizeof="84">
-         <stats>
-            <bitcounts total-unpacked="0" total-packed="0" />
-         </stats>
          <members>
             <integer name="personality" type="u32" bitcount="32" />
             <integer name="otId" type="u32" bitcount="32" />
@@ -2639,6 +3158,23 @@
          </instructions>
       </struct>
       <struct tag="SerializedBoxPokemonSubstructs" c-alignment="4" c-sizeof="52">
+         <stats>
+            <bitcounts total-unpacked="178048" total-packed="150228" />
+            <counts total="428">
+               <in-sector index="1" count="6" />
+               <in-sector index="3" count="2" />
+               <in-sector index="5" count="54" />
+               <in-sector index="6" count="54" />
+               <in-sector index="7" count="54" />
+               <in-sector index="8" count="54" />
+               <in-sector index="9" count="54" />
+               <in-sector index="10" count="54" />
+               <in-sector index="11" count="54" />
+               <in-sector index="12" count="42" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="8" />
+               <in-top-level-value name="gPokemonStoragePtr" count="420" />
+            </counts>
+         </stats>
          <members>
             <struct name="type0" type="PokemonSubstruct0" />
             <struct name="type1" type="PokemonSubstruct1" />
@@ -2655,6 +3191,13 @@
          </instructions>
       </struct>
       <struct tag="Time" c-alignment="4" c-sizeof="8">
+         <stats>
+            <bitcounts total-unpacked="128" total-packed="72" />
+            <counts total="2">
+               <in-sector index="0" count="2" />
+               <in-top-level-value name="gSaveBlock2Ptr" count="2" />
+            </counts>
+         </stats>
          <members>
             <integer name="days" type="s16" bitcount="16" />
             <integer name="hours" type="s8" bitcount="6" min="-24" max="24" />
@@ -2669,6 +3212,13 @@
          </instructions>
       </struct>
       <struct tag="TrainerHillSave" c-alignment="4" c-sizeof="12">
+         <stats>
+            <bitcounts total-unpacked="96" total-packed="88" />
+            <counts total="1">
+               <in-sector index="4" count="1" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="1" />
+            </counts>
+         </stats>
          <members>
             <integer name="timer" type="u32" bitcount="32" />
             <integer name="bestTime" type="u32" bitcount="32" />
@@ -2697,6 +3247,13 @@
          </instructions>
       </struct>
       <struct tag="TrainerNameRecord" c-alignment="4" c-sizeof="12">
+         <stats>
+            <bitcounts total-unpacked="1920" total-packed="1760" />
+            <counts total="20">
+               <in-sector index="4" count="20" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="20" />
+            </counts>
+         </stats>
          <members>
             <integer name="trainerId" type="u32" bitcount="32">
                <category name="trainer-id" />
@@ -2711,6 +3268,13 @@
          </instructions>
       </struct>
       <union name="TVShow" c-alignment="4" c-sizeof="36">
+         <stats>
+            <bitcounts total-unpacked="7200" total-packed="7200" />
+            <counts total="25">
+               <in-sector index="3" count="25" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="25" />
+            </counts>
+         </stats>
          <opaque-buffer-options bytecount="36" />
          <members>
             <struct name="common">
@@ -3480,6 +4044,13 @@
          </members>
       </union>
       <struct tag="WaldaPhrase" c-alignment="4" c-sizeof="24">
+         <stats>
+            <bitcounts total-unpacked="192" total-packed="184" />
+            <counts total="1">
+               <in-sector index="4" count="1" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="1" />
+            </counts>
+         </stats>
          <members>
             <integer name="colors" type="u16[2]" bitcount="16">
                <array-rank extent="2" />
@@ -3504,6 +4075,13 @@
          </instructions>
       </struct>
       <struct tag="WarpData" c-alignment="4" c-sizeof="8">
+         <stats>
+            <bitcounts total-unpacked="320" total-packed="280" />
+            <counts total="5">
+               <in-sector index="1" count="5" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="5" />
+            </counts>
+         </stats>
          <members>
             <integer name="mapGroup" type="s8" bitcount="8" />
             <integer name="mapNum" type="s8" bitcount="8" />
@@ -3520,6 +4098,13 @@
          </instructions>
       </struct>
       <struct tag="WonderCard" c-alignment="4" c-sizeof="332">
+         <stats>
+            <bitcounts total-unpacked="2656" total-packed="2635" />
+            <counts total="1">
+               <in-sector index="4" count="1" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="1" />
+            </counts>
+         </stats>
          <members>
             <integer name="flagId" type="u16" bitcount="16" />
             <integer name="iconSpecies" type="PokemonSpeciesID" bitcount="11" min="0" max="2047">
@@ -3575,6 +4160,13 @@
          </instructions>
       </struct>
       <struct tag="WonderCardMetadata" c-alignment="4" c-sizeof="36">
+         <stats>
+            <bitcounts total-unpacked="288" total-packed="283" />
+            <counts total="1">
+               <in-sector index="4" count="1" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="1" />
+            </counts>
+         </stats>
          <members>
             <integer name="battlesWon" type="u16" bitcount="16" />
             <integer name="battlesLost" type="u16" bitcount="16" />
@@ -3600,6 +4192,13 @@
          </instructions>
       </struct>
       <struct tag="WonderNewsMetadata" c-alignment="4" c-sizeof="4">
+         <stats>
+            <bitcounts total-unpacked="32" total-packed="16" />
+            <counts total="1">
+               <in-sector index="4" count="1" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="1" />
+            </counts>
+         </stats>
          <members>
             <integer name="newsType" type="u8" c-bitfield-offset="0" c-bitfield-width="2" bitcount="2" />
             <integer name="sentRewardCounter" type="u8" c-bitfield-offset="2" c-bitfield-width="3" bitcount="3" />
@@ -3614,6 +4213,13 @@
          </instructions>
       </struct>
       <struct tag="WonderNews" c-alignment="4" c-sizeof="444">
+         <stats>
+            <bitcounts total-unpacked="3552" total-packed="3552" />
+            <counts total="1">
+               <in-sector index="3" count="1" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="1" />
+            </counts>
+         </stats>
          <members>
             <integer name="id" type="u16" bitcount="16" />
             <integer name="sendType" type="u8" bitcount="8" />

@@ -24,10 +24,12 @@ function stringify_table(tbl, indent, do_not_invoke_tostring, _seen)
    if not tbl then
       return indent .. "nil"
    end
+   local text = ""
    if not _seen then
-      _seen = {}
+      text = "#1"
+      _seen = { tbl }
    end
-   local text  = "{"
+   text = text .. "{"
    local empty = true
    for k, v in pairs(tbl) do
       empty = false

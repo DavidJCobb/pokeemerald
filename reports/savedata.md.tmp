@@ -1,0 +1,258 @@
+# Savedata format
+
+This project uses an automatically-generated savedata format.
+
+## Stats
+
+### Stats per sector
+
+| Sector | Unpacked bytes | Unpacked % | Packed bytes | Packed bits | Packed % |
+| -: | -: | -: | -: | -: | -: |
+|0|3884|97.88%|3399|27187|85.64%|
+|1|3968|100.0%|3968|31740|99.98%|
+|2|3968|100.0%|3968|31740|99.98%|
+|3|3968|100.0%|3968|31744|100.0%|
+|4|3848|96.97%|2448|19578|61.67%|
+|5|3968|100.0%|3936|31486|99.18%|
+|6|3968|100.0%|3936|31482|99.17%|
+|7|3968|100.0%|3936|31482|99.17%|
+|8|3968|100.0%|3936|31482|99.17%|
+|9|3968|100.0%|3936|31482|99.17%|
+|10|3968|100.0%|3936|31482|99.17%|
+|11|3968|100.0%|3936|31482|99.17%|
+|12|3968|100.0%|3187|25494|80.31%|
+|13|2000|50.4%||||
+
+Totals:
+
+* **Total unpacked bytes:** 53380 (96.09%)
+* **Total packed bits:** 387861 (87.27%)
+* **Total lost bits:** 8088 (1.81%)
+  * Some values can't be split across sectors. If these values can't fit at the end of a sector, then they must be pushed to the start of the next sector &mdash; leaving unused space at the end of the sector they were pushed past.
+
+### Bitpack value categories
+
+#### checksum-32
+
+* **Total unpacked size:** 384 bits
+* **Total packed size:** 384 bits
+* **Total size reduction:** 100.0%
+* **Counts by sector:**
+  * **Sector 0:** 11
+  * **Sector 3:** 1
+* **Counts by top-level value:**
+  * **Value `gSaveBlock2Ptr`:** 11
+  * **Value `gSaveBlock1Ptr`:** 1
+
+#### checksum-a32u8
+
+* **Total unpacked size:** 32 bits
+* **Total packed size:** 32 bits
+* **Total size reduction:** 100.0%
+* **Counts by sector:**
+  * **Sector 4:** 1
+* **Counts by top-level value:**
+  * **Value `gSaveBlock1Ptr`:** 1
+
+#### checksum-crc16
+
+* **Total unpacked size:** 32 bits
+* **Total packed size:** 32 bits
+* **Total size reduction:** 100.0%
+* **Counts by sector:**
+  * **Sector 4:** 1
+* **Counts by top-level value:**
+  * **Value `gSaveBlock1Ptr`:** 1
+
+#### easy-chat-word
+
+* **Total unpacked size:** 5504 bits
+* **Total packed size:** 5504 bits
+* **Total size reduction:** 100.0%
+* **Counts by sector:**
+  * **Sector 0:** 150
+  * **Sector 3:** 194
+* **Counts by top-level value:**
+  * **Value `gSaveBlock2Ptr`:** 150
+  * **Value `gSaveBlock1Ptr`:** 194
+
+#### global-item-id
+
+* **Total unpacked size:** 15840 bits
+* **Total packed size:** 15840 bits
+* **Total size reduction:** 100.0%
+* **Counts by sector:**
+  * **Sector 0:** 59
+  * **Sector 1:** 243
+  * **Sector 2:** 78
+  * **Sector 3:** 187
+  * **Sector 4:** 3
+  * **Sector 5:** 54
+  * **Sector 6:** 54
+  * **Sector 7:** 54
+  * **Sector 8:** 54
+  * **Sector 9:** 54
+  * **Sector 10:** 54
+  * **Sector 11:** 54
+  * **Sector 12:** 42
+* **Counts by top-level value:**
+  * **Value `gSaveBlock2Ptr`:** 59
+  * **Value `gSaveBlock1Ptr`:** 511
+  * **Value `gPokemonStoragePtr`:** 420
+
+#### language
+
+* **Total unpacked size:** 12136 bits
+* **Total packed size:** 6068 bits
+* **Total size reduction:** 50.0%
+* **Counts by sector:**
+  * **Sector 0:** 71
+  * **Sector 1:** 6
+  * **Sector 2:** 14
+  * **Sector 3:** 1003
+  * **Sector 4:** 3
+  * **Sector 5:** 54
+  * **Sector 6:** 54
+  * **Sector 7:** 54
+  * **Sector 8:** 54
+  * **Sector 9:** 54
+  * **Sector 10:** 54
+  * **Sector 11:** 54
+  * **Sector 12:** 42
+* **Counts by top-level value:**
+  * **Value `gSaveBlock2Ptr`:** 71
+  * **Value `gSaveBlock1Ptr`:** 1026
+  * **Value `gPokemonStoragePtr`:** 420
+
+#### move-id
+
+* **Total unpacked size:** 42640 bits
+* **Total packed size:** 23985 bits
+* **Total size reduction:** 56.25%
+* **Counts by sector:**
+  * **Sector 0:** 168
+  * **Sector 1:** 24
+  * **Sector 2:** 312
+  * **Sector 3:** 481
+  * **Sector 5:** 216
+  * **Sector 6:** 216
+  * **Sector 7:** 216
+  * **Sector 8:** 216
+  * **Sector 9:** 216
+  * **Sector 10:** 216
+  * **Sector 11:** 216
+  * **Sector 12:** 168
+* **Counts by top-level value:**
+  * **Value `gSaveBlock2Ptr`:** 168
+  * **Value `gSaveBlock1Ptr`:** 817
+  * **Value `gPokemonStoragePtr`:** 1680
+
+#### player-name
+
+* **Total unpacked size:** 93664 bits
+* **Total packed size:** 85120 bits
+* **Total size reduction:** 90.87%
+* **Counts by sector:**
+  * **Sector 0:** 81
+  * **Sector 1:** 6
+  * **Sector 2:** 14
+  * **Sector 3:** 976
+  * **Sector 4:** 23
+  * **Sector 5:** 54
+  * **Sector 6:** 54
+  * **Sector 7:** 54
+  * **Sector 8:** 54
+  * **Sector 9:** 54
+  * **Sector 10:** 54
+  * **Sector 11:** 54
+  * **Sector 12:** 42
+* **Counts by top-level value:**
+  * **Value `gSaveBlock2Ptr`:** 81
+  * **Value `gSaveBlock1Ptr`:** 1019
+  * **Value `gPokemonStoragePtr`:** 420
+
+#### player-name-mauville-old-man
+
+* **Total unpacked size:** 352 bits
+* **Total packed size:** 320 bits
+* **Total size reduction:** 90.9%
+* **Counts by sector:**
+  * **Sector 3:** 4
+* **Counts by top-level value:**
+  * **Value `gSaveBlock1Ptr`:** 4
+
+#### pokemon-level
+
+* **Total unpacked size:** 1440 bits
+* **Total packed size:** 1260 bits
+* **Total size reduction:** 87.5%
+* **Counts by sector:**
+  * **Sector 0:** 27
+  * **Sector 1:** 6
+  * **Sector 2:** 78
+  * **Sector 3:** 69
+* **Counts by top-level value:**
+  * **Value `gSaveBlock2Ptr`:** 27
+  * **Value `gSaveBlock1Ptr`:** 153
+
+#### pokemon-name
+
+* **Total unpacked size:** 49024 bits
+* **Total packed size:** 47680 bits
+* **Total size reduction:** 97.25%
+* **Counts by sector:**
+  * **Sector 0:** 28
+  * **Sector 1:** 6
+  * **Sector 3:** 142
+  * **Sector 5:** 54
+  * **Sector 6:** 54
+  * **Sector 7:** 54
+  * **Sector 8:** 54
+  * **Sector 9:** 54
+  * **Sector 10:** 54
+  * **Sector 11:** 54
+  * **Sector 12:** 42
+* **Counts by top-level value:**
+  * **Value `gSaveBlock2Ptr`:** 28
+  * **Value `gSaveBlock1Ptr`:** 148
+  * **Value `gPokemonStoragePtr`:** 420
+
+#### species-id
+
+* **Total unpacked size:** 18912 bits
+* **Total packed size:** 13002 bits
+* **Total size reduction:** 68.75%
+* **Counts by sector:**
+  * **Sector 0:** 47
+  * **Sector 1:** 6
+  * **Sector 2:** 78
+  * **Sector 3:** 629
+  * **Sector 4:** 2
+  * **Sector 5:** 54
+  * **Sector 6:** 54
+  * **Sector 7:** 54
+  * **Sector 8:** 54
+  * **Sector 9:** 54
+  * **Sector 10:** 54
+  * **Sector 11:** 54
+  * **Sector 12:** 42
+* **Counts by top-level value:**
+  * **Value `gSaveBlock2Ptr`:** 47
+  * **Value `gSaveBlock1Ptr`:** 715
+  * **Value `gPokemonStoragePtr`:** 420
+
+#### trainer-id
+
+* **Total unpacked size:** 6416 bits
+* **Total packed size:** 6320 bits
+* **Total size reduction:** 98.5%
+* **Counts by sector:**
+  * **Sector 0:** 363
+  * **Sector 2:** 56
+  * **Sector 3:** 118
+  * **Sector 4:** 34
+* **Counts by top-level value:**
+  * **Value `gSaveBlock2Ptr`:** 363
+  * **Value `gSaveBlock1Ptr`:** 208
+
+

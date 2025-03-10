@@ -64,6 +64,12 @@ do
    assert(sector_size, "Missing node: data:root > config > option[name='max-sector-bytecount'].")
 end
 
+function strip_c_type(name)
+   name = name:gsub("^const ", "")
+   name = name:gsub("^volatile ", "")
+   return name
+end
+
 local type_nodes = {}
 do
    local base = root_node:children_by_node_name("c-types")[1]
@@ -106,51 +112,35 @@ do
    end)
 end
 
-local out_file = io.open("../../reports/savedata.md.tmp", "w")
-if not out_file then
-   error("Unable to open the output file for writing.")
-end
+local sector_size_info = {
+   by_sector = {},
+   totals = {
+      unpacked = 0, -- bytes
+      packed   = 0, -- bits
+      lost     = 0, -- bits
+   }
+}
+do
+   local dst = sector_size_info
 
-out_file:write([=[
-# Savedata format
-
-This project uses an automatically-generated savedata format.
-
-]=])
-
-function strip_c_type(name)
-   name = name:gsub("^const ", "")
-   name = name:gsub("^volatile ", "")
-   return name
-end
-function to_percentage(n)
-   n = n * 100
-   return string.format("%.2f%%", n)
-end
-
-out_file:write("## Stats\n\n")
-
-do -- Stats per sector
-   out_file:write("### Stats per sector\n\n")
-   out_file:write("| Sector | Unpacked bytes | Unpacked % | Packed bytes | Packed bits | Packed % |\n")
-   out_file:write("| -: | -: | -: | -: | -: | -: |\n")
-   
    local tlv_index  = 1
    local tlv_byte   = 0
    local tlv_forced = true
    
-   local total_unpacked_bytes = 0
-   local total_packed_bits    = 0
-   local total_lost_bits      = 0
-
    local base = root_node:children_by_node_name("sectors")[1]
    assert(base, "Missing node: data:root > sectors")
    local list = base:children_by_node_name("sector")
    for i = 1, sector_count do
-      out_file:write("|")
-      out_file:write(i - 1)
-      out_file:write("|")
-      
+      local sector = {
+         forced_to_end = false,
+         sizes = {
+            unpacked = 0, -- bits
+            packed   = 0, -- bits
+            lost     = 0, -- bits
+         }
+      }
+      dst.by_sector[#dst.by_sector + 1] = sector
+   
       local sector_forced_to_end = false
       
       if tlv_index <= #top_level_values then
@@ -158,7 +148,6 @@ do -- Stats per sector
          while tlv_index <= #top_level_values do
             local tlv  = top_level_values[tlv_index]
             local size
---print(i .. ": " .. tlv_index .. ": " .. tlv.name)
             do
                local tn = strip_c_type(tlv.types.original)
                if tlv.deref > 0 then
@@ -176,10 +165,9 @@ do -- Stats per sector
                --
                -- This object is forced to the next sector.
                --
---print(" - forced to next")
                tlv_forced = true
                tlv_byte   = 0
-               sector_forced_to_end = true
+               sector.forced_to_end = true
                break
             else
                local remaining_size = size - tlv_byte
@@ -189,7 +177,6 @@ do -- Stats per sector
                   --
                   -- This object fits wholly within the current sector.
                   --
-   --print(" - fits (" .. remaining_size .. " bytes)")
                   tlv_index  = tlv_index + 1
                   tlv_byte   = 0
                   total_size = total_size + remaining_size
@@ -200,7 +187,6 @@ do -- Stats per sector
                   --
                   local fit_size = sector_size - total_size
                   tlv_byte   = tlv_byte + fit_size
-   --print(" - splits (" .. size .. " bytes; " .. fit_size .. " bytes fit; we will continue from " .. tlv_byte .. ")")
                   total_size = sector_size
                   break
                end
@@ -209,56 +195,98 @@ do -- Stats per sector
             -- For structs split across sectors
             tlv_byte = 0
          end
-         out_file:write(total_size)
-         out_file:write("|")
-         out_file:write(to_percentage(total_size / sector_size))
-         out_file:write("|")
-         
-         total_unpacked_bytes = total_unpacked_bytes + total_size
-      else
-         out_file:write("0|0.00%|")
+         sector.sizes.unpacked = total_size
+         dst.totals.unpacked = dst.totals.unpacked + total_size
       end
       
       local node = list[i]
       if node then
          local bits = tonumber(node:children_by_node_name("stats")[1]:children_by_node_name("bitcounts")[1].attributes["total-packed"])
-         out_file:write(math.ceil(bits / 8))
-         out_file:write("|")
-         out_file:write(bits)
-         out_file:write("|")
-         out_file:write(to_percentage(bits / (sector_size * 8)))
-         out_file:write("|")
-         
-         total_packed_bits = total_packed_bits + bits
-         if not sector_forced_to_end and i < #list then
-            total_lost_bits = total_lost_bits + ((sector_size * 8) - bits)
+         sector.sizes.packed = bits
+         dst.totals.packed = dst.totals.packed + bits
+         if not sector.forced_to_end and i < #list then
+            sector.sizes.lost = (sector_size * 8) - bits
+            dst.totals.lost = dst.totals.lost + sector.sizes.lost
          end
-      else
-         out_file:write("0|0|0.00%|")
+      end
+   end
+end
+
+local out_file = io.open("../../reports/savedata.md.tmp", "w")
+if not out_file then
+   error("Unable to open the output file for writing.")
+end
+
+function to_percentage(n)
+   n = n * 100
+   return string.format("%.2f%%", n)
+end
+
+out_file:write("# Savedata format\n\n")
+do
+   local available_bytes = sector_size * sector_count
+   local available_bits  = available_bytes * 8
+   local total_bits_used = sector_size_info.totals.packed + sector_size_info.totals.lost
+
+   out_file:write("This project uses an automatically-generated savedata format wherein savedata is \"bitpacked\" to optimize for storage space. The vanilla savedata format consumes **")
+   out_file:write(to_percentage(sector_size_info.totals.unpacked / available_bytes))
+   out_file:write("** of the available space, leaving ")
+   out_file:write(available_bytes - sector_size_info.totals.unpacked)
+   out_file:write(" bytes to spare. The bitpacked format consumes **")
+   out_file:write(to_percentage(sector_size_info.totals.packed / available_bits))
+   out_file:write("** of that space, while wasting **")
+   out_file:write(to_percentage(sector_size_info.totals.lost / available_bits))
+   out_file:write("** of the available space due to technical limitations, thereby leaving ")
+   out_file:write(available_bytes - math.ceil(total_bits_used / 8))
+   out_file:write(" bytes to spare.\n\n")
+end
+
+out_file:write("## Stats\n\n")
+
+do -- Stats per sector
+   out_file:write("### Stats per sector\n\n")
+   out_file:write("| Sector | Unpacked bytes | Unpacked % | Packed bytes | Packed bits | Packed % |\n")
+   out_file:write("| -: | -: | -: | -: | -: | -: |\n")
+   for i = 1, sector_count do
+      out_file:write("|")
+      out_file:write(i - 1)
+      out_file:write("|")
+      local sector = sector_size_info.by_sector[i]
+      if sector then
+         out_file:write(sector.sizes.unpacked)
+         out_file:write("|")
+         out_file:write(to_percentage(sector.sizes.unpacked / sector_size))
+         out_file:write("|")
+         out_file:write(math.ceil(sector.sizes.packed / 8))
+         out_file:write("|")
+         out_file:write(sector.sizes.packed)
+         out_file:write("|")
+         out_file:write(to_percentage(sector.sizes.packed / (sector_size * 8)))
+         out_file:write("|")
       end
       out_file:write("\n")
    end
    out_file:write("|**Used**|")
-   out_file:write(total_unpacked_bytes)
+   out_file:write(sector_size_info.totals.unpacked)
    out_file:write("|")
-   out_file:write(to_percentage(total_unpacked_bytes / (sector_size * sector_count)))
+   out_file:write(to_percentage(sector_size_info.totals.unpacked / (sector_size * sector_count)))
    out_file:write("|")
-   out_file:write(math.ceil(total_packed_bits / 8))
+   out_file:write(math.ceil(sector_size_info.totals.packed / 8))
    out_file:write("|")
-   out_file:write(total_packed_bits)
+   out_file:write(sector_size_info.totals.packed)
    out_file:write("|")
-   out_file:write(to_percentage(total_packed_bits / (sector_size * 8 * sector_count)))
+   out_file:write(to_percentage(sector_size_info.totals.packed / (sector_size * 8 * sector_count)))
    out_file:write("|\n")
    out_file:write("|**Lost**|")
    -- no bytes lost in vanilla, since that's just a memcpy in slices
    out_file:write("|")
    -- no % lost in vanilla, since that's just a memcpy in slices
    out_file:write("|")
-   out_file:write(math.ceil(total_lost_bits / 8))
+   out_file:write(math.ceil(sector_size_info.totals.lost / 8))
    out_file:write("|")
-   out_file:write(total_lost_bits)
+   out_file:write(sector_size_info.totals.lost)
    out_file:write("|")
-   out_file:write(to_percentage(total_lost_bits / (sector_size * 8 * sector_count)))
+   out_file:write(to_percentage(sector_size_info.totals.lost / (sector_size * 8 * sector_count)))
    out_file:write("|\n\n")
    out_file:write("Some values can't be split across sectors. If these values can't fit at the end of a sector, then they must be pushed to the start of the next sector &mdash; leaving unused space at the end of the sector they were pushed past. This space is listed as \"lost\" in the table above.[^vanilla-never-loses-space]\n\n")
    out_file:write("[^vanilla-never-loses-space]: The vanilla game never produces \"lost\" space because it just uses `memcpy` to copy data directly between RAM and flash memory, blindly slicing values at sector boundaries. By contrast, the generating bitpacking code can only slice aggregates (e.g. arrays, structs, unions); it doesn't support slicing primitives (i.e. integers), strings, or opaque buffers.\n\n")

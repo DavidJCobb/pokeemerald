@@ -116,6 +116,49 @@ local goals = {
    },
 }
 
+-- Here, we specify "enum-confusables:" preprocessor macro names 
+-- that look like they're part of various enums, but aren't. The 
+-- entries in this array may end in '*', to denote prefixes that 
+-- are confusable. Wildcards elsewhere are not permitted.
+local enum_confusables = {
+   "FLAG_HIDDEN_ITEMS_START",
+
+   -- Temp flag aliases. Exclude these to ensure consistent naming 
+   -- when temp flags may have multiple purposes.
+   "FLAG_TEMP_SKIP_GABBY_INTERVIEW",
+   "FLAG_TEMP_REGICE_PUZZLE_STARTED",
+   "FLAG_TEMP_REGICE_PUZZLE_FAILED",
+   "FLAG_TEMP_HIDE_MIRAGE_ISLAND_BERRY_TREE",
+   
+   "ITEM_HAS_EFFECT",
+   "ITEM_LIST_END",
+   "ITEM_NAME_LENGTH",
+   "ITEM_TO_BERRY",
+   "ITEM_TO_MAIL",
+   "ITEM_USE_*",
+   "ITEM_B_USE_*",
+   
+   "MOVE_NAME_LENGTH",
+   "MOVE_UNAVAILABLE",
+   
+   "SPECIES_UNOWN_*",
+   
+   "TRAINER_FLAGS_*",
+   "TRAINER_ID_LENGTH",
+   "TRAINER_NAME_LENGTH",
+   "TRAINER_REGISTERED_FLAGS_START",
+   
+   -- Temp var aliases. Exclude these to ensure consistent naming 
+   -- when temp vars may have multiple purposes.
+   "VAR_TEMP_CHALLENGE_STATUS",
+   "VAR_TEMP_MIXED_RECORDS",
+   "VAR_TEMP_RECORD_MIX_GIFT_ITEM",
+   "VAR_TEMP_PLAYING_PYRAMID_MUSIC",
+   "VAR_TEMP_FRONTIER_TUTOR_SELECTION",
+   "VAR_TEMP_FRONTIER_TUTOR_ID",
+   "VAR_TEMP_TRANSFERRED_SPECIES",
+}
+
 local desired_vars = {
    -- Though not emitted into any specific extra-data file, this 
    -- variable is mission-critical for generating the files. We 
@@ -189,17 +232,16 @@ function try_handle_enumeration_member(name, value)
    --
    -- Prevent mistaking certain vars for enum members.
    --
-   if name:startswith("TRAINER_FLAGS_") then
-      return false
-   end
-   --
-   -- Exclude a few things from the enums.
-   --
-   if name:startswith("SPECIES_UNOWN_") then
-      return true
-   end
-   if name == "MOVE_UNAVAILABLE" then
-      return true
+   for _, confusable in ipairs(enum_confusables) do
+      local s = confusable:sub(#confusable)
+      if s == "*" then
+         s = confusable:sub(1, -2)
+         if name:startswith(s) then
+            return false
+         end
+      elseif name == confusable then
+         return false
+      end
    end
    if name:startswith("FLAG_") then
       --
@@ -208,7 +250,7 @@ function try_handle_enumeration_member(name, value)
       --
       local special = all_found_macros["SPECIAL_FLAGS_START"]
       if special and value >= special then
-         return true
+         return false
       end
    end
    if name:startswith("VAR_") then
@@ -218,21 +260,7 @@ function try_handle_enumeration_member(name, value)
       --
       local special = all_found_macros["SPECIAL_VARS_START"]
       if special and value >= special then
-         return true
-      end
-   end
-   if name:startswith("ITEM_") then
-      if name == "ITEM_LIST_END"
-      or name == "ITEM_TO_BERRY"
-      or name == "ITEM_TO_MAIL"
-      or name == "ITEM_HAS_EFFECT"
-      then
-         return true
-      end
-      if name:startswith("ITEM_USE_")
-      or name:startswith("ITEM_B_USE_")
-      then
-         return true
+         return false
       end
    end
    --

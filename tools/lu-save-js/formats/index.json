@@ -1,0 +1,17 @@
+{
+   "1": {
+      "files": [
+         "vars.dat",
+         "species.dat",
+         "moves.dat",
+         "items.dat",
+         "game-stats.dat",
+         "misc.dat",
+         "natures.dat",
+         "flags.dat"
+      ],
+      "shared": {}
+   },
+   "formats": {},
+   "index_version": 1
+}

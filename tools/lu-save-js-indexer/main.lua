@@ -1,15 +1,19 @@
+this_dir = (function()
+   --
+   -- Abuse debug info to find out where the current file is located.
+   -- Note: This may be relative to the CWD e.g. "./" rather than 
+   -- an absolute path.
+   --
+   return debug.getinfo(1, 'S').source
+      :sub(2)
+      :gsub("^([^/])", "./%1")
+      :gsub("[^/]*$", "")
+end)()
+
 -- `require` is janky and seems to choke on relative paths, 
 -- so this shims it and allows lookups based on relative 
 -- paths
 function include(path)
-   --
-   -- Abuse debug info to find out where the current file is located.
-   --
-   local this_path = debug.getinfo(1, 'S').source
-      :sub(2)
-      :gsub("^([^/])", "./%1")
-      :gsub("[^/]*$", "")
-   
    local dst_folder = path
       :gsub("^([^/])", "./%1")
       :gsub("[^/]*$", "")
@@ -18,7 +22,7 @@ function include(path)
    -- Override `package.path` to tell it to look for an exact file.
    --
    local prior = package.path
-   package.path = this_path .. dst_file
+   package.path = this_dir .. dst_file
    local status, err = pcall(function()
       require(dst_file)
    end)
@@ -34,6 +38,13 @@ include("../lu-lua-lib/shell.lua")
 include("../lu-lua-lib/console.lua")
 include("../lu-lua-lib/stdext.lua")
 
+do -- ensure expected CWD
+   local cwd  = shell:resolve(".")
+   local here = shell:resolve(this_dir)
+   if cwd == here then
+      shell:cd("../../") -- CWD is this script's folder; back out to repo folder
+   end
+end
 local data = shell:run_and_read('$DEVKITARM/bin/arm-none-eabi-gcc -Iinclude -nostdinc -E -dD -DMODERN=1 -x c "src/lu/preprocessor-macros-of-interest.txt"')
 
 include("../lu-lua-lib/c-lex.lua")
@@ -349,24 +360,18 @@ end
 include("../lu-lua-lib/dataview.lua")
 include("subrecords.lua")
 
-local this_dir = (function()
-   return debug.getinfo(1, 'S').source
-      :sub(2)
-      :gsub("^([^/])", "./%1")
-      :gsub("[^/]*$", "")
-end)()
-
 local format_version = found_vars_of_interest["SAVEDATA_SERIALIZATION_VERSION"]
-local base_dir       = this_dir .. "/" .. "../lu-save-js/formats/" .. tostring(format_version) .. "/"
+local base_dir       = "tools/lu-save-js/formats/" .. tostring(format_version) .. "/"
 
 --
 -- Output files:
 --
 
 -- Format XML
-shell:exec("cp "..this_dir.."/../../lu_bitpack_savedata_format.xml " .. base_dir .. "format.xml")
+shell:exec("cp lu_bitpack_savedata_format.xml " .. base_dir .. "format.xml")
 
 -- Extra-data files
+--[[--
 for filename, info in pairs(goals) do
    local dst_path = base_dir .. filename
    local view     = dataview()
@@ -392,10 +397,177 @@ for filename, info in pairs(goals) do
       write_VARIABLS_subrecord(view, pair_list)
    end
    if wrote then
-      view:save_to_file(dst_path)
+      view:save_to_file(this_dir.."/../../"..dst_path)
    else
-      os.remove(dst_path)
+      os.remove(this_dir.."/../../"..dst_path)
    end
 end
+--]]--
 
-io.write("Generated data files for the save editor.\n")
+io.write("Generating and indexing extra-data files for the save editor...\n")
+
+--
+-- Update the index file.
+--
+include("../lu-lua-lib/json.lua")
+local function get_file_size(path)
+   local file = io.open(this_dir..path, "r")
+   if file then
+      local size = file:seek("end")
+      file:close()
+      return size
+   end
+end
+local function file_is_identical_to(path, view)
+   local size = get_file_size(path)
+   if not size then
+      return false
+   end
+   if size ~= view.size then
+      return false
+   end
+   local src = dataview()
+   src:load_from_file(this_dir..path)
+   if view:is_identical_to(src) then
+      return true
+   end
+   return false
+end
+do
+   local INDEX_VERSION <const> = 1
+
+   local index_data = {}
+   do
+      local file = io.open(this_dir.."/../lu-save-js/formats/index.json", "r")
+      if file then
+         local data = file:read("*all")
+         xpcall(
+            function()
+               index_data = json.from(data)
+            end,
+            function(err)
+               print("Failed to load the index file.")
+               print("Error: " .. tostring(err))
+               print(debug.traceback())
+               error("Halting execution of this post-build script.")
+            end
+         )
+      end
+      if not index_data then
+         index_data = {}
+      end
+   end
+   
+   do -- versioning
+      local prior_version = index_data.index_version
+      if prior_version and prior_version ~= INDEX_VERSION then
+         --
+         -- TODO: If we ever change how this JSON data is laid out, here's 
+         --       where we'd want to adapt old layouts to the new one.
+         --
+      end
+      index_data.index_version = INDEX_VERSION
+   end
+   if not index_data.formats then
+      index_data.formats = {}
+   end
+   index_data.formats[format_version] = nil
+   
+   -- Generate a map such that prior_files[filename] is a list of savedata 
+   -- formats which contain (rather than share) the given file, with the 
+   -- list in reverse order (newest formats first).
+   local prior_files = {}
+   for version, prior_format in pairs(index_data.formats) do
+      version = tonumber(version)
+      if version and prior_format.files then
+         for _, filename in ipairs(prior_format.files) do
+            local list = prior_files[filename]
+            if not list then
+               list = {}
+               prior_files[filename] = list
+            end
+            list[#list + 1] = version
+         end
+      end
+   end
+   for filename, list in pairs(prior_files) do
+      table.sort(list, function(a, b) return b < a end)
+   end
+   
+   local new_format = {
+      files  = {},
+      shared = {},
+   }
+   index_data[format_version] = new_format
+   
+   for filename, info in pairs(goals) do
+      local dst_path = base_dir .. filename
+      --
+      -- Generate an extra-data file in memory.
+      --
+      local view     = dataview()
+      local wrote    = false
+      if info.enums then
+         for _, name in ipairs(info.enums) do
+            local enumeration = enums[name]
+            if enumeration then
+               wrote = true
+               write_ENUMDATA_subrecord(view, enumeration)
+            end
+         end
+      end
+      if info.vars then
+         local pair_list = {}
+         for _, name in ipairs(info.vars) do
+            local value = found_vars_of_interest[name]
+            if value then
+               pair_list[#pair_list + 1] = { name, value }
+            end
+         end
+         wrote = true
+         write_VARIABLS_subrecord(view, pair_list)
+      end
+      if wrote then
+         --
+         -- The extra-data file has any content. Diff it against prior 
+         -- formats, to figure out whether we should create a new file 
+         -- (if this file is unique) or reuse an existing file.
+         --
+         local share = nil
+         do
+            local list  = prior_files[filename]
+            if list then
+               for _, prior in ipairs(list) do
+                  if prior < format_version then
+                     local prior_path = "/../lu-save-js/formats/"..prior.."/"..filename
+                     if file_is_identical_to(prior_path, view) then
+                        share = prior
+                        break
+                     end
+                  end
+               end
+            end
+         end
+         if share then
+            new_format.shared[filename] = share
+            print(" - Sharing `"..filename.."` with previously-indexed savedata format `"..prior.."`.")
+            os.remove(this_dir.."/../../"..dst_path)
+         else
+            view:save_to_file(this_dir.."/../../"..dst_path)
+            print(" - Generated `"..filename.."` for the current savedata format.")
+            new_format.files[#new_format.files + 1] = filename
+         end
+      else
+         os.remove(this_dir.."/../../"..dst_path)
+      end
+   end
+   print(" - All extra-data files generated or shared as appropriate.")
+   
+   local text = json.to(index_data, { pretty_print = true })
+   do
+      local file = io.open(this_dir.."/../lu-save-js/formats/index.json", "w")
+      file:write(text)
+      file:close()
+   end
+   print(" - Updated `index.json`.")
+end

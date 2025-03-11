@@ -130,7 +130,9 @@ function json.to(v, options)
    local indent_here = ""
    local indent_nest = ""
    if pretty and indent then
-      indent_here = string.format("%" .. indent .. "s", "")
+      if indent > 0 then
+         indent_here = string.format("%" .. indent .. "s", "")
+      end
       indent_nest = indent_here .. "   "
       if not options.__recursing then
          out = indent_here
@@ -176,7 +178,14 @@ function json.to(v, options)
             sorted_keys[count] = k
          end
          if count > 0 then
-            table.sort(sorted_keys)
+            table.sort(sorted_keys, function(a, b)
+               local na = tonumber(a)
+               local nb = tonumber(b)
+               if na and nb then
+                  return na < nb
+               end
+               return tostring(a) < tostring(b)
+            end)
          end
       end
       for i, k in ipairs(sorted_keys) do
@@ -188,6 +197,9 @@ function json.to(v, options)
          if pretty then
             out = out .. "\n"
             out = out .. indent_nest
+         end
+         if type(k) ~= "string" then
+            k = tostring(k)
          end
          out = out .. json.to(k, sub_options)
          out = out .. ": "
@@ -421,33 +433,44 @@ do
    function instance_members:_parse_value(dst, key)
       self:_consume_whitespace()
       
+      function _set(v)
+         local nk = tonumber(key)
+         local sk = tostring(key)
+         if nk then
+            dst[sk] = nil -- in Lua, foo[5] ~= foo["5"]
+            dst[nk] = v
+         else
+            dst[sk] = v
+         end
+      end
+      
       if self:_consume_null() then
-         dst[key] = nil
+         _set(nil)
          return true
       end
       local v = self:_consume_boolean()
       if v ~= nil then
-         dst[key] = v
+         _set(v)
          return true
       end
       v = self:_consume_number()
       if v then
-         dst[key] = v
+         _set(v)
          return true
       end
       v = self:_consume_string()
       if v then
-         dst[key] = v
+         _set(v)
          return true
       end
       v = self:_consume_array()
       if v then
-         dst[key] = v
+         _set(v)
          return true
       end
       v = self:_consume_object()
       if v then
-         dst[key] = v
+         _set(v)
          return true
       end
       

@@ -31,6 +31,19 @@ dataview = make_class({
          end
       end,
       
+      is_identical_to = function(self, other)
+         local size = self.size
+         if size ~= other.size then
+            return false
+         end
+         for i = 1, size do
+            if self._bytes[i] ~= other._bytes[i] then
+               return false
+            end
+         end
+         return true
+      end,
+      
       print = function(self, octets_per_row)
          if not octets_per_row then
             octets_per_row = 16
@@ -96,6 +109,23 @@ dataview = make_class({
          end
       end,
       
+      load_from_file = function(self, path)
+         local file = io.open(path, "rb")
+         if not file then
+            error("unable to load dataview: failed to open file: " .. tostring(path))
+         end
+         self._bytes = {}
+         local size = 1
+         while true do
+            local b = file:read(block)
+            if b == nil then
+               break
+            end
+            self._bytes[size] = string.byte(b)
+            size = size + 1
+         end
+         file:close()
+      end,
       save_to_file = function(self, path)
          local AVOID_LUA_STRING_INTERNING = true
       

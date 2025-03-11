@@ -127,6 +127,7 @@ function json.to(v, options)
       indent = options.indent or 0
    end
    local out = ""
+   
    local indent_here = ""
    local indent_nest = ""
    if pretty and indent then
@@ -147,7 +148,8 @@ function json.to(v, options)
          sub_options.indent = indent + 3
       end
    end
-   if is_representable_as_array(v, options) then
+   
+   if is_representable_as_array(v) then
       out = out .. '['
       local empty = true
       for i, w in ipairs(v) do

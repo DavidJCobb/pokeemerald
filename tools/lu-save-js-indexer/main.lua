@@ -299,60 +299,6 @@ for line in data:gmatch("[^\r\n]+") do
    end
 end
 
-if false then
-   --
-   -- DEBUG: print all found vars
-   --
-   for k, v in pairs(found_vars_of_interest) do
-      print(k .. " == " .. v)
-   end
-   --
-   -- DEBUG: print some of the smaller enums
-   --
-   function debug_print_enum(name)
-      enums[name]:print()
-   end
-   enums.GROWTH:print()
-   enums.NATURE:print()
-   --
-   -- DEBUG: print flags that we know require parsing C constant expressions
-   --
-   function debug_print_macro(name)
-      local v = all_found_macros[name]
-      if v then
-         print(name .. " == " .. v)
-      else
-         print(name .. " == <not found or unparseable>")
-      end
-   end
-   debug_print_macro("TEMP_FLAGS_START")
-   debug_print_macro("TRAINER_FLAGS_START") -- 0x500
-   debug_print_macro("MAX_TRAINERS_COUNT")
-   debug_print_macro("TRAINER_FLAGS_END")   -- 0x85F == (TRAINER_FLAGS_START + MAX_TRAINERS_COUNT - 1)
-   debug_print_macro("SYSTEM_FLAGS")        -- 0x860 == (TRAINER_FLAGS_END + 1)
-   debug_print_macro("DAILY_FLAGS_START")
-   function debug_print_flag(name)
-      local data = enums.FLAG:get(name)
-      if data then
-         print(name .. " == " .. data)
-      else
-         print(name .. " == <unparsable>")
-      end
-   end
-   debug_print_flag("FLAG_TEMP_1")
-   debug_print_flag("FLAG_TEMP_1F")
-   debug_print_flag("FLAG_UNUSED_0x020")
-   debug_print_flag("FLAG_REGISTERED_ROSE")
-   --
-   -- TODO: FLAG_REGISTERED_ROSE fails because values like REMATCH_ROSE aren't 
-   -- preprocessor macros; they're enumeration members (in `constants/rematch.h`).
-   -- Don't suppose GCC has a flag to print *those* for us too? :\ 
-   --
-   debug_print_flag("FLAG_HIDDEN_ITEM_LAVARIDGE_TOWN_ICE_HEAL")
-   debug_print_flag("FLAG_UNUSED_0x91F")
-   debug_print_flag("FLAG_UNUSED_0x920")
-end
-
 if not found_vars_of_interest["SAVEDATA_SERIALIZATION_VERSION"] then
    error("Unable to find the SAVEDATA_SERIALIZATION_VERSION macro, or its value could not be resolved to an integer constant.")
 end
@@ -368,41 +314,8 @@ local base_dir       = "tools/lu-save-js/formats/" .. tostring(format_version) .
 --
 
 -- Format XML
+io.write("Copying the current savedata format XML into the appropriate folder for the save editor...\n")
 shell:exec("cp lu_bitpack_savedata_format.xml " .. base_dir .. "format.xml")
-
--- Extra-data files
---[[--
-for filename, info in pairs(goals) do
-   local dst_path = base_dir .. filename
-   local view     = dataview()
-   local wrote    = false
-   if info.enums then
-      for _, name in ipairs(info.enums) do
-         local enumeration = enums[name]
-         if enumeration then
-            wrote = true
-            write_ENUMDATA_subrecord(view, enumeration)
-         end
-      end
-   end
-   if info.vars then
-      local pair_list = {}
-      for _, name in ipairs(info.vars) do
-         local value = found_vars_of_interest[name]
-         if value then
-            pair_list[#pair_list + 1] = { name, value }
-         end
-      end
-      wrote = true
-      write_VARIABLS_subrecord(view, pair_list)
-   end
-   if wrote then
-      view:save_to_file(this_dir.."/../../"..dst_path)
-   else
-      os.remove(this_dir.."/../../"..dst_path)
-   end
-end
---]]--
 
 io.write("Generating and indexing extra-data files for the save editor...\n")
 
@@ -498,7 +411,7 @@ do
       files  = {},
       shared = {},
    }
-   index_data[format_version] = new_format
+   index_data.formats[format_version] = new_format
    
    for filename, info in pairs(goals) do
       local dst_path = base_dir .. filename
@@ -559,6 +472,19 @@ do
          end
       else
          os.remove(this_dir.."/../../"..dst_path)
+      end
+   end
+   do -- Normalize output.
+      if #new_format.files == 0 then
+         new_format.files = nil
+      else
+         table.sort(new_format.files) -- ensure consistent ordering
+      end
+      do
+         local k, v = next(new_format.shared, nil)
+         if not k then -- if table is empty
+            new_format.shared = nil
+         end
       end
    end
    print(" - All extra-data files generated or shared as appropriate.")

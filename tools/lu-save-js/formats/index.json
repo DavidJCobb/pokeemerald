@@ -1,17 +1,17 @@
 {
-   "1": {
-      "files": [
-         "vars.dat",
-         "species.dat",
-         "moves.dat",
-         "items.dat",
-         "game-stats.dat",
-         "misc.dat",
-         "natures.dat",
-         "flags.dat"
-      ],
-      "shared": {}
-   },
-   "formats": {},
+   "formats": [
+      {
+         "files": [
+            "flags.dat",
+            "game-stats.dat",
+            "items.dat",
+            "misc.dat",
+            "moves.dat",
+            "natures.dat",
+            "species.dat",
+            "vars.dat"
+         ]
+      }
+   ],
    "index_version": 1
 }

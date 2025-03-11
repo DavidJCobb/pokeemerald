@@ -43,9 +43,9 @@ LU_BP_AS_OPAQUE_BUFFER typedef union // size = 0x24
         /*0x00*/ u8 kind;
         /*0x01*/ bool8 active;
         /*0x02*/ PokemonSpeciesID species;
-        /*0x04*/ u16 words[6];
+        /*0x04*/ EasyChatWordID   words[6];
         /*0x10*/ PlayerName playerName;
-        /*0x18*/ u8 language;
+        /*0x18*/ LanguageID language;
         /*0x19*/ //u8 padding;
     } fanclubLetter;
 
@@ -54,9 +54,9 @@ LU_BP_AS_OPAQUE_BUFFER typedef union // size = 0x24
         /*0x00*/ u8 kind;
         /*0x01*/ bool8 active;
         /*0x02*/ PokemonSpeciesID species;
-        /*0x04*/ u16 words[6];
+        /*0x04*/ EasyChatWordID   words[6];
         /*0x10*/ PlayerName playerName;
-        /*0x18*/ u8 language;
+        /*0x18*/ LanguageID language;
         /*0x19*/ //u8 padding;
     } recentHappenings;
 
@@ -68,23 +68,23 @@ LU_BP_AS_OPAQUE_BUFFER typedef union // size = 0x24
         /*0x04*/ u8 friendshipHighNybble:4;
                  u8 questionAsked:4;
         /*0x05*/ PlayerName playerName;
-        /*0x0D*/ u8 language;
-        /*0x0E*/ u8 pokemonNameLanguage;
+        /*0x0D*/ LanguageID language;
+        /*0x0E*/ LanguageID pokemonNameLanguage;
         /*0x0F*/ u8 filler_0F[1];
-        /*0x10*/ PlayerName nickname;
-        /*0x18*/ u16 words18[2];
-        /*0x1C*/ u16 words[2];
+        /*0x10*/ PlayerName     nickname;
+        /*0x18*/ EasyChatWordID words18[2];
+        /*0x1C*/ EasyChatWordID words[2];
     } fanclubOpinions;
 
     // TVSHOW_DUMMY
     struct {
         /*0x00*/ u8 kind;
         /*0x01*/ bool8 active;
-        /*0x02*/ u16 words[2];
+        /*0x02*/ EasyChatWordID   words[2];
         /*0x06*/ PokemonSpeciesID species;
         /*0x08*/ u8 filler_08[3];
-        /*0x0B*/ u8 name[12];
-        /*0x17*/ u8 language;
+        /*0x0B*/ LU_BP_STRING_WT u8 name[12];
+        /*0x17*/ LanguageID language;
     } dummy;
 
     // TVSHOW_NAME_RATER_SHOW
@@ -107,13 +107,13 @@ LU_BP_AS_OPAQUE_BUFFER typedef union // size = 0x24
         /*0x00*/ u8 kind;
         /*0x01*/ bool8 active;
         /*0x02*/ PokemonSpeciesID species;
-        /*0x04*/ u16 words[2];
+        /*0x04*/ EasyChatWordID   words[2];
         /*0x08*/ PokemonName pokemonNickname;
-        /*0x13*/ u8 contestCategory:3;
+        /*0x13*/ ContestCategory contestCategory:3;
                  u8 contestRank:2;
                  u8 contestResult:2;
                  //u8 padding:1;
-        /*0x14*/ u16 move;
+        /*0x14*/ MoveID move;
         /*0x16*/ PlayerName playerName;
         /*0x1E*/ LanguageID language;
         /*0x1F*/ LanguageID pokemonNameLanguage;
@@ -123,13 +123,13 @@ LU_BP_AS_OPAQUE_BUFFER typedef union // size = 0x24
     struct {
         /*0x00*/ u8 kind;
         /*0x01*/ bool8 active;
-        /*0x02*/ PlayerName playerName;
-        /*0x0A*/ u16 species;
-        /*0x0C*/ PlayerName opponentName;
-        /*0x14*/ u16 defeatedSpecies;
-        /*0x16*/ u16 numFights;
-        /*0x18*/ u16 words[1];
-        /*0x1A*/ u8 btLevel;
+        /*0x02*/ PlayerName       playerName;
+        /*0x0A*/ PokemonSpeciesID species;
+        /*0x0C*/ PlayerName       opponentName;
+        /*0x14*/ PokemonSpeciesID defeatedSpecies;
+        /*0x16*/ u16              numFights;
+        /*0x18*/ EasyChatWordID   words[1];
+        /*0x1A*/ PokemonLevel     btLevel;
         /*0x1B*/ u8 interviewResponse;
         /*0x1C*/ bool8 wonTheChallenge;
         /*0x1D*/ LanguageID playerLanguage;
@@ -141,16 +141,16 @@ LU_BP_AS_OPAQUE_BUFFER typedef union // size = 0x24
     struct {
         /*0x00*/ u8 kind;
         /*0x01*/ bool8 active;
-        /*0x02*/ u16 losingSpecies;
+        /*0x02*/ PokemonSpeciesID losingSpecies;
         /*0x04*/ PlayerName losingTrainerName;
         /*0x0C*/ u8 loserAppealFlag;
         /*0x0D*/ u8 round1Placing;
         /*0x0E*/ u8 round2Placing;
         /*0x0F*/ u8 winnerAppealFlag;
-        /*0x10*/ u16 move;
-        /*0x12*/ u16 winningSpecies;
-        /*0x14*/ PlayerName winningTrainerName;
-        /*0x1C*/ u8 category;
+        /*0x10*/ MoveID move;
+        /*0x12*/ PokemonSpeciesID winningSpecies;
+        /*0x14*/ PlayerName       winningTrainerName;
+        /*0x1C*/ ContestCategory  category;
         /*0x1D*/ LanguageID winningTrainerLanguage;
         /*0x1E*/ LanguageID losingTrainerLanguage;
         /*0x1F*/ //u8 padding;
@@ -175,13 +175,13 @@ LU_BP_AS_OPAQUE_BUFFER typedef union // size = 0x24
         /*0x00*/ u8 kind;
         /*0x01*/ bool8 active;
         /*0x02*/ PokemonSpeciesID speciesOpponent;
-        /*0x04*/ PlayerName      playerName;
-        /*0x0C*/ PlayerName      linkOpponentName;
-        /*0x14*/ MoveID          move;
+        /*0x04*/ PlayerName       playerName;
+        /*0x0C*/ PlayerName       linkOpponentName;
+        /*0x14*/ MoveID           move;
         /*0x16*/ PokemonSpeciesID speciesPlayer;
-        /*0x18*/ u8              battleType;
-        /*0x19*/ LanguageID      language;
-        /*0x1A*/ LanguageID      linkOpponentLanguage;
+        /*0x18*/ u8               battleType;
+        /*0x19*/ LanguageID       language;
+        /*0x1A*/ LanguageID       linkOpponentLanguage;
         /*0x1B*/ //u8 padding;
     } battleUpdate;
 
@@ -193,7 +193,7 @@ LU_BP_AS_OPAQUE_BUFFER typedef union // size = 0x24
         /*0x0A*/ u8 idLo;
         /*0x0B*/ u8 idHi;
         /*0x0C*/ PlayerName idolName;
-        /*0x14*/ u16 words[1];
+        /*0x14*/ EasyChatWordID words[1];
         /*0x16*/ u8 score;
         /*0x17*/ LanguageID language;
         /*0x18*/ LanguageID idolNameLanguage;
@@ -204,12 +204,12 @@ LU_BP_AS_OPAQUE_BUFFER typedef union // size = 0x24
     struct {
         /*0x00*/ u8 kind;
         /*0x01*/ bool8 active;
-        /*0x02*/ PlayerName playerName;
-        /*0x0A*/ u8 contestCategory;
-        /*0x0B*/ PokemonName nickname;
-        /*0x16*/ u8 pokeblockState;
-        /*0x17*/ LanguageID language;
-        /*0x18*/ LanguageID pokemonNameLanguage;
+        /*0x02*/ PlayerName      playerName;
+        /*0x0A*/ ContestCategory contestCategory;
+        /*0x0B*/ PokemonName     nickname;
+        /*0x16*/ u8              pokeblockState;
+        /*0x17*/ LanguageID      language;
+        /*0x18*/ LanguageID      pokemonNameLanguage;
     } contestLady;
 
     // Record Mixing Shows
@@ -306,7 +306,7 @@ LU_BP_AS_OPAQUE_BUFFER typedef union // size = 0x24
         /*0x00*/ u8 kind;
         /*0x01*/ bool8 active;
         /*0x02*/ u8 filler_02[2];
-        /*0x04*/ u16 words[2];
+        /*0x04*/ EasyChatWordID words[2];
         /*0x08*/ u8 gender;
         /*0x09*/ LanguageID language;
         /*0x0A*/ u8 filler_0a[9];
@@ -406,7 +406,7 @@ LU_BP_AS_OPAQUE_BUFFER typedef union // size = 0x24
         /*0x00*/ u8 kind;
         /*0x01*/ bool8 active;
         /*0x02*/ u8 filler_02[2];
-        /*0x04*/ u16 words[2];
+        /*0x04*/ EasyChatWordID words[2];
         /*0x08*/ LanguageID language;
         /*0x09*/ u8 filler_09[10];
         /*0x13*/ PlayerName playerName;
@@ -513,8 +513,8 @@ struct GabbyAndTyData
 {
     /*2BA4*/ PokemonSpeciesID mon1;
     /*2BA6*/ PokemonSpeciesID mon2;
-    /*2BA8*/ MoveID lastMove;
-    /*2BAA*/ u16 quote[1];
+    /*2BA8*/ MoveID           lastMove;
+    /*2BAA*/ EasyChatWordID   quote[1];
     /*2BAC*/ u8 mapnum;
     /*2BAD*/ u8 battleNum;
     /*2BAE*/ u8 battleTookMoreThanOneTurn:1;

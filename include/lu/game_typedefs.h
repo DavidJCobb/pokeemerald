@@ -14,6 +14,7 @@
 // Typedefs, to make some things (e.g. bitpacking options and stats) easier.
 //
 
+LU_BP_MINMAX(0, CONTEST_CATEGORIES_COUNT - 1) typedef u8 ContestCategory;
 LU_BP_CATEGORY("easy-chat-word") typedef u16 EasyChatWordID;
 LU_BP_CATEGORY("language") LU_BP_BITCOUNT(4) LU_BP_MINMAX(0, NUM_LANGUAGES) typedef u8 LanguageID;
 LU_BP_CATEGORY("global-item-id") typedef u16 ItemIDGlobal;

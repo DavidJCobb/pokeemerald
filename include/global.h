@@ -213,10 +213,10 @@ struct Pokedex
 struct PokemonJumpRecords
 {
     u16 jumpsInRow;
-    u16 unused1; // Set to 0, never read
+    LU_BP_OMIT LU_BP_DEFAULT(0) u16 unused1; // Set to 0, never read
     u16 excellentsInRow;
     u16 gamesWithMaxPlayers;
-    u32 unused2; // Set to 0, never read
+    LU_BP_OMIT LU_BP_DEFAULT(0) u32 unused2; // Set to 0, never read
     u32 bestJumpScore;
 };
 
@@ -473,7 +473,7 @@ struct PlayersApprentice
     /*0xB2*/ u8 party:3;
              u8 saveId:2;
              //u8 padding1:3;
-    /*0xB3*/ u8 unused;
+    /*0xB3*/ LU_BP_OMIT u8 unused;
     /*0xB4*/ u8 speciesIds[MULTI_PARTY_SIZE];
     /*0xB7*/ //u8 padding2;
     /*0xB8*/ struct ApprenticeQuestion questions[APPRENTICE_MAX_QUESTIONS];
@@ -612,7 +612,7 @@ struct Roamer
     /*0x11*/ u8 smart;
     /*0x12*/ u8 tough;
     /*0x13*/ bool8 active;
-    /*0x14*/ u8 filler[0x8];
+    /*0x14*/ LU_BP_OMIT LU_BP_DEFAULT(0) u8 filler[0x8];
 };
 
 struct RamScriptData
@@ -748,9 +748,9 @@ struct ContestWinner
     u32 personality;
     LU_BP_CATEGORY("trainer-id") u32 trainerId;
     PokemonSpeciesID species;
-    u8 contestCategory;
-    PokemonName monName;
-    PlayerName  trainerName;
+    ContestCategory  contestCategory;
+    PokemonName      monName;
+    PlayerName       trainerName;
     u8 contestRank;
     //u8 padding;
 };
@@ -792,12 +792,12 @@ struct LilycoveLadyQuiz
 {
     /*0x000*/ u8 id;
     /*0x001*/ u8 state;
-    /*0x002*/ u16 question[QUIZ_QUESTION_LEN];
-    /*0x014*/ u16 correctAnswer;
-    /*0x016*/ u16 playerAnswer;
-    /*0x018*/ PlayerName playerName;
-    /*0x020*/ TrainerID playerTrainerId;
-    /*0x028*/ u16 prize;
+    /*0x002*/ EasyChatWordID question[QUIZ_QUESTION_LEN];
+    /*0x014*/ EasyChatWordID correctAnswer;
+    /*0x016*/ EasyChatWordID playerAnswer;
+    /*0x018*/ PlayerName     playerName;
+    /*0x020*/ TrainerID      playerTrainerId;
+    /*0x028*/ ItemIDGlobal   prize;
     /*0x02A*/ bool8 waitingForChallenger;
     /*0x02B*/ u8 questionId;
     /*0x02C*/ u8 prevQuestionId;
@@ -827,7 +827,7 @@ struct LilycoveLadyContest
     /*0x003*/ u8 numOtherPokeblocksGiven;
     /*0x004*/ PlayerName playerName;
     /*0x00C*/ u8 maxSheen;
-    /*0x00D*/ u8 category;
+    /*0x00D*/ ContestCategory category;
     /*0x00E*/ LanguageID language;
 };
 
@@ -843,7 +843,7 @@ LU_BP_UNION_INTERNAL_TAG(id) typedef union // 3b58
 struct WaldaPhrase
 {
     u16 colors[2]; // Background, foreground.
-    u8 text[16];
+    LU_BP_STRING_WT u8 text[16];
     u8 iconId;
     u8 patternId;
     bool8 patternUnlocked;
@@ -861,7 +861,7 @@ struct TrainerHillSave
     /*0x3D64*/ u32 timer;
     /*0x3D68*/ u32 bestTime;
     /*0x3D6C*/ u8 unk_3D6C;
-    /*0x3D6D*/ u8 unused;
+    /*0x3D6D*/ LU_BP_OMIT u8 unused;
     /*0x3D6E*/ u16 receivedPrize:1;
                u16 checkedFinalTime:1;
                u16 spokeToOwner:1;
@@ -886,8 +886,8 @@ struct WonderNews
     u16 id;
     u8 sendType; // SEND_TYPE_*
     u8 bgType;
-    u8 titleText[WONDER_NEWS_TEXT_LENGTH];
-    u8 bodyText[WONDER_NEWS_BODY_TEXT_LINES][WONDER_NEWS_TEXT_LENGTH];
+    LU_BP_STRING_UT u8 titleText[WONDER_NEWS_TEXT_LENGTH];
+    LU_BP_STRING_UT u8 bodyText[WONDER_NEWS_BODY_TEXT_LINES][WONDER_NEWS_TEXT_LENGTH];
 };
 
 struct WonderCard
@@ -899,11 +899,11 @@ struct WonderCard
     u8 bgType:4;
     u8 sendType:2; // SEND_TYPE_*
     u8 maxStamps;
-    u8 titleText[WONDER_CARD_TEXT_LENGTH];
-    u8 subtitleText[WONDER_CARD_TEXT_LENGTH];
-    u8 bodyText[WONDER_CARD_BODY_TEXT_LINES][WONDER_CARD_TEXT_LENGTH];
-    u8 footerLine1Text[WONDER_CARD_TEXT_LENGTH];
-    u8 footerLine2Text[WONDER_CARD_TEXT_LENGTH];
+    LU_BP_STRING_UT u8 titleText[WONDER_CARD_TEXT_LENGTH];
+    LU_BP_STRING_UT u8 subtitleText[WONDER_CARD_TEXT_LENGTH];
+    LU_BP_STRING_UT u8 bodyText[WONDER_CARD_BODY_TEXT_LINES][WONDER_CARD_TEXT_LENGTH];
+    LU_BP_STRING_UT u8 footerLine1Text[WONDER_CARD_TEXT_LENGTH];
+    LU_BP_STRING_UT u8 footerLine2Text[WONDER_CARD_TEXT_LENGTH];
     //u8 padding[2];
 };
 
@@ -924,7 +924,7 @@ struct MysteryGiftSave
     struct WonderCard card;
     u32 cardMetadataCrc;
     struct WonderCardMetadata cardMetadata;
-    u16 questionnaireWords[NUM_QUESTIONNAIRE_WORDS];
+    EasyChatWordID questionnaireWords[NUM_QUESTIONNAIRE_WORDS];
     struct WonderNewsMetadata newsMetadata;
     LU_BP_CATEGORY("trainer-id") u32 trainerIds[2][5]; // Saved ids for 10 trainers, 5 each for battles and trades
 }; // 0x36C 0x3598
@@ -1040,10 +1040,10 @@ struct SaveBlock1
     /*0x2BA1*/ u8 outbreakPokemonProbability;
     /*0x2BA2*/ u16 outbreakDaysLeft;
     /*0x2BA4*/ struct GabbyAndTyData gabbyAndTyData;
-    /*0x2BB0*/ u16 easyChatProfile[EASY_CHAT_BATTLE_WORDS_COUNT];
-    /*0x2BBC*/ u16 easyChatBattleStart[EASY_CHAT_BATTLE_WORDS_COUNT];
-    /*0x2BC8*/ u16 easyChatBattleWon[EASY_CHAT_BATTLE_WORDS_COUNT];
-    /*0x2BD4*/ u16 easyChatBattleLost[EASY_CHAT_BATTLE_WORDS_COUNT];
+    /*0x2BB0*/ EasyChatWordID easyChatProfile[EASY_CHAT_BATTLE_WORDS_COUNT];
+    /*0x2BBC*/ EasyChatWordID easyChatBattleStart[EASY_CHAT_BATTLE_WORDS_COUNT];
+    /*0x2BC8*/ EasyChatWordID easyChatBattleWon[EASY_CHAT_BATTLE_WORDS_COUNT];
+    /*0x2BD4*/ EasyChatWordID easyChatBattleLost[EASY_CHAT_BATTLE_WORDS_COUNT];
     /*0x2BE0*/ struct Mail mail[MAIL_COUNT];
     /*0x2E20*/ u8 unlockedTrendySayings[NUM_TRENDY_SAYING_BYTES]; // Bitfield for unlockable Easy Chat words in EC_GROUP_TRENDY_SAYING
     /*0x2E25*/ //u8 padding5[3];
@@ -1065,7 +1065,7 @@ struct SaveBlock1
     /*0x3B24*/ u8 seen2[NUM_DEX_FLAG_BYTES];
     /*0x3B58*/ LilycoveLady lilycoveLady;
     /*0x3B98*/ struct TrainerNameRecord trainerNameRecords[20];
-    /*0x3C88*/ u8 registeredTexts[UNION_ROOM_KB_ROW_COUNT][21];
+    /*0x3C88*/ LU_BP_STRING_WT u8 registeredTexts[UNION_ROOM_KB_ROW_COUNT][21];
     /*0x3D5A*/ u8 unused_3D5A[10];
     /*0x3D64*/ struct TrainerHillSave trainerHill;
     /*0x3D70*/ struct WaldaPhrase waldaPhrase;

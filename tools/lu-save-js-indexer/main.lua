@@ -308,6 +308,7 @@ include("subrecords.lua")
 
 local format_version = found_vars_of_interest["SAVEDATA_SERIALIZATION_VERSION"]
 local base_dir       = "tools/lu-save-js/formats/" .. tostring(format_version) .. "/"
+shell:exec("mkdir -p "..base_dir)
 
 --
 -- Output files:
@@ -353,7 +354,8 @@ do
    do
       local file = io.open(this_dir.."/../lu-save-js/formats/index.json", "r")
       if file then
-         local data = file:read("*all")
+         local data    = file:read("*all")
+         local success = true
          xpcall(
             function()
                index_data = json.from(data)
@@ -362,9 +364,12 @@ do
                print("Failed to load the index file.")
                print("Error: " .. tostring(err))
                print(debug.traceback())
-               error("Halting execution of this post-build script.")
+               success = false
             end
          )
+         if not success then
+            error("Halting execution of this post-build script.")
+         end
       end
       if not index_data then
          index_data = {}
@@ -463,7 +468,7 @@ do
          end
          if share then
             new_format.shared[filename] = share
-            print(" - Sharing `"..filename.."` with previously-indexed savedata format `"..prior.."`.")
+            print(" - Sharing `"..filename.."` with previously-indexed savedata format `"..share.."`.")
             os.remove(this_dir.."/../../"..dst_path)
          else
             view:save_to_file(this_dir.."/../../"..dst_path)

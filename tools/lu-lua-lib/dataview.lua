@@ -117,7 +117,7 @@ dataview = make_class({
          self._bytes = {}
          local size = 1
          while true do
-            local b = file:read(block)
+            local b = file:read(1)
             if b == nil then
                break
             end

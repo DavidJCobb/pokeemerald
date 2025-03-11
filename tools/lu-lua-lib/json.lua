@@ -321,7 +321,8 @@ do
       local exponent = self:_consume_pattern("^[eE][+-]?[0-9]+") or ""
       
       local str = (negative and "-" or "") .. integer .. fraction .. exponent
-      return tonumber(str)
+      local val = tonumber(str)
+      return val
    end
    function instance_members:_consume_string() -- returns found value, or nil if none
       if not self:_consume_plaintext('"') then
@@ -433,9 +434,7 @@ do
    -- If it finds a value, writes the value to `dst[key]` and returns 
    -- true. Otherwise, returns false without writing anything.
    function instance_members:_parse_value(dst, key)
-      self:_consume_whitespace()
-      
-      function _set(v)
+      local function _set(v)
          local nk = tonumber(key)
          local sk = tostring(key)
          if nk then
@@ -455,22 +454,10 @@ do
          _set(v)
          return true
       end
-      v = self:_consume_number()
-      if v then
-         _set(v)
-         return true
-      end
-      v = self:_consume_string()
-      if v then
-         _set(v)
-         return true
-      end
-      v = self:_consume_array()
-      if v then
-         _set(v)
-         return true
-      end
-      v = self:_consume_object()
+      v = self:_consume_number() or
+         self:_consume_string() or
+         self:_consume_array() or
+         self:_consume_object()
       if v then
          _set(v)
          return true
@@ -486,8 +473,9 @@ do
       end
       self:_consume_whitespace()
    end
-   
 end
+
+json.parser = parser
 
 function json.from(text)
    local p = parser(text)

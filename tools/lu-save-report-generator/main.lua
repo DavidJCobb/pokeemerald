@@ -248,6 +248,10 @@ end
 out_file:write("## Stats\n\n")
 
 do -- Stats per sector
+   local available_bytes = sector_size * sector_count
+   local available_bits  = available_bytes * 8
+   local total_bits_used = sector_size_info.totals.packed + sector_size_info.totals.lost
+   
    out_file:write("### Stats per sector\n\n")
    out_file:write("| Sector | Unpacked bytes | Unpacked % | Packed bytes | Packed bits | Packed % |\n")
    out_file:write("| -: | -: | -: | -: | -: | -: |\n")
@@ -273,13 +277,13 @@ do -- Stats per sector
    out_file:write("|**Used**|")
    out_file:write(sector_size_info.totals.unpacked)
    out_file:write("|")
-   out_file:write(to_percentage(sector_size_info.totals.unpacked / (sector_size * sector_count)))
+   out_file:write(to_percentage(sector_size_info.totals.unpacked / available_bytes))
    out_file:write("|")
    out_file:write(math.ceil(sector_size_info.totals.packed / 8))
    out_file:write("|")
    out_file:write(sector_size_info.totals.packed)
    out_file:write("|")
-   out_file:write(to_percentage(sector_size_info.totals.packed / (sector_size * 8 * sector_count)))
+   out_file:write(to_percentage(sector_size_info.totals.packed / available_bits))
    out_file:write("|\n")
    out_file:write("|**Lost**|")
    -- no bytes lost in vanilla, since that's just a memcpy in slices
@@ -290,7 +294,18 @@ do -- Stats per sector
    out_file:write("|")
    out_file:write(sector_size_info.totals.lost)
    out_file:write("|")
-   out_file:write(to_percentage(sector_size_info.totals.lost / (sector_size * 8 * sector_count)))
+   out_file:write(to_percentage(sector_size_info.totals.lost / available_bits))
+   out_file:write("|\n")
+   out_file:write("|**Free**|")
+   out_file:write(available_bytes - sector_size_info.totals.unpacked)
+   out_file:write("|")
+   out_file:write(to_percentage(1 - (sector_size_info.totals.unpacked / available_bytes)))
+   out_file:write("|")
+   out_file:write(available_bytes - math.ceil(total_bits_used / 8))
+   out_file:write("|")
+   out_file:write(available_bits - math.ceil(total_bits_used / 8))
+   out_file:write("|")
+   out_file:write(to_percentage(1 - (total_bits_used / available_bits)))
    out_file:write("|\n\n")
    out_file:write("Some values can't be split across sectors. If these values can't fit at the end of a sector, then they must be pushed to the start of the next sector &mdash; leaving unused space at the end of the sector they were pushed past. This space is listed as \"lost\" in the table above.[^vanilla-never-loses-space]\n\n")
    out_file:write("[^vanilla-never-loses-space]: The vanilla game never produces \"lost\" space because it just uses `memcpy` to copy data directly between RAM and flash memory, blindly slicing values at sector boundaries. By contrast, the generating bitpacking code can only slice aggregates (e.g. arrays, structs, unions); it doesn't support slicing primitives (i.e. integers), strings, or opaque buffers.\n\n")

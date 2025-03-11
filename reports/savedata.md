@@ -26,6 +26,7 @@ This project uses an automatically-generated savedata format wherein savedata is
 |13|2000|50.40%|0|0|0.00%|
 |**Used**|53380|96.09%|48483|387861|87.27%|
 |**Lost**|||230|1838|0.41%|
+|**Free**|2172|3.91%|6839|395703|12.31%|
 
 Some values can't be split across sectors. If these values can't fit at the end of a sector, then they must be pushed to the start of the next sector &mdash; leaving unused space at the end of the sector they were pushed past. This space is listed as "lost" in the table above.[^vanilla-never-loses-space]
 

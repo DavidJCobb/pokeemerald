@@ -1,5 +1,6 @@
 {
    "formats": [
+      null,
       {
          "files": [
             "flags.dat",

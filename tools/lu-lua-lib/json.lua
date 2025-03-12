@@ -1,34 +1,4 @@
 
-local function is_representable_as_array(v)
-   if type(v) ~= "table" then
-      return false
-   end
-   local keys = {}
-   local max  = 0
-   for k, _ in pairs(v) do
-      k = tonumber(k)
-      if not k then -- non-numeric key present
-         return false
-      end
-      if k < 1 or k ~= math.floor(k) then -- non-positive-integer key present
-         return false
-      end
-      keys[k] = true
-      if k > max then
-         max = k
-      end
-   end
-   if max < 1 then -- none of the found keys are array indices
-      return false
-   end
-   for i = 1, max do
-      if not keys[i] then -- non-contiguous keys
-         return false
-      end
-   end
-   return true
-end
-
 local function table_has_cyclical_references(subject, _seen)
    if not _seen then
       _seen = { v }
@@ -86,6 +56,104 @@ end
 -- Exports:
 json = {}
 
+local function try_stringify_array(v, options)
+   --
+   -- We need to determine whether we should serialize this table as 
+   -- an array and, if so, what the highest index is.
+   --
+   local force_array  = false
+   local zero_indexed = false
+   do
+      local mt = getmetatable(v)
+      if mt then
+         force_array  = mt.__json_type == "array"
+         zero_indexed = mt.__json_is_zero_indexed or false
+      end
+   end
+   local max
+   do
+      local min
+      local keys = {}
+      for k, v in pairs(v) do
+         k = tonumber(k)
+         if k then
+            keys[k] = true
+            if not min or k < min then
+               min = k
+            end
+            if not max or k > max then
+               max = k
+            end
+         end
+      end
+      if not force_array then
+         if not min or min < (zero_indexed and 0 or 1) then
+            return false
+         end
+         for i = 1, max do
+            if not keys[i] then
+               return false
+            end
+         end
+      end
+   end
+   --
+   -- At this point, we've decided that we definitely will serialize 
+   -- this table as an array, so let's do it!
+   --
+   local pretty      = options.pretty_print or false
+   local indent_here = ""
+   local indent_nest = ""
+   local sub_options = { __recursing = true }
+   if options then
+      if options.indent > 0 then
+         indent_here = string.format("%" .. tostring(options.indent) .. "s", "")
+         indent_nest = indent_here .. "   "
+      end
+      for k, v in pairs(options) do
+         sub_options[k] = v
+      end
+      if pretty then
+         sub_options.indent = (options.indent or 0) + 3
+      end
+   end
+   
+   local out   = "["
+   local empty = true
+   local first = true
+   local function _serialize_element(v)
+      empty = false
+      if first then
+         first = false
+      else
+         out = out .. ','
+      end
+      local x = json.to(v, sub_options)
+      if pretty then
+         out = out .. "\n"
+         out = out .. indent_nest
+      end
+      out = out .. x
+   end
+   
+   if zero_indexed then
+      _serialize_element(v[0] or v["0"])
+   end
+   for i = 1, max do
+      local elem = v[i]
+      if elem == nil then
+         elem = v[tostring(i)]
+      end
+      _serialize_element(v[i])
+   end
+   if pretty and not empty then
+      out = out .. "\n"
+      out = out .. indent_here
+   end
+   out = out .. "]"
+   return out
+end
+
 function json.to(v, options)
    if v == nil then
       return "null"
@@ -126,6 +194,7 @@ function json.to(v, options)
       pretty = options.pretty_print or false
       indent = options.indent or 0
    end
+   
    local out = ""
    
    local indent_here = ""
@@ -149,27 +218,12 @@ function json.to(v, options)
       end
    end
    
-   if is_representable_as_array(v) then
-      out = out .. '['
-      local empty = true
-      for i, w in ipairs(v) do
-         empty = false
-         if i > 1 then
-            out = out .. ','
-         end
-         local x = json.to(w, sub_options)
-         if pretty then
-            out = out .. "\n"
-            out = out .. indent_nest
-         end
-         out = out .. x
-      end
-      if pretty and not empty then
-         out = out .. "\n"
-         out = out .. indent_here
-      end
-      out = out .. ']'
-   else
+   local stringified_array = try_stringify_array(v, options)
+   if stringified_array then
+      return stringified_array
+   end
+   
+   do
       out = out .. '{'
       --
       local sorted_keys = {} -- ensure deterministic ordering
@@ -393,6 +447,10 @@ do
       end
       self:_consume_whitespace()
       self:_demand_char(']')
+      do
+         local mt = { __json_type = "array" }
+         setmetatable(array, mt)
+      end
       return array
    end
    function instance_members:_consume_object() -- returns found value, or nil if none

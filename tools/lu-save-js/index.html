@@ -47,6 +47,7 @@ console.assert = function(condition, ...args) {
 }
       </script>
       <script src="common.js"></script>
+      <script src="assess-sav-version.js"></script>
       
       <script src="poke-string/charmap.js" charset="utf-8"></script>
       <script src="poke-string/poke-string.js"></script>
@@ -82,7 +83,8 @@ console.assert = function(condition, ...args) {
       <!-- extra-data infrastructure: -->
       <script src="extra-data-file.js"></script>
       <script src="extra-data/extra-data-collection.js"></script>
-      <script src="extra-data-index.js"></script>
+      <script src="indexed-save-format-info.js"></script>
+      <script src="save-format-index.js"></script>
       
       <script src="c-bitpack-options.js"></script>
       <script src="instructions.js"></script>
@@ -134,10 +136,16 @@ console.assert = function(condition, ...args) {
       <dialog id="dialog-import">
          <div class="body">
             <label for="file-xml">Save file format (XML):</label>
-            <input type="file" class="xml" />
+            <div class="file-input">
+               <input type="file" class="xml" />
+               <button class="clear">Clear</button>
+            </div>
             
             <label for="file-sav">Save file (SAV):</label>
-            <input type="file" class="sav" />
+            <div class="file-input">
+               <input type="file" class="sav" />
+               <button class="clear">Clear</button>
+            </div>
          </div>
          <div class="buttons">
             <button data-action="activate">Load</button>
@@ -147,7 +155,10 @@ console.assert = function(condition, ...args) {
       <dialog id="dialog-translate">
          <div class="body">
             <label for="file-xml">Save file format (XML):</label>
-         <input type="file" class="xml" />
+            <div class="file-input">
+               <input type="file" class="xml" />
+               <button class="clear">Clear</button>
+            </div>
          </div>
          <div class="buttons">
             <button data-action="activate">Translate</button>

@@ -1,3 +1,15 @@
+SaveFormatIndex.load();
+
+document.body.addEventListener("click", function(e) {
+   if (!e.target.matches(".file-input button.clear"))
+      return;
+   let wrap = e.target.closest(".file-input");
+   let node = wrap.querySelector("input[type='file' i]");
+   if (!node)
+      return;
+   node.value = "";
+});
+
 {
    const tab_view = document.getElementById("save-files");
    tab_view.addEventListener("tabchange", function(e) {
@@ -10,20 +22,10 @@
       node.setAttribute("disabled", "disabled");
    });
    
-   // Define editor enums as necessary. This is a HACK until we get 
-   // the full build system in place for save editing.
+   // Define editor enums as necessary. This is a HACK for bespoke 
+   // XML files supplied by the user.
    function preprocess_save_format(/*SaveFormat*/ format) {
-      /*//
-      for(let name in EDITOR_ENUMS) {
-         format.enums[name] = EDITOR_ENUMS[name];
-      }
-      //*/
       format.display_overrides = format.display_overrides.concat(EMERALD_DISPLAY_OVERRIDES);
-      (async function() {
-         let coll = await ExtraDataIndexManager.load_version(1);
-         await coll.readyPromise;
-         coll.apply(format);
-      })();
    }
    
    {  // Import save file
@@ -42,10 +44,6 @@
          modal.close();
       });
       modal.querySelector("button[data-action='activate']").addEventListener("click", async function() {
-         if (!file_node_xml.files.length) {
-            alert("Error: no save file format given.");
-            return;
-         }
          if (!file_node_sav.files.length) {
             alert("Error: no save file given.");
             return;
@@ -53,6 +51,28 @@
          let format;
          let sav_buffer;
          {
+            let sav = file_node_sav.files[0];
+            sav_buffer = new DataView(await sav.arrayBuffer());
+         }
+         if (!file_node_xml.files.length) {
+            let version = assess_sav_version(sav_buffer);
+            if (version === null) {
+               alert("Error: save file version could not be identified.");
+               return;
+            }
+            let info = await SaveFormatIndex.get_format_info(version);
+            if (!info) {
+               alert("Error: save file version number" + version + " doesn't match any known version.");
+               return;
+            }
+            try {
+               await info.load();
+            } catch (e) {
+               alert("Failed to load information for save file version " + version + ".");
+               throw e; // re-throw
+            }
+            format = info.save_format;
+         } else {
             let xml    = file_node_xml.files[0];
             let parser = new DOMParser();
             let text   = await xml.text();
@@ -61,10 +81,6 @@
             format = new SaveFormat();
             format.from_xml(data.documentElement);
             preprocess_save_format(format);
-         }
-         {
-            let sav = file_node_sav.files[0];
-            sav_buffer = new DataView(await sav.arrayBuffer());
          }
          let file = format.load(sav_buffer);
          console.log("Save dump: ", file);
@@ -185,7 +201,7 @@
          modal.close();
       });
    }
-   {  // Import save file
+   {  // Export save file
       let trigger = document.querySelector("menu [data-action='export']");
       let modal   = document.getElementById("dialog-export");
       trigger.addEventListener("click", function(e) {

@@ -128,9 +128,9 @@ class DOMPokeStringPrinter extends AbstractPokeStringPrinter {
    handle_char(cc) {
       let ch = CHARMAP.codepoint_to_character(cc, this.charset);
       if (!ch) {
-         let bytes = ch;
+         let bytes = cc;
          if (bytes >= 0x0100) {
-            bytes = [0xF9, ch & 0xFF];
+            bytes = [0xF9, cc & 0xFF];
          }
          let name = CHARMAP.get_character_set(this.charset).canonical_entity_name_for(bytes);
          if (name) {

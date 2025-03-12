@@ -414,8 +414,29 @@ do
       end
       index_data.index_version = INDEX_VERSION
    end
-   if not index_data.formats then
+   if index_data.formats then
+      --
+      -- Convert from an array to a map, as necessary.
+      --
+      local mt = getmetatable(index_data.formats)
+      if mt then
+         if mt.__json_type == "array" then
+            local remapped = {}
+            for k, v in pairs(index_data.formats) do
+               remapped[k - 1] = v
+            end
+            index_data.formats = remapped
+         end
+         mt.__json_is_zero_indexed = true
+      else
+         local mt = { __json_is_zero_indexed = true }
+         setmetatable(index_data.formats, mt)
+      end
+   else
       index_data.formats = {}
+      
+      local mt = { __json_is_zero_indexed = true }
+      setmetatable(index_data.formats, mt)
    end
    index_data.formats[format_version] = nil
    
@@ -425,7 +446,7 @@ do
    local prior_files = {}
    for version, prior_format in pairs(index_data.formats) do
       version = tonumber(version)
-      if version and prior_format.files then
+      if version and prior_format and prior_format.files then
          for _, filename in ipairs(prior_format.files) do
             local list = prior_files[filename]
             if not list then

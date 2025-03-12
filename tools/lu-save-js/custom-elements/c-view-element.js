@@ -166,6 +166,8 @@ class CViewElement extends TreeRowViewElement {
                case "integer":
                case "string":
                   break;
+               case "omitted":
+                  return _style("deemphasize", "[omitted]");
                default:
                   return "[raw][[/raw] " + _style("deemphasize", "...") + " ]";
             }

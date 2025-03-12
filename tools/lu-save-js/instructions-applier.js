@@ -125,7 +125,7 @@ class InstructionsApplier {
                console.assert(value instanceof CValueInstance);
                switch (node.type) {
                   case "omitted":
-                     value.value = value.base.default_value;
+                     value.value = value.decl.default_value;
                      break;
                   
                   case "boolean":

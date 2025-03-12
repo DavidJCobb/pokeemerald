@@ -135,8 +135,18 @@ class IndexedSaveFormatInfo {
       }
       let format = this.#save_format = new SaveFormat();
       format.from_xml(data.documentElement);
-      if (globalThis.EMERALD_DISPLAY_OVERRIDES) {
-         format.display_overrides = format.display_overrides.concat(EMERALD_DISPLAY_OVERRIDES);
+      {
+         let exists = false;
+         try {
+            EMERALD_DISPLAY_OVERRIDES;
+            exists = true;
+         } catch (e) {
+            // Referencing a non-existent global fails with an error, yet globals 
+            // don't make it into `globalThis` automatically.
+         }
+         if (exists) {
+            format.display_overrides = format.display_overrides.concat(EMERALD_DISPLAY_OVERRIDES);
+         }
       }
       
       if (this.version || this.version === 0) {

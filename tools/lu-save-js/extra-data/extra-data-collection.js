@@ -19,16 +19,6 @@ class ExtraDataCollection {
    }
    
    static #enum_display_criteria = {
-      "CONTEST_CATEGORY": [
-         new CInstanceDisplayOverrideCriteria({
-            type: "ContestWinner",
-            path: "contestCategory",
-         }),
-         new CInstanceDisplayOverrideCriteria({
-            type: "LilycoveLadyContest",
-            path: "category",
-         }),
-      ],
       "CONTEST_RANK": [
          new CInstanceDisplayOverrideCriteria({
             type: "ContestWinner",
@@ -119,6 +109,7 @@ class ExtraDataCollection {
          ],
          Array.from(this.#enum_overrides.values())
       );
+      format.enums.set("ContestCategory",  this.enums.get("CONTEST_CATEGORY").members.by_name);
       format.enums.set("ItemIDGlobal",     this.enums.get("ITEM").members.by_name);
       format.enums.set("MoveID",           this.enums.get("MOVE").members.by_name);
       format.enums.set("PokemonSpeciesID", this.enums.get("SPECIES").members.by_name);

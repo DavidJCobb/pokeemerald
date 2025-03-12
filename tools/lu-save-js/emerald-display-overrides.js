@@ -114,6 +114,52 @@ const EMERALD_DISPLAY_OVERRIDES = (function() {
          "POKENEWS_STATE_ACTIVE",
       ]
    );
+   overrides.push(new CInstanceDisplayOverrides({ // PokemonSubstruct1
+      criteria: [
+         new CInstanceDisplayOverrideCriteria({ type: "PokemonSubstruct1" }),
+      ],
+      overrides: {
+         display_string: function(/*CInstance*/ inst) {
+            if (!inst.members)
+               return null;
+            let moves = inst.members.moves;
+            let pp    = inst.members.pp;
+            if (!moves || !pp || !(moves instanceof CArrayInstance && pp instanceof CArrayInstance))
+               return null;
+            let size = Math.min(moves.values.length, pp.values.length);
+            
+            let s = "[raw][[/raw] ";
+            for(let i = 0; i < size; ++i) {
+               let mv = moves.values[i];
+               let pv = pp.values[i];
+               if (!mv || !pv || mv.value === null || !pv.value === null)
+                  return null;
+               if (i) {
+                  s += ", ";
+               }
+               
+               let move_name = mv.value;
+               {
+                  let format   = mv.save_format;
+                  let enum_def = format?.enums.get(mv.decl.c_types.serialized.name);
+                  if (enum_def) {
+                     for(const [name, value] of enum_def) {
+                        if (value == move_name) {
+                           move_name = name;
+                           break;
+                        }
+                     }
+                  }
+               }
+               s += `[style=value-text]${move_name}[/style]`;
+               s += " x";
+               s += `[style=value-text]${pv.value}[/style]`;
+            }
+            s += " ]";
+            return s;
+         },
+      }
+   }));
    overrides.push(new CInstanceDisplayOverrides({ // Secret Base decoration position
       criteria: [
          new CInstanceDisplayOverrideCriteria({

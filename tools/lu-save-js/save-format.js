@@ -211,7 +211,9 @@ class SaveFormat {
                   }
                }
             } else {
-               memcpy(sector_view, header.raw_sector, SAVE_SECTOR_FULL_SIZE);
+               if (header.raw_sector) {
+                  memcpy(sector_view, header.raw_sector, SAVE_SECTOR_FULL_SIZE);
+               }
                continue;
             }
             //

@@ -200,13 +200,17 @@ document.body.addEventListener("click", function(e) {
             }
             if (present) {
                let operation = new TranslationOperation();
+               //
+               // Here is where you'd want to install any relevant user-defined 
+               // translators, to handle any savedata format changes that can't be 
+               // handled automatically.
+               //
                if (src_version == 1 && dst_version == 2) {
                   let tran = new DebuggingTranslator1To2();
-console.log(tran);
                   tran.install(operation);
                }
                //
-               // Here is where you'd want to install any relevant translators.
+               // And with the translators installed, the operation can now proceed.
                //
                try {
                   operation.translate(src_slot, dst_slot);

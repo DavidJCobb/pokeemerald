@@ -18,4 +18,18 @@ class SaveFile {
    }
    
    get save_format() { return this.#save_format; }
+   get version() {
+      let counter = -1;
+      let slot    = null;
+      for(let s of this.slots) {
+         let c = s.counter;
+         if (c > counter) {
+            counter = c;
+            slot    = s;
+         }
+      }
+      if (slot) {
+         return slot.version;
+      }
+   }
 };

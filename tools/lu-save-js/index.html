@@ -113,6 +113,7 @@ console.assert = function(condition, ...args) {
       <script src="c-bufferifier.js"></script>
       
       <script src="editor-enums.js"></script>
+      <script src="translators/debugging-translator-1-to-2.js"></script>
    </head>
    <body>
       <h1>Bitpacked save dumper</h1>
@@ -135,16 +136,21 @@ console.assert = function(condition, ...args) {
       
       <dialog id="dialog-import">
          <div class="body">
-            <label for="file-xml">Save file format (XML):</label>
-            <div class="file-input">
-               <input type="file" class="xml" />
-               <button class="clear">Clear</button>
-            </div>
-            
-            <label for="file-sav">Save file (SAV):</label>
-            <div class="file-input">
-               <input type="file" class="sav" />
-               <button class="clear">Clear</button>
+            <p>Please provide your <code>.sav</code> file to load.</p>
+            <p>By default, the savedata format is detected based on the version number in the <code>.sav</code> file. You can optionally provide an XML file defining the savedata format (e.g. for development and debugging purposes).</p>
+            <hr/>
+            <div class="form">
+               <label for="file-sav">Save file (SAV):</label>
+               <div class="file-input">
+                  <input type="file" class="sav" />
+                  <button class="clear">Clear</button>
+               </div>
+               
+               <label for="file-xml">Override save file format (XML, optional):</label>
+               <div class="file-input">
+                  <input type="file" class="xml" />
+                  <button class="clear">Clear</button>
+               </div>
             </div>
          </div>
          <div class="buttons">
@@ -154,10 +160,21 @@ console.assert = function(condition, ...args) {
       </dialog>
       <dialog id="dialog-translate">
          <div class="body">
-            <label for="file-xml">Save file format (XML):</label>
-            <div class="file-input">
-               <input type="file" class="xml" />
-               <button class="clear">Clear</button>
+            <div class="form">
+               <label>
+                  <input name="translate-to-target" type="radio" value="known-version" selected />
+                  Translate to version:
+               </label>
+               <select id="translate-to-version" disabled></select>
+            
+               <label>
+                  <input name="translate-to-target" type="radio" value="xml-file" />
+                  Translate to format (XML):
+               </label>
+               <div class="file-input">
+                  <input type="file" class="xml" />
+                  <button class="clear">Clear</button>
+               </div>
             </div>
          </div>
          <div class="buttons">

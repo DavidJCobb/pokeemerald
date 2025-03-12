@@ -80,10 +80,11 @@ save-file-element {
 dialog {
    flex-flow: column nowrap;
    gap: .5em;
+   max-width: 40em;
    
-   .body {
+   .form {
       display: grid;
-      grid-template-columns: 1fr 2fr;
+      grid-template-columns: 1fr minmax(15em, 1fr);
       gap: .5em 1em;
    }
    

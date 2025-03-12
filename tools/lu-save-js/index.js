@@ -1,4 +1,21 @@
-SaveFormatIndex.load();
+SaveFormatIndex.load().then(function() {
+   let node  = document.getElementById("translate-to-version");
+   let frag  = new DocumentFragment();
+   let empty = true;
+   for(const [version, info] of SaveFormatIndex.info) {
+      empty = false;
+      let opt = document.createElement("option");
+      opt.value = version;
+      
+      // TODO: Look into a way to display human-readable savedata version numbers.
+      opt.textContent = version;
+      
+      frag.append(opt);
+   }
+   node.replaceChildren(frag);
+   if (!empty)
+      node.removeAttribute("disabled");
+});
 
 document.body.addEventListener("click", function(e) {
    if (!e.target.matches(".file-input button.clear"))
@@ -62,7 +79,7 @@ document.body.addEventListener("click", function(e) {
             }
             let info = await SaveFormatIndex.get_format_info(version);
             if (!info) {
-               alert("Error: save file version number" + version + " doesn't match any known version.");
+               alert("Error: save file version number " + version + " doesn't match any known version.");
                return;
             }
             try {
@@ -102,7 +119,8 @@ document.body.addEventListener("click", function(e) {
          modal.showModal();
       });
       
-      let file_node_xml = modal.querySelector("input.xml");
+      let version_picker = modal.querySelector("#translate-to-version");
+      let file_node_xml  = modal.querySelector("input.xml");
       
       modal.querySelector("button[data-action='cancel']").addEventListener("click", function() {
          modal.close();
@@ -114,29 +132,64 @@ document.body.addEventListener("click", function(e) {
          let src_file = src_node.saveFile;
          if (!src_file)
             return;
-         let src_format = src_file.slots[0].save_format;
+         let src_format  = src_file.slots[0].save_format;
+         let src_version = src_file.version;
          
-         if (!file_node_xml.files.length) {
-            alert("Error: no save file format given.");
-            return;
-         }
          let dst_format;
+         let dst_version;
          {
-            let xml    = file_node_xml.files[0];
-            let parser = new DOMParser();
-            let text   = await xml.text();
-            let data   = parser.parseFromString(text, "text/xml");
-            
-            dst_format = new SaveFormat();
-            dst_format.from_xml(data.documentElement);
-            preprocess_save_format(dst_format);
+            let type = modal.querySelector("input[name='translate-to-target']:checked");
+            if (!type)
+               return;
+            type = type.value;
+            if (type == "known-version") {
+               let version = +version_picker.value;
+               if (!version && version !== 0)
+                  return;
+               let info = await SaveFormatIndex.get_format_info(version);
+               console.assert(!!info);
+               try {
+                  await info.load();
+               } catch (e) {
+                  alert("Error: Failed to load information for save file version " + version + ".");
+                  throw e; // re-throw
+               }
+               dst_format  = info.save_format;
+               dst_version = version;
+            } else {
+               if (!file_node_xml.files.length) {
+                  alert("Error: no save file format given.");
+                  return;
+               }
+               let xml    = file_node_xml.files[0];
+               let parser = new DOMParser();
+               let text   = await xml.text();
+               let data   = parser.parseFromString(text, "text/xml");
+               
+               dst_format = new SaveFormat();
+               dst_format.from_xml(data.documentElement);
+               preprocess_save_format(dst_format);
+            }
          }
          let dst_file = new SaveFile(dst_format);
          dst_file.special_sectors = structuredClone(src_file.special_sectors);
          for(let i = 0; i < src_file.slots.length; ++i) {
-            let slot = dst_file.slots[i];
-            slot.sectors = structuredClone(src_file.slots[i].sectors);
-            dst_file.slots.push(slot);
+            const src_slot = src_file.slots[i];
+            const dst_slot = dst_file.slots[i];
+            if (src_slot.version < src_version) {
+               //
+               // This can happen if the slot is empty, or in a situation where the 
+               // user has a playthrough in an old version, and then starts a new 
+               // game in a new version and saves one (and only one) time.
+               //
+               console.log(`Slot ${i + 1} is obsolete.`);
+               continue;
+            }
+            dst_slot.sectors = structuredClone(src_slot.sectors);
+            if (dst_version) {
+               for(let header of dst_slot.sectors)
+                  header.version = dst_version;
+            }
             
             let present = false;
             for(let header of src_file.slots[i].sectors) {
@@ -147,45 +200,22 @@ document.body.addEventListener("click", function(e) {
             }
             if (present) {
                let operation = new TranslationOperation();
-/*//
-{
-   class TestPlayerNameROT13Translator extends AbstractDataFormatTranslator {
-      translateInstance(src, dst) {
-         this.pass(dst);
-         //
-         // We want to translate a specific field, so we `pass` the entire 
-         // `dst` object and then write in just the values we want.
-         //
-         let src_name = src.members["playerName"].value;
-         let dst_inst = dst.members["playerName"];
-         let dst_name = dst_inst.value = new PokeString();
-         for(let i = 0; i < src_name.length; ++i) {
-            let byte = src_name.bytes[i];
-            if (byte >= 0xBB && byte <= 0xEE) {
-               let base   = 0;
-               let letter = byte - 0xBB;
-               if (letter >= 26) {
-                  letter -= 26;
-                  base   += 26;
+               if (src_version == 1 && dst_version == 2) {
+                  let tran = new DebuggingTranslator1To2();
+console.log(tran);
+                  tran.install(operation);
                }
-               letter = (letter + 13) % 26;
-               byte = 0xBB + base + letter;
-            }
-            dst_name.bytes.push(byte);
-         }
-         //
-         // Test some deliberate errors.
-         //
-         dst.members["playerGender"].value = "gril";
-         dst.members["playTimeSeconds"].value = 99;
-      }
-   };
-   let tran = new TestPlayerNameROT13Translator();
-   operation.translators_for_top_level_values.add("dst", "gSaveBlock2Ptr", tran);
-}
-//*/
-               operation.translate(src_file.slots[i], slot);
-               console.log(`Slot ${i + 1} translated.`, slot);
+               //
+               // Here is where you'd want to install any relevant translators.
+               //
+               try {
+                  operation.translate(src_slot, dst_slot);
+               } catch (ex) {
+                  alert("A problem occurred while trying to translate the savedata.\n\n" + ex.message);
+                  console.log(ex);
+                  return;
+               }
+               console.log(`Slot ${i + 1} translated.`, dst_slot);
             } else {
                console.log(`Slot ${i + 1} is absent.`);
             }

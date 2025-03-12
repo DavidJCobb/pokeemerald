@@ -13,6 +13,15 @@ class SaveSlot extends CStructInstance {
          value.is_member_of = this;
          this.members[tlv.name] = value;
       }
+      for(let i = 0; i < SAVE_SECTORS_PER_SLOT; ++i) {
+         this.sectors.push({
+            version:   0xFFFFFFFF,
+            sector_id: 0x0000,
+            checksum:  0x0000,
+            signature: 0xFFFFFFFF,
+            counter:   0x00000000,
+         });
+      }
    }
    
    get save_file() {

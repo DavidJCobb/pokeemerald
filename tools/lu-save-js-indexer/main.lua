@@ -37,12 +37,14 @@ include("../lu-lua-lib/classes.lua")
 include("../lu-lua-lib/shell.lua")
 include("../lu-lua-lib/console.lua")
 include("../lu-lua-lib/stdext.lua")
+include("../lu-lua-lib/filesystem.lua")
 
 do -- ensure expected CWD
    local cwd  = shell:resolve(".")
    local here = shell:resolve(this_dir)
    if cwd == here then
       shell:cd("../../") -- CWD is this script's folder; back out to repo folder
+      filesystem.current_path("../../")
    end
 end
 local data = shell:run_and_read('$DEVKITARM/bin/arm-none-eabi-gcc -Iinclude -nostdinc -E -dD -DMODERN=1 -x c "src/lu/preprocessor-macros-of-interest.txt"')
@@ -334,34 +336,33 @@ end
 include("../lu-lua-lib/dataview.lua")
 include("subrecords.lua")
 
+local save_editor_dir = filesystem.path("usertools/lu-save-js/")
+
 local format_version = found_vars_of_interest["SAVEDATA_SERIALIZATION_VERSION"]
-local base_dir       = "tools/lu-save-js/formats/" .. tostring(format_version) .. "/"
-shell:exec("mkdir -p "..base_dir)
+local format_dir     = save_editor_dir/("formats/"..tostring(format_version).."/")
+if not filesystem.create_directory(format_dir) then
+   error("Failed to create directory `"..tostring(format_dir).."` for savedata format "..format_version..".")
+end
 
 --
 -- Output files:
 --
 
 -- Format XML
-io.write("Copying the current savedata format XML into the appropriate folder for the save editor...\n")
-shell:exec("cp lu_bitpack_savedata_format.xml " .. base_dir .. "format.xml")
+print("Copying the current savedata format XML into the appropriate folder for the save editor...\n")
+filesystem.copy_file(
+   "lu_bitpack_savedata_format.xml",
+   format_dir/"format.xml"
+)
 
-io.write("Generating and indexing extra-data files for the save editor...\n")
+print("Generating and indexing extra-data files for the save editor...\n")
 
 --
 -- Update the index file.
 --
 include("../lu-lua-lib/json.lua")
-local function get_file_size(path)
-   local file = io.open(this_dir..path, "r")
-   if file then
-      local size = file:seek("end")
-      file:close()
-      return size
-   end
-end
 local function file_is_identical_to(path, view)
-   local size = get_file_size(path)
+   local size = filesystem.file_size(path)
    if not size then
       return false
    end
@@ -369,7 +370,7 @@ local function file_is_identical_to(path, view)
       return false
    end
    local src = dataview()
-   src:load_from_file(this_dir..path)
+   src:load_from_file(tostring(filesystem.absolute(path)))
    if view:is_identical_to(src) then
       return true
    end
@@ -380,7 +381,7 @@ do
 
    local index_data = {}
    do
-      local file = io.open(this_dir.."/../lu-save-js/formats/index.json", "r")
+      local file = filesystem.open(save_editor_dir/"formats/index.json", "r")
       if file then
          local data    = file:read("*all")
          local success = true
@@ -425,6 +426,7 @@ do
             for k, v in pairs(index_data.formats) do
                remapped[k - 1] = v
             end
+            setmetatable(remapped, mt)
             index_data.formats = remapped
          end
          mt.__json_is_zero_indexed = true
@@ -468,7 +470,7 @@ do
    index_data.formats[format_version] = new_format
    
    for filename, info in pairs(goals) do
-      local dst_path = base_dir .. filename
+      local dst_path = format_dir/filename
       --
       -- Generate an extra-data file in memory.
       --
@@ -506,7 +508,7 @@ do
             if list then
                for _, prior in ipairs(list) do
                   if prior < format_version then
-                     local prior_path = "/../lu-save-js/formats/"..prior.."/"..filename
+                     local prior_path = save_editor_dir / ("formats/"..prior.."/"..filename)
                      if file_is_identical_to(prior_path, view) then
                         share = prior
                         break
@@ -518,14 +520,14 @@ do
          if share then
             new_format.shared[filename] = share
             print(" - Sharing `"..filename.."` with previously-indexed savedata format `"..share.."`.")
-            os.remove(this_dir.."/../../"..dst_path)
+            filesystem.remove(dst_path)
          else
-            view:save_to_file(this_dir.."/../../"..dst_path)
+            view:save_to_file(tostring(filesystem.absolute(dst_path)))
             print(" - Generated `"..filename.."` for the current savedata format.")
             new_format.files[#new_format.files + 1] = filename
          end
       else
-         os.remove(this_dir.."/../../"..dst_path)
+         filesystem.remove(dst_path)
       end
    end
    do -- Normalize output.
@@ -545,7 +547,7 @@ do
    
    local text = json.to(index_data, { pretty_print = true })
    do
-      local file = io.open(this_dir.."/../lu-save-js/formats/index.json", "w")
+      local file = filesystem.open(save_editor_dir/"formats/index.json", "w")
       file:write(text)
       file:close()
    end

@@ -48,6 +48,11 @@ make_class = nil
          accessible on the class itself. Put static member functions 
          here.
          
+      instance_metamethods
+      
+         Optional. A table of metamethods to add to instances. Note 
+         that __index and __newindex will not be used.
+         
       __tostring
       
          Optional. Becomes the `__tostring` metamethod for instances.
@@ -267,6 +272,37 @@ do
       return false
    end
    
+   local permitted_metamethods = {
+      "__add",
+      "__sub",
+      "__mul",
+      "__div",
+      "__mod",
+      "__pow",
+      "__unm",
+      "__idiv",
+      "__band",
+      "__bor",
+      "__bxor",
+      "__bnot",
+      "__shl",
+      "__shr",
+      "__concat",
+      "__len",
+      "__eq",
+      "__lt",
+      "__le",
+      "__call"
+   }
+   local function is_permitted_metamethod(name)
+      for _, v in ipairs(permitted_metamethods) do
+         if v == name then
+            return true
+         end
+      end
+      return false
+   end
+   
    --
    -- Code to make a class.
    --
@@ -276,6 +312,7 @@ do
       local static_members   = {}
       local instance_members = {}
       local instance_getters = {}
+      local metamethods
       local superclass
       local calls_super = false
       if type(options) == "table" then
@@ -283,6 +320,7 @@ do
          instance_members = options.instance_members or {}
          instance_getters = options.getters          or {}
          static_members   = options.static_members   or {}
+         metamethods      = options.instance_metamethods or nil
          superclass       = options.superclass       or nil
          if options.calls_super then
             if not constructor then
@@ -302,6 +340,13 @@ do
          local v = options.__tostring
          if v then
             instance_metatable.__tostring = v
+         end
+         if metamethods then
+            for k, v in pairs(metamethods) do
+               if is_permitted_metamethod(k) then
+                  instance_metatable[k] = v
+               end
+            end
          end
       end
       local class_metatable = {

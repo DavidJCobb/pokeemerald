@@ -161,6 +161,13 @@ local enum_confusables = {
    "VAR_TEMP_TRANSFERRED_SPECIES",
 }
 
+-- Indicate names or name formats for unused enum members.
+local enum_unused_names = {
+   ["FLAG"] = {
+      "FLAG_UNUSED_0x*"
+   }
+}
+
 local desired_vars = {
    -- Though not emitted into any specific extra-data file, this 
    -- variable is mission-critical for generating the files. We 
@@ -271,6 +278,28 @@ function try_handle_enumeration_member(name, value)
    --
    for k, v in pairs(enums) do
       if name:startswith(k .. "_") then
+         do
+            local unused_names = enum_unused_names[k]
+            if unused_names then
+               local unused = false
+               for _, v in ipairs(unused_names) do
+                  if v:sub(#v) == "*" then
+                     v = v:sub(1, -2)
+                     if name:startswith(v) then
+                        unused = true
+                        break
+                     end
+                  elseif name == v then
+                     unused = true
+                     break
+                  end
+               end
+               if unused then
+                  v:mark_value_unused(value)
+                  return true
+               end
+            end
+         end
          v:set(name, value)
          return true
       end
@@ -482,6 +511,7 @@ do
             if enumeration then
                wrote = true
                write_ENUMDATA_subrecord(view, enumeration)
+               write_ENUNUSED_subrecord(view, enumeration)
             end
          end
       end

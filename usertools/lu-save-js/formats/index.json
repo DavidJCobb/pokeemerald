@@ -14,8 +14,10 @@
          ]
       },
       {
+         "files": [
+            "flags.dat"
+         ],
          "shared": {
-            "flags.dat": 1,
             "game-stats.dat": 1,
             "items.dat": 1,
             "misc.dat": 1,

@@ -109,9 +109,15 @@ class ExtraDataCollection {
          ],
          Array.from(this.#enum_overrides.values())
       );
-      format.enums.set("ContestCategory",  this.enums.get("CONTEST_CATEGORY").members.by_name);
-      format.enums.set("ItemIDGlobal",     this.enums.get("ITEM").members.by_name);
-      format.enums.set("MoveID",           this.enums.get("MOVE").members.by_name);
-      format.enums.set("PokemonSpeciesID", this.enums.get("SPECIES").members.by_name);
+      
+      let _set_enum_type = (function(typename, enum_name) {
+         let ed = this.enums.get(enum_name);
+         if (ed)
+            format.enums.set(typename, ed.members.by_name);
+      }).bind(this);
+      _set_enum_type("ContestCategory",  "CONTEST_CATEGORY");
+      _set_enum_type("ItemIDGlobal",     "ITEM");
+      _set_enum_type("MoveID",           "MOVE");
+      _set_enum_type("PokemonSpeciesID", "SPECIES");
    }
 };

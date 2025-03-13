@@ -104,12 +104,12 @@ class IndexedSaveFormatInfo {
       this.#extra_data.finalize(files);
       if (any) {
          if (errors.length) {
-            let err = new AggregateError(errors, "Some extra-data files for serialization version " + v + " failed to parse.");
+            let err = new AggregateError(errors, "Some extra-data files for serialization version " + this.version + " failed to parse.");
             console.warn(err);
          }
          pi.resolve(this.#extra_data);
       } else {
-         let err = new AggregateError(errors, "All extra-data files for serialization version " + v + " failed to parse.");
+         let err = new AggregateError(errors, "All extra-data files for serialization version " + this.version + " failed to parse.");
          pi.reject(err);
       }
    }

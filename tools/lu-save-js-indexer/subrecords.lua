@@ -75,6 +75,21 @@ function write_ENUMDATA_subrecord(view, enumeration)
    end)
 end
 
+function write_ENUNUSED_subrecord(view, enumeration)
+   local size = #enumeration.unused_ranges
+   if size <= 0 then
+      return
+   end
+   write_subrecord(view, "ENUNUSED", 1, function(view)
+      view:append_length_prefixed_string(1, enumeration.name .. "_")
+      for i = 1, size do
+         local range = enumeration.unused_ranges[i]
+         view:append_uint32(range.first)
+         view:append_uint32(range.last)
+      end
+   end)
+end
+
 -- Argument types: dataview, array<pair<name, value>>
 --
 -- We take a list of name/value pairs, rather than a conventional table, 

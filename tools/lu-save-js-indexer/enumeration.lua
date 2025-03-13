@@ -7,6 +7,7 @@ local function constructor(self, name)
       highest = nil,
       count   = nil,
    }
+   self.unused_ranges = {}
 end
 
 local instance_members = {}
@@ -28,6 +29,43 @@ do -- methods
          highest = nil,
          count   = nil,
       }
+   end
+   function instance_members:mark_value_unused(value)
+      local size = #self.unused_ranges
+      for i = 1, size do
+         local range = self.unused_ranges[i]
+         if range.first == value + 1 then
+            range.first = value
+            if i > 1 then
+               local prev = self.unused_ranges[i - 1]
+               if prev.last >= range.first then
+                  prev.last = range.last
+                  table.remove(self.unused_ranges, i)
+               end
+            end
+            return
+         end
+         if range.last == value - 1 then
+            range.last = value
+            if i < size then
+               local nexx = self.unused_ranges[i + 1]
+               if nexx.first <= range.last then
+                  range.last = nexx.last
+                  table.remove(self.unuesd_ranges, i + 1)
+               end
+            end
+            return
+         end
+         if value >= range.first and value <= range.last then
+            return
+         end
+      end
+      self.unused_ranges[size + 1] = { first = value, last = value }
+      if size > 0 then
+         table.sort(self.unused_ranges, function(a, b)
+            return a.first < b.first
+         end)
+      end
    end
 
    -- Returns an array of name/value pairs. If an enum value 

@@ -17,6 +17,17 @@ class Bytestream {
    get remaining() {
       return this.#view.byteLength - this.#offset;
    }
+   get position() {
+      return this.#offset;
+   }
+   set position(v) {
+      v = +v;
+      if (isNaN(v))
+         throw new TypeError("Invalid position.");
+      if (v < 0 || v > this.#view.byteLength)
+         throw new Error("Out-of-bounds seek.");
+      this.#offset = v;
+   }
    
    #require_size_for_read(n) {
       if (this.#offset + n > this.#view.byteLength)

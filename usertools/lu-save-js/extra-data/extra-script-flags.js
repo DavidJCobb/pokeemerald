@@ -2,7 +2,8 @@ class ExtraScriptFlags extends CInstanceDisplayOverrides {
    constructor() {
       super();
       this.criteria.push(new CInstanceDisplayOverrideCriteria("gSaveBlock1Ptr->flags[*]"));
-      this.flag_names = null; // Map<int, String>
+      this.flag_names    = null; // Map<int, String>
+      this.unused_ranges = null;
       this.trainers   = {
          count:      null,
          first_flag: null, // index
@@ -31,7 +32,8 @@ class ExtraScriptFlags extends CInstanceDisplayOverrides {
       {
          let enumeration = file.found.enums.get("FLAG_");
          if (enumeration) {
-            this.flag_names = enumeration.members.by_value;
+            this.flag_names    = enumeration.members.by_value;
+            this.unused_ranges = enumeration.unused_ranges;
          }
       }
       if (this.trainers.names && this.flag_names) {
@@ -44,6 +46,11 @@ class ExtraScriptFlags extends CInstanceDisplayOverrides {
       let text = this.flag_names.get(n);
       if (text) {
          return text;
+      }
+      for(let range of this.unused_ranges) {
+         if (n >= range.first && n <= range.last) {
+            return "FLAG_UNUSED_0x" + n.toString(16).toUpperCase().padStart(3, '0');
+         }
       }
       {
          let count = this.trainers.count;

@@ -39,15 +39,25 @@ class ExtraDataFile {
       while (info = this.#extract_next_subrecord()) {
          switch (info.signature) {
             case "ENUMDATA":
+            case "ENUNUSED":
                {
-                  let data = new ExtraEnumData();
+                  let name;
                   try {
-                     data.parse(info.body);
+                     name = ExtraEnumData.peek_enum_name(info.signature, info.body);
+                     info.body.position = 0;
                   } catch (ex) {
                      errors.push(ex);
+                     break;
                   }
-                  if (data.prefix) {
-                     this.found.enums.set(data.prefix, data);
+                  let data = this.found.enums.get(name);
+                  if (!data) {
+                     data = new ExtraEnumData();
+                     this.found.enums.set(name, data);
+                  }
+                  try {
+                     data.parse(info.signature, info.body);
+                  } catch (ex) {
+                     errors.push(ex);
                   }
                }
                break;

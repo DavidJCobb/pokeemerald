@@ -57,7 +57,7 @@ do -- std::filesystem::path
                   local disk = path:match("^[a-zA-Z]:", pos)
                   if disk then
                      self.root_name = disk
-                     pos = #disk
+                     pos = #disk + 1
                   end
                end
             end
@@ -429,11 +429,44 @@ local function _coerce_path(path)
    return filesystem.path(path)
 end
 local function _get_true_cwd()
-   local stream = assert(io.popen("readlink -f .", "r"))
+   local command
+   if is_windows then
+      command = "cd"
+   else
+      command = "readlink -f ."
+   end
+   local stream = assert(io.popen(command))
    local output = stream:read("*all")
    stream:close()
    output = output:gsub("\n$", "")
    return output
+end
+
+local function _path_as_param(path)
+   local s = tostring(path)
+   if is_windows then
+      --
+      -- So we're running in CMD, then. The '%' glyph is used as the 
+      -- delimiter for variable expansion, and can only be escaped 
+      -- outside of a quoted string, so it's important that we check 
+      -- for it here and deliberately choke and die if we see it.
+      --
+      if s:find("%", 1, true) then
+         error("Windows does not ordinarily allow paths to contain percentage signs, and even if you brute-force them in somehow, it is impossible to safely execute shell commands on such paths.")
+      end
+      s = '"' .. s:gsub('"', '""') .. '"'
+   else
+      s = "'" .. s:gsub("'", "'\\''") .. "'" -- POSIX/bash
+   end
+   return s
+end
+
+local function _escape_pattern_chars(s)
+   return s
+      :gsub("%%", "%%%%")
+      :gsub("^%^", "%%^")
+      :gsub("%$$", "%%$")
+      :gsub("([%(%)%.%[%]%*%+%-%?])", "%%%1")
 end
 
 function filesystem.absolute(path)
@@ -448,10 +481,93 @@ function filesystem.absolute(path)
    end
    return filesystem.current_path():append(path)
 end
+function filesystem.canonical(path)
+   path = filesystem.absolute(path)
+   if is_windows then
+      --
+      -- Windows doesn't have a native equivalent to `readlink`. However, if you 
+      -- can coax DIR into printing your file/directory as a listing entry, 
+      -- then it'll indicate whether the thing is a symlink. Example:
+      --
+      --    03/15/2025  12:00 AM    <SYMLINKD>     foo [asdf]
+      --
+      -- The symlink target name is listed in square brackets, as a path relative 
+      -- to whatever DIR is printing a listing for.
+      --
+      -- If `path` refers to a directory, though, we want it to be a listing item, 
+      -- not the thing we print a listing *of*. We can exploit DIR's wildcard 
+      -- syntax for this: a trailing question mark after the quoted path will 
+      -- apply a wildcard. (Asterisks force matching against DOS_era 8.1 filenammes 
+      -- which is undesirable.) Of course, since we're using a wildcard, we must 
+      -- now match the output to ensure that we grab the listing entry for the 
+      -- path we actually specified: if we ask about "foo?", we may get "foo" or 
+      -- "foo!" and we want to make sure we grab only the former.
+      --
+      local path_param = path
+      local filename   = path:filename()
+      if filename == "" then
+         --
+         -- DIR will fail if the input is `"foo/bar/"?`.
+         --
+         path_param = path:parent_path()
+         filename   = path_param:filename()
+         if filename == "" then
+            return path
+         end
+      end
+      local command = "dir " .. _path_as_param(path_param) .. '? 2> nul'
+      local stream  = assert(io.popen(command))
+      local output  = stream:read("*all")
+      local success, exit_type, exit_code = stream:close()
+      --
+      -- The commonly recommended solution is to pipe DIR into FIND, but FIND will 
+      -- modify ERRORLEVEL and, by extension, the results of `stream:close()`. We 
+      -- instead must capture the full output and then just find the right line. 
+      -- Lua's patterns are capable enough.
+      --
+      if not success then
+         error("The specified path does not exist.")
+      end
+      output = output:gsub("\r?\n$", "")
+      output = output:match("[^\r\n]+<SYMLINKD?>%s+" .. _escape_pattern_chars(filename) .. "%s+(%b[])[\r\n]")
+      if not output or output == "" then
+         return path
+      end
+      output = output:match("%[(.*)%]$")
+      if not output then
+         return path
+      end
+      path = path:parent_path()
+      path:append(output)
+      return path:lexically_normal()
+   else
+      local command = "readlink -e " .. _path_as_param(path)
+      local stream  = assert(io.popen(command))
+      local output  = stream:read("*all")
+      local success, exit_type, exit_code = stream:close()
+      if not success then
+         error("The specified path does not exist.")
+      end
+      output = output:gsub("\n$", "")
+      return filesystem.path(output, true)
+   end
+end
 function filesystem.copy_file(src, dst)
    src = filesystem.absolute(src)
    dst = filesystem.absolute(dst)
-   local command = "cp " .. tostring(src) .. " " .. tostring(dst)
+   if src:empty() or dst:empty() then
+      --
+      -- Windows: if the destination is empty, COPY creates the copy 
+      -- with the same filename as the source, in the CWD.
+      --
+      return false
+   end
+   local command
+   if is_windows then
+      command = "copy /y " .. _path_as_param(src) .. " " .. _path_as_param(dst)
+   else
+      command = "cp " .. _path_as_param(src) .. " " .. _path_as_param(dst)
+   end
    local success, exit_type, exit_code = os.execute(command)
    if exit_type == "exit" then
       return exit_code == 0
@@ -460,7 +576,12 @@ function filesystem.copy_file(src, dst)
 end
 function filesystem.create_directory(path)
    path = filesystem.absolute(path)
-   local command = "mkdir -p " .. tostring(path)
+   local command
+   if is_windows then
+      command = 'setlocal enableextensions && mkdir ' .. _path_as_param(path) .. ' && endlocal'
+   else
+      command = "mkdir -p " .. _path_as_param(path)
+   end
    local success, exit_type, exit_code = os.execute(command)
    if exit_type == "exit" then
       return exit_code == 0

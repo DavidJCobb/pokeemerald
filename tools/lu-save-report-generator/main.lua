@@ -7,33 +7,11 @@ this_dir = (function()
       :gsub("^([^/])", "./%1")
       :gsub("[^/]*$", "")
 end)()
+package.path = package.path .. ";" .. this_dir .. "/?.lua;" .. this_dir .. "../lu-lua-lib/?.lua"
 
--- `require` is janky and seems to choke on relative paths, 
--- so this shims it and allows lookups based on relative 
--- paths
-function include(path)
-   local dst_file = path:gsub("([^/]*)$", "%1")
-   --
-   -- Override `package.path` to tell it to look for an exact file.
-   --
-   local prior = package.path
-   if path:sub(1, 1) == "/" then
-      package.path = path
-   else
-      package.path = this_dir .. path
-   end
-   local status, err = pcall(function()
-      require(dst_file)
-   end)
-   package.path = prior
-   if not status then
-      error(err)
-   end
-end
-
-include("../lu-lua-lib/classes.lua")
-include("../lu-lua-lib/stringify-table.lua")
-include("../lu-lua-lib/xml.lua")
+require "classes"
+require "stringify-table"
+require "xml"
 
 local root_node
 do
@@ -563,7 +541,7 @@ out_file:close()
 -- Replace the last finished Markdown file with the temporary file we've generated.
 --
 
-include("../lu-lua-lib/shell.lua")
+require "shell"
 
 local copy_exit_code = shell:exec("/bin/cp "..this_dir.."/../../reports/savedata.md.tmp "..this_dir.."/../../reports/savedata.md")
 if copy_exit_code == 0 then

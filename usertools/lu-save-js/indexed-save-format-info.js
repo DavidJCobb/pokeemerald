@@ -19,6 +19,7 @@ class IndexedSaveFormatInfo {
    static #extra_data_files = [
       "game-stats.dat",
       "items.dat",
+      "maps.dat",
       "misc.dat",
       "moves.dat",
       "natures.dat",
@@ -100,9 +101,9 @@ class IndexedSaveFormatInfo {
          if (errors.length) {
             let err = new AggregateError(errors,
                any_succeeded ?
-                  "Some extra-data files for serialization version " + v + " could not be accessed."
+                  "Some extra-data files for serialization version " + this.version + " could not be accessed."
                :
-                  "None of the extra-data for serialization version " + v + " files could be accessed."
+                  "None of the extra-data for serialization version " + this.version + " files could be accessed."
             );
             if (!any_succeeded) {
                pi.reject(err);

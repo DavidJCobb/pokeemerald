@@ -7,6 +7,7 @@ class ExtraDataCollection {
       this.constants    = new Map();
       this.enums        = new Map();
       this.game_stats   = new ExtraGameStats();
+      this.map_data     = new ExtraCoalescedMapsData();
       this.script_flags = new ExtraScriptFlags();
       this.script_vars  = new ExtraScriptVars();
       
@@ -98,6 +99,12 @@ class ExtraDataCollection {
             this.#enum_overrides.set(name, disp);
          }
       }
+      {
+         let file = files.get("maps.dat");
+         if (file && file.found.map_data) {
+            this.map_data.finalize(file);
+         }
+      }
    }
    
    apply(/*SaveFormat*/ format) {
@@ -107,6 +114,7 @@ class ExtraDataCollection {
             this.script_flags,
             this.script_vars,
          ],
+         Object.values(this.map_data.overrides),
          Array.from(this.#enum_overrides.values())
       );
       

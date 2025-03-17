@@ -58,6 +58,16 @@ class EnumInputElement extends HTMLElement {
       this.#shape_button.addEventListener("click", this.#on_user_change_shape.bind(this));
    }
    
+   // So outside code can listen for a consistent event name.
+   #synthesize_input_event_for_select(e) {
+      let clone = new InputEvent("input", {
+         bubbles:    e.bubbles,
+         cancelable: false,
+         composed:   true,
+      });
+      this.#input.dispatchEvent(clone);
+   }
+   
    #set_current_shape(show_select) {
       if (show_select == this.#showing_select)
          return;
@@ -230,6 +240,7 @@ class EnumInputElement extends HTMLElement {
          return;
       this.#value = value;
       this.#push_value_to_textbox();
+      this.#synthesize_input_event_for_select(e);
    }
    #on_text_edited(e) {
       let raw   = this.#input.value;

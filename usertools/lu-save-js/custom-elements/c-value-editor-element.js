@@ -266,10 +266,12 @@ class CValueEditorElement extends HTMLElement {
          }
          if (display) {
             this.#input = display.overrides.make_editor_element(this.#target);
-            this.#input.value = this.#target.value;
-            this.#body.replaceChildren(this.#input);
-            this.update_preview();
-            return;
+            if (this.#input) {
+               this.#input.value = this.#target.value;
+               this.#body.replaceChildren(this.#input);
+               this.update_preview();
+               return;
+            }
          }
       }
       

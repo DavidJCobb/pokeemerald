@@ -9,35 +9,13 @@ this_dir = (function()
       :gsub("^([^/])", "./%1")
       :gsub("[^/]*$", "")
 end)()
+package.path = package.path .. ";" .. this_dir .. "/?.lua;" .. this_dir .. "../lu-lua-lib/?.lua"
 
--- `require` is janky and seems to choke on relative paths, 
--- so this shims it and allows lookups based on relative 
--- paths
-function include(path)
-   local dst_folder = path
-      :gsub("^([^/])", "./%1")
-      :gsub("[^/]*$", "")
-   local dst_file = path:gsub("([^/]*)$", "%1")
-   --
-   -- Override `package.path` to tell it to look for an exact file.
-   --
-   local prior = package.path
-   package.path = this_dir .. dst_file
-   local status, err = pcall(function()
-      require(dst_file)
-   end)
-   package.path = prior
-   if not status then
-      error(err)
-   end
-end
-
-include("../lu-lua-lib/stringify-table.lua")
-include("../lu-lua-lib/classes.lua")
-include("../lu-lua-lib/shell.lua")
-include("../lu-lua-lib/console.lua")
-include("../lu-lua-lib/stdext.lua")
-include("../lu-lua-lib/filesystem.lua")
+require "stringify-table"
+require "classes"
+require "filesystem"
+require "shell"
+require "stdext"
 
 do -- ensure expected CWD
    local cwd  = shell:resolve(".")
@@ -47,14 +25,9 @@ do -- ensure expected CWD
       filesystem.current_path("../../")
    end
 end
-local data = shell:run_and_read('$DEVKITARM/bin/arm-none-eabi-gcc -Iinclude -nostdinc -E -dD -DMODERN=1 -x c "src/lu/preprocessor-macros-of-interest.txt"')
 
-include("../lu-lua-lib/c-lex.lua")
-include("../lu-lua-lib/c-ast.lua")
-include("../lu-lua-lib/c-parser.lua")
-include("../lu-lua-lib/c-exec-integer-constant-expression.lua")
-
-include("enumeration.lua")
+require "for-each-macro-in"
+require "enumeration"
 
 -- Here, we specify what extra-data files should contain what 
 -- information of interest.
@@ -84,6 +57,18 @@ local goals = {
    },
    ["items.dat"] = {
       enums = { "ITEM" }
+   },
+   ["maps.dat"] = {
+      enums = {
+         "MAPSEC", -- used for met locations
+         "METLOC", -- used for met locations (same ID space as MAPSEC, but different prefix)
+      },
+      vars  = {
+         "KANTO_MAPSEC_START",
+         "KANTO_MAPSEC_END", -- actually "last," not "end"
+         "KANTO_MAPSEC_COUNT"
+      },
+      map_data = true
    },
    ["moves.dat"] = {
       enums = { "MOVE" }
@@ -181,6 +166,12 @@ local desired_vars = {
    -- want to list it here so that we track it in a more compact 
    -- table (`found_vars_of_interest` versus `all_found_macros`).
    "SAVEDATA_SERIALIZATION_VERSION",
+   
+   -- We need these variables in order to know what enum values 
+   -- to ignore for FLAG and VAR: we want to ignore anything 
+   -- that wouldn't actually make it into savedata.
+   "SPECIAL_FLAGS_START",
+   "SPECIAL_VARS_START",
 }
 local enums = {}
 do -- Initialize `enumeration` objects for enums of interest, and initialize `desired_vars`.
@@ -213,36 +204,7 @@ do -- Initialize `enumeration` objects for enums of interest, and initialize `de
 end
 
 local found_vars_of_interest = {}
-
--- Needed in order to resolve cases where a macro we care about references 
--- a macro we don't care about.
-local all_found_macros = {}
-
--- The `name` and `line` arguments are just here to aid with debugging.
-function parse_macro_value(value, name, line)
-   local n = tonumber(value)
-   if n then
-      return n
-   end
-   
-   local success, err = pcall(function()
-      local lexed  = lex_c(value)
-      local parser = c_parser()
-      local parsed = parser:parse(lexed)
-      value = try_execute_c_constant_integer_expression(parsed, all_found_macros)
-   end)
-   if not success then
-      return nil
-   end
-   if type(value) == "table" then
-      print("Improperly processed macro value:")
-      print_table(value)
-      print("containing line was:\n   " .. line)
-      error("error!")
-   end
-   
-   return value
-end
+local map_data = nil
 
 function try_handle_enumeration_member(name, value)
    --
@@ -264,7 +226,7 @@ function try_handle_enumeration_member(name, value)
       -- Exclude "special flags," as these aren't actually present in 
       -- the savegame.
       --
-      local special = all_found_macros["SPECIAL_FLAGS_START"]
+      local special = found_vars_of_interest["SPECIAL_FLAGS_START"]
       if special and value >= special then
          return false
       end
@@ -273,7 +235,7 @@ function try_handle_enumeration_member(name, value)
       -- Exclude "special vars," as these aren't actually present in 
       -- the savegame.
       --
-      local special = all_found_macros["SPECIAL_VARS_START"]
+      local special = found_vars_of_interest["SPECIAL_VARS_START"]
       if special and value >= special then
          return false
       end
@@ -331,34 +293,45 @@ function try_handle_macro(name, value)
    end
 end
 
-for line in data:gmatch("[^\r\n]+") do
-   if line:startswith("#define ") then
-      local token = line:gmatch("[^ ]+")
-      local name  = nil
-      local value = ""
-      do
-         local i = 1
-         for t in token do
-            if (t:startswith("//")) then
-               break
-            end
-            if i == 1 then
-               -- #define
-            elseif i == 2 then
-               name = t
-            elseif i == 3 then
-               value = t
-            else
-               value = value .. " " .. t
-            end
-            i = i + 1
+for_each_macro_in(
+   filesystem.absolute(filesystem.path("src/lu/preprocessor-macros-of-interest.txt")),
+   function(name, value)
+      try_handle_macro(name, value)
+   end
+)
+do -- Try and get map data.
+   require "json"
+   
+   local file = filesystem.open("data/maps/map_groups.json")
+   if file then
+      local data    = file:read("*all")
+      local success = true
+      local parsed
+      file:close()
+      xpcall(
+         function()
+            parsed = json.from(data)
+         end,
+         function(err)
+            print("Failed to parse data/maps/map_groups.json.")
+            print("Error: " .. tostring(err))
+            print(debug.traceback())
+            success = false
          end
-      end
-      if name and value then
-         value = parse_macro_value(value, name, line)
-         if value then
-            all_found_macros[name] = value
-            try_handle_macro(name, value)
+      )
+      if success and parsed then
+         if parsed.group_order then
+            map_data = {
+               group_order = parsed.group_order,
+               groups = {}
+            }
+            for _, name in ipairs(parsed.group_order) do
+               if name ~= "group_order" and parsed[name] then
+                  map_data.groups[name] = parsed[name]
+               else
+                  map_data.groups[name] = {}
+               end
+            end
          end
       end
    end
@@ -368,8 +341,8 @@ if not found_vars_of_interest["SAVEDATA_SERIALIZATION_VERSION"] then
    error("Unable to find the SAVEDATA_SERIALIZATION_VERSION macro, or its value could not be resolved to an integer constant.")
 end
 
-include("../lu-lua-lib/dataview.lua")
-include("subrecords.lua")
+require "dataview"
+require "subrecords"
 
 local save_editor_dir = filesystem.path("usertools/lu-save-js/")
 
@@ -392,7 +365,8 @@ print("Generating and indexing extra-data files for the save editor...\n")
 --
 -- Update the index file.
 --
-include("../lu-lua-lib/json.lua")
+require "json"
+
 local function file_is_identical_to(path, view)
    local size = filesystem.file_size(path)
    if not size then
@@ -417,6 +391,7 @@ do
       if file then
          local data    = file:read("*all")
          local success = true
+         file:close()
          xpcall(
             function()
                index_data = json.from(data)
@@ -529,6 +504,16 @@ do
             end
          end
       end
+      local function write_map_data(view)
+         if not map_data then
+            return
+         end
+         local size = view.size
+         write_MAPSDATA_subrecord(view, map_data)
+         if view.size > size then
+            wrote_any = true
+         end
+      end
       local function write_variables(view)
          if not info.vars then
             return
@@ -613,6 +598,9 @@ do
             local first_slice = slices[1]
             
             write_enumerations(first_slice, enum_to_slice)
+            if info.map_data then
+               write_map_data(first_slice)
+            end
             write_variables(first_slice)
             
             local count = #slices
@@ -623,8 +611,14 @@ do
             return
          end
       end
+      --
+      -- Write a non-sliced/whole file.
+      --
       local view = dataview()
       write_enumerations(view, enum_to_slice)
+      if info.map_data then
+         write_map_data(view)
+      end
       write_variables(view)
       finalize_file(filename, view)
    end

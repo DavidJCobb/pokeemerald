@@ -5,8 +5,9 @@ class ExtraDataFile {
    
    constructor(buffer) {
       this.found = {
-         enums: new Map(), // Map<String prefix, ExtraEnumData>
-         vars:  new Map(), // Map<String name, int vaulue>
+         enums:    new Map(), // Map<String prefix, ExtraEnumData>
+         vars:     new Map(), // Map<String name, int vaulue>
+         map_data: null,
       };
       
       if (buffer)
@@ -62,6 +63,17 @@ class ExtraDataFile {
                   }
                   try {
                      data.parse(info.signature, info.body);
+                  } catch (ex) {
+                     errors.push(ex);
+                  }
+               }
+               break;
+            case "MAPSDATA":
+               {
+                  let data = new ExtraMapsData();
+                  this.found.map_data = data;
+                  try {
+                     data.parse(info.body);
                   } catch (ex) {
                      errors.push(ex);
                   }

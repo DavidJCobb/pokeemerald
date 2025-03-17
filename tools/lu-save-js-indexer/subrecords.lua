@@ -185,6 +185,86 @@ function write_ENUNUSED_subrecord(view, enumeration)
    end)
 end
 
+function write_MAPSDATA_subrecord(view, map_data)
+   if not map_data
+   or not map_data.groups
+   or not map_data.group_order
+   then
+      return
+   end
+   local group_count = #map_data.group_order
+   if group_count <= 0 then
+      return
+   end
+   write_subrecord(view, "MAPSDATA", 1, function(view)
+      local function _serialize_name_block(names, detect_prefix)
+         if detect_prefix then
+            local prefix
+            local count = #names
+            if count > 2 then
+               prefix = names[1]
+               local p_size = #prefix
+               for i = 2, count do
+                  local name = names[i]
+                  local size = math.min(p_size, #name)
+                  local same = 0
+                  for j = 1, size do
+                     local u = prefix:byte(j)
+                     local v = name:byte(j)
+                     if u ~= v then
+                        break
+                     end
+                     same = j
+                  end
+                  if same > 0 then
+                     if p_size > same then
+                        p_size = same
+                     end
+                  else
+                     prefix = nil
+                     p_size = 0
+                     break
+                  end
+               end
+               if p_size > 0 then
+                  if p_size > 255 then
+                     p_size = 255
+                  end
+                  prefix = prefix:sub(1, p_size)
+                  
+                  local altered = {}
+                  for i = 1, count do
+                     altered[i] = names[i]:sub(p_size + 1)
+                  end
+                  names = altered
+               end
+            end
+            view:append_length_prefixed_string(1, prefix or "")
+         end
+         local start = view.size
+         view:append_uint32(0)
+         do -- Serialize enum member names as a block
+            local first = true
+            for _, name in ipairs(names) do
+               if first then
+                  first = false
+               else
+                  view:append_uint8(0x00) -- separator
+               end
+               view:append_raw_string(name)
+            end
+         end
+         view:set_uint32(start, view.size - start - 4)
+      end
+   
+      _serialize_name_block(map_data.group_order, true)
+      for _, name in ipairs(map_data.group_order) do
+         local map_names = map_data.groups[name]
+         _serialize_name_block(map_names, true)
+      end
+   end)
+end
+
 -- Argument types: dataview, array<pair<name, value>>
 --
 -- We take a list of name/value pairs, rather than a conventional table, 
@@ -199,7 +279,7 @@ function write_VARIABLS_subrecord(view, pair_list)
       view:append_uint8((value < 0) and 0x01 or 0x00) -- value < 0 ? 1 : 0 -- "is signed" byte
       view:append_uint32(value)
    end
-   write_subrecord(view, "VARIABLS", 1, function()
+   write_subrecord(view, "VARIABLS", 1, function(view)
       for _, pair in ipairs(pair_list) do
          write_variable(pair[1], pair[2])
       end

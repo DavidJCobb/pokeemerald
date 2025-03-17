@@ -292,7 +292,8 @@ do
       "__eq",
       "__lt",
       "__le",
-      "__call"
+      "__call",
+      "__tostring"
    }
    local function is_permitted_metamethod(name)
       for _, v in ipairs(permitted_metamethods) do

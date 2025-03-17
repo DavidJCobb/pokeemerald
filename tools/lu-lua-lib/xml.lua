@@ -9,7 +9,11 @@ xml.builtin_entities = {
    quot = '"',
 }
 
-xml.node = make_class({})
+xml.node = make_class({
+   constructor = function(self)
+      self.parent = nil
+   end
+})
 
 xml.text = make_class({
    superclass  = xml.node,
@@ -26,7 +30,6 @@ do
          self.node_name   = name or ""
          self.attributes  = {}
          self.children    = {}
-         self.parent      = nil
          self.self_closed = false
       end,
       instance_members = instance_members
@@ -408,6 +411,10 @@ do
             checkpoint:commit()
             return value == "yes"
          end)(self)
+         self:_consume_whitespace()
+         if not self:_consume("?>") then
+            error("Unterminated XML declaration.")
+         end
          --
          if version or encoding or standalone then
             self.prologue = {

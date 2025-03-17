@@ -347,7 +347,16 @@ do
          return term
       end
       
+      -- Use the shunting yard algorithm to convert a left-to-right 
+      -- flat list of terms and operators into a tree of operators. 
+      -- Unlike traditional shunting yard, we then take consecutive 
+      -- operators of the same time and coalesce them: `a + b + c` 
+      -- is one node, not two.
       function coalesced_shunting_yard(list)
+         --
+         -- Start by converting the expression to reverse Polish 
+         -- notation (this is the shunting yard algorithm).
+         --
          local rpn = {}
          do
             local opstack = {}

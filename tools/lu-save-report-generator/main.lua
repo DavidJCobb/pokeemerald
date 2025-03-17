@@ -218,7 +218,7 @@ do
    out_file:write(to_percentage(sector_size_info.totals.packed / available_bits))
    out_file:write("** of that space, while wasting **")
    out_file:write(to_percentage(sector_size_info.totals.lost / available_bits))
-   out_file:write("** of the available space due to technical limitations, thereby leaving ")
+   out_file:write("** of the remaining space due to technical limitations, thereby leaving ")
    out_file:write(available_bytes - math.ceil(total_bits_used / 8))
    out_file:write(" bytes to spare.\n\n")
 end
@@ -285,9 +285,9 @@ do -- Stats per sector
    out_file:write("|")
    out_file:write(to_percentage(1 - (total_bits_used / available_bits)))
    out_file:write("|\n\n")
-   out_file:write("Some values can't be split across sectors. If these values can't fit at the end of a sector, then they must be pushed to the start of the next sector &mdash; leaving unused space at the end of the sector they were pushed past. This space is listed as \"lost\" in the table above.[^vanilla-never-loses-space]\n\n")
-   out_file:write("[^vanilla-never-loses-space]: The vanilla game never produces \"lost\" space because it just uses `memcpy` to copy data directly between RAM and flash memory, blindly slicing values at sector boundaries. By contrast, the generating bitpacking code can only slice aggregates (e.g. arrays, structs, unions); it doesn't support slicing primitives (i.e. integers), strings, or opaque buffers.\n\n")
-   out_file:write("Some top-level values are also deliberately forced to align with the start of a sector, rather than sharing a sector with any preceding value. These values are not counted as creating \"lost\" space at the end of the previous sector.\n\n")
+   out_file:write("Some values can't be split across sectors when they're bitpacked. If these values can't fit at the end of a sector, then they must be pushed to the start of the next sector &mdash; leaving unused space at the end of the sector they were pushed past. This space is listed as \"lost\" in the table above.[^vanilla-never-loses-space]\n\n")
+   out_file:write("[^vanilla-never-loses-space]: The vanilla game never produces \"lost\" space because it just uses `memcpy` to copy data directly between RAM and flash memory, blindly slicing values at sector boundaries. By contrast, our generated bitpacking code can only slice aggregates (e.g. arrays, structs, unions); it doesn't support slicing primitives (i.e. integers), strings, or opaque buffers. Some aggregates are transformed into other struct types (e.g. `BoxPokemon` to `SerializedBoxPokemon`), and not all of these transformations will be sliceable either.\n\n")
+   out_file:write("Some top-level values are also deliberately forced to align with the start of a sector, rather than sharing a sector with any preceding value. (This is generally done to maintain compatibility with game code that attempts to load certain parts of the savegame one by one.) These values are not counted as creating \"lost\" space at the end of the previous sector.\n\n")
 end
 
 function print_size_and_count_stats(base)
@@ -528,7 +528,7 @@ end
 
 do -- Stats per type
    out_file:write("### Stats per struct/union type\n\n")
-   out_file:write("**Note:** These listings make no effort to distinguish cases where one struct is transformed into another during serialization (both types may be listed), nor to indicate when one struct commonly or only appears as a member of another struct.\n\n")
+   out_file:write("**Note:** These listings make no effort to indicate when one struct commonly or only appears as a member of another struct. The listings only apply to types in a vacuum, not in context: a type that only appears within an \"opaque buffer,\" for example, won't be bitpacked at all, but these listings won't distinguish between its theoretical space savings and the actual [lack of] space savings.\n\n")
    
    local base = root_node:children_by_node_name("c-types")[1]
    assert(base, "Missing node: data:root > c-types")

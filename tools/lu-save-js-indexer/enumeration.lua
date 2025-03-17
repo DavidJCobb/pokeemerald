@@ -23,12 +23,7 @@ do -- methods
    end
    function instance_members:set(name, value)
       self.data[name] = value
-      self.cache = {
-         sparse  = false,
-         lowest  = nil,
-         highest = nil,
-         count   = nil,
-      }
+      self:invalidate_cache()
    end
    function instance_members:mark_value_unused(value)
       local size = #self.unused_ranges
@@ -86,7 +81,17 @@ do -- methods
       return list
    end
    
-   function instance_members:update_cache()
+   function instance_members:invalidate_cache()
+      local cache = self.cache
+      cache.sparse  = false
+      cache.lowest  = nil
+      cache.highest = nil
+      cache.count   = nil
+   end
+   function instance_members:update_cache(force)
+      if not force and self.cache.count then
+         return
+      end
       local count  = 0
       local lo     = nil
       local hi     = nil
@@ -105,6 +110,7 @@ do -- methods
       end
       
       local cache = self.cache
+      cache.count = count
       if not lo then
          cache.sparse = false
          return

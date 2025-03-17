@@ -60,18 +60,19 @@ include("enumeration.lua")
 -- information of interest.
 local goals = {
    ["flags.dat"] = {
-      enums = {
-         "FLAG",
-         "TRAINER",
-      },
+      enums = { "FLAG" },
       vars = {
          "TEMP_FLAGS_START",
          "TEMP_FLAGS_END", -- actually "last", not "end"
          "TRAINER_FLAGS_START",
          "TRAINER_FLAGS_END", -- actually "last", not "end"
-         "TRAINERS_COUNT",
          "DAILY_FLAGS_START",
          "DAILY_FLAGS_END", -- actually "last", not "end"
+      },
+      slice_params = {
+         pattern         = "flags-#.dat",
+         enum_to_slice   = "FLAG",
+         count_per_slice = 300
       }
    },
    ["game-stats.dat"] = {
@@ -107,6 +108,12 @@ local goals = {
    },
    ["species.dat"] = {
       enums = { "SPECIES" }
+   },
+   ["trainers.dat"] = {
+      enums = { "TRAINER" },
+      vars = {
+         "TRAINERS_COUNT",
+      }
    },
    ["vars.dat"] = {
       enums = { "VAR" },
@@ -176,7 +183,7 @@ local desired_vars = {
    "SAVEDATA_SERIALIZATION_VERSION",
 }
 local enums = {}
-do
+do -- Initialize `enumeration` objects for enums of interest, and initialize `desired_vars`.
    local en_count   = 0
    local dv_count   = #desired_vars
    local seen_enums = {}
@@ -261,8 +268,7 @@ function try_handle_enumeration_member(name, value)
       if special and value >= special then
          return false
       end
-   end
-   if name:startswith("VAR_") then
+   elseif name:startswith("VAR_") then
       --
       -- Exclude "special vars," as these aren't actually present in 
       -- the savegame.
@@ -278,7 +284,7 @@ function try_handle_enumeration_member(name, value)
    --
    for k, v in pairs(enums) do
       if name:startswith(k .. "_") then
-         do
+         do -- Handle unused-name patterns for enums.
             local unused_names = enum_unused_names[k]
             if unused_names then
                local unused = false
@@ -379,10 +385,7 @@ end
 
 -- Format XML
 print("Copying the current savedata format XML into the appropriate folder for the save editor...\n")
-filesystem.copy_file(
-   "lu_bitpack_savedata_format.xml",
-   format_dir/"format.xml"
-)
+filesystem.copy_file("lu_bitpack_savedata_format.xml", format_dir/"format.xml")
 
 print("Generating and indexing extra-data files for the save editor...\n")
 
@@ -408,7 +411,7 @@ end
 do
    local INDEX_VERSION <const> = 1
 
-   local index_data = {}
+   local index_data
    do
       local file = filesystem.open(save_editor_dir/"formats/index.json", "r")
       if file then
@@ -498,24 +501,38 @@ do
    }
    index_data.formats[format_version] = new_format
    
-   for filename, info in pairs(goals) do
-      local dst_path = format_dir/filename
-      --
-      -- Generate an extra-data file in memory.
-      --
-      local view     = dataview()
-      local wrote    = false
-      if info.enums then
+   local function do_goal(filename, info)
+      local wrote_any = false
+      
+      local function write_enumerations(view, except)
+         if not info.enums then
+            return
+         end
          for _, name in ipairs(info.enums) do
             local enumeration = enums[name]
             if enumeration then
-               wrote = true
-               write_ENUMDATA_subrecord(view, enumeration)
+               wrote_any = true
+               if enumeration ~= except then
+                  --
+                  -- Some especially large enums are sliced into multiple extra-data 
+                  -- files. In these cases, we don't want to write ENUMDATA for those 
+                  -- enums here, because we have a separate function which writes the 
+                  -- ENUMDATA for each slice.
+                  --
+                  write_ENUMDATA_subrecord(view, enumeration)
+                  --
+                  -- ...but we DO want to write ENUNUSED and similar metadata to the 
+                  -- first such slice, so we write those unconditionally, below.
+                  --
+               end
                write_ENUNUSED_subrecord(view, enumeration)
             end
          end
       end
-      if info.vars then
+      local function write_variables(view)
+         if not info.vars then
+            return
+         end
          local pair_list = {}
          for _, name in ipairs(info.vars) do
             local value = found_vars_of_interest[name]
@@ -523,30 +540,38 @@ do
                pair_list[#pair_list + 1] = { name, value }
             end
          end
-         wrote = true
+         wrote_any = true
          write_VARIABLS_subrecord(view, pair_list)
       end
-      if wrote then
-         --
-         -- The extra-data file has any content. Diff it against prior 
-         -- formats, to figure out whether we should create a new file 
-         -- (if this file is unique) or reuse an existing file.
-         --
-         local share = nil
-         do
-            local list  = prior_files[filename]
-            if list then
-               for _, prior in ipairs(list) do
-                  if prior < format_version then
-                     local prior_path = save_editor_dir / ("formats/"..prior.."/"..filename)
-                     if file_is_identical_to(prior_path, view) then
-                        share = prior
-                        break
-                     end
-                  end
+      
+      -- Check if the file that we'd generate for the current format version 
+      -- is exactly identical to that of any previous format version. If so, 
+      -- return the previous format version number.
+      local function file_is_shared(filename, view)
+         local list = prior_files[filename]
+         if not list then
+            return
+         end
+         for _, prior in ipairs(list) do
+            if prior < format_version then
+               local prior_path = save_editor_dir / ("formats/"..prior.."/"..filename)
+               if file_is_identical_to(prior_path, view) then
+                  return prior
                end
             end
          end
+      end
+      
+      -- If we didn't generate any data, then delete any file that may already 
+      -- exist for this format version. Otherwise, share or own the file as 
+      -- appropriate.
+      local function finalize_file(filename, view)
+         local dst_path = format_dir/filename
+         if not wrote_any then
+            filesystem.remove(dst_path)
+            return
+         end
+         local share = file_is_shared(filename, view)
          if share then
             new_format.shared[filename] = share
             print(" - Sharing `"..filename.."` with previously-indexed savedata format `"..share.."`.")
@@ -556,9 +581,56 @@ do
             print(" - Generated `"..filename.."` for the current savedata format.")
             new_format.files[#new_format.files + 1] = filename
          end
-      else
-         filesystem.remove(dst_path)
       end
+   
+      if info.slice_params and info.enums then
+         --
+         -- Some enums are expected to be especially large (think 30+KB total 
+         -- data), so we want to write them "sliced" in multiple extra-data 
+         -- files. That way, if a savedata version changes, say, the name of 
+         -- one single flag, it only needs to generate its own file for one 
+         -- of those slices, rather than having 30KB of nearly identical data 
+         -- with just one name changed.
+         --
+         local function should_slice_enum(enum, slice_size)
+            enum:update_cache()
+            if enum.cache.count < slice_size * 2 then
+               return false
+            end
+            if (enum.cache.lowest or 0) < 0 then
+              return false
+            end
+            return true
+         end
+      
+         local enum_to_slice
+         if table.findindex(info.enums, info.slice_params.enum_to_slice) then
+            enum_to_slice = enums[info.slice_params.enum_to_slice]
+         end
+         if enum_to_slice and should_slice_enum(enum_to_slice, info.slice_params.count_per_slice) then
+            local slices = write_ENUMDATA_slice_subrecords(enum_to_slice, info.slice_params.count_per_slice)
+            
+            local first_slice = slices[1]
+            
+            write_enumerations(first_slice, enum_to_slice)
+            write_variables(first_slice)
+            
+            local count = #slices
+            for i = 1, count do
+               local dst_name = info.slice_params.pattern:gsub("#", tostring(i - 1))
+               finalize_file(dst_name, slices[i])
+            end
+            return
+         end
+      end
+      local view = dataview()
+      write_enumerations(view, enum_to_slice)
+      write_variables(view)
+      finalize_file(filename, view)
+   end
+   
+   for filename, info in pairs(goals) do
+      do_goal(filename, info)
    end
    do -- Normalize output.
       if #new_format.files == 0 then

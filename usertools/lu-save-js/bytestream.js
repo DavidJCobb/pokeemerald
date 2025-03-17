@@ -55,7 +55,7 @@ class Bytestream {
          if (isNaN(size) || size !== Math.floor(size))
             throw new TypeError("The size, if specified, must be an integer.");
          if (size < 0 || size + this.#offset > this.length)
-            throw new Error("Out of range.");
+            throw new Error("Out-of-bounds slice (from "+this.#offset+" past "+this.length+" with desired length "+size+").");
       } else {
          size = this.remaining;
       }

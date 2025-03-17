@@ -29,7 +29,7 @@ class ExtraDataCollection {
    
    finalize(/*Map<String filename, ExtraDataFile>*/ files) {
       this.game_stats.finalize(files.get("game-stats.dat"));
-      this.script_flags.finalize(files.get("flags.dat"));
+      this.script_flags.finalize(files.get("flags-#.dat"), files.get("trainers.dat"));
       this.script_vars.finalize(files.get("vars.dat"));
       {
          let desired_constants = {

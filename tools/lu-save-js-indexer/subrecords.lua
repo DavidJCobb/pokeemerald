@@ -75,6 +75,101 @@ function write_ENUMDATA_subrecord(view, enumeration)
    end)
 end
 
+function write_ENUMDATA_slice_subrecords(enumeration, slice_size)
+   enumeration:update_cache()
+   
+   local signed = (enumeration.cache.lowest or 0) < 0
+   local prefix = enumeration.name .. "_"
+   local sorted = enumeration:to_sorted_pairs()
+   local flags  = 0
+   do
+      if signed then
+         flags = flags | 1 -- FLAG: Enum values should be interpreted as signed.
+      end
+      --[[--if enumeration.cache.sparse then
+         flags = flags | 2 -- FLAG: Enum is sparse.
+      end--]]--
+      if enumeration.cache.lowest ~= 0 then
+         flags = flags | 4 -- FLAG: Enum's lowest value is non-zero.
+      end
+   end
+   
+   local out = {}
+   
+   local value_count = (enumeration.cache.highest or 0) - (enumeration.cache.lowest or 0)
+   local slice_count = math.ceil(value_count / slice_size)
+   for i = 1, slice_count do
+      local from = (enumeration.cache.lowest or 0) + ((i - 1) * slice_size)
+      local to   = from + slice_size
+      
+      local these  = {}
+      local count  = 0
+      local sparse = false
+      do
+         for j = 1, #sorted do
+            local pair  = sorted[j]
+            local value = pair[2]
+            if value >= from and value <= to then
+               if not sparse and count > 0 then
+                  if these[count][2] < value - 1 then
+                     sparse = true
+                  end
+               end
+               count = count + 1
+               these[count] = pair
+            end
+         end
+      end
+      
+      local view = dataview()
+      out[i] = view
+      write_subrecord(view, "ENUMDATA", 1, function()
+         do
+            local f = flags
+            if sparse then
+               f = f | 2
+            end
+            view:append_uint8(f)
+         end
+         view:append_length_prefixed_string(1, prefix)
+         view:append_uint32(count)
+         
+         local names_start
+         if sparse then
+            names_start = view.size
+            view:append_uint32(0)
+         else
+            if enumeration.cache.lowest ~= 0 then
+               view:append_uint32(enumeration.cache.lowest or 0)
+            end
+         end
+         do -- Serialize enum member names as a block
+            local first = true
+            for _, pair in ipairs(these) do
+               if first then
+                  first = false
+               else
+                  view:append_uint8(0x00) -- separator
+               end
+               local name = pair[1]:sub(#prefix + 1)
+               view:append_raw_string(name)
+            end
+         end
+         if sparse then
+            view:set_uint32(names_start, view.size - names_start - 4) -- subtract size of the size
+            --
+            -- Serialize enum values as a block
+            --
+            for _, pair in ipairs(these) do
+               view:append_uint32(pair[2])
+            end
+         end
+      end)
+   end
+   
+   return out
+end
+
 function write_ENUNUSED_subrecord(view, enumeration)
    local size = #enumeration.unused_ranges
    if size <= 0 then

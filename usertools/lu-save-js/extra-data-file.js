@@ -2,9 +2,6 @@
 // Parser for our *.dat files.
 class ExtraDataFile {
    #bytestream;
-   #buffer = null;
-   #offset = 0;
-   #view   = null;
    
    constructor(buffer) {
       this.found = {
@@ -12,8 +9,8 @@ class ExtraDataFile {
          vars:  new Map(), // Map<String name, int vaulue>
       };
       
-      this.#bytestream = new Bytestream(buffer);
-      this.#parse();
+      if (buffer)
+         this.parse(buffer);
    }
    
    #extract_next_subrecord() {
@@ -23,7 +20,15 @@ class ExtraDataFile {
       let signature = this.#bytestream.readEightCC();
       let version   = this.#bytestream.readUint32();
       let size      = this.#bytestream.readUint32();
-      let body      = this.#bytestream.bytestreamFromHere(size);
+      let body;
+      try {
+         body = this.#bytestream.bytestreamFromHere(size);
+      } catch (e) {
+         throw new Error(
+            `Truncated or invalid subrecord (${signature} v${version} at offset 0x${this.#bytestream.position.toString(16).toUpperCase().padStart(8, '0')} with length 0x${size.toString(16).toUpperCase()}, in a file of length 0x${this.#bytestream.length.toString(16).toUpperCase().padStart(8, '0')}).`,
+            { cause: e }
+         );
+      }
       this.#bytestream.skipBytes(size);
       return {
          signature: signature,
@@ -33,7 +38,8 @@ class ExtraDataFile {
       };
    }
    
-   #parse() {
+   parse(buffer) {
+      this.#bytestream = new Bytestream(buffer);
       let errors = [];
       let info;
       while (info = this.#extract_next_subrecord()) {
@@ -81,4 +87,17 @@ class ExtraDataFile {
       }
    }
    
+   concat(/*ExtraDataFile*/ other) {
+      for(const [k, v] of other.found.enums) {
+         let prior = this.found.enums.get(k);
+         if (prior) {
+            prior.concat(v);
+         } else {
+            this.found.enums.set(k, v);
+         }
+      }
+      for(const [k, v] of other.found.vars) {
+         this.found.vars.set(k, v);
+      }
+   }
 }

@@ -17,15 +17,65 @@ class IndexedSaveFormatInfo {
    get save_format() { return this.#save_format; }
    
    static #extra_data_files = [
-      "flags.dat",
       "game-stats.dat",
       "items.dat",
       "misc.dat",
       "moves.dat",
       "natures.dat",
       "species.dat",
+      "trainers.dat",
       "vars.dat",
    ];
+   static #extra_data_file_patterns = [
+      "flags-#.dat",
+   ];
+   
+   #fetch_extra_data_file(filename) {
+      let path;
+      if (this.files.owned.includes(filename)) {
+         path = "formats/" + this.version + "/";
+      } else {
+         let v = this.files.shared[filename];
+         if (v || v === 0) {
+            path = "formats/" + v + "/";
+         }
+      }
+      if (!path) {
+         return null;
+      }
+      return fetch(path + filename);
+   }
+   
+   #fetch_whole_extra_data_files() {
+      let promises = {};
+      for(let name of IndexedSaveFormatInfo.#extra_data_files) {
+         let promise = this.#fetch_extra_data_file(name);
+         if (!promise) {
+            promises[name] = Promise.reject();
+            continue;
+         }
+         promises[name] = promise;
+      }
+      return promises;
+   }
+   #fetch_sliced_extra_data_files() {
+      let promises = {};
+      for(let name of IndexedSaveFormatInfo.#extra_data_file_patterns) {
+         if (name.indexOf("#") < 0)
+            continue;
+         let group = [];
+         for(let i = 0; true; ++i) {
+            let here    = name.replaceAll("#", i);
+            let promise = this.#fetch_extra_data_file(here);
+            if (!promise) {
+               break;
+            }
+            group.push(promise);
+         }
+         promises[name] = Promise.all(group);
+      }
+      return promises;
+   }
    
    async #load_extra_data() {
       if (this.#extra_data)
@@ -34,26 +84,10 @@ class IndexedSaveFormatInfo {
       let pi = Promise.withResolvers();
       this.#extra_data = new ExtraDataCollection(pi.promise);
       
-      let promises = {};
-      for(let name of IndexedSaveFormatInfo.#extra_data_files) {
-         let path;
-         if (this.files.owned.includes(name)) {
-            path = "formats/" + this.version + "/";
-         } else {
-            let v = this.files.shared[name];
-            if (v || v === 0) {
-               path = "formats/" + v + "/";
-            }
-         }
-         if (!path) {
-            promises[name] = Promise.reject();
-            continue;
-         }
-         promises[name] = fetch(path + name);
-      }
-      {  // Wait for all promises to settle, and log errors as appropriate.
-         let list = await Promise.allSettled(Object.values(promises));
-         
+      let promises_w = this.#fetch_whole_extra_data_files();
+      let promises_s = this.#fetch_sliced_extra_data_files();
+      {
+         let list = await Promise.allSettled(Object.values(promises_w).concat(Object.values(promises_s)));
          let any_succeeded = false;
          let errors = [];
          for(let info of list) {
@@ -77,16 +111,14 @@ class IndexedSaveFormatInfo {
             console.warn(err);
          }
       }
-      //
-      // Gather extra-data file data and feed it to the extra-data collection.
-      //
+      
+      let any    = false;
       let errors = [];
       let files  = new Map();
-      let any    = false;
-      for(let name of IndexedSaveFormatInfo.#extra_data_files) {
+      for(let name in promises_w) {
          let response;
          try {
-            response = await promises[name];
+            response = await promises_w[name];
          } catch (e) {
             continue; // already handled above
          }
@@ -100,6 +132,28 @@ class IndexedSaveFormatInfo {
          }
          files.set(name, file);
          any = true;
+      }
+      for(let name in promises_s) {
+         let responses;
+         try {
+            responses = await promises_s[name];
+         } catch (e) {
+            continue; // already handled above
+         }
+         let coalesced = new ExtraDataFile();
+         let failed    = false;
+         for(let response of responses) {
+            let blob = await response.arrayBuffer();
+            try {
+               coalesced.parse(blob);
+            } catch (ex) {
+               errors.push(ex);
+               failed = true;
+            }
+         }
+         files.set(name, coalesced);
+         if (!failed)
+            any = true;
       }
       this.#extra_data.finalize(files);
       if (any) {

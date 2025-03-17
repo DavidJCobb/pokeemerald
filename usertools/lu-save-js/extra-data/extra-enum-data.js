@@ -42,6 +42,16 @@ class ExtraEnumData {
       }
    };
    
+   concat(/*ExtraEnumData*/ other) {
+      if (other.prefix != this.prefix)
+         return;
+      for(const [k, v] of other.members.by_name) {
+         this.members.by_name.set(k, v);
+         this.members.by_value.set(v, k);
+      }
+      this.unused_ranges = this.unused_ranges.concat(other.unused_ranges);
+   }
+   
    make_display_overrides(criteria) {
       let disp = new ExtraEnumData.DisplayOverrides(this);
       if (criteria)

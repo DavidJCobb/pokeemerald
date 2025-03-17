@@ -15,7 +15,15 @@
       },
       {
          "files": [
-            "flags.dat"
+            "flags-0.dat",
+            "flags-1.dat",
+            "flags-2.dat",
+            "flags-3.dat",
+            "flags-4.dat",
+            "flags-5.dat",
+            "flags-6.dat",
+            "flags-7.dat",
+            "trainers.dat"
          ],
          "shared": {
             "game-stats.dat": 1,

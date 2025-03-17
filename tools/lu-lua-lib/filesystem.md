@@ -1,7 +1,9 @@
 
 # `filesystem`
 
-A Lua library which loosely mimics the design of C++'s `std::filesystem` library. This has a dependency on the `classes` library.
+A Lua library which loosely mimics the design of C++'s `std::filesystem` library. This has a dependency on the `classes` library in this same folder.
+
+Note that some functions in this library make use of `os.execute` and similar functions, to run shell commands. Basic attempts are made to sanitize paths before passing them to shell commands, but if you need to work with untrusted paths, filenames, etc., then I *highly* recommend that you prefer libraries such as [LuaFileSystem](https://lunarmodules.github.io/luafilesystem/) over this library. This library only exists because I needed a pure-Lua library (no additional installations or builds) for handling predefined paths and path segments in a consistent way.
 
 ## Concepts
 

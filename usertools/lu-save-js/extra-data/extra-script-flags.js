@@ -16,21 +16,21 @@ class ExtraScriptFlags extends CInstanceDisplayOverrides {
    }
    
    // Expects flags.dat.
-   finalize(/*ExtraDataFile*/ file) {
-      if (!file) {
+   finalize(/*Optional<ExtraDataFile>*/ flags, /*Optional<ExtraDataFile>*/ trainers) {
+      if (!flags) {
          return;
       }
-      {
-         let enumeration = file.found.enums.get("TRAINER_");
+      if (trainers) {
+         let enumeration = trainers.found.enums.get("TRAINER_");
          if (enumeration) {
             this.trainers.names      = enumeration.members.by_value;
-            this.trainers.count      = file.found.vars.get("TRAINERS_COUNT");
-            this.trainers.first_flag = file.found.vars.get("TRAINER_FLAGS_START");
-            this.trainers.last_flag  = file.found.vars.get("TRAINER_FLAGS_END");
+            this.trainers.count      = trainers.found.vars.get("TRAINERS_COUNT");
+            this.trainers.first_flag = flags.found.vars.get("TRAINER_FLAGS_START");
+            this.trainers.last_flag  = flags.found.vars.get("TRAINER_FLAGS_END");
          }
       }
       {
-         let enumeration = file.found.enums.get("FLAG_");
+         let enumeration = flags.found.enums.get("FLAG_");
          if (enumeration) {
             this.flag_names    = enumeration.members.by_value;
             this.unused_ranges = enumeration.unused_ranges;

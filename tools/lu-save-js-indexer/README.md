@@ -7,24 +7,6 @@ Extra-data files apply to a particular savedata serialization version (i.e. the 
 
 The core post-build logic is stored in this folder, but additional support files are present in `lu-lua-lib`.
 
-## Support libraries
-
-As mentioned, various support libraries are stored in `tools/lu-lua-lib`. I may move them to this folder later.
-
-* **`classes.lua`:** Defines a `make_class` function that can be used to create classes with constructors, single inheritance, and static and instance members. See code comments inside for documentation.
-
-* **`console.lua`:** Not yet used. A singleton that aids with printing output to the console, assuming support for ANSI escape codes.
-
-* **`dataview.lua`:** An analogue to JavaScript's `DataView` class, allowing one to work with sequences of bytes and output them to a file.
-
-* **`shell.lua`:** A wrapper around `os.exec` and similar commands, to make it easier to invoke shell commands.
-
-* **`stdext.lua`:** Extensions to Lua's standard library.
-
-* **`stringify-table.lua`:** Functions to stringify and print the contents of a table. See code comments inside for documentation.
-
-These files are included from `main.lua`.
-
 ## Processing macros
 
 Most macros are simple integers, e.g. `#define foo 1`. However, many macros are expressions which produce integer constants, e.g. `#define bar (foo + 3)`. We wish to be able to resolve the latter category of macros to their integer values.
@@ -102,6 +84,69 @@ Observe the following details:
 * There is no null byte after `QUIRKY`, because the names are null-*separated*, not null-*terminated*.
 
 The format is such that you can rapidly extract all enum names in JavaScript by spawning a `TextDecoder`, calling its `decode` method on a `DataView` consisting only of *NameBlock*, and then calling `split("\0")` on the result.
+
+#### `ENUNUSED`
+
+Represents ranges of unused (as opposed to unspecified) values within an enum. This is principally used with the `FLAG` enum, to avoid serializing hundreds of `FLAG_UNUSED_0x...` names into the `ENUMDATA` subrecords while still being able to have the save editor explicitly list these flags as unused (rather than unrecognized).
+
+The data is as follows:
+
+* Length-prefixed string (one-byte length) indicating the enum prefix (same as `ENUMDATA`)
+* Zero or more ranges, consisting of...
+  * Four-byte enum value: the first value in this range
+  * Four-byte enum value: the last value in this range
+
+Consider the following example:
+
+```hex
+Offset    00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F  Text
+
+00000000  45 4E 55 4E 55 53 45 44 01 00 00 00 86 00 00 00  ENUNUSED....†...
+00000010  05 46 4C 41 47 5F 20 00 00 00 4F 00 00 00 54 00  .FLAG_ ...O...T.
+00000020  00 00 55 00 00 00 68 00 00 00 68 00 00 00 E9 00  ..U...h...h...é.
+00000030  00 00 E9 00 00 00 AA 01 00 00 AB 01 00 00 DA 01  ..é...ª...«...Ú.
+00000040  00 00 DA 01 00 00 DE 01 00 00 E3 01 00 00 64 02  ..Ú...Þ...ã...d.
+00000050  00 00 BB 02 00 00 D9 02 00 00 D9 02 00 00 68 04  ..»...Ù...Ù...h.
+00000060  00 00 68 04 00 00 70 04 00 00 70 04 00 00 72 04  ..h...p...p...r.
+00000070  00 00 72 04 00 00 79 04 00 00 79 04 00 00 93 04  ..r...y...y...“.
+00000080  00 00 EF 04 00 00 F9 04 00 00 FA 04 00 00 FF 04  ..ï...ù...ú...ÿ.
+00000090  00 00 FF 04 00 00                                ..ÿ...
+```
+
+We see first the length-prefixed string: length `05`, with content `FLAG_`. Immediately following this is our first range: [0x20, 0x4F]; all enum values that are >= 0x20 and <= 0x4F are unused. Then, the next range: [0x54, 0x55]: two unused values in a row. Then, the next range: [0x68, 0x68]: a lone unused value in the middle of several used values. And on it goes.
+
+`ENUNUSED` should generally appear alongside (ideally after) an `ENUMDATA`, and so the signedness of the values in the ranges depends on the signedness of the enum.
+
+#### `MAPSDATA`
+
+This data is generated from the `map_groups.json` file, and is used by the save editor to identify map groups and map numbers.
+
+The subrecord is divided into multiple *prefixed name blocks*. Each prefixed name block consists of:
+
+* A length-prefixed string (one-byte length). This is a prefix to be applied to all names in the block.
+* The size of the block data, as an unsigned 32-bit integer.
+* The block data: a blob of null-*separated* (*not* null-*terminated*) strings.
+
+The subrecord is arranged as follows:
+
+* A prefixed name block for the map group names.
+* For each map group, a prefixed name block for the map names therein.
+
+As an example, here's the start of a `MAPSDATA` subrecord for the vanilla game:
+
+```hex
+Offset(h) 00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F  Text
+
+00000000  4D 41 50 53 44 41 54 41 01 00 00 00 DA 26 00 00  MAPSDATA....Ú&..
+00000010  0A 67 4D 61 70 47 72 6F 75 70 5F 06 02 00 00 54  .gMapGroup_....T
+00000020  6F 77 6E 73 41 6E 64 52 6F 75 74 65 73 00 49 6E  ownsAndRoutes.In
+00000030  64 6F 6F 72 4C 69 74 74 6C 65 72 6F 6F 74 00 49  doorLittleroot.I
+00000040  6E 64 6F 6F 72 4F 6C 64 61 6C 65 00 49 6E 64 6F  ndoorOldale.Indo
+00000050  6F 72 44 65 77 66 6F 72 64 00 49 6E 64 6F 6F 72  orDewford.Indoor
+00000060  4C 61 76 61 72 69 64 67 65 00                    Lavaridge.
+```
+
+Here, we see the start of the prefixed name block for map group names. Inside, the prefix string is `gMapGroup_`. The first few map group names are `gMapGroup_TownsAndRoutes` and `gMapGroup_IndoorLittleroot`, but you can see that when the subrecord was serialized, the common prefix was separated and omitted: the map group names were serialized as `TownsAndRoutes` and `IndoorLittleroot`.
 
 #### `VARIABLS`
 

@@ -525,8 +525,10 @@ do
                pair_list[#pair_list + 1] = { name, value }
             end
          end
-         wrote_any = true
-         write_VARIABLS_subrecord(view, pair_list)
+         if #pair_list > 0 then
+            wrote_any = true
+            write_VARIABLS_subrecord(view, pair_list)
+         end
       end
       
       -- Check if the file that we'd generate for the current format version 

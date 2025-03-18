@@ -51,7 +51,7 @@ struct EnigmaBerry
     u8 itemEffect[BERRY_ITEM_EFFECT_COUNT];
     u8 holdEffect;
     u8 holdEffectParam;
-    LU_BP_CATEGORY("checksum-32") u32 checksum;
+    LU_BP_ANNOTATION("checksum-32") u32 checksum;
 };
 
 struct BattleEnigmaBerry

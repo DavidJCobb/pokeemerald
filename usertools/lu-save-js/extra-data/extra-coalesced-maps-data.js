@@ -57,8 +57,10 @@ class ExtraCoalescedMapsData extends CInstanceDisplayOverrides {
             make_editor_element: this.#make_editor_element.bind(this),
          };
          this.criteria.push(new CInstanceDisplayOverrideCriteria({
-            type: "PokemonSubstruct3",
-            path: "metLocation"
+            type: "MapSectionID"
+         }));
+         this.criteria.push(new CInstanceDisplayOverrideCriteria({
+            type: "MetLocation"
          }));
       }
       
@@ -94,16 +96,10 @@ class ExtraCoalescedMapsData extends CInstanceDisplayOverrides {
             make_editor_element: this.#make_editor_element.bind(this),
          };
          this.criteria.push(new CInstanceDisplayOverrideCriteria({
-            type: "RamScriptData",
-            path: "mapGroup"
+            type: "MapGroupIndex"
          }));
          this.criteria.push(new CInstanceDisplayOverrideCriteria({
-            type: "WarpData",
-            path: "mapGroup"
-         }));
-         this.criteria.push(new CInstanceDisplayOverrideCriteria({
-            type: "SaveBlock1",
-            path: "outbreakLocationMapGroup"
+            type: "MapGroupIndexOptional"
          }));
       }
       
@@ -140,16 +136,10 @@ class ExtraCoalescedMapsData extends CInstanceDisplayOverrides {
             make_editor_element: this.#make_editor_element.bind(this),
          };
          this.criteria.push(new CInstanceDisplayOverrideCriteria({
-            type: "RamScriptData",
-            path: "mapNum"
+            type: "MapIndexInGroup",
          }));
          this.criteria.push(new CInstanceDisplayOverrideCriteria({
-            type: "WarpData",
-            path: "mapNum"
-         }));
-         this.criteria.push(new CInstanceDisplayOverrideCriteria({
-            type: "SaveBlock1",
-            path: "outbreakLocationMapNum"
+            type: "MapIndexInGroupOptional",
          }));
       }
       

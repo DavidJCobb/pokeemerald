@@ -31,6 +31,7 @@ class CDeclDefinition extends CDefinition {
       this.default_value = null;
       this.array_extents = []; // Array<size_t>
       this.categories    = []; // Array<String> // bitpacking categories
+      this.annotations   = []; // Array<String> // bitpacking misc annotations
       
       this.options = new CBitpackOptions();
    }
@@ -143,6 +144,10 @@ class CDeclDefinition extends CDefinition {
             let name = child.getAttribute("name");
             if (name)
                this.categories.push(name);
+         } else if (child.nodeName == "annotation") {
+            let name = child.getAttribute("text");
+            if (name)
+               this.annotations.push(name);
          }
       }
    }

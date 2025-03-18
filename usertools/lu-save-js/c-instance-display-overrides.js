@@ -15,13 +15,26 @@ class CInstanceDisplayOverrideCriteria {
       if (!this.type)
          return true;
       let inst_type;
+      let inst_typename;
       if (inst instanceof CTypeInstance) {
          inst_type = inst.type;
       } else {
-         inst_type = inst.decl.c_types.serialized_type;
+         inst_type     = inst.decl.serialized_type;
+         inst_typename = inst.decl.typename;
       }
       if (this.type+"" === this.type) {
-         return inst_type && (inst_type.tag == this.type || inst_type.symbol == this.type);
+         if (!inst_type)
+            return false;
+         if (inst_typename) {
+            //
+            // We need this check in order to distinguish between 
+            // typedefs of integral types.
+            //
+            return this.type == inst_typename;
+         }
+         if (inst_type.tag == this.type || inst_type.symbol == this.type)
+            return true;
+         return false;
       }
       return inst_type === this.type;
    }

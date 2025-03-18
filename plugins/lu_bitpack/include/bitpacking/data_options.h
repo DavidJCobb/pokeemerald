@@ -37,6 +37,7 @@ namespace bitpacking {
          bool has_attr_nonstring = false;
          bool is_omitted         = false;
          std::vector<std::string> stat_categories;
+         std::vector<std::string> misc_annotations;
          std::optional<intmax_t>  union_member_id;
          //
       protected:

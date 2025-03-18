@@ -44,9 +44,6 @@ All sizes listed are totals. The **% used** column indicates how much of the tot
 
 | Categories | Count | Unpacked bytes | Packed bits | % used | % size reduction |
 | :- | -: | -: | -: | -: | -: |
-|**checksum-32**|12|48|384|0.09%|0.00%|
-|**checksum-a32u8**|1|4|32|0.01%|0.00%|
-|**checksum-crc16**|1|4|32|0.01%|0.00%|
 |**easy-chat-word**|1034|2068|16544|3.72%|0.00%|
 |**game-id**|428|856|1712|0.39%|75.00%|
 |**global-item-id**|1066|2132|17056|3.84%|0.00%|
@@ -64,9 +61,6 @@ All sizes listed are totals. The **% used** column indicates how much of the tot
 
 | Category | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | Total |
 | :- | -: | -: | -: | -: | -: | -: | -: | -: | -: | -: | -: | -: | -: | -: | -: |
-|**checksum-32**|11|||1|||||||||||12|
-|**checksum-a32u8**|||||1||||||||||1|
-|**checksum-crc16**|||||1||||||||||1|
 |**easy-chat-word**|150|||869|15||||||||||1034|
 |**game-id**||6||2||54|54|54|54|54|54|54|42||428|
 |**global-item-id**|59|243|78|262|4|54|54|54|54|54|54|54|42||1066|
@@ -84,9 +78,6 @@ All sizes listed are totals. The **% used** column indicates how much of the tot
 
 | Category | gSaveBlock2Ptr | gSaveBlock1Ptr | gPokemonStoragePtr | Total |
 | :- | -: | -: | -: | -: |
-|**checksum-32**|11|1||12|
-|**checksum-a32u8**||1||1|
-|**checksum-crc16**||1||1|
 |**easy-chat-word**|150|884||1034|
 |**game-id**||8|420|428|
 |**global-item-id**|59|587|420|1066|
@@ -163,10 +154,10 @@ The **% used** column indicates how much of the total save file space is consume
 <tr><th style='text-align:left'>Pokeblock</th><td>8</td><td>56</td><td>12.50%</td><td>40</td><td>320</td><td>2240</td><td>0.50%</td></tr>
 <tr><th style='text-align:left'>Pokedex</th><td>120</td><td>960</td><td>0.00%</td><td>1</td><td>120</td><td>960</td><td>0.22%</td></tr>
 <tr><th style='text-align:left'>PokemonJumpRecords</th><td>16</td><td>80</td><td>37.50%</td><td>1</td><td>16</td><td>80</td><td>0.02%</td></tr>
-<tr><th style='text-align:left'>PokemonStorage</th><td>33744</td><td>245872</td><td>8.92%</td><td>1</td><td>33744</td><td>245872</td><td>55.32%</td></tr>
 <tr><th style='text-align:left'>PokemonSubstruct0</th><td>12</td><td>75</td><td>21.88%</td><td>428</td><td>5136</td><td>32100</td><td>7.22%</td></tr>
 <tr><th style='text-align:left'>PokemonSubstruct1</th><td>12</td><td>68</td><td>29.17%</td><td>428</td><td>5136</td><td>29104</td><td>6.55%</td></tr>
 <tr><th style='text-align:left'>Pokemon</th><td>100</td><td>742</td><td>7.25%</td><td>6</td><td>600</td><td>4452</td><td>1.00%</td></tr>
+<tr><th style='text-align:left'>PokemonStorage</th><td>33744</td><td>245872</td><td>8.92%</td><td>1</td><td>33744</td><td>245872</td><td>55.32%</td></tr>
 <tr><th style='text-align:left'>PokemonSubstruct2</th><td>12</td><td>96</td><td>0.00%</td><td>428</td><td>5136</td><td>41088</td><td>9.25%</td></tr>
 <tr><th style='text-align:left'>PokemonSubstruct3</th><td>12</td><td>96</td><td>0.00%</td><td>428</td><td>5136</td><td>41088</td><td>9.25%</td></tr>
 <tr><th style='text-align:left'>PokeNews</th><td>4</td><td>32</td><td>0.00%</td><td>16</td><td>64</td><td>512</td><td>0.12%</td></tr>
@@ -248,10 +239,10 @@ The **% used** column indicates how much of the total save file space is consume
 |**Pokeblock**||40|||||||||||||40|
 |**Pokedex**|1||||||||||||||1|
 |**PokemonJumpRecords**|1||||||||||||||1|
-|**PokemonStorage**||||||1|||||||||1|
 |**PokemonSubstruct0**||6||2||54|54|54|54|54|54|54|42||428|
 |**PokemonSubstruct1**||6||2||54|54|54|54|54|54|54|42||428|
 |**Pokemon**||6|||||||||||||6|
+|**PokemonStorage**||||||1|||||||||1|
 |**PokemonSubstruct2**||6||2||54|54|54|54|54|54|54|42||428|
 |**PokemonSubstruct3**||6||2||54|54|54|54|54|54|54|42||428|
 |**PokeNews**||||16|||||||||||16|
@@ -331,10 +322,10 @@ The **% used** column indicates how much of the total save file space is consume
 |**Pokeblock**||40||40|
 |**Pokedex**|1|||1|
 |**PokemonJumpRecords**|1|||1|
-|**PokemonStorage**|||1|1|
 |**PokemonSubstruct0**||8|420|428|
 |**PokemonSubstruct1**||8|420|428|
 |**Pokemon**||6||6|
+|**PokemonStorage**|||1|1|
 |**PokemonSubstruct2**||8|420|428|
 |**PokemonSubstruct3**||8|420|428|
 |**PokeNews**||16||16|

@@ -527,6 +527,8 @@ namespace xmlgen {
          
          auto& info = this->_get_or_create_type_info(type);
          info.stats = stats;
+         if (type.is_container())
+            this->_find_integral_types_in(type.as_container());
       }
       
       // Category stats.
@@ -678,6 +680,13 @@ namespace xmlgen {
                auto& elem     = *elem_ptr;
                elem.node_name = "category";
                elem.set_attribute("name", category);
+               node.append_child(std::move(elem_ptr));
+            }
+            for(const auto& text : ident.options.misc_annotations) {
+               auto  elem_ptr = std::make_unique<xml_element>();
+               auto& elem     = *elem_ptr;
+               elem.node_name = "annotation";
+               elem.set_attribute("text", text);
                node.append_child(std::move(elem_ptr));
             }
             

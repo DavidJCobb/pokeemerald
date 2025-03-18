@@ -10,6 +10,7 @@ SOURCES=\
         src/attribute_handlers/bitpack_as_opaque_buffer.cpp \
         src/attribute_handlers/bitpack_bitcount.cpp \
         src/attribute_handlers/bitpack_default_value.cpp \
+        src/attribute_handlers/bitpack_misc_annotation.cpp \
         src/attribute_handlers/bitpack_range.cpp \
         src/attribute_handlers/bitpack_stat_category.cpp \
         src/attribute_handlers/bitpack_string.cpp \

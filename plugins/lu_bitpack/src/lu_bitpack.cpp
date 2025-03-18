@@ -20,6 +20,7 @@ static plugin_info _my_plugin_info = {
 #include "attribute_handlers/bitpack_as_opaque_buffer.h"
 #include "attribute_handlers/bitpack_bitcount.h"
 #include "attribute_handlers/bitpack_default_value.h"
+#include "attribute_handlers/bitpack_misc_annotation.h"
 #include "attribute_handlers/bitpack_range.h"
 #include "attribute_handlers/bitpack_stat_category.h"
 #include "attribute_handlers/bitpack_string.h"
@@ -122,6 +123,17 @@ namespace _attributes {
       .handler = &attribute_handlers::bitpack_default_value,
       .exclude = NULL
    };
+   static struct attribute_spec bitpack_misc_annotation = {
+      .name = "lu_bitpack_misc_annotation",
+      .min_length = 1, // min argcount
+      .max_length = 1, // max argcount
+      .decl_required = true,
+      .type_required = false,
+      .function_type_required = false,
+      .affects_type_identity  = false,
+      .handler = &attribute_handlers::bitpack_misc_annotation,
+      .exclude = NULL
+   };
    static struct attribute_spec bitpack_omit = {
       .name = "lu_bitpack_omit",
       .min_length = 0, // min argcount
@@ -220,6 +232,7 @@ static void register_attributes(void* event_data, void* user_data) {
    register_attribute(&_attributes::bitpack_as_opaque_buffer);
    register_attribute(&_attributes::bitpack_bitcount);
    register_attribute(&_attributes::bitpack_default_value);
+   register_attribute(&_attributes::bitpack_misc_annotation);
    register_attribute(&_attributes::bitpack_omit);
    register_attribute(&_attributes::bitpack_range);
    register_attribute(&_attributes::bitpack_stat_category);
@@ -307,8 +320,6 @@ int plugin_init (
       /* callback  */ NULL,
       /* user_data */ &_my_plugin_info
    );
-   
-   //std::cerr << "Loaded plug-in: " << plugin_info->base_name << ".\n";
    
    for(int i = 0; i < plugin_info->argc; ++i) {
       const auto& arg = plugin_info->argv[i];

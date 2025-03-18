@@ -20,7 +20,7 @@ class ChecksumRecalcHelper {
          }
          if (decl.type != "integer")
             return false;
-         for(let name of decl.categories)
+         for(let name of decl.annotations)
             if (name.match(/^checksum-(?:8|16|32|a(?:8|16|32)(?:u(?:8|16|32))?(?:r(?:8|16|32))?|crc\d+)$/))
                return true;
          return false;
@@ -46,7 +46,7 @@ class ChecksumRecalcHelper {
             }
          }
          
-         for(let name of checksum_inst.decl.categories) {
+         for(let name of checksum_inst.decl.annotations) {
             if (!name.startsWith("checksum-"))
                continue;
             name = name.substring(("checksum-").length);

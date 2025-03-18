@@ -41,8 +41,14 @@ class CValueEditorElement extends HTMLElement {
       this.#body.addEventListener("input", this.#on_change.bind(this));
       //this.#body.addEventListener("change", this.#on_change.bind(this));
       
-      if (globalThis.ChecksumRecalcHelper) {
-         this.#checksum_recalc_helper = new ChecksumRecalcHelper();
+      {
+         let exists = false;
+         try {
+            if (ChecksumRecalcHelper)
+               exists = true;
+         } catch (e) {}
+         if (exists)
+            this.#checksum_recalc_helper = new ChecksumRecalcHelper();
       }
    }
    

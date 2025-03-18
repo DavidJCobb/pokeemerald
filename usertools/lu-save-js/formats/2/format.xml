@@ -4,29 +4,6 @@
       <option name="max-sector-bytecount" value="3968" />
    </config>
    <categories>
-      <category name="checksum-32">
-         <bitcounts total-unpacked="384" total-packed="384" />
-         <counts total="12">
-            <in-sector index="0" count="11" />
-            <in-sector index="3" count="1" />
-            <in-top-level-value name="gSaveBlock2Ptr" count="11" />
-            <in-top-level-value name="gSaveBlock1Ptr" count="1" />
-         </counts>
-      </category>
-      <category name="checksum-a32u8">
-         <bitcounts total-unpacked="32" total-packed="32" />
-         <counts total="1">
-            <in-sector index="4" count="1" />
-            <in-top-level-value name="gSaveBlock1Ptr" count="1" />
-         </counts>
-      </category>
-      <category name="checksum-crc16">
-         <bitcounts total-unpacked="32" total-packed="32" />
-         <counts total="1">
-            <in-sector index="4" count="1" />
-            <in-top-level-value name="gSaveBlock1Ptr" count="1" />
-         </counts>
-      </category>
       <category name="easy-chat-word">
          <bitcounts total-unpacked="16544" total-packed="16544" />
          <counts total="1034">
@@ -248,9 +225,9 @@
       <integral name="short unsigned int" alignment="2" is-signed="false" size="2">
          <typedef name="u16" />
          <typedef name="PokemonSpeciesID" />
-         <typedef name="MoveID" />
-         <typedef name="EasyChatWordID" />
          <typedef name="ItemIDGlobal" />
+         <typedef name="EasyChatWordID" />
+         <typedef name="MoveID" />
       </integral>
       <integral name="signed char" alignment="1" is-signed="true" size="1">
          <typedef name="MapGroupIndexOptional" />
@@ -259,16 +236,17 @@
       </integral>
       <integral name="unsigned char" alignment="1" is-signed="false" size="1">
          <typedef name="u8" />
-         <typedef name="LanguageID" />
          <typedef name="bool8" />
-         <typedef name="BattleFrontierLvlModeOptional" />
-         <typedef name="BattleFacilityLvlMode" />
+         <typedef name="LanguageID" />
          <typedef name="PokemonLevel" />
          <typedef name="PlayerGender" />
          <typedef name="MapGroupIndex" />
          <typedef name="MapIndexInGroup" />
          <typedef name="MetLocation" />
+         <typedef name="BattleFacilityLvlMode" />
          <typedef name="ContestCategory" />
+         <typedef name="BattleFrontierLvlModeOptional" />
+         <typedef name="MapSectionID" />
       </integral>
       <struct tag="ApprenticeMon" c-alignment="4" c-sizeof="12">
          <stats>
@@ -352,7 +330,7 @@
                <category name="language" />
             </integer>
             <integer name="checksum" type="u32" bitcount="32">
-               <category name="checksum-32" />
+               <annotation text="checksum-32" />
             </integer>
          </members>
          <instructions>
@@ -761,7 +739,7 @@
                <array-rank extent="3" />
             </struct>
             <integer name="checksum" type="u32" bitcount="32">
-               <category name="checksum-32" />
+               <annotation text="checksum-32" />
             </integer>
          </members>
          <instructions>
@@ -1298,7 +1276,7 @@
                <category name="language" />
             </integer>
             <integer name="checksum" type="u32" bitcount="32">
-               <category name="checksum-32" />
+               <annotation text="checksum-32" />
             </integer>
          </members>
          <instructions>
@@ -1341,7 +1319,7 @@
             <integer name="holdEffect" type="u8" bitcount="8" />
             <integer name="holdEffectParam" type="u8" bitcount="8" />
             <integer name="checksum" type="u32" bitcount="32">
-               <category name="checksum-32" />
+               <annotation text="checksum-32" />
             </integer>
          </members>
          <instructions>
@@ -2205,28 +2183,6 @@
             <integer value="bestJumpScore" type="u32" bitcount="32" />
          </instructions>
       </struct>
-      <struct tag="PokemonStorage" c-alignment="4" c-sizeof="33744">
-         <stats>
-            <bitcounts total-unpacked="269952" total-packed="245872" />
-            <counts total="1">
-               <in-sector index="5" count="1" />
-               <in-top-level-value name="gPokemonStoragePtr" count="1" />
-            </counts>
-         </stats>
-         <members>
-            <integer name="currentBox" type="u8" bitcount="4" min="0" max="13" />
-            <transformed name="boxes" type="BoxPokemon[30][14]" transformed-type="SerializedBoxPokemon" pack-function="PackBoxPokemonForSave" unpack-function="UnpackBoxPokemonForSave">
-               <array-rank extent="14" />
-               <array-rank extent="30" />
-            </transformed>
-            <string name="boxNames" type="u8[9][14]" length="8" nonstring="false">
-               <array-rank extent="14" />
-            </string>
-            <integer name="boxWallpapers" type="u8[14]" bitcount="8">
-               <array-rank extent="14" />
-            </integer>
-         </members>
-      </struct>
       <struct tag="PokemonSubstruct0" c-alignment="4" c-sizeof="12">
          <stats>
             <bitcounts total-unpacked="41088" total-packed="32100" />
@@ -2339,6 +2295,28 @@
             <integer value="spAttack" type="u16" bitcount="16" />
             <integer value="spDefense" type="u16" bitcount="16" />
          </instructions>
+      </struct>
+      <struct tag="PokemonStorage" c-alignment="4" c-sizeof="33744">
+         <stats>
+            <bitcounts total-unpacked="269952" total-packed="245872" />
+            <counts total="1">
+               <in-sector index="5" count="1" />
+               <in-top-level-value name="gPokemonStoragePtr" count="1" />
+            </counts>
+         </stats>
+         <members>
+            <integer name="currentBox" type="u8" bitcount="4" min="0" max="13" />
+            <transformed name="boxes" type="BoxPokemon[30][14]" transformed-type="SerializedBoxPokemon" pack-function="PackBoxPokemonForSave" unpack-function="UnpackBoxPokemonForSave">
+               <array-rank extent="14" />
+               <array-rank extent="30" />
+            </transformed>
+            <string name="boxNames" type="u8[9][14]" length="8" nonstring="false">
+               <array-rank extent="14" />
+            </string>
+            <integer name="boxWallpapers" type="u8[14]" bitcount="8">
+               <array-rank extent="14" />
+            </integer>
+         </members>
       </struct>
       <struct tag="PokemonSubstruct2" c-alignment="4" c-sizeof="12">
          <stats>
@@ -2570,7 +2548,7 @@
          </stats>
          <members>
             <integer name="checksum" type="u32" bitcount="32">
-               <category name="checksum-crc16" />
+               <annotation text="checksum-crc16" />
             </integer>
             <struct name="data" type="RamScriptData" />
          </members>
@@ -2687,7 +2665,7 @@
          </stats>
          <members>
             <integer name="checksum" type="int" bitcount="32">
-               <category name="checksum-a32u8" />
+               <annotation text="checksum-a32u8" />
             </integer>
             <struct name="data" type="RecordMixingGiftData" />
          </members>

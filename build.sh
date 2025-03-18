@@ -16,6 +16,10 @@ for dname in plugins/*; do
   fi
   if [ -f ${dname}/Makefile ]; then
     make -C ${dname} all
+    if [ $? -ne 0 ]; then
+      echo "Plugin ${dname} failed to build."
+      exit 1
+    fi
   fi
 done
 if [[ ! -f plugins/lu_bitpack/lu_bitpack.so ]]; then

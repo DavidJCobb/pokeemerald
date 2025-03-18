@@ -140,6 +140,11 @@ namespace bitpacking {
             this->stat_categories.push_back(std::string(str.value()));
             continue;
          }
+         if (key == "lu_bitpack_misc_annotation") {
+            auto str = attr.arguments().front().as<gw::constant::string>();
+            this->misc_annotations.push_back(std::string(str.value()));
+            continue;
+         }
          
          //
          // Typed data options:

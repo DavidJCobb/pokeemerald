@@ -72,6 +72,13 @@ namespace xmlgen {
                elem.set_attribute("name", category);
                child.append_child(std::move(elem_ptr));
             }
+            for(const auto& text : options.misc_annotations) {
+               auto  elem_ptr = std::make_unique<xml_element>();
+               auto& elem     = *elem_ptr;
+               elem.node_name = "annotation";
+               elem.set_attribute("text", text);
+               child.append_child(std::move(elem_ptr));
+            }
          }
          if (is_bespoke_struct_type) {
             auto members_ptr = referenceable_struct_members_to_xml(field.value_type().as_container());

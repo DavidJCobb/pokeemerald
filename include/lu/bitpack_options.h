@@ -13,6 +13,10 @@
 // to tagged data.
 #define LU_BP_CATEGORY(name) __attribute__((lu_bitpack_stat_category(name)))
 
+// Annotate fields or types with string data. This will be preserved in the XML 
+// output and can be used by external tools.
+#define LU_BP_ANNOTATION(text) __attribute__((lu_bitpack_misc_annotation(text)))
+
 // Indicates that a field or type should be serialized into the bitstream 
 // verbatim, as if by memcpy (albeit with a potentially non-byte-aligned 
 // destination).

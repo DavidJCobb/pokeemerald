@@ -133,7 +133,11 @@ class CDeclDefinition extends CDefinition {
             this.default_value = dvs.textContent;
       }
       
-      this.options.from_xml(node, true);
+      this.options.from_xml(node, true, null, this.serialized_type?.options);
+      if (this.bitfield_info) { // HACK
+         if (!node.hasAttribute("bitcount"))
+            this.options.bitcount = this.bitfield_info.size;
+      }
       
       for(let child of node.children) {
          if (child.nodeName == "array-rank") {

@@ -5,6 +5,9 @@
 namespace bitpacking {
    class data_options;
 }
+namespace xmlgen {
+   class integral_type_index;
+}
 
 namespace xmlgen {
    extern void bitpacking_x_options_to_xml(

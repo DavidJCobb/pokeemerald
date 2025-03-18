@@ -43,9 +43,6 @@ namespace typed_options {
 namespace {
    using owned_element = xmlgen::report_generator::owned_element;
 }
-static std::string _to_string(int v) {
-   return lu::stringf("%d", v);
-}
 
 namespace xmlgen {
    report_generator::category_info& report_generator::_get_or_create_category_info(std::string_view name) {
@@ -62,59 +59,6 @@ namespace xmlgen {
             return info;
       auto& info = this->_types.emplace_back(type);
       return info;
-   }
-   
-   void report_generator::_on_integral_type_seen(gcc_wrappers::type::integral type) {
-      auto canonical = type.canonical().as_integral();
-      for(auto& info : this->_integral_types) {
-         if (info.canonical_node->is_same(type))
-            return;
-         if (info.canonical_node->is_same(canonical)) {
-            std::string name = type.name();
-            if (name.empty())
-               return;
-            for(auto& prior : info.alternate_names)
-               if (prior == name)
-                  return;
-            info.alternate_names.push_back(std::move(name));
-            return;
-         }
-      }
-      auto& info = this->_integral_types.emplace_back();
-      info.canonical_node = canonical;
-      info.canonical_name = canonical.name();
-      info.is_signed = type.is_signed();
-      {
-         auto align = type.alignment_in_bits();
-         if (!(align % 8))
-            info.alignment = align / 8;
-      }
-      {
-         auto size = type.size_in_bits();
-         if (!(size % 8))
-            info.size = size / 8;
-      }
-      if (!canonical.is_same(type)) {
-         auto name = type.name();
-         if (!name.empty())
-            info.alternate_names.push_back(type.name());
-      }
-   }
-   void report_generator::_find_integral_types_in(gcc_wrappers::type::container cont) {
-      cont.for_each_referenceable_field([this](gw::decl::field field) {
-         auto type = field.value_type();
-         while (type.is_array())
-            type = type.as_array().value_type();
-         
-         if (type.is_container() && type.name().empty()) {
-            this->_find_integral_types_in(type.as_container());
-            return;
-         }
-         if (!type.is_integral())
-            return;
-         
-         this->_on_integral_type_seen(type.as_integral());
-      });
    }
    
    std::string report_generator::_loop_variable_to_string(codegen::decl_descriptor_pair pair) const {
@@ -176,7 +120,7 @@ namespace xmlgen {
                continue;
             }
             out += '[';
-            out += _loop_variable_to_string(pair);
+            out += this->_loop_variable_to_string(pair);
             out += ']';
             continue;
          }
@@ -184,7 +128,7 @@ namespace xmlgen {
          if (!first)
             out += '.';
          first = false;
-         out += _variable_to_string(pair);
+         out += this->_variable_to_string(pair);
       }
       return out;
    }
@@ -194,13 +138,13 @@ namespace xmlgen {
       auto& node     = *node_ptr;
       
       node.node_name = "loop";
-      node.set_attribute("array", _value_path_to_string(instr.array.value));
-      node.set_attribute("start", _to_string(instr.array.start));
-      node.set_attribute("count", _to_string(instr.array.count));
-      node.set_attribute("counter-var", _loop_variable_to_string(instr.loop_index.descriptors));
+      node.set_attribute("array", this->_value_path_to_string(instr.array.value));
+      node.set_attribute_i("start", instr.array.start);
+      node.set_attribute_i("count", instr.array.count);
+      node.set_attribute("counter-var", this->_loop_variable_to_string(instr.loop_index.descriptors));
       
       for(auto& child_ptr : instr.instructions) {
-         node.append_child(_generate(*child_ptr));
+         node.append_child(this->_generate(*child_ptr));
       }
       
       return node_ptr;
@@ -210,7 +154,7 @@ namespace xmlgen {
       auto& node     = *node_ptr;
       
       node.node_name = "padding";
-      node.set_attribute("bitcount", _to_string(instr.bitcount));
+      node.set_attribute_i("bitcount", instr.bitcount);
       
       return node_ptr;
    }
@@ -218,7 +162,7 @@ namespace xmlgen {
       auto  node_ptr = std::make_unique<xml_element>();
       auto& node     = *node_ptr;
       
-      node.set_attribute("value", _value_path_to_string(instr.value));
+      node.set_attribute("value", this->_value_path_to_string(instr.value));
       
       codegen::decl_descriptor_pair desc_pair;
       for(auto& segm : instr.value.segments) {
@@ -241,9 +185,9 @@ namespace xmlgen {
       auto& node     = *node_ptr;
       
       node.node_name = "transform";
-      node.set_attribute("value", _value_path_to_string(instr.to_be_transformed_value));
+      node.set_attribute("value", this->_value_path_to_string(instr.to_be_transformed_value));
       node.set_attribute("transformed-type", instr.types.back().name());
-      node.set_attribute("transformed-value", _variable_to_string(instr.transformed.descriptors));
+      node.set_attribute("transformed-value", this->_variable_to_string(instr.transformed.descriptors));
       if (instr.types.size() > 1) {
          std::string through;
          for(size_t i = 0; i < instr.types.size() - 1; ++i) {
@@ -255,7 +199,7 @@ namespace xmlgen {
       }
       
       for(auto& child_ptr : instr.instructions) {
-         node.append_child(_generate(*child_ptr));
+         node.append_child(this->_generate(*child_ptr));
       }
       
       return node_ptr;
@@ -265,7 +209,7 @@ namespace xmlgen {
       auto& node     = *node_ptr;
       
       node.node_name = "switch";
-      node.set_attribute("operand", _value_path_to_string(instr.condition_operand));
+      node.set_attribute("operand", this->_value_path_to_string(instr.condition_operand));
       
       for(const auto& pair : instr.cases) {
          auto  child_ptr = std::make_unique<xml_element>();
@@ -275,7 +219,7 @@ namespace xmlgen {
          node.append_child(std::move(child_ptr));
          
          for(auto& nested : pair.second->instructions) {
-            child.append_child(_generate(*nested));
+            child.append_child(this->_generate(*nested));
          }
       }
       if (instr.else_case) {
@@ -285,7 +229,7 @@ namespace xmlgen {
          node.append_child(std::move(child_ptr));
          
          for(auto& nested : instr.else_case->instructions) {
-            child.append_child(_generate(*nested));
+            child.append_child(this->_generate(*nested));
          }
       }
       
@@ -294,15 +238,15 @@ namespace xmlgen {
    
    owned_element report_generator::_generate(const codegen::instructions::base& instr) {
       if (auto* casted = instr.as<codegen::instructions::array_slice>())
-         return _generate(*casted);
+         return this->_generate(*casted);
       if (auto* casted = instr.as<codegen::instructions::padding>())
-         return _generate(*casted);
+         return this->_generate(*casted);
       if (auto* casted = instr.as<codegen::instructions::single>())
-         return _generate(*casted);
+         return this->_generate(*casted);
       if (auto* casted = instr.as<codegen::instructions::transform>())
-         return _generate(*casted);
+         return this->_generate(*casted);
       if (auto* casted = instr.as<codegen::instructions::union_switch>())
-         return _generate(*casted);
+         return this->_generate(*casted);
       
       assert(false && "unreachable");
    }
@@ -341,56 +285,6 @@ namespace xmlgen {
          list.end(),
          [](const auto& info_a, const auto& info_b) {
             return info_a.name.compare(info_b.name) < 0;
-         }
-      );
-   }
-   void report_generator::_sort_integral_type_list() {
-      auto& list = this->_integral_types;
-      std::sort(
-         list.begin(),
-         list.end(),
-         [](const auto& info_a, const auto& info_b) {
-            auto type_a = info_a.canonical_node;
-            auto type_b = info_b.canonical_node;
-            
-            auto& name_a = info_a.canonical_name;
-            auto& name_b = info_b.canonical_name;
-            //
-            // Compare the names according to the following criteria, in 
-            // order of descending priority:
-            //
-            //  - ASCII-case-insensitive comparison
-            //  - Length comparison (shorter first)
-            //  - ASCII-case-sensitive comparison (uppercase first)
-            //  - Sort by GCC type-node pointer (last-resort fallback)
-            //
-            size_t end = name_a.size();
-            if (end > name_b.size())
-               end = name_b.size();
-            
-            for(size_t i = 0; i < end; ++i) { // case-insensitive
-               char c = name_a[i];
-               char d = name_b[i];
-               if (c >= 'a' && c <= 'z')
-                  c -= 0x20;
-               if (d >= 'a' && d <= 'z')
-                  d -= 0x20;
-               if (c == d)
-                  continue;
-               return (c < d);
-            }
-            if (end > name_a.size())
-               return true; // a is shorter
-            if (end > name_b.size())
-               return false; // a is longer
-            for(size_t i = 0; i < end; ++i) {
-               char c = name_a[i];
-               char d = name_b[i];
-               if (c == d)
-                  continue;
-               return (c & 0x20) == 0; // whether a is uppercase
-            }
-            return type_a.unwrap() < type_b.unwrap(); // fallback
          }
       );
    }
@@ -446,10 +340,14 @@ namespace xmlgen {
                   continue;
                return (c < d);
             }
-            if (end > name_a.size())
-               return true; // a is shorter
-            if (end > name_b.size())
-               return false; // a is longer
+            {
+               size_t size_a = name_a.size();
+               size_t size_b = name_b.size();
+               if (size_a < size_b)
+                  return true;
+               if (size_a > size_b)
+                  return false;
+            }
             for(size_t i = 0; i < end; ++i) {
                char c = name_a[i];
                char d = name_b[i];
@@ -491,9 +389,9 @@ namespace xmlgen {
             dst.options         = desc.options;
             
             if (dst.original_type->is_integral())
-               this->_on_integral_type_seen(dst.original_type->as_integral());
+               this->_integral_types.index_type(dst.original_type->as_integral());
             if (dst.serialized_type->is_integral())
-               this->_on_integral_type_seen(dst.serialized_type->as_integral());
+               this->_integral_types.index_type(dst.serialized_type->as_integral());
          }
       }
    }
@@ -507,7 +405,7 @@ namespace xmlgen {
          info.instructions = _generate_root(*ws_info.instructions_root->as<codegen::instructions::container>());
          
          if (type.is_container())
-            this->_find_integral_types_in(type.as_container());
+            this->_integral_types.index_types_in(type.as_container());
       });
    }
    void report_generator::process(const codegen::stats_gatherer& gatherer) {
@@ -528,7 +426,7 @@ namespace xmlgen {
          auto& info = this->_get_or_create_type_info(type);
          info.stats = stats;
          if (type.is_container())
-            this->_find_integral_types_in(type.as_container());
+            this->_integral_types.index_types_in(type.as_container());
       }
       
       // Category stats.
@@ -585,34 +483,14 @@ namespace xmlgen {
       }
       {  // seen types
          out += "   <c-types>\n";
-         {
-            auto& list = this->_integral_types;
-            this->_sort_integral_type_list();
-            for(auto& item : list) {
-               auto  node_ptr = std::make_unique<xml_element>();
-               auto& node     = *node_ptr;
-               node.node_name = "integral";
-               node.set_attribute("name", item.canonical_name);
-               if (item.alignment) {
-                  node.set_attribute_i("alignment", item.alignment);
-               }
-               node.set_attribute_b("is-signed", item.is_signed);
-               if (item.size) {
-                  node.set_attribute_i("size", item.size);
-               }
-               
-               for(auto& alt : item.alternate_names) {
-                  auto  child_ptr = std::make_unique<xml_element>();
-                  auto& child     = *child_ptr;
-                  node.append_child(std::move(child_ptr));
-                  child.node_name = "typedef";
-                  child.set_attribute("name", alt);
-               }
-               out += node_ptr->to_string(2);
+         {  // integral types
+            this->_integral_types.sort_all();
+            this->_integral_types.for_each_canonical_info([&out](auto& item) {
+               out += item.to_xml()->to_string(2);
                out += '\n';
-            }
+            });
          }
-         {
+         {  // struct/union types
             auto& list = this->_types;
             this->_sort_type_list();
             for(auto& info : list) {
@@ -629,7 +507,7 @@ namespace xmlgen {
                }
                if (info.stats.type.is_container()) {
                   auto cont      = info.stats.type.as_container();
-                  auto child_ptr = referenceable_struct_members_to_xml(cont);
+                  auto child_ptr = referenceable_struct_members_to_xml(cont, &this->_integral_types);
                   node_ptr->append_child(std::move(child_ptr));
                }
                

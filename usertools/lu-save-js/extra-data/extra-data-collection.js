@@ -92,6 +92,7 @@ class ExtraDataCollection {
                "CONTEST_RANK",
                "FRONTIER_LVL",
                "GROWTH",
+               "LANGUAGE",
                "OPTIONS_BATTLE_STYLE",
                "OPTIONS_BUTTON_MODE",
                "OPTIONS_SOUND",
@@ -162,6 +163,7 @@ class ExtraDataCollection {
       _set_enum_type("ContestCategory",       "CONTEST_CATEGORY");
       _set_enum_type("BattleFacilityLvlMode", "FRONTIER_LVL");
       _set_enum_type("ItemIDGlobal",          "ITEM");
+      _set_enum_type("LanguageID",            "LANGUAGE");
       _set_enum_type("MoveID",                "MOVE");
       _set_enum_type("PokemonSpeciesID",      "SPECIES");
    }

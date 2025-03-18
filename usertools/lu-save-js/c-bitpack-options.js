@@ -3,9 +3,9 @@ class CBitpackOptions {
    constructor() {
       this.type = null;
    }
-   from_xml(node, is_value_node) {
+   from_xml(node, is_value_node, /*Optional<String>*/ override_type, /*Optional<CBitpackOptions>*/ inherit_from) {
       if (is_value_node) {
-         this.type = node.nodeName;
+         this.type = override_type || node.nodeName;
       } else {
          switch (node.nodeName) {
             case "integral-options":
@@ -25,6 +25,10 @@ class CBitpackOptions {
                break;
          }
       }
+      if (inherit_from) {
+         if (inherit_from.type != this.type)
+            inherit_from = null;
+      }
       switch (this.type) {
          case "boolean":
             break;
@@ -32,11 +36,23 @@ class CBitpackOptions {
             this.bytecount = +node.getAttribute("bytecount");
             break;
          case "integer":
-            this.bitcount = +node.getAttribute("bitcount");
+            this.bitcount = node.getAttribute("bitcount");
+            if (this.bitcount === null) {
+               if (inherit_from)
+                  this.bitcount = inherit_from.bitcount;
+               else
+                  assert_xml_validity(false, "A set of integer CBitpackOptions neither defines nor inherits a bitcount.");
+            } else {
+               this.bitcount = +this.bitcount;
+            }
             for(let key of ["min", "max"]) {
                let v = node.getAttribute(key);
-               if (v !== null)
+               if (v === null) {
+                  if (inherit_from && inherit_from[key])
+                     v = inherit_from[key];
+               } else {
                   v = +v;
+               }
                this[key] = v;
             }
             break;

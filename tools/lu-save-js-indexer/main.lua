@@ -79,6 +79,7 @@ local goals = {
          "CONTEST_RANK",
          "FRONTIER_LVL",
          "GROWTH",
+         "LANGUAGE",
          "OPTIONS_BATTLE_STYLE",
          "OPTIONS_BUTTON_MODE",
          "OPTIONS_SOUND",

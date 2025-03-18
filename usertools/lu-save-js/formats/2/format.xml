@@ -216,38 +216,102 @@
    <c-types>
       <integral name="int" alignment="4" is-signed="true" size="4" />
       <integral name="long unsigned int" alignment="4" is-signed="false" size="4">
-         <typedef name="u32" />
-         <typedef name="PokemonPersonality" />
+         <typedef name="PokemonPersonality" bitcount="32" />
+         <typedef name="u32" bitcount="32" />
       </integral>
       <integral name="short int" alignment="2" is-signed="true" size="2">
-         <typedef name="s16" />
+         <typedef name="s16" bitcount="16" />
       </integral>
       <integral name="short unsigned int" alignment="2" is-signed="false" size="2">
-         <typedef name="u16" />
-         <typedef name="PokemonSpeciesID" />
-         <typedef name="ItemIDGlobal" />
-         <typedef name="EasyChatWordID" />
-         <typedef name="MoveID" />
+         <typedef name="EasyChatWordID" bitcount="16">
+            <category name="easy-chat-word" />
+         </typedef>
+         <typedef name="ItemIDGlobal" bitcount="16">
+            <category name="global-item-id" />
+         </typedef>
+         <typedef name="MoveID" bitcount="9">
+            <category name="move-id" />
+         </typedef>
+         <typedef name="PokemonSpeciesID" bitcount="11" min="0" max="2047">
+            <category name="species-id" />
+         </typedef>
+         <typedef name="u16" bitcount="16" />
       </integral>
       <integral name="signed char" alignment="1" is-signed="true" size="1">
-         <typedef name="MapGroupIndexOptional" />
-         <typedef name="MapIndexInGroupOptional" />
-         <typedef name="s8" />
+         <typedef name="MapGroupIndexOptional" bitcount="8" />
+         <typedef name="MapIndexInGroupOptional" bitcount="8" />
+         <typedef name="s8" bitcount="8" />
       </integral>
       <integral name="unsigned char" alignment="1" is-signed="false" size="1">
-         <typedef name="u8" />
-         <typedef name="bool8" />
-         <typedef name="LanguageID" />
-         <typedef name="PokemonLevel" />
-         <typedef name="PlayerGender" />
-         <typedef name="MapGroupIndex" />
-         <typedef name="MapIndexInGroup" />
-         <typedef name="MetLocation" />
-         <typedef name="BattleFacilityLvlMode" />
-         <typedef name="ContestCategory" />
-         <typedef name="BattleFrontierLvlModeOptional" />
-         <typedef name="MapSectionID" />
+         <typedef name="BattleFacilityLvlMode" bitcount="2" min="0" max="2" />
+         <typedef name="BattleFrontierLvlModeOptional" bitcount="2" min="0" max="2" />
+         <typedef name="bool8" bitcount="8" />
+         <typedef name="ContestCategory" bitcount="3" min="0" max="4" />
+         <typedef name="LanguageID" bitcount="4" min="0" max="7">
+            <category name="language" />
+         </typedef>
+         <typedef name="MapGroupIndex" bitcount="8" />
+         <typedef name="MapIndexInGroup" bitcount="8" />
+         <typedef name="MapSectionID" bitcount="8" />
+         <typedef name="MetLocation" bitcount="8" />
+         <typedef name="PlayerGender" bitcount="1" min="0" max="1">
+            <category name="player-gender" />
+         </typedef>
+         <typedef name="PokemonLevel" bitcount="7" min="0" max="100">
+            <category name="pokemon-level" />
+         </typedef>
+         <typedef name="u8" bitcount="8" />
       </integral>
+      <struct tag="Apprentice" c-alignment="4" c-sizeof="68">
+         <stats>
+            <bitcounts total-unpacked="2176" total-packed="1728" />
+            <counts total="4">
+               <in-sector index="0" count="4" />
+               <in-top-level-value name="gSaveBlock2Ptr" count="4" />
+            </counts>
+         </stats>
+         <members>
+            <integer name="id" type="u8" c-bitfield-offset="0" c-bitfield-width="5" bitcount="5" />
+            <integer name="lvlMode" type="BattleFacilityLvlMode" c-bitfield-offset="5" c-bitfield-width="2" />
+            <integer name="numQuestions" type="u8" />
+            <integer name="number" type="u8" />
+            <struct name="party" type="ApprenticeMon[3]">
+               <array-rank extent="3" />
+            </struct>
+            <integer name="speechWon" type="EasyChatWordID[6]">
+               <array-rank extent="6" />
+            </integer>
+            <integer name="playerId" type="u8[4]">
+               <array-rank extent="4" />
+               <category name="trainer-id" />
+            </integer>
+            <string name="playerName" type="u8[7]" length="7" nonstring="true">
+               <category name="player-name" />
+            </string>
+            <integer name="language" type="LanguageID" />
+            <integer name="checksum" type="u32">
+               <annotation text="checksum-32" />
+            </integer>
+         </members>
+         <instructions>
+            <integer value="id" type="u8" bitcount="5" />
+            <integer value="lvlMode" type="BattleFacilityLvlMode" bitcount="2" min="0" max="2" />
+            <integer value="numQuestions" type="u8" bitcount="8" />
+            <integer value="number" type="u8" bitcount="8" />
+            <loop array="party" start="0" count="3" counter-var="__a">
+               <struct value="party[__a]" type="ApprenticeMon" />
+            </loop>
+            <loop array="speechWon" start="0" count="6" counter-var="__b">
+               <integer value="speechWon[__b]" type="EasyChatWordID" bitcount="16" />
+            </loop>
+            <loop array="playerId" start="0" count="4" counter-var="__c">
+               <integer value="playerId[__c]" type="u8" bitcount="8" />
+            </loop>
+            <string value="playerName" type="u8[7]" length="7" nonstring="true" />
+            <integer value="language" type="LanguageID" bitcount="4" min="0" max="7" />
+            <integer value="checksum" type="u32" bitcount="32" />
+         </instructions>
+      </struct>
       <struct tag="ApprenticeMon" c-alignment="4" c-sizeof="12">
          <stats>
             <bitcounts total-unpacked="1152" total-packed="756" />
@@ -257,16 +321,11 @@
             </counts>
          </stats>
          <members>
-            <integer name="species" type="PokemonSpeciesID" bitcount="11" min="0" max="2047">
-               <category name="species-id" />
-            </integer>
-            <integer name="moves" type="MoveID[4]" bitcount="9">
+            <integer name="species" type="PokemonSpeciesID" />
+            <integer name="moves" type="MoveID[4]">
                <array-rank extent="4" />
-               <category name="move-id" />
             </integer>
-            <integer name="item" type="ItemIDGlobal" bitcount="16">
-               <category name="global-item-id" />
-            </integer>
+            <integer name="item" type="ItemIDGlobal" />
          </members>
          <instructions>
             <integer value="species" type="PokemonSpeciesID" bitcount="11" min="0" max="2047" />
@@ -289,7 +348,7 @@
             <integer name="monId" type="u8" c-bitfield-offset="2" c-bitfield-width="2" bitcount="2" />
             <integer name="moveSlot" type="u8" c-bitfield-offset="4" c-bitfield-width="2" bitcount="2" />
             <integer name="suggestedChange" type="u8" c-bitfield-offset="6" c-bitfield-width="2" bitcount="2" />
-            <integer name="data" type="u16" bitcount="16" />
+            <integer name="data" type="u16" />
          </members>
          <instructions>
             <integer value="questionId" type="u8" bitcount="2" />
@@ -297,59 +356,6 @@
             <integer value="moveSlot" type="u8" bitcount="2" />
             <integer value="suggestedChange" type="u8" bitcount="2" />
             <integer value="data" type="u16" bitcount="16" />
-         </instructions>
-      </struct>
-      <struct tag="Apprentice" c-alignment="4" c-sizeof="68">
-         <stats>
-            <bitcounts total-unpacked="2176" total-packed="1728" />
-            <counts total="4">
-               <in-sector index="0" count="4" />
-               <in-top-level-value name="gSaveBlock2Ptr" count="4" />
-            </counts>
-         </stats>
-         <members>
-            <integer name="id" type="u8" c-bitfield-offset="0" c-bitfield-width="5" bitcount="5" />
-            <integer name="lvlMode" type="BattleFacilityLvlMode" c-bitfield-offset="5" c-bitfield-width="2" bitcount="2" min="0" max="2" />
-            <integer name="numQuestions" type="u8" bitcount="8" />
-            <integer name="number" type="u8" bitcount="8" />
-            <struct name="party" type="ApprenticeMon[3]">
-               <array-rank extent="3" />
-            </struct>
-            <integer name="speechWon" type="EasyChatWordID[6]" bitcount="16">
-               <array-rank extent="6" />
-               <category name="easy-chat-word" />
-            </integer>
-            <integer name="playerId" type="u8[4]" bitcount="8">
-               <array-rank extent="4" />
-               <category name="trainer-id" />
-            </integer>
-            <string name="playerName" type="u8[7]" length="7" nonstring="true">
-               <category name="player-name" />
-            </string>
-            <integer name="language" type="LanguageID" bitcount="4" min="0" max="7">
-               <category name="language" />
-            </integer>
-            <integer name="checksum" type="u32" bitcount="32">
-               <annotation text="checksum-32" />
-            </integer>
-         </members>
-         <instructions>
-            <integer value="id" type="u8" bitcount="5" />
-            <integer value="lvlMode" type="BattleFacilityLvlMode" bitcount="2" min="0" max="2" />
-            <integer value="numQuestions" type="u8" bitcount="8" />
-            <integer value="number" type="u8" bitcount="8" />
-            <loop array="party" start="0" count="3" counter-var="__a">
-               <struct value="party[__a]" type="ApprenticeMon" />
-            </loop>
-            <loop array="speechWon" start="0" count="6" counter-var="__b">
-               <integer value="speechWon[__b]" type="EasyChatWordID" bitcount="16" />
-            </loop>
-            <loop array="playerId" start="0" count="4" counter-var="__c">
-               <integer value="playerId[__c]" type="u8" bitcount="8" />
-            </loop>
-            <string value="playerName" type="u8[7]" length="7" nonstring="true" />
-            <integer value="language" type="LanguageID" bitcount="4" min="0" max="7" />
-            <integer value="checksum" type="u32" bitcount="32" />
          </instructions>
       </struct>
       <struct tag="BattleDomeTrainer" c-alignment="4" c-sizeof="4">
@@ -390,32 +396,32 @@
             </struct>
             <struct name="towerInterview" type="BattleTowerInterview" />
             <struct name="ereaderTrainer" type="BattleTowerEReaderTrainer" />
-            <integer name="challengeStatus" type="u8" bitcount="8" />
-            <integer name="lvlMode" type="BattleFacilityLvlMode" c-bitfield-offset="13032" c-bitfield-width="2" bitcount="2" min="0" max="2" />
+            <integer name="challengeStatus" type="u8" />
+            <integer name="lvlMode" type="BattleFacilityLvlMode" c-bitfield-offset="13032" c-bitfield-width="2" />
             <integer name="challengePaused" type="u8" c-bitfield-offset="13034" c-bitfield-width="1" bitcount="1" />
             <integer name="disableRecordBattle" type="u8" c-bitfield-offset="13035" c-bitfield-width="1" bitcount="1" />
-            <integer name="selectedPartyMons" type="u16[4]" bitcount="16">
+            <integer name="selectedPartyMons" type="u16[4]">
                <array-rank extent="4" />
             </integer>
-            <integer name="curChallengeBattleNum" type="u16" bitcount="16" />
-            <integer name="trainerIds" type="u16[20]" bitcount="16">
+            <integer name="curChallengeBattleNum" type="u16" />
+            <integer name="trainerIds" type="u16[20]">
                <array-rank extent="20" />
                <category name="trainer-id" />
             </integer>
-            <integer name="winStreakActiveFlags" type="u32" bitcount="32" />
-            <integer name="towerWinStreaks" type="u16[2][4]" bitcount="16">
+            <integer name="winStreakActiveFlags" type="u32" />
+            <integer name="towerWinStreaks" type="u16[2][4]">
                <array-rank extent="4" />
                <array-rank extent="2" />
             </integer>
-            <integer name="towerRecordWinStreaks" type="u16[2][4]" bitcount="16">
+            <integer name="towerRecordWinStreaks" type="u16[2][4]">
                <array-rank extent="4" />
                <array-rank extent="2" />
             </integer>
-            <integer name="battledBrainFlags" type="u16" bitcount="16" />
-            <integer name="towerSinglesStreak" type="u16" bitcount="16" />
-            <integer name="towerNumWins" type="u16" bitcount="16" />
-            <integer name="towerBattleOutcome" type="u8" bitcount="8" />
-            <integer name="towerLvlMode" type="BattleFacilityLvlMode" bitcount="2" min="0" max="2" />
+            <integer name="battledBrainFlags" type="u16" />
+            <integer name="towerSinglesStreak" type="u16" />
+            <integer name="towerNumWins" type="u16" />
+            <integer name="towerBattleOutcome" type="u8" />
+            <integer name="towerLvlMode" type="BattleFacilityLvlMode" />
             <integer name="domeAttemptedSingles50" type="u8" c-bitfield-offset="13792" c-bitfield-width="1" bitcount="1" />
             <integer name="domeAttemptedSinglesOpen" type="u8" c-bitfield-offset="13793" c-bitfield-width="1" bitcount="1" />
             <integer name="domeHasWonSingles50" type="u8" c-bitfield-offset="13794" c-bitfield-width="1" bitcount="1" />
@@ -424,116 +430,116 @@
             <integer name="domeAttemptedDoublesOpen" type="u8" c-bitfield-offset="13797" c-bitfield-width="1" bitcount="1" />
             <integer name="domeHasWonDoubles50" type="u8" c-bitfield-offset="13798" c-bitfield-width="1" bitcount="1" />
             <integer name="domeHasWonDoublesOpen" type="u8" c-bitfield-offset="13799" c-bitfield-width="1" bitcount="1" />
-            <integer name="domeUnused" type="u8" bitcount="8" />
-            <integer name="domeLvlMode" type="BattleFacilityLvlMode" bitcount="2" min="0" max="2" />
-            <integer name="domeBattleMode" type="u8" bitcount="8" />
-            <integer name="domeWinStreaks" type="u16[2][2]" bitcount="16">
+            <integer name="domeUnused" type="u8" />
+            <integer name="domeLvlMode" type="BattleFacilityLvlMode" />
+            <integer name="domeBattleMode" type="u8" />
+            <integer name="domeWinStreaks" type="u16[2][2]">
                <array-rank extent="2" />
                <array-rank extent="2" />
             </integer>
-            <integer name="domeRecordWinStreaks" type="u16[2][2]" bitcount="16">
+            <integer name="domeRecordWinStreaks" type="u16[2][2]">
                <array-rank extent="2" />
                <array-rank extent="2" />
             </integer>
-            <integer name="domeTotalChampionships" type="u16[2][2]" bitcount="16">
+            <integer name="domeTotalChampionships" type="u16[2][2]">
                <array-rank extent="2" />
                <array-rank extent="2" />
             </integer>
             <struct name="domeTrainers" type="BattleDomeTrainer[16]">
                <array-rank extent="16" />
             </struct>
-            <integer name="domeMonIds" type="u16[3][16]" bitcount="16">
+            <integer name="domeMonIds" type="u16[3][16]">
                <array-rank extent="16" />
                <array-rank extent="3" />
             </integer>
-            <integer name="unused_DC4" type="u16" bitcount="16" />
-            <integer name="palacePrize" type="u16" bitcount="16" />
-            <integer name="palaceWinStreaks" type="u16[2][2]" bitcount="16">
+            <integer name="unused_DC4" type="u16" />
+            <integer name="palacePrize" type="u16" />
+            <integer name="palaceWinStreaks" type="u16[2][2]">
                <array-rank extent="2" />
                <array-rank extent="2" />
             </integer>
-            <integer name="palaceRecordWinStreaks" type="u16[2][2]" bitcount="16">
+            <integer name="palaceRecordWinStreaks" type="u16[2][2]">
                <array-rank extent="2" />
                <array-rank extent="2" />
             </integer>
-            <integer name="arenaPrize" type="u16" bitcount="16" />
-            <integer name="arenaWinStreaks" type="u16[2]" bitcount="16">
+            <integer name="arenaPrize" type="u16" />
+            <integer name="arenaWinStreaks" type="u16[2]">
                <array-rank extent="2" />
             </integer>
-            <integer name="arenaRecordStreaks" type="u16[2]" bitcount="16">
+            <integer name="arenaRecordStreaks" type="u16[2]">
                <array-rank extent="2" />
             </integer>
-            <integer name="factoryWinStreaks" type="u16[2][2]" bitcount="16">
-               <array-rank extent="2" />
-               <array-rank extent="2" />
-            </integer>
-            <integer name="factoryRecordWinStreaks" type="u16[2][2]" bitcount="16">
+            <integer name="factoryWinStreaks" type="u16[2][2]">
                <array-rank extent="2" />
                <array-rank extent="2" />
             </integer>
-            <integer name="factoryRentsCount" type="u16[2][2]" bitcount="16">
+            <integer name="factoryRecordWinStreaks" type="u16[2][2]">
                <array-rank extent="2" />
                <array-rank extent="2" />
             </integer>
-            <integer name="factoryRecordRentsCount" type="u16[2][2]" bitcount="16">
+            <integer name="factoryRentsCount" type="u16[2][2]">
                <array-rank extent="2" />
                <array-rank extent="2" />
             </integer>
-            <integer name="pikePrize" type="u16" bitcount="16" />
-            <integer name="pikeWinStreaks" type="u16[2]" bitcount="16">
+            <integer name="factoryRecordRentsCount" type="u16[2][2]">
+               <array-rank extent="2" />
                <array-rank extent="2" />
             </integer>
-            <integer name="pikeRecordStreaks" type="u16[2]" bitcount="16">
+            <integer name="pikePrize" type="u16" />
+            <integer name="pikeWinStreaks" type="u16[2]">
                <array-rank extent="2" />
             </integer>
-            <integer name="pikeTotalStreaks" type="u16[2]" bitcount="16">
+            <integer name="pikeRecordStreaks" type="u16[2]">
+               <array-rank extent="2" />
+            </integer>
+            <integer name="pikeTotalStreaks" type="u16[2]">
                <array-rank extent="2" />
             </integer>
             <integer name="pikeHintedRoomIndex" type="u8" c-bitfield-offset="15904" c-bitfield-width="3" bitcount="3" />
             <integer name="pikeHintedRoomType" type="u8" c-bitfield-offset="15907" c-bitfield-width="4" bitcount="4" />
             <integer name="pikeHealingRoomsDisabled" type="u8" c-bitfield-offset="15911" c-bitfield-width="1" bitcount="1" />
-            <integer name="pikeHeldItemsBackup" type="u16[3]" bitcount="16">
+            <integer name="pikeHeldItemsBackup" type="u16[3]">
                <array-rank extent="3" />
             </integer>
-            <integer name="pyramidPrize" type="u16" bitcount="16" />
-            <integer name="pyramidWinStreaks" type="u16[2]" bitcount="16">
+            <integer name="pyramidPrize" type="u16" />
+            <integer name="pyramidWinStreaks" type="u16[2]">
                <array-rank extent="2" />
             </integer>
-            <integer name="pyramidRecordStreaks" type="u16[2]" bitcount="16">
+            <integer name="pyramidRecordStreaks" type="u16[2]">
                <array-rank extent="2" />
             </integer>
-            <integer name="pyramidRandoms" type="u16[4]" bitcount="16">
+            <integer name="pyramidRandoms" type="u16[4]">
                <array-rank extent="4" />
             </integer>
-            <integer name="pyramidTrainerFlags" type="u8" bitcount="8" />
+            <integer name="pyramidTrainerFlags" type="u8" />
             <struct name="pyramidBag" type="PyramidBag" />
-            <integer name="pyramidLightRadius" type="u8" bitcount="8" />
-            <integer name="verdanturfTentPrize" type="u16" bitcount="16" />
-            <integer name="fallarborTentPrize" type="u16" bitcount="16" />
-            <integer name="slateportTentPrize" type="u16" bitcount="16" />
+            <integer name="pyramidLightRadius" type="u8" />
+            <integer name="verdanturfTentPrize" type="u16" />
+            <integer name="fallarborTentPrize" type="u16" />
+            <integer name="slateportTentPrize" type="u16" />
             <struct name="rentalMons" type="RentalMon[6]">
                <array-rank extent="6" />
             </struct>
-            <integer name="battlePoints" type="u16" bitcount="16" />
-            <integer name="cardBattlePoints" type="u16" bitcount="16" />
-            <integer name="battlesCount" type="u32" bitcount="32" />
-            <integer name="domeWinningMoves" type="u16[16]" bitcount="16">
+            <integer name="battlePoints" type="u16" />
+            <integer name="cardBattlePoints" type="u16" />
+            <integer name="battlesCount" type="u32" />
+            <integer name="domeWinningMoves" type="u16[16]">
                <array-rank extent="16" />
             </integer>
-            <integer name="trainerFlags" type="u8" bitcount="8" />
+            <integer name="trainerFlags" type="u8" />
             <string name="opponentNames" type="u8[8][2]" length="7" nonstring="false">
                <array-rank extent="2" />
                <category name="player-name" />
             </string>
-            <integer name="opponentTrainerIds" type="u8[4][2]" bitcount="8">
+            <integer name="opponentTrainerIds" type="u8[4][2]">
                <array-rank extent="2" />
                <array-rank extent="4" />
                <category name="trainer-id" />
             </integer>
             <integer name="unk_EF9" type="u8" c-bitfield-offset="17768" c-bitfield-width="7" bitcount="7" />
             <integer name="savedGame" type="u8" c-bitfield-offset="17775" c-bitfield-width="1" bitcount="1" />
-            <integer name="unused_EFA" type="u8" bitcount="8" />
-            <integer name="unused_EFB" type="u8" bitcount="8" />
+            <integer name="unused_EFA" type="u8" />
+            <integer name="unused_EFB" type="u8" />
             <struct name="domePlayerPartyData" type="DomeMonData[3]">
                <array-rank extent="3" />
             </struct>
@@ -713,32 +719,29 @@
             </counts>
          </stats>
          <members>
-            <integer name="unk0" type="u8" bitcount="8" />
-            <integer name="facilityClass" type="u8" bitcount="8" />
-            <integer name="winStreak" type="u16" bitcount="16" />
+            <integer name="unk0" type="u8" />
+            <integer name="facilityClass" type="u8" />
+            <integer name="winStreak" type="u16" />
             <string name="name" type="u8[8]" length="7" nonstring="false">
                <category name="player-name" />
             </string>
-            <integer name="trainerId" type="u8[4]" bitcount="8">
+            <integer name="trainerId" type="u8[4]">
                <array-rank extent="4" />
                <category name="trainer-id" />
             </integer>
-            <integer name="greeting" type="EasyChatWordID[6]" bitcount="16">
+            <integer name="greeting" type="EasyChatWordID[6]">
                <array-rank extent="6" />
-               <category name="easy-chat-word" />
             </integer>
-            <integer name="farewellPlayerLost" type="EasyChatWordID[6]" bitcount="16">
+            <integer name="farewellPlayerLost" type="EasyChatWordID[6]">
                <array-rank extent="6" />
-               <category name="easy-chat-word" />
             </integer>
-            <integer name="farewellPlayerWon" type="EasyChatWordID[6]" bitcount="16">
+            <integer name="farewellPlayerWon" type="EasyChatWordID[6]">
                <array-rank extent="6" />
-               <category name="easy-chat-word" />
             </integer>
             <struct name="party" type="BattleTowerPokemon[3]">
                <array-rank extent="3" />
             </struct>
-            <integer name="checksum" type="u32" bitcount="32">
+            <integer name="checksum" type="u32">
                <annotation text="checksum-32" />
             </integer>
          </members>
@@ -774,21 +777,15 @@
             </counts>
          </stats>
          <members>
-            <integer name="playerSpecies" type="PokemonSpeciesID" bitcount="11" min="0" max="2047">
-               <category name="species-id" />
-            </integer>
-            <integer name="opponentSpecies" type="PokemonSpeciesID" bitcount="11" min="0" max="2047">
-               <category name="species-id" />
-            </integer>
+            <integer name="playerSpecies" type="PokemonSpeciesID" />
+            <integer name="opponentSpecies" type="PokemonSpeciesID" />
             <string name="opponentName" type="u8[8]" length="7" nonstring="false">
                <category name="player-name" />
             </string>
             <string name="opponentMonNickname" type="u8[11]" length="10" nonstring="false">
                <category name="pokemon-name" />
             </string>
-            <integer name="opponentLanguage" type="LanguageID" bitcount="4" min="0" max="7">
-               <category name="language" />
-            </integer>
+            <integer name="opponentLanguage" type="LanguageID" />
          </members>
          <instructions>
             <integer value="playerSpecies" type="PokemonSpeciesID" bitcount="11" min="0" max="2047" />
@@ -807,27 +804,20 @@
             </counts>
          </stats>
          <members>
-            <integer name="species" type="PokemonSpeciesID" bitcount="11" min="0" max="2047">
-               <category name="species-id" />
-            </integer>
-            <integer name="heldItem" type="ItemIDGlobal" bitcount="16">
-               <category name="global-item-id" />
-            </integer>
-            <integer name="moves" type="MoveID[4]" bitcount="9">
+            <integer name="species" type="PokemonSpeciesID" />
+            <integer name="heldItem" type="ItemIDGlobal" />
+            <integer name="moves" type="MoveID[4]">
                <array-rank extent="4" />
-               <category name="move-id" />
             </integer>
-            <integer name="level" type="PokemonLevel" bitcount="7" min="0" max="100">
-               <category name="pokemon-level" />
-            </integer>
-            <integer name="ppBonuses" type="u8" bitcount="8" />
-            <integer name="hpEV" type="u8" bitcount="8" />
-            <integer name="attackEV" type="u8" bitcount="8" />
-            <integer name="defenseEV" type="u8" bitcount="8" />
-            <integer name="speedEV" type="u8" bitcount="8" />
-            <integer name="spAttackEV" type="u8" bitcount="8" />
-            <integer name="spDefenseEV" type="u8" bitcount="8" />
-            <integer name="otId" type="u32" bitcount="32">
+            <integer name="level" type="PokemonLevel" />
+            <integer name="ppBonuses" type="u8" />
+            <integer name="hpEV" type="u8" />
+            <integer name="attackEV" type="u8" />
+            <integer name="defenseEV" type="u8" />
+            <integer name="speedEV" type="u8" />
+            <integer name="spAttackEV" type="u8" />
+            <integer name="spDefenseEV" type="u8" />
+            <integer name="otId" type="u32">
                <category name="trainer-id" />
             </integer>
             <integer name="hpIV" type="u32" c-bitfield-offset="192" c-bitfield-width="5" bitcount="5" />
@@ -838,11 +828,11 @@
             <integer name="spDefenseIV" type="u32" c-bitfield-offset="217" c-bitfield-width="5" bitcount="5" />
             <integer name="gap" type="u32" c-bitfield-offset="222" c-bitfield-width="1" bitcount="1" />
             <integer name="abilityNum" type="u32" c-bitfield-offset="223" c-bitfield-width="1" bitcount="1" />
-            <integer name="personality" type="PokemonPersonality" bitcount="32" />
+            <integer name="personality" type="PokemonPersonality" />
             <string name="nickname" type="u8[11]" length="10" nonstring="false">
                <category name="pokemon-name" />
             </string>
-            <integer name="friendship" type="u8" bitcount="8" />
+            <integer name="friendship" type="u8" />
          </members>
          <instructions>
             <integer value="species" type="PokemonSpeciesID" bitcount="11" min="0" max="2047" />
@@ -882,19 +872,19 @@
          </stats>
          <members>
             <string name="name" type="u8[7]" length="6" nonstring="false" />
-            <integer name="firmness" type="u8" bitcount="8" />
-            <integer name="size" type="u16" bitcount="16" />
-            <integer name="maxYield" type="u8" bitcount="8" />
-            <integer name="minYield" type="u8" bitcount="8" />
+            <integer name="firmness" type="u8" />
+            <integer name="size" type="u16" />
+            <integer name="maxYield" type="u8" />
+            <integer name="minYield" type="u8" />
             <pointer name="description1" type="u8*" />
             <pointer name="description2" type="u8*" />
-            <integer name="stageDuration" type="u8" bitcount="8" />
-            <integer name="spicy" type="u8" bitcount="8" />
-            <integer name="dry" type="u8" bitcount="8" />
-            <integer name="sweet" type="u8" bitcount="8" />
-            <integer name="bitter" type="u8" bitcount="8" />
-            <integer name="sour" type="u8" bitcount="8" />
-            <integer name="smoothness" type="u8" bitcount="8" />
+            <integer name="stageDuration" type="u8" />
+            <integer name="spicy" type="u8" />
+            <integer name="dry" type="u8" />
+            <integer name="sweet" type="u8" />
+            <integer name="bitter" type="u8" />
+            <integer name="sour" type="u8" />
+            <integer name="smoothness" type="u8" />
          </members>
          <instructions>
             <string value="name" type="u8[7]" length="6" nonstring="false" />
@@ -922,11 +912,11 @@
             </counts>
          </stats>
          <members>
-            <integer name="pressingSpeeds" type="u16[4]" bitcount="16">
+            <integer name="pressingSpeeds" type="u16[4]">
                <array-rank extent="4" />
             </integer>
-            <integer name="berryPowderAmount" type="u32" bitcount="32" />
-            <integer name="unk" type="u32" bitcount="32" />
+            <integer name="berryPowderAmount" type="u32" />
+            <integer name="unk" type="u32" />
          </members>
          <instructions>
             <loop array="pressingSpeeds" start="0" count="4" counter-var="__a">
@@ -945,17 +935,17 @@
             </counts>
          </stats>
          <members>
-            <integer name="bestScore" type="u32" bitcount="32" />
-            <integer name="berriesPicked" type="u16" bitcount="16" />
-            <integer name="berriesPickedInRow" type="u16" bitcount="16" />
-            <integer name="field_8" type="u8" bitcount="8" />
-            <integer name="field_9" type="u8" bitcount="8" />
-            <integer name="field_A" type="u8" bitcount="8" />
-            <integer name="field_B" type="u8" bitcount="8" />
-            <integer name="field_C" type="u8" bitcount="8" />
-            <integer name="field_D" type="u8" bitcount="8" />
-            <integer name="field_E" type="u8" bitcount="8" />
-            <integer name="field_F" type="u8" bitcount="8" />
+            <integer name="bestScore" type="u32" />
+            <integer name="berriesPicked" type="u16" />
+            <integer name="berriesPickedInRow" type="u16" />
+            <integer name="field_8" type="u8" />
+            <integer name="field_9" type="u8" />
+            <integer name="field_A" type="u8" />
+            <integer name="field_B" type="u8" />
+            <integer name="field_C" type="u8" />
+            <integer name="field_D" type="u8" />
+            <integer name="field_E" type="u8" />
+            <integer name="field_F" type="u8" />
          </members>
          <instructions>
             <integer value="bestScore" type="u32" bitcount="32" />
@@ -980,11 +970,11 @@
             </counts>
          </stats>
          <members>
-            <integer name="berry" type="u8" bitcount="8" />
+            <integer name="berry" type="u8" />
             <integer name="stage" type="u8" c-bitfield-offset="8" c-bitfield-width="7" bitcount="7" />
             <integer name="stopGrowth" type="u8" c-bitfield-offset="15" c-bitfield-width="1" bitcount="1" />
-            <integer name="minutesUntilNextStage" type="u16" bitcount="16" />
-            <integer name="berryYield" type="u8" bitcount="8" />
+            <integer name="minutesUntilNextStage" type="u16" />
+            <integer name="berryYield" type="u8" />
             <integer name="regrowthCount" type="u8" c-bitfield-offset="40" c-bitfield-width="4" bitcount="4" />
             <integer name="watered1" type="u8" c-bitfield-offset="44" c-bitfield-width="1" bitcount="1" />
             <integer name="watered2" type="u8" c-bitfield-offset="45" c-bitfield-width="1" bitcount="1" />
@@ -1024,14 +1014,12 @@
          </stats>
          <transform-options transformed-type="SerializedBoxPokemon" pack-function="PackBoxPokemonForSave" unpack-function="UnpackBoxPokemonForSave" />
          <members>
-            <integer name="personality" type="PokemonPersonality" bitcount="32" />
-            <integer name="otId" type="u32" bitcount="32" />
+            <integer name="personality" type="PokemonPersonality" />
+            <integer name="otId" type="u32" />
             <string name="nickname" type="u8[10]" length="10" nonstring="true">
                <category name="pokemon-name" />
             </string>
-            <integer name="language" type="LanguageID" bitcount="4" min="0" max="7">
-               <category name="language" />
-            </integer>
+            <integer name="language" type="LanguageID" />
             <integer name="isBadEgg" type="u8" c-bitfield-offset="152" c-bitfield-width="1" bitcount="1" />
             <integer name="hasSpecies" type="u8" c-bitfield-offset="153" c-bitfield-width="1" bitcount="1" />
             <integer name="isEgg" type="u8" c-bitfield-offset="154" c-bitfield-width="1" bitcount="1" />
@@ -1040,9 +1028,9 @@
             <string name="otName" type="u8[7]" length="7" nonstring="true">
                <category name="player-name" />
             </string>
-            <integer name="markings" type="u8" bitcount="8" />
-            <integer name="checksum" type="u16" bitcount="16" />
-            <integer name="unknown" type="u16" bitcount="16" />
+            <integer name="markings" type="u8" />
+            <integer name="checksum" type="u16" />
+            <integer name="unknown" type="u16" />
             <unknown name="secure">
                <members>
                   <integer name="raw" type="u32[12]" bitcount="32">
@@ -1064,21 +1052,19 @@
             </counts>
          </stats>
          <members>
-            <integer name="personality" type="PokemonPersonality" bitcount="32" />
-            <integer name="trainerId" type="u32" bitcount="32">
+            <integer name="personality" type="PokemonPersonality" />
+            <integer name="trainerId" type="u32">
                <category name="trainer-id" />
             </integer>
-            <integer name="species" type="PokemonSpeciesID" bitcount="11" min="0" max="2047">
-               <category name="species-id" />
-            </integer>
-            <integer name="contestCategory" type="ContestCategory" bitcount="3" min="0" max="4" />
+            <integer name="species" type="PokemonSpeciesID" />
+            <integer name="contestCategory" type="ContestCategory" />
             <string name="monName" type="u8[11]" length="10" nonstring="false">
                <category name="pokemon-name" />
             </string>
             <string name="trainerName" type="u8[8]" length="7" nonstring="false">
                <category name="player-name" />
             </string>
-            <integer name="contestRank" type="u8" bitcount="8" />
+            <integer name="contestRank" type="u8" />
          </members>
          <instructions>
             <integer value="personality" type="PokemonPersonality" bitcount="32" />
@@ -1099,8 +1085,8 @@
             </counts>
          </stats>
          <members>
-            <integer name="x" type="s16" bitcount="16" />
-            <integer name="y" type="s16" bitcount="16" />
+            <integer name="x" type="s16" />
+            <integer name="y" type="s16" />
          </members>
          <instructions>
             <integer value="x" type="s16" bitcount="16" />
@@ -1119,8 +1105,8 @@
             <struct name="mons" type="DaycareMon[2]">
                <array-rank extent="2" />
             </struct>
-            <integer name="offspringPersonality" type="u32" bitcount="32" />
-            <integer name="stepCounter" type="u8" bitcount="8" />
+            <integer name="offspringPersonality" type="u32" />
+            <integer name="stepCounter" type="u8" />
          </members>
          <instructions>
             <loop array="mons" start="0" count="2" counter-var="__a">
@@ -1146,12 +1132,8 @@
             <string name="monName" type="u8[11]" length="10" nonstring="false">
                <category name="pokemon-name" />
             </string>
-            <integer name="gameLanguage" type="LanguageID" c-bitfield-offset="440" c-bitfield-width="4" bitcount="4" min="0" max="7">
-               <category name="language" />
-            </integer>
-            <integer name="monLanguage" type="LanguageID" c-bitfield-offset="444" c-bitfield-width="4" bitcount="4" min="0" max="7">
-               <category name="language" />
-            </integer>
+            <integer name="gameLanguage" type="LanguageID" c-bitfield-offset="440" c-bitfield-width="4" />
+            <integer name="monLanguage" type="LanguageID" c-bitfield-offset="444" c-bitfield-width="4" />
          </members>
          <instructions>
             <struct value="message" type="Mail" />
@@ -1172,7 +1154,7 @@
          <members>
             <transformed name="mon" type="BoxPokemon" transformed-type="SerializedBoxPokemon" pack-function="PackBoxPokemonForSave" unpack-function="UnpackBoxPokemonForSave" />
             <struct name="mail" type="DaycareMail" />
-            <integer name="steps" type="u32" bitcount="32" />
+            <integer name="steps" type="u32" />
          </members>
          <instructions>
             <transform value="mon" transformed-type="SerializedBoxPokemon" transformed-value="__transformed_var_0">
@@ -1194,10 +1176,9 @@
             <integer name="trendiness" type="u16" c-bitfield-offset="0" c-bitfield-width="7" bitcount="7" />
             <integer name="maxTrendiness" type="u16" c-bitfield-offset="7" c-bitfield-width="7" bitcount="7" />
             <integer name="gainingTrendiness" type="u16" c-bitfield-offset="14" c-bitfield-width="1" bitcount="1" />
-            <integer name="rand" type="u16" bitcount="16" />
-            <integer name="words" type="EasyChatWordID[2]" bitcount="16">
+            <integer name="rand" type="u16" />
+            <integer name="words" type="EasyChatWordID[2]">
                <array-rank extent="2" />
-               <category name="easy-chat-word" />
             </integer>
          </members>
          <instructions>
@@ -1219,14 +1200,13 @@
             </counts>
          </stats>
          <members>
-            <integer name="moves" type="MoveID[4]" bitcount="9">
+            <integer name="moves" type="MoveID[4]">
                <array-rank extent="4" />
-               <category name="move-id" />
             </integer>
-            <integer name="evs" type="u8[6]" bitcount="8">
+            <integer name="evs" type="u8[6]">
                <array-rank extent="6" />
             </integer>
-            <integer name="nature" type="u8" bitcount="8" />
+            <integer name="nature" type="u8" />
          </members>
          <instructions>
             <loop array="moves" start="0" count="4" counter-var="__a">
@@ -1247,35 +1227,30 @@
             </counts>
          </stats>
          <members>
-            <integer name="lvlMode" type="BattleFacilityLvlMode" bitcount="2" min="0" max="2" />
-            <integer name="facilityClass" type="u8" bitcount="8" />
-            <integer name="winStreak" type="u16" bitcount="16" />
+            <integer name="lvlMode" type="BattleFacilityLvlMode" />
+            <integer name="facilityClass" type="u8" />
+            <integer name="winStreak" type="u16" />
             <string name="name" type="u8[8]" length="7" nonstring="false">
                <category name="player-name" />
             </string>
-            <integer name="trainerId" type="u8[4]" bitcount="8">
+            <integer name="trainerId" type="u8[4]">
                <array-rank extent="4" />
                <category name="trainer-id" />
             </integer>
-            <integer name="greeting" type="EasyChatWordID[6]" bitcount="16">
+            <integer name="greeting" type="EasyChatWordID[6]">
                <array-rank extent="6" />
-               <category name="easy-chat-word" />
             </integer>
-            <integer name="speechWon" type="EasyChatWordID[6]" bitcount="16">
+            <integer name="speechWon" type="EasyChatWordID[6]">
                <array-rank extent="6" />
-               <category name="easy-chat-word" />
             </integer>
-            <integer name="speechLost" type="EasyChatWordID[6]" bitcount="16">
+            <integer name="speechLost" type="EasyChatWordID[6]">
                <array-rank extent="6" />
-               <category name="easy-chat-word" />
             </integer>
             <struct name="party" type="BattleTowerPokemon[4]">
                <array-rank extent="4" />
             </struct>
-            <integer name="language" type="LanguageID" bitcount="4" min="0" max="7">
-               <category name="language" />
-            </integer>
-            <integer name="checksum" type="u32" bitcount="32">
+            <integer name="language" type="LanguageID" />
+            <integer name="checksum" type="u32">
                <annotation text="checksum-32" />
             </integer>
          </members>
@@ -1313,12 +1288,12 @@
          </stats>
          <members>
             <struct name="berry" type="Berry2" />
-            <integer name="itemEffect" type="u8[18]" bitcount="8">
+            <integer name="itemEffect" type="u8[18]">
                <array-rank extent="18" />
             </integer>
-            <integer name="holdEffect" type="u8" bitcount="8" />
-            <integer name="holdEffectParam" type="u8" bitcount="8" />
-            <integer name="checksum" type="u32" bitcount="32">
+            <integer name="holdEffect" type="u8" />
+            <integer name="holdEffectParam" type="u8" />
+            <integer name="checksum" type="u32">
                <annotation text="checksum-32" />
             </integer>
          </members>
@@ -1341,7 +1316,7 @@
             </counts>
          </stats>
          <members>
-            <integer name="unknownExternalDataFields1" type="u8[7]" bitcount="8">
+            <integer name="unknownExternalDataFields1" type="u8[7]">
                <array-rank extent="7" />
             </integer>
             <integer name="unknownExternalDataFields2" type="u32" bitcount="8" />
@@ -1352,7 +1327,7 @@
             <integer name="receivedAgetoCelebi" type="u32" c-bitfield-offset="91" c-bitfield-width="1" bitcount="1" />
             <integer name="unknownExternalDataFields3" type="u32" c-bitfield-offset="92" c-bitfield-width="4" bitcount="4" />
             <integer name="totalEarnedPokeCoupons" type="u32" c-bitfield-offset="96" c-bitfield-width="24" bitcount="24" />
-            <integer name="unknownExternalDataFields4" type="u8[5]" bitcount="8">
+            <integer name="unknownExternalDataFields4" type="u8[5]">
                <array-rank extent="5" />
             </integer>
          </members>
@@ -1384,26 +1359,26 @@
          <members>
             <integer name="usedBoxRS" type="u8" c-bitfield-offset="0" c-bitfield-width="1" bitcount="1" />
             <integer name="boxRSEggsUnlocked" type="u8" c-bitfield-offset="1" c-bitfield-width="2" bitcount="2" />
-            <integer name="unknownFlag1" type="u8" bitcount="8" />
-            <integer name="receivedGCNJirachi" type="u8" bitcount="8" />
-            <integer name="unknownFlag3" type="u8" bitcount="8" />
-            <integer name="unknownFlag4" type="u8" bitcount="8" />
-            <integer name="unknownFlag5" type="u8" bitcount="8" />
-            <integer name="unknownFlag6" type="u8" bitcount="8" />
-            <integer name="unknownFlag7" type="u8" bitcount="8" />
-            <integer name="unknownFlag8" type="u8" bitcount="8" />
-            <integer name="unknownFlag9" type="u8" bitcount="8" />
-            <integer name="unknownFlag10" type="u8" bitcount="8" />
-            <integer name="unknownFlag11" type="u8" bitcount="8" />
-            <integer name="unknownFlag12" type="u8" bitcount="8" />
-            <integer name="unknownFlag13" type="u8" bitcount="8" />
-            <integer name="unknownFlag14" type="u8" bitcount="8" />
-            <integer name="unknownFlag15" type="u8" bitcount="8" />
-            <integer name="unknownFlag16" type="u8" bitcount="8" />
-            <integer name="unknownFlag17" type="u8" bitcount="8" />
-            <integer name="unknownFlag18" type="u8" bitcount="8" />
-            <integer name="unknownFlag19" type="u8" bitcount="8" />
-            <integer name="unknownFlag20" type="u8" bitcount="8" />
+            <integer name="unknownFlag1" type="u8" />
+            <integer name="receivedGCNJirachi" type="u8" />
+            <integer name="unknownFlag3" type="u8" />
+            <integer name="unknownFlag4" type="u8" />
+            <integer name="unknownFlag5" type="u8" />
+            <integer name="unknownFlag6" type="u8" />
+            <integer name="unknownFlag7" type="u8" />
+            <integer name="unknownFlag8" type="u8" />
+            <integer name="unknownFlag9" type="u8" />
+            <integer name="unknownFlag10" type="u8" />
+            <integer name="unknownFlag11" type="u8" />
+            <integer name="unknownFlag12" type="u8" />
+            <integer name="unknownFlag13" type="u8" />
+            <integer name="unknownFlag14" type="u8" />
+            <integer name="unknownFlag15" type="u8" />
+            <integer name="unknownFlag16" type="u8" />
+            <integer name="unknownFlag17" type="u8" />
+            <integer name="unknownFlag18" type="u8" />
+            <integer name="unknownFlag19" type="u8" />
+            <integer name="unknownFlag20" type="u8" />
          </members>
          <instructions>
             <integer value="usedBoxRS" type="u8" bitcount="1" />
@@ -1439,21 +1414,14 @@
             </counts>
          </stats>
          <members>
-            <integer name="mon1" type="PokemonSpeciesID" bitcount="11" min="0" max="2047">
-               <category name="species-id" />
-            </integer>
-            <integer name="mon2" type="PokemonSpeciesID" bitcount="11" min="0" max="2047">
-               <category name="species-id" />
-            </integer>
-            <integer name="lastMove" type="MoveID" bitcount="9">
-               <category name="move-id" />
-            </integer>
-            <integer name="quote" type="EasyChatWordID[1]" bitcount="16">
+            <integer name="mon1" type="PokemonSpeciesID" />
+            <integer name="mon2" type="PokemonSpeciesID" />
+            <integer name="lastMove" type="MoveID" />
+            <integer name="quote" type="EasyChatWordID[1]">
                <array-rank extent="1" />
-               <category name="easy-chat-word" />
             </integer>
-            <integer name="mapnum" type="u8" bitcount="8" />
-            <integer name="battleNum" type="u8" bitcount="8" />
+            <integer name="mapnum" type="u8" />
+            <integer name="battleNum" type="u8" />
             <integer name="battleTookMoreThanOneTurn" type="u8" c-bitfield-offset="80" c-bitfield-width="1" bitcount="1" />
             <integer name="playerLostAMon" type="u8" c-bitfield-offset="81" c-bitfield-width="1" bitcount="1" />
             <integer name="playerUsedHealingItem" type="u8" c-bitfield-offset="82" c-bitfield-width="1" bitcount="1" />
@@ -1495,105 +1463,13 @@
             </counts>
          </stats>
          <members>
-            <integer name="itemId" type="ItemIDGlobal" bitcount="16">
-               <category name="global-item-id" />
-            </integer>
-            <integer name="quantity" type="u16" bitcount="16" />
+            <integer name="itemId" type="ItemIDGlobal" />
+            <integer name="quantity" type="u16" />
          </members>
          <instructions>
             <integer value="itemId" type="ItemIDGlobal" bitcount="16" />
             <integer value="quantity" type="u16" bitcount="16" />
          </instructions>
-      </struct>
-      <struct tag="LilycoveLadyContest" c-alignment="4" c-sizeof="16">
-         <stats>
-            <bitcounts total-unpacked="128" total-packed="103" />
-            <counts total="1">
-               <in-sector index="4" count="1" />
-               <in-top-level-value name="gSaveBlock1Ptr" count="1" />
-            </counts>
-         </stats>
-         <members>
-            <integer name="id" type="u8" bitcount="8" />
-            <integer name="givenPokeblock" type="bool8" bitcount="8" />
-            <integer name="numGoodPokeblocksGiven" type="u8" bitcount="8" />
-            <integer name="numOtherPokeblocksGiven" type="u8" bitcount="8" />
-            <string name="playerName" type="u8[8]" length="7" nonstring="false">
-               <category name="player-name" />
-            </string>
-            <integer name="maxSheen" type="u8" bitcount="8" />
-            <integer name="category" type="ContestCategory" bitcount="3" min="0" max="4" />
-            <integer name="language" type="LanguageID" bitcount="4" min="0" max="7">
-               <category name="language" />
-            </integer>
-         </members>
-      </struct>
-      <struct tag="LilycoveLadyFavor" c-alignment="4" c-sizeof="20">
-         <stats>
-            <bitcounts total-unpacked="160" total-packed="132" />
-            <counts total="1">
-               <in-sector index="4" count="1" />
-               <in-top-level-value name="gSaveBlock1Ptr" count="1" />
-            </counts>
-         </stats>
-         <members>
-            <integer name="id" type="u8" bitcount="8" />
-            <integer name="state" type="u8" bitcount="8" />
-            <integer name="likedItem" type="bool8" bitcount="8" />
-            <integer name="numItemsGiven" type="u8" bitcount="8" />
-            <string name="playerName" type="u8[8]" length="7" nonstring="false">
-               <category name="player-name" />
-            </string>
-            <integer name="favorId" type="u8" bitcount="8" />
-            <integer name="itemId" type="ItemIDGlobal" bitcount="16">
-               <category name="global-item-id" />
-            </integer>
-            <integer name="bestItem" type="ItemIDGlobal" bitcount="16">
-               <category name="global-item-id" />
-            </integer>
-            <integer name="language" type="LanguageID" bitcount="4" min="0" max="7">
-               <category name="language" />
-            </integer>
-         </members>
-      </struct>
-      <struct tag="LilycoveLadyQuiz" c-alignment="4" c-sizeof="44">
-         <stats>
-            <bitcounts total-unpacked="352" total-packed="324" />
-            <counts total="1">
-               <in-sector index="4" count="1" />
-               <in-top-level-value name="gSaveBlock1Ptr" count="1" />
-            </counts>
-         </stats>
-         <members>
-            <integer name="id" type="u8" bitcount="8" />
-            <integer name="state" type="u8" bitcount="8" />
-            <integer name="question" type="EasyChatWordID[9]" bitcount="16">
-               <array-rank extent="9" />
-               <category name="easy-chat-word" />
-            </integer>
-            <integer name="correctAnswer" type="EasyChatWordID" bitcount="16">
-               <category name="easy-chat-word" />
-            </integer>
-            <integer name="playerAnswer" type="EasyChatWordID" bitcount="16">
-               <category name="easy-chat-word" />
-            </integer>
-            <string name="playerName" type="u8[8]" length="7" nonstring="false">
-               <category name="player-name" />
-            </string>
-            <integer name="playerTrainerId" type="u8[4]" bitcount="8">
-               <array-rank extent="4" />
-               <category name="trainer-id" />
-            </integer>
-            <integer name="prize" type="ItemIDGlobal" bitcount="16">
-               <category name="global-item-id" />
-            </integer>
-            <integer name="waitingForChallenger" type="bool8" bitcount="8" />
-            <integer name="questionId" type="u8" bitcount="8" />
-            <integer name="prevQuestionId" type="u8" bitcount="8" />
-            <integer name="language" type="LanguageID" bitcount="4" min="0" max="7">
-               <category name="language" />
-            </integer>
-         </members>
       </struct>
       <union name="LilycoveLady" c-alignment="4" c-sizeof="64">
          <stats>
@@ -1614,6 +1490,79 @@
             </omitted>
          </members>
       </union>
+      <struct tag="LilycoveLadyContest" c-alignment="4" c-sizeof="16">
+         <stats>
+            <bitcounts total-unpacked="128" total-packed="103" />
+            <counts total="1">
+               <in-sector index="4" count="1" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="1" />
+            </counts>
+         </stats>
+         <members>
+            <integer name="id" type="u8" />
+            <integer name="givenPokeblock" type="bool8" />
+            <integer name="numGoodPokeblocksGiven" type="u8" />
+            <integer name="numOtherPokeblocksGiven" type="u8" />
+            <string name="playerName" type="u8[8]" length="7" nonstring="false">
+               <category name="player-name" />
+            </string>
+            <integer name="maxSheen" type="u8" />
+            <integer name="category" type="ContestCategory" />
+            <integer name="language" type="LanguageID" />
+         </members>
+      </struct>
+      <struct tag="LilycoveLadyFavor" c-alignment="4" c-sizeof="20">
+         <stats>
+            <bitcounts total-unpacked="160" total-packed="132" />
+            <counts total="1">
+               <in-sector index="4" count="1" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="1" />
+            </counts>
+         </stats>
+         <members>
+            <integer name="id" type="u8" />
+            <integer name="state" type="u8" />
+            <integer name="likedItem" type="bool8" />
+            <integer name="numItemsGiven" type="u8" />
+            <string name="playerName" type="u8[8]" length="7" nonstring="false">
+               <category name="player-name" />
+            </string>
+            <integer name="favorId" type="u8" />
+            <integer name="itemId" type="ItemIDGlobal" />
+            <integer name="bestItem" type="ItemIDGlobal" />
+            <integer name="language" type="LanguageID" />
+         </members>
+      </struct>
+      <struct tag="LilycoveLadyQuiz" c-alignment="4" c-sizeof="44">
+         <stats>
+            <bitcounts total-unpacked="352" total-packed="324" />
+            <counts total="1">
+               <in-sector index="4" count="1" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="1" />
+            </counts>
+         </stats>
+         <members>
+            <integer name="id" type="u8" />
+            <integer name="state" type="u8" />
+            <integer name="question" type="EasyChatWordID[9]">
+               <array-rank extent="9" />
+            </integer>
+            <integer name="correctAnswer" type="EasyChatWordID" />
+            <integer name="playerAnswer" type="EasyChatWordID" />
+            <string name="playerName" type="u8[8]" length="7" nonstring="false">
+               <category name="player-name" />
+            </string>
+            <integer name="playerTrainerId" type="u8[4]">
+               <array-rank extent="4" />
+               <category name="trainer-id" />
+            </integer>
+            <integer name="prize" type="ItemIDGlobal" />
+            <integer name="waitingForChallenger" type="bool8" />
+            <integer name="questionId" type="u8" />
+            <integer name="prevQuestionId" type="u8" />
+            <integer name="language" type="LanguageID" />
+         </members>
+      </struct>
       <struct tag="LinkBattleRecord" c-alignment="4" c-sizeof="16">
          <stats>
             <bitcounts total-unpacked="640" total-packed="600" />
@@ -1626,12 +1575,12 @@
             <string name="name" type="u8[8]" length="7" nonstring="false">
                <category name="player-name" />
             </string>
-            <integer name="trainerId" type="u16" bitcount="16">
+            <integer name="trainerId" type="u16">
                <category name="trainer-id" />
             </integer>
-            <integer name="wins" type="u16" bitcount="16" />
-            <integer name="losses" type="u16" bitcount="16" />
-            <integer name="draws" type="u16" bitcount="16" />
+            <integer name="wins" type="u16" />
+            <integer name="losses" type="u16" />
+            <integer name="draws" type="u16" />
          </members>
          <instructions>
             <string value="name" type="u8[8]" length="7" nonstring="false" />
@@ -1653,9 +1602,8 @@
             <struct name="entries" type="LinkBattleRecord[5]">
                <array-rank extent="5" />
             </struct>
-            <integer name="languages" type="LanguageID[5]" bitcount="4" min="0" max="7">
+            <integer name="languages" type="LanguageID[5]">
                <array-rank extent="5" />
-               <category name="language" />
             </integer>
          </members>
          <instructions>
@@ -1676,23 +1624,18 @@
             </counts>
          </stats>
          <members>
-            <integer name="words" type="EasyChatWordID[9]" bitcount="16">
+            <integer name="words" type="EasyChatWordID[9]">
                <array-rank extent="9" />
-               <category name="easy-chat-word" />
             </integer>
             <string name="playerName" type="u8[8]" length="7" nonstring="false">
                <category name="player-name" />
             </string>
-            <integer name="trainerId" type="u8[4]" bitcount="8">
+            <integer name="trainerId" type="u8[4]">
                <array-rank extent="4" />
                <category name="trainer-id" />
             </integer>
-            <integer name="species" type="PokemonSpeciesID" bitcount="11" min="0" max="2047">
-               <category name="species-id" />
-            </integer>
-            <integer name="itemId" type="ItemIDGlobal" bitcount="16">
-               <category name="global-item-id" />
-            </integer>
+            <integer name="species" type="PokemonSpeciesID" />
+            <integer name="itemId" type="ItemIDGlobal" />
          </members>
          <instructions>
             <loop array="words" start="0" count="9" counter-var="__a">
@@ -1715,14 +1658,12 @@
             </counts>
          </stats>
          <members>
-            <integer name="id" type="u8" bitcount="8" />
-            <integer name="songLyrics" type="EasyChatWordID[6]" bitcount="16">
+            <integer name="id" type="u8" />
+            <integer name="songLyrics" type="EasyChatWordID[6]">
                <array-rank extent="6" />
-               <category name="easy-chat-word" />
             </integer>
-            <integer name="newSongLyrics" type="EasyChatWordID[6]" bitcount="16">
+            <integer name="newSongLyrics" type="EasyChatWordID[6]">
                <array-rank extent="6" />
-               <category name="easy-chat-word" />
             </integer>
             <string name="playerName" type="u8[8]" length="7" nonstring="false">
                <category name="player-name" />
@@ -1730,14 +1671,12 @@
             <omitted name="filler_2DB6" type="u8[3]" default-value="0">
                <array-rank extent="3" />
             </omitted>
-            <integer name="playerTrainerId" type="u8[4]" bitcount="8">
+            <integer name="playerTrainerId" type="u8[4]">
                <array-rank extent="4" />
                <category name="trainer-id" />
             </integer>
-            <integer name="hasChangedSong" type="bool8" bitcount="8" />
-            <integer name="language" type="LanguageID" bitcount="4" min="0" max="7">
-               <category name="language" />
-            </integer>
+            <integer name="hasChangedSong" type="bool8" />
+            <integer name="language" type="LanguageID" />
          </members>
       </struct>
       <struct tag="MauvilleManCommon" c-alignment="4" c-sizeof="4">
@@ -1749,7 +1688,7 @@
             </counts>
          </stats>
          <members>
-            <integer name="id" type="u8" bitcount="8" />
+            <integer name="id" type="u8" />
          </members>
       </struct>
       <struct tag="MauvilleManGiddy" c-alignment="4" c-sizeof="36">
@@ -1761,19 +1700,16 @@
             </counts>
          </stats>
          <members>
-            <integer name="id" type="u8" bitcount="8" />
-            <integer name="taleCounter" type="u8" bitcount="8" />
-            <integer name="questionNum" type="u8" bitcount="8" />
-            <integer name="randomWords" type="EasyChatWordID[10]" bitcount="16">
+            <integer name="id" type="u8" />
+            <integer name="taleCounter" type="u8" />
+            <integer name="questionNum" type="u8" />
+            <integer name="randomWords" type="EasyChatWordID[10]">
                <array-rank extent="10" />
-               <category name="easy-chat-word" />
             </integer>
-            <integer name="questionList" type="u8[8]" bitcount="8">
+            <integer name="questionList" type="u8[8]">
                <array-rank extent="8" />
             </integer>
-            <integer name="language" type="LanguageID" bitcount="4" min="0" max="7">
-               <category name="language" />
-            </integer>
+            <integer name="language" type="LanguageID" />
          </members>
       </struct>
       <struct tag="MauvilleManHipster" c-alignment="4" c-sizeof="4">
@@ -1785,11 +1721,9 @@
             </counts>
          </stats>
          <members>
-            <integer name="id" type="u8" bitcount="8" />
-            <integer name="taughtWord" type="bool8" bitcount="8" />
-            <integer name="language" type="LanguageID" bitcount="4" min="0" max="7">
-               <category name="language" />
-            </integer>
+            <integer name="id" type="u8" />
+            <integer name="taughtWord" type="bool8" />
+            <integer name="language" type="LanguageID" />
          </members>
       </struct>
       <struct tag="MauvilleManStoryteller" c-alignment="4" c-sizeof="60">
@@ -1801,25 +1735,24 @@
             </counts>
          </stats>
          <members>
-            <integer name="id" type="u8" bitcount="8" />
-            <integer name="alreadyRecorded" type="bool8" bitcount="8" />
+            <integer name="id" type="u8" />
+            <integer name="alreadyRecorded" type="bool8" />
             <omitted name="filler2" type="u8[2]" default-value="0">
                <array-rank extent="2" />
             </omitted>
-            <integer name="gameStatIDs" type="u8[4]" bitcount="8">
+            <integer name="gameStatIDs" type="u8[4]">
                <array-rank extent="4" />
             </integer>
             <string name="trainerNames" type="u8[8][4]" length="7" nonstring="false">
                <array-rank extent="4" />
                <category name="player-name" />
             </string>
-            <integer name="statValues" type="u8[4][4]" bitcount="8">
+            <integer name="statValues" type="u8[4][4]">
                <array-rank extent="4" />
                <array-rank extent="4" />
             </integer>
-            <integer name="language" type="LanguageID[4]" bitcount="4" min="0" max="7">
+            <integer name="language" type="LanguageID[4]">
                <array-rank extent="4" />
-               <category name="language" />
             </integer>
          </members>
       </struct>
@@ -1832,18 +1765,17 @@
             </counts>
          </stats>
          <members>
-            <integer name="id" type="u8" bitcount="8" />
-            <integer name="decorations" type="u8[4]" bitcount="8">
+            <integer name="id" type="u8" />
+            <integer name="decorations" type="u8[4]">
                <array-rank extent="4" />
             </integer>
             <string name="playerNames" type="u8[11][4]" length="10" nonstring="false">
                <array-rank extent="4" />
                <category name="player-name-mauville-old-man" />
             </string>
-            <integer name="alreadyTraded" type="u8" bitcount="8" />
-            <integer name="language" type="LanguageID[4]" bitcount="4" min="0" max="7">
+            <integer name="alreadyTraded" type="u8" />
+            <integer name="language" type="LanguageID[4]">
                <array-rank extent="4" />
-               <category name="language" />
             </integer>
          </members>
       </struct>
@@ -1856,63 +1788,22 @@
             </counts>
          </stats>
          <members>
-            <integer name="newsCrc" type="u32" bitcount="32" />
+            <integer name="newsCrc" type="u32" />
             <struct name="news" type="WonderNews" />
-            <integer name="cardCrc" type="u32" bitcount="32" />
+            <integer name="cardCrc" type="u32" />
             <struct name="card" type="WonderCard" />
-            <integer name="cardMetadataCrc" type="u32" bitcount="32" />
+            <integer name="cardMetadataCrc" type="u32" />
             <struct name="cardMetadata" type="WonderCardMetadata" />
-            <integer name="questionnaireWords" type="EasyChatWordID[4]" bitcount="16">
+            <integer name="questionnaireWords" type="EasyChatWordID[4]">
                <array-rank extent="4" />
-               <category name="easy-chat-word" />
             </integer>
             <struct name="newsMetadata" type="WonderNewsMetadata" />
-            <integer name="trainerIds" type="u32[5][2]" bitcount="32">
+            <integer name="trainerIds" type="u32[5][2]">
                <array-rank extent="2" />
                <array-rank extent="5" />
                <category name="trainer-id" />
             </integer>
          </members>
-      </struct>
-      <struct tag="ObjectEventTemplate" c-alignment="4" c-sizeof="24">
-         <stats>
-            <bitcounts total-unpacked="12288" total-packed="10240" />
-            <counts total="64">
-               <in-sector index="1" count="46" />
-               <in-sector index="2" count="18" />
-               <in-top-level-value name="gSaveBlock1Ptr" count="64" />
-            </counts>
-         </stats>
-         <members>
-            <integer name="localId" type="u8" bitcount="8" />
-            <integer name="graphicsId" type="u8" bitcount="8" />
-            <integer name="kind" type="u8" bitcount="8" />
-            <integer name="x" type="s16" bitcount="16" />
-            <integer name="y" type="s16" bitcount="16" />
-            <integer name="elevation" type="u8" bitcount="8" />
-            <integer name="movementType" type="u8" bitcount="8" />
-            <integer name="movementRangeX" type="u16" c-bitfield-offset="80" c-bitfield-width="4" bitcount="4" />
-            <integer name="movementRangeY" type="u16" c-bitfield-offset="84" c-bitfield-width="4" bitcount="4" />
-            <integer name="trainerType" type="u16" bitcount="16" />
-            <integer name="trainerRange_berryTreeId" type="u16" bitcount="16" />
-            <pointer name="script" type="const u8*" />
-            <integer name="flagId" type="u16" bitcount="16" />
-         </members>
-         <instructions>
-            <integer value="localId" type="u8" bitcount="8" />
-            <integer value="graphicsId" type="u8" bitcount="8" />
-            <integer value="kind" type="u8" bitcount="8" />
-            <integer value="x" type="s16" bitcount="16" />
-            <integer value="y" type="s16" bitcount="16" />
-            <integer value="elevation" type="u8" bitcount="8" />
-            <integer value="movementType" type="u8" bitcount="8" />
-            <integer value="movementRangeX" type="u16" bitcount="4" />
-            <integer value="movementRangeY" type="u16" bitcount="4" />
-            <integer value="trainerType" type="u16" bitcount="16" />
-            <integer value="trainerRange_berryTreeId" type="u16" bitcount="16" />
-            <pointer value="script" type="const u8*" />
-            <integer value="flagId" type="u16" bitcount="16" />
-         </instructions>
       </struct>
       <struct tag="ObjectEvent" c-alignment="4" c-sizeof="36">
          <stats>
@@ -1951,13 +1842,13 @@
             <integer name="disableJumpLandingGroundEffect" type="u32" c-bitfield-offset="25" c-bitfield-width="1" bitcount="1" />
             <integer name="fixedPriority" type="u32" c-bitfield-offset="26" c-bitfield-width="1" bitcount="1" />
             <integer name="hideReflection" type="u32" c-bitfield-offset="27" c-bitfield-width="1" bitcount="1" />
-            <integer name="spriteId" type="u8" bitcount="8" />
-            <integer name="graphicsId" type="u8" bitcount="8" />
-            <integer name="movementType" type="u8" bitcount="8" />
-            <integer name="trainerType" type="u8" bitcount="8" />
-            <integer name="localId" type="u8" bitcount="8" />
-            <integer name="mapNum" type="MapIndexInGroup" bitcount="8" />
-            <integer name="mapGroup" type="MapGroupIndex" bitcount="8" />
+            <integer name="spriteId" type="u8" />
+            <integer name="graphicsId" type="u8" />
+            <integer name="movementType" type="u8" />
+            <integer name="trainerType" type="u8" />
+            <integer name="localId" type="u8" />
+            <integer name="mapNum" type="MapIndexInGroup" />
+            <integer name="mapGroup" type="MapGroupIndex" />
             <integer name="currentElevation" type="u8" c-bitfield-offset="88" c-bitfield-width="4" bitcount="4" />
             <integer name="previousElevation" type="u8" c-bitfield-offset="92" c-bitfield-width="4" bitcount="4" />
             <struct name="initialCoords" type="Coords16" />
@@ -1967,15 +1858,15 @@
             <integer name="movementDirection" type="u16" c-bitfield-offset="196" c-bitfield-width="4" bitcount="4" />
             <integer name="rangeX" type="u16" c-bitfield-offset="200" c-bitfield-width="4" bitcount="4" />
             <integer name="rangeY" type="u16" c-bitfield-offset="204" c-bitfield-width="4" bitcount="4" />
-            <integer name="fieldEffectSpriteId" type="u8" bitcount="8" />
-            <integer name="warpArrowSpriteId" type="u8" bitcount="8" />
-            <integer name="movementActionId" type="u8" bitcount="8" />
-            <integer name="trainerRange_berryTreeId" type="u8" bitcount="8" />
-            <integer name="currentMetatileBehavior" type="u8" bitcount="8" />
-            <integer name="previousMetatileBehavior" type="u8" bitcount="8" />
-            <integer name="previousMovementDirection" type="u8" bitcount="8" />
-            <integer name="directionSequenceIndex" type="u8" bitcount="8" />
-            <integer name="playerCopyableMovement" type="u8" bitcount="8" />
+            <integer name="fieldEffectSpriteId" type="u8" />
+            <integer name="warpArrowSpriteId" type="u8" />
+            <integer name="movementActionId" type="u8" />
+            <integer name="trainerRange_berryTreeId" type="u8" />
+            <integer name="currentMetatileBehavior" type="u8" />
+            <integer name="previousMetatileBehavior" type="u8" />
+            <integer name="previousMovementDirection" type="u8" />
+            <integer name="directionSequenceIndex" type="u8" />
+            <integer name="playerCopyableMovement" type="u8" />
          </members>
          <instructions>
             <integer value="active" type="u32" bitcount="1" />
@@ -2033,6 +1924,46 @@
             <integer value="playerCopyableMovement" type="u8" bitcount="8" />
          </instructions>
       </struct>
+      <struct tag="ObjectEventTemplate" c-alignment="4" c-sizeof="24">
+         <stats>
+            <bitcounts total-unpacked="12288" total-packed="10240" />
+            <counts total="64">
+               <in-sector index="1" count="46" />
+               <in-sector index="2" count="18" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="64" />
+            </counts>
+         </stats>
+         <members>
+            <integer name="localId" type="u8" />
+            <integer name="graphicsId" type="u8" />
+            <integer name="kind" type="u8" />
+            <integer name="x" type="s16" />
+            <integer name="y" type="s16" />
+            <integer name="elevation" type="u8" />
+            <integer name="movementType" type="u8" />
+            <integer name="movementRangeX" type="u16" c-bitfield-offset="80" c-bitfield-width="4" bitcount="4" />
+            <integer name="movementRangeY" type="u16" c-bitfield-offset="84" c-bitfield-width="4" bitcount="4" />
+            <integer name="trainerType" type="u16" />
+            <integer name="trainerRange_berryTreeId" type="u16" />
+            <pointer name="script" type="const u8*" />
+            <integer name="flagId" type="u16" />
+         </members>
+         <instructions>
+            <integer value="localId" type="u8" bitcount="8" />
+            <integer value="graphicsId" type="u8" bitcount="8" />
+            <integer value="kind" type="u8" bitcount="8" />
+            <integer value="x" type="s16" bitcount="16" />
+            <integer value="y" type="s16" bitcount="16" />
+            <integer value="elevation" type="u8" bitcount="8" />
+            <integer value="movementType" type="u8" bitcount="8" />
+            <integer value="movementRangeX" type="u16" bitcount="4" />
+            <integer value="movementRangeY" type="u16" bitcount="4" />
+            <integer value="trainerType" type="u16" bitcount="16" />
+            <integer value="trainerRange_berryTreeId" type="u16" bitcount="16" />
+            <pointer value="script" type="const u8*" />
+            <integer value="flagId" type="u16" bitcount="16" />
+         </instructions>
+      </struct>
       <union name="OldMan" c-alignment="4" c-sizeof="64">
          <stats>
             <bitcounts total-unpacked="512" total-packed="512" />
@@ -2063,14 +1994,14 @@
             </counts>
          </stats>
          <members>
-            <integer name="id" type="u8" bitcount="8" />
-            <integer name="lvlMode" type="BattleFrontierLvlModeOptional" c-bitfield-offset="8" c-bitfield-width="2" bitcount="2" min="0" max="2" />
+            <integer name="id" type="u8" />
+            <integer name="lvlMode" type="BattleFrontierLvlModeOptional" c-bitfield-offset="8" c-bitfield-width="2" />
             <integer name="questionsAnswered" type="u8" c-bitfield-offset="10" c-bitfield-width="4" bitcount="4" />
             <integer name="leadMonId" type="u8" c-bitfield-offset="14" c-bitfield-width="2" bitcount="2" />
             <integer name="party" type="u8" c-bitfield-offset="16" c-bitfield-width="3" bitcount="3" />
             <integer name="saveId" type="u8" c-bitfield-offset="19" c-bitfield-width="2" bitcount="2" />
             <omitted name="unused" type="u8" />
-            <integer name="speciesIds" type="u8[3]" bitcount="8">
+            <integer name="speciesIds" type="u8[3]">
                <array-rank extent="3" />
             </integer>
             <struct name="questions" type="ApprenticeQuestion[9]">
@@ -2101,13 +2032,13 @@
             </counts>
          </stats>
          <members>
-            <integer name="color" type="u8" bitcount="8" />
-            <integer name="spicy" type="u8" bitcount="8" />
-            <integer name="dry" type="u8" bitcount="8" />
-            <integer name="sweet" type="u8" bitcount="8" />
-            <integer name="bitter" type="u8" bitcount="8" />
-            <integer name="sour" type="u8" bitcount="8" />
-            <integer name="feel" type="u8" bitcount="8" />
+            <integer name="color" type="u8" />
+            <integer name="spicy" type="u8" />
+            <integer name="dry" type="u8" />
+            <integer name="sweet" type="u8" />
+            <integer name="bitter" type="u8" />
+            <integer name="sour" type="u8" />
+            <integer name="feel" type="u8" />
          </members>
          <instructions>
             <integer value="color" type="u8" bitcount="8" />
@@ -2128,17 +2059,17 @@
             </counts>
          </stats>
          <members>
-            <integer name="order" type="u8" bitcount="8" />
-            <integer name="mode" type="u8" bitcount="8" />
-            <integer name="nationalMagic" type="u8" bitcount="8" />
-            <integer name="unknown2" type="u8" bitcount="8" />
-            <integer name="unownPersonality" type="u32" bitcount="32" />
-            <integer name="spindaPersonality" type="u32" bitcount="32" />
-            <integer name="unknown3" type="u32" bitcount="32" />
-            <integer name="owned" type="u8[52]" bitcount="8">
+            <integer name="order" type="u8" />
+            <integer name="mode" type="u8" />
+            <integer name="nationalMagic" type="u8" />
+            <integer name="unknown2" type="u8" />
+            <integer name="unownPersonality" type="u32" />
+            <integer name="spindaPersonality" type="u32" />
+            <integer name="unknown3" type="u32" />
+            <integer name="owned" type="u8[52]">
                <array-rank extent="52" />
             </integer>
-            <integer name="seen" type="u8[52]" bitcount="8">
+            <integer name="seen" type="u8[52]">
                <array-rank extent="52" />
             </integer>
          </members>
@@ -2158,6 +2089,43 @@
             </loop>
          </instructions>
       </struct>
+      <struct tag="Pokemon" c-alignment="4" c-sizeof="100">
+         <stats>
+            <bitcounts total-unpacked="4800" total-packed="4452" />
+            <counts total="6">
+               <in-sector index="1" count="6" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="6" />
+            </counts>
+         </stats>
+         <members>
+            <transformed name="box" type="BoxPokemon" transformed-type="SerializedBoxPokemon" pack-function="PackBoxPokemonForSave" unpack-function="UnpackBoxPokemonForSave" />
+            <integer name="status" type="u32" />
+            <integer name="level" type="PokemonLevel" />
+            <integer name="mail" type="u8" />
+            <integer name="hp" type="u16" />
+            <integer name="maxHP" type="u16" />
+            <integer name="attack" type="u16" />
+            <integer name="defense" type="u16" />
+            <integer name="speed" type="u16" />
+            <integer name="spAttack" type="u16" />
+            <integer name="spDefense" type="u16" />
+         </members>
+         <instructions>
+            <transform value="box" transformed-type="SerializedBoxPokemon" transformed-value="__transformed_var_0">
+               <struct value="__transformed_var_0" type="SerializedBoxPokemon" />
+            </transform>
+            <integer value="status" type="u32" bitcount="32" />
+            <integer value="level" type="PokemonLevel" bitcount="7" min="0" max="100" />
+            <integer value="mail" type="u8" bitcount="8" />
+            <integer value="hp" type="u16" bitcount="16" />
+            <integer value="maxHP" type="u16" bitcount="16" />
+            <integer value="attack" type="u16" bitcount="16" />
+            <integer value="defense" type="u16" bitcount="16" />
+            <integer value="speed" type="u16" bitcount="16" />
+            <integer value="spAttack" type="u16" bitcount="16" />
+            <integer value="spDefense" type="u16" bitcount="16" />
+         </instructions>
+      </struct>
       <struct tag="PokemonJumpRecords" c-alignment="4" c-sizeof="16">
          <stats>
             <bitcounts total-unpacked="128" total-packed="80" />
@@ -2167,12 +2135,12 @@
             </counts>
          </stats>
          <members>
-            <integer name="jumpsInRow" type="u16" bitcount="16" />
+            <integer name="jumpsInRow" type="u16" />
             <omitted name="unused1" type="u16" default-value="0" />
-            <integer name="excellentsInRow" type="u16" bitcount="16" />
-            <integer name="gamesWithMaxPlayers" type="u16" bitcount="16" />
+            <integer name="excellentsInRow" type="u16" />
+            <integer name="gamesWithMaxPlayers" type="u16" />
             <omitted name="unused2" type="u32" default-value="0" />
-            <integer name="bestJumpScore" type="u32" bitcount="32" />
+            <integer name="bestJumpScore" type="u32" />
          </members>
          <instructions>
             <integer value="jumpsInRow" type="u16" bitcount="16" />
@@ -2182,6 +2150,28 @@
             <omitted value="unused2" type="u32" default-value="0" />
             <integer value="bestJumpScore" type="u32" bitcount="32" />
          </instructions>
+      </struct>
+      <struct tag="PokemonStorage" c-alignment="4" c-sizeof="33744">
+         <stats>
+            <bitcounts total-unpacked="269952" total-packed="245872" />
+            <counts total="1">
+               <in-sector index="5" count="1" />
+               <in-top-level-value name="gPokemonStoragePtr" count="1" />
+            </counts>
+         </stats>
+         <members>
+            <integer name="currentBox" type="u8" bitcount="4" min="0" max="13" />
+            <transformed name="boxes" type="BoxPokemon[30][14]" transformed-type="SerializedBoxPokemon" pack-function="PackBoxPokemonForSave" unpack-function="UnpackBoxPokemonForSave">
+               <array-rank extent="14" />
+               <array-rank extent="30" />
+            </transformed>
+            <string name="boxNames" type="u8[9][14]" length="8" nonstring="false">
+               <array-rank extent="14" />
+            </string>
+            <integer name="boxWallpapers" type="u8[14]">
+               <array-rank extent="14" />
+            </integer>
+         </members>
       </struct>
       <struct tag="PokemonSubstruct0" c-alignment="4" c-sizeof="12">
          <stats>
@@ -2202,15 +2192,11 @@
             </counts>
          </stats>
          <members>
-            <integer name="species" type="PokemonSpeciesID" bitcount="11" min="0" max="2047">
-               <category name="species-id" />
-            </integer>
-            <integer name="heldItem" type="ItemIDGlobal" bitcount="16">
-               <category name="global-item-id" />
-            </integer>
-            <integer name="experience" type="u32" bitcount="32" />
-            <integer name="ppBonuses" type="u8" bitcount="8" />
-            <integer name="friendship" type="u8" bitcount="8" />
+            <integer name="species" type="PokemonSpeciesID" />
+            <integer name="heldItem" type="ItemIDGlobal" />
+            <integer name="experience" type="u32" />
+            <integer name="ppBonuses" type="u8" />
+            <integer name="friendship" type="u8" />
             <omitted name="filler" type="u16" />
          </members>
          <instructions>
@@ -2240,11 +2226,10 @@
             </counts>
          </stats>
          <members>
-            <integer name="moves" type="MoveID[4]" bitcount="9">
+            <integer name="moves" type="MoveID[4]">
                <array-rank extent="4" />
-               <category name="move-id" />
             </integer>
-            <integer name="pp" type="u8[4]" bitcount="8">
+            <integer name="pp" type="u8[4]">
                <array-rank extent="4" />
             </integer>
          </members>
@@ -2256,67 +2241,6 @@
                <integer value="pp[__b]" type="u8" bitcount="8" />
             </loop>
          </instructions>
-      </struct>
-      <struct tag="Pokemon" c-alignment="4" c-sizeof="100">
-         <stats>
-            <bitcounts total-unpacked="4800" total-packed="4452" />
-            <counts total="6">
-               <in-sector index="1" count="6" />
-               <in-top-level-value name="gSaveBlock1Ptr" count="6" />
-            </counts>
-         </stats>
-         <members>
-            <transformed name="box" type="BoxPokemon" transformed-type="SerializedBoxPokemon" pack-function="PackBoxPokemonForSave" unpack-function="UnpackBoxPokemonForSave" />
-            <integer name="status" type="u32" bitcount="32" />
-            <integer name="level" type="PokemonLevel" bitcount="7" min="0" max="100">
-               <category name="pokemon-level" />
-            </integer>
-            <integer name="mail" type="u8" bitcount="8" />
-            <integer name="hp" type="u16" bitcount="16" />
-            <integer name="maxHP" type="u16" bitcount="16" />
-            <integer name="attack" type="u16" bitcount="16" />
-            <integer name="defense" type="u16" bitcount="16" />
-            <integer name="speed" type="u16" bitcount="16" />
-            <integer name="spAttack" type="u16" bitcount="16" />
-            <integer name="spDefense" type="u16" bitcount="16" />
-         </members>
-         <instructions>
-            <transform value="box" transformed-type="SerializedBoxPokemon" transformed-value="__transformed_var_0">
-               <struct value="__transformed_var_0" type="SerializedBoxPokemon" />
-            </transform>
-            <integer value="status" type="u32" bitcount="32" />
-            <integer value="level" type="PokemonLevel" bitcount="7" min="0" max="100" />
-            <integer value="mail" type="u8" bitcount="8" />
-            <integer value="hp" type="u16" bitcount="16" />
-            <integer value="maxHP" type="u16" bitcount="16" />
-            <integer value="attack" type="u16" bitcount="16" />
-            <integer value="defense" type="u16" bitcount="16" />
-            <integer value="speed" type="u16" bitcount="16" />
-            <integer value="spAttack" type="u16" bitcount="16" />
-            <integer value="spDefense" type="u16" bitcount="16" />
-         </instructions>
-      </struct>
-      <struct tag="PokemonStorage" c-alignment="4" c-sizeof="33744">
-         <stats>
-            <bitcounts total-unpacked="269952" total-packed="245872" />
-            <counts total="1">
-               <in-sector index="5" count="1" />
-               <in-top-level-value name="gPokemonStoragePtr" count="1" />
-            </counts>
-         </stats>
-         <members>
-            <integer name="currentBox" type="u8" bitcount="4" min="0" max="13" />
-            <transformed name="boxes" type="BoxPokemon[30][14]" transformed-type="SerializedBoxPokemon" pack-function="PackBoxPokemonForSave" unpack-function="UnpackBoxPokemonForSave">
-               <array-rank extent="14" />
-               <array-rank extent="30" />
-            </transformed>
-            <string name="boxNames" type="u8[9][14]" length="8" nonstring="false">
-               <array-rank extent="14" />
-            </string>
-            <integer name="boxWallpapers" type="u8[14]" bitcount="8">
-               <array-rank extent="14" />
-            </integer>
-         </members>
       </struct>
       <struct tag="PokemonSubstruct2" c-alignment="4" c-sizeof="12">
          <stats>
@@ -2337,18 +2261,18 @@
             </counts>
          </stats>
          <members>
-            <integer name="hpEV" type="u8" bitcount="8" />
-            <integer name="attackEV" type="u8" bitcount="8" />
-            <integer name="defenseEV" type="u8" bitcount="8" />
-            <integer name="speedEV" type="u8" bitcount="8" />
-            <integer name="spAttackEV" type="u8" bitcount="8" />
-            <integer name="spDefenseEV" type="u8" bitcount="8" />
-            <integer name="cool" type="u8" bitcount="8" />
-            <integer name="beauty" type="u8" bitcount="8" />
-            <integer name="cute" type="u8" bitcount="8" />
-            <integer name="smart" type="u8" bitcount="8" />
-            <integer name="tough" type="u8" bitcount="8" />
-            <integer name="sheen" type="u8" bitcount="8" />
+            <integer name="hpEV" type="u8" />
+            <integer name="attackEV" type="u8" />
+            <integer name="defenseEV" type="u8" />
+            <integer name="speedEV" type="u8" />
+            <integer name="spAttackEV" type="u8" />
+            <integer name="spDefenseEV" type="u8" />
+            <integer name="cool" type="u8" />
+            <integer name="beauty" type="u8" />
+            <integer name="cute" type="u8" />
+            <integer name="smart" type="u8" />
+            <integer name="tough" type="u8" />
+            <integer name="sheen" type="u8" />
          </members>
          <instructions>
             <integer value="hpEV" type="u8" bitcount="8" />
@@ -2384,11 +2308,9 @@
             </counts>
          </stats>
          <members>
-            <integer name="pokerus" type="u8" bitcount="8" />
-            <integer name="metLocation" type="MetLocation" bitcount="8" />
-            <integer name="metLevel" type="PokemonLevel" c-bitfield-offset="16" c-bitfield-width="7" bitcount="7" min="0" max="100">
-               <category name="pokemon-level" />
-            </integer>
+            <integer name="pokerus" type="u8" />
+            <integer name="metLocation" type="MetLocation" />
+            <integer name="metLevel" type="PokemonLevel" c-bitfield-offset="16" c-bitfield-width="7" />
             <integer name="metGame" type="u16" c-bitfield-offset="23" c-bitfield-width="4" bitcount="4">
                <category name="game-id" />
             </integer>
@@ -2469,9 +2391,9 @@
             </counts>
          </stats>
          <members>
-            <integer name="kind" type="u8" bitcount="8" />
-            <integer name="state" type="u8" bitcount="8" />
-            <integer name="dayCountdown" type="u16" bitcount="16" />
+            <integer name="kind" type="u8" />
+            <integer name="state" type="u8" />
+            <integer name="dayCountdown" type="u16" />
          </members>
          <instructions>
             <integer value="kind" type="u8" bitcount="8" />
@@ -2488,12 +2410,11 @@
             </counts>
          </stats>
          <members>
-            <integer name="itemId" type="ItemIDGlobal[10][2]" bitcount="16">
+            <integer name="itemId" type="ItemIDGlobal[10][2]">
                <array-rank extent="2" />
                <array-rank extent="10" />
-               <category name="global-item-id" />
             </integer>
-            <integer name="quantity" type="u8[10][2]" bitcount="8">
+            <integer name="quantity" type="u8[10][2]">
                <array-rank extent="2" />
                <array-rank extent="10" />
             </integer>
@@ -2511,6 +2432,25 @@
             </loop>
          </instructions>
       </struct>
+      <struct tag="RamScript" c-alignment="4" c-sizeof="1004">
+         <stats>
+            <bitcounts total-unpacked="8032" total-packed="8024" />
+            <counts total="1">
+               <in-sector index="4" count="1" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="1" />
+            </counts>
+         </stats>
+         <members>
+            <integer name="checksum" type="u32">
+               <annotation text="checksum-crc16" />
+            </integer>
+            <struct name="data" type="RamScriptData" />
+         </members>
+         <instructions>
+            <integer value="checksum" type="u32" bitcount="32" />
+            <struct value="data" type="RamScriptData" />
+         </instructions>
+      </struct>
       <struct tag="RamScriptData" c-alignment="4" c-sizeof="1000">
          <stats>
             <bitcounts total-unpacked="8000" total-packed="7992" />
@@ -2520,11 +2460,11 @@
             </counts>
          </stats>
          <members>
-            <integer name="magic" type="u8" bitcount="8" />
-            <integer name="mapGroup" type="MapGroupIndex" bitcount="8" />
-            <integer name="mapNum" type="MapIndexInGroup" bitcount="8" />
-            <integer name="objectId" type="u8" bitcount="8" />
-            <integer name="script" type="u8[995]" bitcount="8">
+            <integer name="magic" type="u8" />
+            <integer name="mapGroup" type="MapGroupIndex" />
+            <integer name="mapNum" type="MapIndexInGroup" />
+            <integer name="objectId" type="u8" />
+            <integer name="script" type="u8[995]">
                <array-rank extent="995" />
             </integer>
          </members>
@@ -2538,25 +2478,6 @@
             </loop>
          </instructions>
       </struct>
-      <struct tag="RamScript" c-alignment="4" c-sizeof="1004">
-         <stats>
-            <bitcounts total-unpacked="8032" total-packed="8024" />
-            <counts total="1">
-               <in-sector index="4" count="1" />
-               <in-top-level-value name="gSaveBlock1Ptr" count="1" />
-            </counts>
-         </stats>
-         <members>
-            <integer name="checksum" type="u32" bitcount="32">
-               <annotation text="checksum-crc16" />
-            </integer>
-            <struct name="data" type="RamScriptData" />
-         </members>
-         <instructions>
-            <integer value="checksum" type="u32" bitcount="32" />
-            <struct value="data" type="RamScriptData" />
-         </instructions>
-      </struct>
       <struct tag="RankingHall1P" c-alignment="4" c-sizeof="16">
          <stats>
             <bitcounts total-unpacked="6912" total-packed="5832" />
@@ -2566,17 +2487,15 @@
             </counts>
          </stats>
          <members>
-            <integer name="id" type="u8[4]" bitcount="8">
+            <integer name="id" type="u8[4]">
                <array-rank extent="4" />
                <category name="trainer-id" />
             </integer>
-            <integer name="winStreak" type="u16" bitcount="16" />
+            <integer name="winStreak" type="u16" />
             <string name="name" type="u8[8]" length="7" nonstring="false">
                <category name="player-name" />
             </string>
-            <integer name="language" type="LanguageID" bitcount="4" min="0" max="7">
-               <category name="language" />
-            </integer>
+            <integer name="language" type="LanguageID" />
          </members>
          <instructions>
             <loop array="id" start="0" count="4" counter-var="__a">
@@ -2596,24 +2515,22 @@
             </counts>
          </stats>
          <members>
-            <integer name="id1" type="u8[4]" bitcount="8">
+            <integer name="id1" type="u8[4]">
                <array-rank extent="4" />
                <category name="trainer-id" />
             </integer>
-            <integer name="id2" type="u8[4]" bitcount="8">
+            <integer name="id2" type="u8[4]">
                <array-rank extent="4" />
                <category name="trainer-id" />
             </integer>
-            <integer name="winStreak" type="u16" bitcount="16" />
+            <integer name="winStreak" type="u16" />
             <string name="name1" type="u8[8]" length="7" nonstring="false">
                <category name="player-name" />
             </string>
             <string name="name2" type="u8[8]" length="7" nonstring="false">
                <category name="player-name" />
             </string>
-            <integer name="language" type="LanguageID" bitcount="4" min="0" max="7">
-               <category name="language" />
-            </integer>
+            <integer name="language" type="LanguageID" />
          </members>
          <instructions>
             <loop array="id1" start="0" count="4" counter-var="__a">
@@ -2626,33 +2543,6 @@
             <string value="name1" type="u8[8]" length="7" nonstring="false" />
             <string value="name2" type="u8[8]" length="7" nonstring="false" />
             <integer value="language" type="LanguageID" bitcount="4" min="0" max="7" />
-         </instructions>
-      </struct>
-      <struct tag="RecordMixingGiftData" c-alignment="4" c-sizeof="12">
-         <stats>
-            <bitcounts total-unpacked="96" total-packed="96" />
-            <counts total="1">
-               <in-sector index="4" count="1" />
-               <in-top-level-value name="gSaveBlock1Ptr" count="1" />
-            </counts>
-         </stats>
-         <members>
-            <integer name="unk0" type="u8" bitcount="8" />
-            <integer name="quantity" type="u8" bitcount="8" />
-            <integer name="itemId" type="ItemIDGlobal" bitcount="16">
-               <category name="global-item-id" />
-            </integer>
-            <integer name="filler4" type="u8[8]" bitcount="8">
-               <array-rank extent="8" />
-            </integer>
-         </members>
-         <instructions>
-            <integer value="unk0" type="u8" bitcount="8" />
-            <integer value="quantity" type="u8" bitcount="8" />
-            <integer value="itemId" type="ItemIDGlobal" bitcount="16" />
-            <loop array="filler4" start="0" count="8" counter-var="__a">
-               <integer value="filler4[__a]" type="u8" bitcount="8" />
-            </loop>
          </instructions>
       </struct>
       <struct tag="RecordMixingGift" c-alignment="4" c-sizeof="16">
@@ -2674,6 +2564,31 @@
             <struct value="data" type="RecordMixingGiftData" />
          </instructions>
       </struct>
+      <struct tag="RecordMixingGiftData" c-alignment="4" c-sizeof="12">
+         <stats>
+            <bitcounts total-unpacked="96" total-packed="96" />
+            <counts total="1">
+               <in-sector index="4" count="1" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="1" />
+            </counts>
+         </stats>
+         <members>
+            <integer name="unk0" type="u8" />
+            <integer name="quantity" type="u8" />
+            <integer name="itemId" type="ItemIDGlobal" />
+            <integer name="filler4" type="u8[8]">
+               <array-rank extent="8" />
+            </integer>
+         </members>
+         <instructions>
+            <integer value="unk0" type="u8" bitcount="8" />
+            <integer value="quantity" type="u8" bitcount="8" />
+            <integer value="itemId" type="ItemIDGlobal" bitcount="16" />
+            <loop array="filler4" start="0" count="8" counter-var="__a">
+               <integer value="filler4[__a]" type="u8" bitcount="8" />
+            </loop>
+         </instructions>
+      </struct>
       <struct tag="RentalMon" c-alignment="4" c-sizeof="12">
          <stats>
             <bitcounts total-unpacked="576" total-packed="354" />
@@ -2683,12 +2598,10 @@
             </counts>
          </stats>
          <members>
-            <integer name="monId" type="PokemonSpeciesID" bitcount="11" min="0" max="2047">
-               <category name="species-id" />
-            </integer>
-            <integer name="personality" type="PokemonPersonality" bitcount="32" />
-            <integer name="ivs" type="u8" bitcount="8" />
-            <integer name="abilityNum" type="u8" bitcount="8" />
+            <integer name="monId" type="PokemonSpeciesID" />
+            <integer name="personality" type="PokemonPersonality" />
+            <integer name="ivs" type="u8" />
+            <integer name="abilityNum" type="u8" />
          </members>
          <instructions>
             <integer value="monId" type="PokemonSpeciesID" bitcount="11" min="0" max="2047" />
@@ -2706,22 +2619,18 @@
             </counts>
          </stats>
          <members>
-            <integer name="ivs" type="u32" bitcount="32" />
-            <integer name="personality" type="PokemonPersonality" bitcount="32" />
-            <integer name="species" type="PokemonSpeciesID" bitcount="11" min="0" max="2047">
-               <category name="species-id" />
-            </integer>
-            <integer name="hp" type="u16" bitcount="16" />
-            <integer name="level" type="PokemonLevel" bitcount="7" min="0" max="100">
-               <category name="pokemon-level" />
-            </integer>
-            <integer name="status" type="u8" bitcount="8" />
-            <integer name="cool" type="u8" bitcount="8" />
-            <integer name="beauty" type="u8" bitcount="8" />
-            <integer name="cute" type="u8" bitcount="8" />
-            <integer name="smart" type="u8" bitcount="8" />
-            <integer name="tough" type="u8" bitcount="8" />
-            <integer name="active" type="bool8" bitcount="8" />
+            <integer name="ivs" type="u32" />
+            <integer name="personality" type="PokemonPersonality" />
+            <integer name="species" type="PokemonSpeciesID" />
+            <integer name="hp" type="u16" />
+            <integer name="level" type="PokemonLevel" />
+            <integer name="status" type="u8" />
+            <integer name="cool" type="u8" />
+            <integer name="beauty" type="u8" />
+            <integer name="cute" type="u8" />
+            <integer name="smart" type="u8" />
+            <integer name="tough" type="u8" />
+            <integer name="active" type="bool8" />
             <omitted name="filler" type="u8[8]" default-value="0">
                <array-rank extent="8" />
             </omitted>
@@ -2764,23 +2673,21 @@
             <struct name="dynamicWarp" type="WarpData" />
             <struct name="lastHealLocation" type="WarpData" />
             <struct name="escapeWarp" type="WarpData" />
-            <integer name="savedMusic" type="u16" bitcount="16" />
-            <integer name="weather" type="u8" bitcount="8" />
-            <integer name="weatherCycleStage" type="u8" bitcount="8" />
-            <integer name="flashLevel" type="u8" bitcount="8" />
-            <integer name="mapLayoutId" type="u16" bitcount="16" />
-            <integer name="mapView" type="u16[256]" bitcount="16">
+            <integer name="savedMusic" type="u16" />
+            <integer name="weather" type="u8" />
+            <integer name="weatherCycleStage" type="u8" />
+            <integer name="flashLevel" type="u8" />
+            <integer name="mapLayoutId" type="u16" />
+            <integer name="mapView" type="u16[256]">
                <array-rank extent="256" />
             </integer>
             <integer name="playerPartyCount" type="u8" bitcount="3" min="0" max="6" />
             <struct name="playerParty" type="Pokemon[6]">
                <array-rank extent="6" />
             </struct>
-            <integer name="money" type="u32" bitcount="32" />
-            <integer name="coins" type="u16" bitcount="16" />
-            <integer name="registeredItem" type="ItemIDGlobal" bitcount="16">
-               <category name="global-item-id" />
-            </integer>
+            <integer name="money" type="u32" />
+            <integer name="coins" type="u16" />
+            <integer name="registeredItem" type="ItemIDGlobal" />
             <struct name="pcItems" type="ItemSlot[50]">
                <array-rank extent="50" />
             </struct>
@@ -2802,17 +2709,17 @@
             <struct name="pokeblocks" type="Pokeblock[40]">
                <array-rank extent="40" />
             </struct>
-            <integer name="seen1" type="u8[52]" bitcount="8">
+            <integer name="seen1" type="u8[52]">
                <array-rank extent="52" />
             </integer>
-            <integer name="berryBlenderRecords" type="u16[3]" bitcount="16">
+            <integer name="berryBlenderRecords" type="u16[3]">
                <array-rank extent="3" />
             </integer>
             <omitted name="unused_9C2" type="u8[6]" default-value="0">
                <array-rank extent="6" />
             </omitted>
-            <integer name="trainerRematchStepCounter" type="u16" bitcount="16" />
-            <integer name="trainerRematches" type="u8[100]" bitcount="8">
+            <integer name="trainerRematchStepCounter" type="u16" />
+            <integer name="trainerRematches" type="u8[100]">
                <array-rank extent="100" />
             </integer>
             <struct name="objectEvents" type="ObjectEvent[16]">
@@ -2821,13 +2728,13 @@
             <struct name="objectEventTemplates" type="ObjectEventTemplate[64]">
                <array-rank extent="64" />
             </struct>
-            <integer name="flags" type="u8[300]" bitcount="8">
+            <integer name="flags" type="u8[300]">
                <array-rank extent="300" />
             </integer>
-            <integer name="vars" type="u16[256]" bitcount="16">
+            <integer name="vars" type="u16[256]">
                <array-rank extent="256" />
             </integer>
-            <integer name="gameStats" type="u32[64]" bitcount="32">
+            <integer name="gameStats" type="u32[64]">
                <array-rank extent="64" />
             </integer>
             <struct name="berryTrees" type="BerryTree[128]">
@@ -2836,34 +2743,34 @@
             <struct name="secretBases" type="SecretBase[20]">
                <array-rank extent="20" />
             </struct>
-            <integer name="playerRoomDecorations" type="u8[12]" bitcount="8">
+            <integer name="playerRoomDecorations" type="u8[12]">
                <array-rank extent="12" />
             </integer>
-            <integer name="playerRoomDecorationPositions" type="u8[12]" bitcount="8">
+            <integer name="playerRoomDecorationPositions" type="u8[12]">
                <array-rank extent="12" />
             </integer>
-            <integer name="decorationDesks" type="u8[10]" bitcount="8">
+            <integer name="decorationDesks" type="u8[10]">
                <array-rank extent="10" />
             </integer>
-            <integer name="decorationChairs" type="u8[10]" bitcount="8">
+            <integer name="decorationChairs" type="u8[10]">
                <array-rank extent="10" />
             </integer>
-            <integer name="decorationPlants" type="u8[10]" bitcount="8">
+            <integer name="decorationPlants" type="u8[10]">
                <array-rank extent="10" />
             </integer>
-            <integer name="decorationOrnaments" type="u8[30]" bitcount="8">
+            <integer name="decorationOrnaments" type="u8[30]">
                <array-rank extent="30" />
             </integer>
-            <integer name="decorationMats" type="u8[30]" bitcount="8">
+            <integer name="decorationMats" type="u8[30]">
                <array-rank extent="30" />
             </integer>
-            <integer name="decorationPosters" type="u8[10]" bitcount="8">
+            <integer name="decorationPosters" type="u8[10]">
                <array-rank extent="10" />
             </integer>
-            <integer name="decorationDolls" type="u8[40]" bitcount="8">
+            <integer name="decorationDolls" type="u8[40]">
                <array-rank extent="40" />
             </integer>
-            <integer name="decorationCushions" type="u8[10]" bitcount="8">
+            <integer name="decorationCushions" type="u8[10]">
                <array-rank extent="10" />
             </integer>
             <buffer name="tvShows" type="TVShow[25]" bytecount="36">
@@ -2872,44 +2779,35 @@
             <struct name="pokeNews" type="PokeNews[16]">
                <array-rank extent="16" />
             </struct>
-            <integer name="outbreakPokemonSpecies" type="PokemonSpeciesID" bitcount="11" min="0" max="2047">
-               <category name="species-id" />
-            </integer>
-            <integer name="outbreakLocationMapNum" type="MapIndexInGroup" bitcount="8" />
-            <integer name="outbreakLocationMapGroup" type="MapGroupIndex" bitcount="8" />
-            <integer name="outbreakPokemonLevel" type="PokemonLevel" bitcount="7" min="0" max="100">
-               <category name="pokemon-level" />
-            </integer>
-            <integer name="outbreakUnused1" type="u8" bitcount="8" />
-            <integer name="outbreakUnused2" type="u16" bitcount="16" />
-            <integer name="outbreakPokemonMoves" type="MoveID[4]" bitcount="9">
+            <integer name="outbreakPokemonSpecies" type="PokemonSpeciesID" />
+            <integer name="outbreakLocationMapNum" type="MapIndexInGroup" />
+            <integer name="outbreakLocationMapGroup" type="MapGroupIndex" />
+            <integer name="outbreakPokemonLevel" type="PokemonLevel" />
+            <integer name="outbreakUnused1" type="u8" />
+            <integer name="outbreakUnused2" type="u16" />
+            <integer name="outbreakPokemonMoves" type="MoveID[4]">
                <array-rank extent="4" />
-               <category name="move-id" />
             </integer>
-            <integer name="outbreakUnused3" type="u8" bitcount="8" />
-            <integer name="outbreakPokemonProbability" type="u8" bitcount="8" />
-            <integer name="outbreakDaysLeft" type="u16" bitcount="16" />
+            <integer name="outbreakUnused3" type="u8" />
+            <integer name="outbreakPokemonProbability" type="u8" />
+            <integer name="outbreakDaysLeft" type="u16" />
             <struct name="gabbyAndTyData" type="GabbyAndTyData" />
-            <integer name="easyChatProfile" type="EasyChatWordID[6]" bitcount="16">
+            <integer name="easyChatProfile" type="EasyChatWordID[6]">
                <array-rank extent="6" />
-               <category name="easy-chat-word" />
             </integer>
-            <integer name="easyChatBattleStart" type="EasyChatWordID[6]" bitcount="16">
+            <integer name="easyChatBattleStart" type="EasyChatWordID[6]">
                <array-rank extent="6" />
-               <category name="easy-chat-word" />
             </integer>
-            <integer name="easyChatBattleWon" type="EasyChatWordID[6]" bitcount="16">
+            <integer name="easyChatBattleWon" type="EasyChatWordID[6]">
                <array-rank extent="6" />
-               <category name="easy-chat-word" />
             </integer>
-            <integer name="easyChatBattleLost" type="EasyChatWordID[6]" bitcount="16">
+            <integer name="easyChatBattleLost" type="EasyChatWordID[6]">
                <array-rank extent="6" />
-               <category name="easy-chat-word" />
             </integer>
             <struct name="mail" type="Mail[16]">
                <array-rank extent="16" />
             </struct>
-            <integer name="unlockedTrendySayings" type="u8[5]" bitcount="8">
+            <integer name="unlockedTrendySayings" type="u8[5]">
                <array-rank extent="5" />
             </integer>
             <buffer name="oldMan" type="OldMan" bytecount="64" />
@@ -2921,7 +2819,7 @@
             </struct>
             <struct name="daycare" type="DayCare" />
             <struct name="linkBattleRecords" type="LinkBattleRecords" />
-            <integer name="giftRibbons" type="u8[11]" bitcount="8">
+            <integer name="giftRibbons" type="u8[11]">
                <array-rank extent="11" />
             </integer>
             <struct name="externalEventData" type="ExternalEventData" />
@@ -2932,12 +2830,12 @@
             <omitted name="unused_3598" type="u8[384]" default-value="0">
                <array-rank extent="384" />
             </omitted>
-            <integer name="trainerHillTimes" type="u32[4]" bitcount="32">
+            <integer name="trainerHillTimes" type="u32[4]">
                <array-rank extent="4" />
             </integer>
             <struct name="ramScript" type="RamScript" />
             <struct name="recordMixingGift" type="RecordMixingGift" />
-            <integer name="seen2" type="u8[52]" bitcount="8">
+            <integer name="seen2" type="u8[52]">
                <array-rank extent="52" />
             </integer>
             <union-internal-tag name="lilycoveLady" type="LilycoveLady" tag="id" />
@@ -2966,19 +2864,17 @@
             <string name="playerName" type="u8[8]" length="7" nonstring="false">
                <category name="player-name" />
             </string>
-            <integer name="playerGender" type="PlayerGender" bitcount="1" min="0" max="1">
-               <category name="player-gender" />
-            </integer>
-            <integer name="specialSaveWarpFlags" type="u8" bitcount="8" />
-            <integer name="playerTrainerId" type="u8[4]" bitcount="8">
+            <integer name="playerGender" type="PlayerGender" />
+            <integer name="specialSaveWarpFlags" type="u8" />
+            <integer name="playerTrainerId" type="u8[4]">
                <array-rank extent="4" />
                <category name="trainer-id" />
             </integer>
-            <integer name="playTimeHours" type="u16" bitcount="16" />
+            <integer name="playTimeHours" type="u16" />
             <integer name="playTimeMinutes" type="u8" bitcount="6" min="0" max="60" />
             <integer name="playTimeSeconds" type="u8" bitcount="6" min="0" max="60" />
-            <integer name="playTimeVBlanks" type="u8" bitcount="8" />
-            <integer name="optionsButtonMode" type="u8" bitcount="8" />
+            <integer name="playTimeVBlanks" type="u8" />
+            <integer name="optionsButtonMode" type="u8" />
             <integer name="optionsTextSpeed" type="u16" c-bitfield-offset="160" c-bitfield-width="3" bitcount="3" />
             <integer name="optionsWindowFrameType" type="u16" c-bitfield-offset="163" c-bitfield-width="5" bitcount="5" />
             <integer name="optionsSound" type="u16" c-bitfield-offset="168" c-bitfield-width="1" bitcount="1" />
@@ -2991,8 +2887,8 @@
             </omitted>
             <struct name="localTimeOffset" type="Time" />
             <struct name="lastBerryTreeUpdate" type="Time" />
-            <integer name="gcnLinkFlags" type="u32" bitcount="32" />
-            <integer name="encryptionKey" type="u32" bitcount="32" />
+            <integer name="gcnLinkFlags" type="u32" />
+            <integer name="encryptionKey" type="u32" />
             <struct name="playerApprentice" type="PlayersApprentice" />
             <struct name="apprentices" type="Apprentice[4]">
                <array-rank extent="4" />
@@ -3009,7 +2905,7 @@
                <array-rank extent="2" />
                <array-rank extent="3" />
             </struct>
-            <integer name="contestLinkResults" type="u16[4][5]" bitcount="16">
+            <integer name="contestLinkResults" type="u16[4][5]">
                <array-rank extent="5" />
                <array-rank extent="4" />
             </integer>
@@ -3065,60 +2961,6 @@
             <struct value="frontier" type="BattleFrontier" />
          </instructions>
       </struct>
-      <struct tag="SecretBaseParty" c-alignment="4" c-sizeof="108">
-         <stats>
-            <bitcounts total-unpacked="17280" total-packed="13200" />
-            <counts total="20">
-               <in-sector index="2" count="13" />
-               <in-sector index="3" count="7" />
-               <in-top-level-value name="gSaveBlock1Ptr" count="20" />
-            </counts>
-         </stats>
-         <members>
-            <integer name="personality" type="PokemonPersonality[6]" bitcount="32">
-               <array-rank extent="6" />
-            </integer>
-            <integer name="moves" type="MoveID[24]" bitcount="9">
-               <array-rank extent="24" />
-               <category name="move-id" />
-            </integer>
-            <integer name="species" type="PokemonSpeciesID[6]" bitcount="11" min="0" max="2047">
-               <array-rank extent="6" />
-               <category name="species-id" />
-            </integer>
-            <integer name="heldItems" type="ItemIDGlobal[6]" bitcount="16">
-               <array-rank extent="6" />
-               <category name="global-item-id" />
-            </integer>
-            <integer name="levels" type="PokemonLevel[6]" bitcount="7" min="0" max="100">
-               <array-rank extent="6" />
-               <category name="pokemon-level" />
-            </integer>
-            <integer name="EVs" type="u8[6]" bitcount="8">
-               <array-rank extent="6" />
-            </integer>
-         </members>
-         <instructions>
-            <loop array="personality" start="0" count="6" counter-var="__a">
-               <integer value="personality[__a]" type="PokemonPersonality" bitcount="32" />
-            </loop>
-            <loop array="moves" start="0" count="24" counter-var="__b">
-               <integer value="moves[__b]" type="MoveID" bitcount="9" />
-            </loop>
-            <loop array="species" start="0" count="6" counter-var="__c">
-               <integer value="species[__c]" type="PokemonSpeciesID" bitcount="11" min="0" max="2047" />
-            </loop>
-            <loop array="heldItems" start="0" count="6" counter-var="__d">
-               <integer value="heldItems[__d]" type="ItemIDGlobal" bitcount="16" />
-            </loop>
-            <loop array="levels" start="0" count="6" counter-var="__e">
-               <integer value="levels[__e]" type="PokemonLevel" bitcount="7" min="0" max="100" />
-            </loop>
-            <loop array="EVs" start="0" count="6" counter-var="__f">
-               <integer value="EVs[__f]" type="u8" bitcount="8" />
-            </loop>
-         </instructions>
-      </struct>
       <struct tag="SecretBase" c-alignment="4" c-sizeof="160">
          <stats>
             <bitcounts total-unpacked="25600" total-packed="21120" />
@@ -3129,30 +2971,26 @@
             </counts>
          </stats>
          <members>
-            <integer name="secretBaseId" type="u8" bitcount="8" />
+            <integer name="secretBaseId" type="u8" />
             <integer name="toRegister" type="bool8" c-bitfield-offset="8" c-bitfield-width="4" bitcount="4" />
-            <integer name="gender" type="PlayerGender" c-bitfield-offset="12" c-bitfield-width="1" bitcount="1" min="0" max="1">
-               <category name="player-gender" />
-            </integer>
+            <integer name="gender" type="PlayerGender" c-bitfield-offset="12" c-bitfield-width="1" />
             <integer name="battledOwnerToday" type="u8" c-bitfield-offset="13" c-bitfield-width="1" bitcount="1" />
             <integer name="registryStatus" type="u8" c-bitfield-offset="14" c-bitfield-width="2" bitcount="2" />
             <string name="trainerName" type="u8[7]" length="7" nonstring="true">
                <category name="player-name" />
             </string>
-            <integer name="trainerId" type="u8[4]" bitcount="8">
+            <integer name="trainerId" type="u8[4]">
                <array-rank extent="4" />
                <category name="trainer-id" />
             </integer>
-            <integer name="language" type="LanguageID" bitcount="4" min="0" max="7">
-               <category name="language" />
-            </integer>
-            <integer name="numSecretBasesReceived" type="u16" bitcount="16" />
-            <integer name="numTimesEntered" type="u8" bitcount="8" />
-            <integer name="unused" type="u8" bitcount="8" />
-            <integer name="decorations" type="u8[16]" bitcount="8">
+            <integer name="language" type="LanguageID" />
+            <integer name="numSecretBasesReceived" type="u16" />
+            <integer name="numTimesEntered" type="u8" />
+            <integer name="unused" type="u8" />
+            <integer name="decorations" type="u8[16]">
                <array-rank extent="16" />
             </integer>
-            <integer name="decorationPositions" type="u8[16]" bitcount="8">
+            <integer name="decorationPositions" type="u8[16]">
                <array-rank extent="16" />
             </integer>
             <struct name="party" type="SecretBaseParty" />
@@ -3180,16 +3018,64 @@
             <struct value="party" type="SecretBaseParty" />
          </instructions>
       </struct>
+      <struct tag="SecretBaseParty" c-alignment="4" c-sizeof="108">
+         <stats>
+            <bitcounts total-unpacked="17280" total-packed="13200" />
+            <counts total="20">
+               <in-sector index="2" count="13" />
+               <in-sector index="3" count="7" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="20" />
+            </counts>
+         </stats>
+         <members>
+            <integer name="personality" type="PokemonPersonality[6]">
+               <array-rank extent="6" />
+            </integer>
+            <integer name="moves" type="MoveID[24]">
+               <array-rank extent="24" />
+            </integer>
+            <integer name="species" type="PokemonSpeciesID[6]">
+               <array-rank extent="6" />
+            </integer>
+            <integer name="heldItems" type="ItemIDGlobal[6]">
+               <array-rank extent="6" />
+            </integer>
+            <integer name="levels" type="PokemonLevel[6]">
+               <array-rank extent="6" />
+            </integer>
+            <integer name="EVs" type="u8[6]">
+               <array-rank extent="6" />
+            </integer>
+         </members>
+         <instructions>
+            <loop array="personality" start="0" count="6" counter-var="__a">
+               <integer value="personality[__a]" type="PokemonPersonality" bitcount="32" />
+            </loop>
+            <loop array="moves" start="0" count="24" counter-var="__b">
+               <integer value="moves[__b]" type="MoveID" bitcount="9" />
+            </loop>
+            <loop array="species" start="0" count="6" counter-var="__c">
+               <integer value="species[__c]" type="PokemonSpeciesID" bitcount="11" min="0" max="2047" />
+            </loop>
+            <loop array="heldItems" start="0" count="6" counter-var="__d">
+               <integer value="heldItems[__d]" type="ItemIDGlobal" bitcount="16" />
+            </loop>
+            <loop array="levels" start="0" count="6" counter-var="__e">
+               <integer value="levels[__e]" type="PokemonLevel" bitcount="7" min="0" max="100" />
+            </loop>
+            <loop array="EVs" start="0" count="6" counter-var="__f">
+               <integer value="EVs[__f]" type="u8" bitcount="8" />
+            </loop>
+         </instructions>
+      </struct>
       <struct tag="SerializedBoxPokemon" c-alignment="4" c-sizeof="84">
          <members>
-            <integer name="personality" type="PokemonPersonality" bitcount="32" />
-            <integer name="otId" type="u32" bitcount="32" />
+            <integer name="personality" type="PokemonPersonality" />
+            <integer name="otId" type="u32" />
             <string name="nickname" type="u8[10]" length="10" nonstring="true">
                <category name="pokemon-name" />
             </string>
-            <integer name="language" type="LanguageID" bitcount="4" min="0" max="7">
-               <category name="language" />
-            </integer>
+            <integer name="language" type="LanguageID" />
             <integer name="isBadEgg" type="bool8" c-bitfield-offset="152" c-bitfield-width="1" bitcount="1" />
             <integer name="hasSpecies" type="bool8" c-bitfield-offset="153" c-bitfield-width="1" bitcount="1" />
             <integer name="isEgg" type="bool8" c-bitfield-offset="154" c-bitfield-width="1" bitcount="1" />
@@ -3197,8 +3083,8 @@
             <string name="otName" type="u8[7]" length="7" nonstring="true">
                <category name="player-name" />
             </string>
-            <integer name="markings" type="u8" bitcount="8" />
-            <integer name="unknown" type="u16" bitcount="16" />
+            <integer name="markings" type="u8" />
+            <integer name="unknown" type="u16" />
             <struct name="substructs" type="SerializedBoxPokemonSubstructs" />
          </members>
          <instructions>
@@ -3239,7 +3125,7 @@
             <struct name="type1" type="PokemonSubstruct1" />
             <struct name="type2" type="PokemonSubstruct2" />
             <struct name="type3" type="PokemonSubstruct3" />
-            <integer name="checksum" type="u16" bitcount="16" />
+            <integer name="checksum" type="u16" />
          </members>
          <instructions>
             <struct value="type0" type="PokemonSubstruct0" />
@@ -3258,7 +3144,7 @@
             </counts>
          </stats>
          <members>
-            <integer name="days" type="s16" bitcount="16" />
+            <integer name="days" type="s16" />
             <integer name="hours" type="s8" bitcount="6" min="-24" max="24" />
             <integer name="minutes" type="s8" bitcount="7" min="-60" max="60" />
             <integer name="seconds" type="s8" bitcount="7" min="-60" max="60" />
@@ -3279,9 +3165,9 @@
             </counts>
          </stats>
          <members>
-            <integer name="timer" type="u32" bitcount="32" />
-            <integer name="bestTime" type="u32" bitcount="32" />
-            <integer name="unk_3D6C" type="u8" bitcount="8" />
+            <integer name="timer" type="u32" />
+            <integer name="bestTime" type="u32" />
+            <integer name="unk_3D6C" type="u8" />
             <omitted name="unused" type="u8" />
             <integer name="receivedPrize" type="u16" c-bitfield-offset="80" c-bitfield-width="1" bitcount="1" />
             <integer name="checkedFinalTime" type="u16" c-bitfield-offset="81" c-bitfield-width="1" bitcount="1" />
@@ -3313,7 +3199,7 @@
             </counts>
          </stats>
          <members>
-            <integer name="trainerId" type="u32" bitcount="32">
+            <integer name="trainerId" type="u32">
                <category name="trainer-id" />
             </integer>
             <string name="trainerName" type="u8[8]" length="7" nonstring="false">
@@ -4158,13 +4044,13 @@
             </counts>
          </stats>
          <members>
-            <integer name="colors" type="u16[2]" bitcount="16">
+            <integer name="colors" type="u16[2]">
                <array-rank extent="2" />
             </integer>
             <string name="text" type="u8[16]" length="15" nonstring="false" />
-            <integer name="iconId" type="u8" bitcount="8" />
-            <integer name="patternId" type="u8" bitcount="8" />
-            <integer name="patternUnlocked" type="bool8" bitcount="8" />
+            <integer name="iconId" type="u8" />
+            <integer name="patternId" type="u8" />
+            <integer name="patternUnlocked" type="bool8" />
          </members>
          <instructions>
             <loop array="colors" start="0" count="2" counter-var="__a">
@@ -4185,11 +4071,11 @@
             </counts>
          </stats>
          <members>
-            <integer name="mapGroup" type="MapGroupIndexOptional" bitcount="8" />
-            <integer name="mapNum" type="MapIndexInGroupOptional" bitcount="8" />
-            <integer name="warpId" type="s8" bitcount="8" />
-            <integer name="x" type="s16" bitcount="16" />
-            <integer name="y" type="s16" bitcount="16" />
+            <integer name="mapGroup" type="MapGroupIndexOptional" />
+            <integer name="mapNum" type="MapIndexInGroupOptional" />
+            <integer name="warpId" type="s8" />
+            <integer name="x" type="s16" />
+            <integer name="y" type="s16" />
          </members>
          <instructions>
             <integer value="mapGroup" type="MapGroupIndexOptional" bitcount="8" />
@@ -4208,15 +4094,13 @@
             </counts>
          </stats>
          <members>
-            <integer name="flagId" type="u16" bitcount="16" />
-            <integer name="iconSpecies" type="PokemonSpeciesID" bitcount="11" min="0" max="2047">
-               <category name="species-id" />
-            </integer>
-            <integer name="idNumber" type="u32" bitcount="32" />
+            <integer name="flagId" type="u16" />
+            <integer name="iconSpecies" type="PokemonSpeciesID" />
+            <integer name="idNumber" type="u32" />
             <integer name="type" type="u8" c-bitfield-offset="64" c-bitfield-width="2" bitcount="2" />
             <integer name="bgType" type="u8" c-bitfield-offset="66" c-bitfield-width="4" bitcount="4" />
             <integer name="sendType" type="u8" c-bitfield-offset="70" c-bitfield-width="2" bitcount="2" />
-            <integer name="maxStamps" type="u8" bitcount="8" />
+            <integer name="maxStamps" type="u8" />
             <string name="titleText" type="u8[40]" length="40" nonstring="true" />
             <string name="subtitleText" type="u8[40]" length="40" nonstring="true" />
             <string name="bodyText" type="u8[40][4]" length="40" nonstring="true">
@@ -4251,13 +4135,11 @@
             </counts>
          </stats>
          <members>
-            <integer name="battlesWon" type="u16" bitcount="16" />
-            <integer name="battlesLost" type="u16" bitcount="16" />
-            <integer name="numTrades" type="u16" bitcount="16" />
-            <integer name="iconSpecies" type="PokemonSpeciesID" bitcount="11" min="0" max="2047">
-               <category name="species-id" />
-            </integer>
-            <integer name="stampData" type="u16[7][2]" bitcount="16">
+            <integer name="battlesWon" type="u16" />
+            <integer name="battlesLost" type="u16" />
+            <integer name="numTrades" type="u16" />
+            <integer name="iconSpecies" type="PokemonSpeciesID" />
+            <integer name="stampData" type="u16[7][2]">
                <array-rank extent="2" />
                <array-rank extent="7" />
             </integer>
@@ -4274,6 +4156,24 @@
             </loop>
          </instructions>
       </struct>
+      <struct tag="WonderNews" c-alignment="4" c-sizeof="444">
+         <stats>
+            <bitcounts total-unpacked="3552" total-packed="3552" />
+            <counts total="1">
+               <in-sector index="3" count="1" />
+               <in-top-level-value name="gSaveBlock1Ptr" count="1" />
+            </counts>
+         </stats>
+         <members>
+            <integer name="id" type="u16" />
+            <integer name="sendType" type="u8" />
+            <integer name="bgType" type="u8" />
+            <string name="titleText" type="u8[40]" length="40" nonstring="true" />
+            <string name="bodyText" type="u8[40][10]" length="40" nonstring="true">
+               <array-rank extent="10" />
+            </string>
+         </members>
+      </struct>
       <struct tag="WonderNewsMetadata" c-alignment="4" c-sizeof="4">
          <stats>
             <bitcounts total-unpacked="32" total-packed="16" />
@@ -4286,7 +4186,7 @@
             <integer name="newsType" type="u8" c-bitfield-offset="0" c-bitfield-width="2" bitcount="2" />
             <integer name="sentRewardCounter" type="u8" c-bitfield-offset="2" c-bitfield-width="3" bitcount="3" />
             <integer name="rewardCounter" type="u8" c-bitfield-offset="5" c-bitfield-width="3" bitcount="3" />
-            <integer name="berry" type="u8" bitcount="8" />
+            <integer name="berry" type="u8" />
          </members>
          <instructions>
             <integer value="newsType" type="u8" bitcount="2" />
@@ -4294,24 +4194,6 @@
             <integer value="rewardCounter" type="u8" bitcount="3" />
             <integer value="berry" type="u8" bitcount="8" />
          </instructions>
-      </struct>
-      <struct tag="WonderNews" c-alignment="4" c-sizeof="444">
-         <stats>
-            <bitcounts total-unpacked="3552" total-packed="3552" />
-            <counts total="1">
-               <in-sector index="3" count="1" />
-               <in-top-level-value name="gSaveBlock1Ptr" count="1" />
-            </counts>
-         </stats>
-         <members>
-            <integer name="id" type="u16" bitcount="16" />
-            <integer name="sendType" type="u8" bitcount="8" />
-            <integer name="bgType" type="u8" bitcount="8" />
-            <string name="titleText" type="u8[40]" length="40" nonstring="true" />
-            <string name="bodyText" type="u8[40][10]" length="40" nonstring="true">
-               <array-rank extent="10" />
-            </string>
-         </members>
       </struct>
    </c-types>
    <top-level-values>

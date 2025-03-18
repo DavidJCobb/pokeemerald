@@ -7,6 +7,7 @@
 #include "codegen/stats/category.h"
 #include "codegen/stats/sector.h"
 #include "codegen/decl_descriptor_pair.h"
+#include "xmlgen/integral_type_index.h"
 #include "xmlgen/xml_element.h"
 #include "gcc_wrappers/type/base.h"
 #include "gcc_wrappers/type/container.h"
@@ -41,15 +42,6 @@ namespace xmlgen {
             std::string              name;
             codegen::stats::category stats;
          };
-         struct integral_type_info {
-            gcc_wrappers::type::optional_integral canonical_node;
-            std::string canonical_name;
-            std::vector<std::string> alternate_names; // via typedefs
-            
-            size_t alignment = 0; // in bytes; 0 if not measurable in bytes
-            bool   is_signed = false;
-            size_t size      = 0; // in bytes; 0 if not measurable in bytes
-         };
          struct sector_info {
             codegen::stats::sector stats;
             owned_element          instructions;
@@ -73,7 +65,7 @@ namespace xmlgen {
          std::vector<category_info> _categories;
          std::vector<sector_info>   _sectors;
          std::vector<type_info>     _types;
-         std::vector<integral_type_info>   _integral_types;
+         integral_type_index        _integral_types;
          std::vector<top_level_identifier> _top_level_identifiers;
          
          // Used to give each loop variable a unique name and ID. We gather 
@@ -87,9 +79,6 @@ namespace xmlgen {
       protected:
          category_info& _get_or_create_category_info(std::string_view name);
          type_info& _get_or_create_type_info(gcc_wrappers::type::base);
-         
-         void _on_integral_type_seen(gcc_wrappers::type::integral);
-         void _find_integral_types_in(gcc_wrappers::type::container);
          
          std::string _loop_variable_to_string(codegen::decl_descriptor_pair) const;
          std::string _variable_to_string(codegen::decl_descriptor_pair) const;

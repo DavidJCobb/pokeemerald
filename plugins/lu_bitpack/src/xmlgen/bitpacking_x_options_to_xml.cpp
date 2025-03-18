@@ -1,6 +1,7 @@
 #include "xmlgen/bitpacking_x_options_to_xml.h"
 #include "bitpacking/data_options.h"
 #include "gcc_wrappers/type/base.h"
+#include "xmlgen/integral_type_index.h"
 namespace gw {
    using namespace gcc_wrappers;
 }

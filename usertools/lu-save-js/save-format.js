@@ -35,6 +35,9 @@ class SaveFormat {
          let type = new CIntegralTypeDefinition(this);
          type.begin_load(node);
          this.types.integrals.push(type);
+         for(let td of type.typedefs) {
+            this.types.integrals.push(td);
+         }
       }).bind(this));
       node.querySelectorAll("c-types>struct").forEach((function(node) {
          let type = new CStructDefinition(this);
@@ -75,8 +78,6 @@ class SaveFormat {
    lookup_type_by_name(name) {
       for(let type of this.types.integrals) {
          if (type.symbol == name)
-            return type;
-         if (type.typedefs.includes(name))
             return type;
       }
       for(let type of this.types.structs) {

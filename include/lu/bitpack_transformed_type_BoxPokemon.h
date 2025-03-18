@@ -18,7 +18,7 @@ struct SerializedBoxPokemonSubstructs {
 };
 
 struct SerializedBoxPokemon {
-   u32   personality;
+   PokemonPersonality personality;
    u32   otId;
    PokemonNameNoTerminator nickname;
    LanguageID language;

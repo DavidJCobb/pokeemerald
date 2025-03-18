@@ -20,13 +20,13 @@
             "flags-2.dat",
             "flags-3.dat",
             "maps.dat",
+            "misc.dat",
             "trainers.dat",
             "vars.dat"
          ],
          "shared": {
             "game-stats.dat": 1,
             "items.dat": 1,
-            "misc.dat": 1,
             "moves.dat": 1,
             "natures.dat": 1,
             "species.dat": 1

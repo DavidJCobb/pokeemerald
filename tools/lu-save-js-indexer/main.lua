@@ -77,10 +77,21 @@ local goals = {
       enums = {
          "CONTEST_CATEGORY",
          "CONTEST_RANK",
+         "FRONTIER_LVL",
          "GROWTH",
+         "OPTIONS_BATTLE_STYLE",
+         "OPTIONS_BUTTON_MODE",
+         "OPTIONS_SOUND",
+         "OPTIONS_TEXT_SPEED",
+         "VERSION", -- game versions
       },
       vars = {
          "SHINY_ODDS",
+         
+         -- gender
+         "MALE",
+         "FEMALE",
+         "GENDER_COUNT",
          
          -- Pokemon gender ratio sentinel values
          "MON_MALE",
@@ -123,6 +134,8 @@ local enum_confusables = {
    "FLAG_TEMP_REGICE_PUZZLE_STARTED",
    "FLAG_TEMP_REGICE_PUZZLE_FAILED",
    "FLAG_TEMP_HIDE_MIRAGE_ISLAND_BERRY_TREE",
+   
+   "FRONTIER_LVL_MODE_COUNT",
    
    "ITEM_HAS_EFFECT",
    "ITEM_LIST_END",

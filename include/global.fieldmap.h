@@ -1,6 +1,8 @@
 #ifndef GUARD_GLOBAL_FIELDMAP_H
 #define GUARD_GLOBAL_FIELDMAP_H
 
+#include "lu/game_typedefs.h"
+
 // Masks/shifts for blocks in the map grid
 // Map grid blocks consist of a 10 bit metatile id, a 2 bit collision value, and a 4 bit elevation value
 // This is the data stored in each data/layouts/*/map.bin file
@@ -201,8 +203,8 @@ struct ObjectEvent
     /*0x06*/ u8 movementType;
     /*0x07*/ u8 trainerType;
     /*0x08*/ u8 localId;
-    /*0x09*/ u8 mapNum;
-    /*0x0A*/ u8 mapGroup;
+    /*0x09*/ MapIndexInGroup mapNum;
+    /*0x0A*/ MapGroupIndex   mapGroup;
     /*0x0B*/ u8 currentElevation:4;
              u8 previousElevation:4;
     /*0x0C*/ struct Coords16 initialCoords;

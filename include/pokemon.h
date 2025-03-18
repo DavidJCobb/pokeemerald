@@ -134,12 +134,12 @@ struct PokemonSubstruct2
 struct PokemonSubstruct3
 {
  /* 0x00 */ u8 pokerus;
- /* 0x01 */ u8 metLocation;
+ /* 0x01 */ MetLocation metLocation;
 
- /* 0x02 */ u16 metLevel:7;
- /* 0x02 */ u16 metGame:4;
+ /* 0x02 */ PokemonLevel metLevel:7;
+ /* 0x02 */ LU_BP_CATEGORY("game-id") u16 metGame:4;
  /* 0x03 */ u16 pokeball:4;
- /* 0x03 */ u16 otGender:1;
+ /* 0x03 */ LU_BP_CATEGORY("player-gender") u16 otGender:1;
 
  /* 0x04 */ u32 hpIV:5;
  /* 0x04 */ u32 attackIV:5;
@@ -198,7 +198,7 @@ union PokemonSubstruct
 
 struct LU_BP_TRANSFORM_AND_NEVER_SPLIT(PackBoxPokemonForSave,UnpackBoxPokemonForSave) BoxPokemon
 {
-    u32 personality;
+    PokemonPersonality personality;
     u32 otId;
     PokemonNameNoTerminator nickname;
     LanguageID language;
@@ -283,15 +283,15 @@ struct BattlePokemon
     /*0x23*/ u8 unknown;
     /*0x24*/ u8 pp[MAX_MON_MOVES];
     /*0x28*/ u16 hp;
-    /*0x2A*/ u8 level;
+    /*0x2A*/ PokemonLevel level;
     /*0x2B*/ u8 friendship;
     /*0x2C*/ u16 maxHP;
-    /*0x2E*/ u16 item;
+    /*0x2E*/ ItemIDGlobal item;
     /*0x30*/ PokemonName nickname;
     /*0x3B*/ u8 ppBonuses;
     /*0x3C*/ PlayerName otName;
     /*0x44*/ u32 experience;
-    /*0x48*/ u32 personality;
+    /*0x48*/ PokemonPersonality personality;
     /*0x4C*/ u32 status1;
     /*0x50*/ u32 status2;
     /*0x54*/ u32 otId;

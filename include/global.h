@@ -260,7 +260,7 @@ struct ApprenticeMon
 struct Apprentice
 {
     u8 id:5;
-    u8 lvlMode:2;
+    BattleFacilityLvlMode lvlMode:2;
     //u8 padding1:1;
     u8 numQuestions;
     u8 number;
@@ -295,14 +295,14 @@ struct BattleTowerPokemon
     u32 spDefenseIV:5;
     u32 gap:1;
     u32 abilityNum:1;
-    u32 personality;
+    PokemonPersonality personality;
     PokemonName nickname;
     u8 friendship;
 };
 
 struct EmeraldBattleTowerRecord
 {
-    /*0x00*/ u8 lvlMode; // 0 = level 50, 1 = level 100
+    /*0x00*/ BattleFacilityLvlMode lvlMode; // 0 = level 50, 1 = level 100
     /*0x01*/ u8 facilityClass;
     /*0x02*/ u16 winStreak;
     /*0x04*/ PlayerName     name;
@@ -352,7 +352,7 @@ struct RentalMon
 {
     PokemonSpeciesID monId;
     //u8 padding1[2];
-    u32 personality;
+    PokemonPersonality personality;
     u8 ivs;
     u8 abilityNum;
     //u8 padding2[2];
@@ -376,13 +376,13 @@ struct BattleFrontier
     /*0xBEB*/ struct BattleTowerInterview towerInterview;
     /*0xBEC*/ struct BattleTowerEReaderTrainer ereaderTrainer;
     /*0xCA8*/ u8 challengeStatus;
-    /*0xCA9*/ u8 lvlMode:2;
+    /*0xCA9*/ BattleFacilityLvlMode lvlMode:2;
               u8 challengePaused:1;
               u8 disableRecordBattle:1;
               //u8 padding1:4;
     /*0xCAA*/ u16 selectedPartyMons[MAX_FRONTIER_PARTY_SIZE];
     /*0xCB2*/ u16 curChallengeBattleNum; // Battle number / room number (Pike) / floor number (Pyramid)
-    /*0xCB4*/ u16 trainerIds[20];
+    /*0xCB4*/ LU_BP_CATEGORY("trainer-id") u16 trainerIds[20];
     /*0xCDC*/ u32 winStreakActiveFlags;
     /*0xCE0*/ u16 towerWinStreaks[4][FRONTIER_LVL_MODE_COUNT];
     /*0xCF0*/ u16 towerRecordWinStreaks[4][FRONTIER_LVL_MODE_COUNT];
@@ -390,7 +390,7 @@ struct BattleFrontier
     /*0xD02*/ u16 towerSinglesStreak; // Never read
     /*0xD04*/ u16 towerNumWins; // Increments to MAX_STREAK but never read otherwise
     /*0xD06*/ u8 towerBattleOutcome;
-    /*0xD07*/ u8 towerLvlMode;
+    /*0xD07*/ BattleFacilityLvlMode towerLvlMode;
     /*0xD08*/ u8 domeAttemptedSingles50:1;
     /*0xD08*/ u8 domeAttemptedSinglesOpen:1;
     /*0xD08*/ u8 domeHasWonSingles50:1;
@@ -400,7 +400,7 @@ struct BattleFrontier
     /*0xD08*/ u8 domeHasWonDoubles50:1;
     /*0xD08*/ u8 domeHasWonDoublesOpen:1;
     /*0xD09*/ u8 domeUnused;
-    /*0xD0A*/ u8 domeLvlMode;
+    /*0xD0A*/ BattleFacilityLvlMode domeLvlMode;
     /*0xD0B*/ u8 domeBattleMode;
     /*0xD0C*/ u16 domeWinStreaks[2][FRONTIER_LVL_MODE_COUNT];
     /*0xD14*/ u16 domeRecordWinStreaks[2][FRONTIER_LVL_MODE_COUNT];
@@ -467,7 +467,7 @@ struct ApprenticeQuestion
 struct PlayersApprentice
 {
     /*0xB0*/ u8 id;
-    /*0xB1*/ u8 lvlMode:2;  //0: Unassigned, 1: Lv 50, 2: Open Lv
+    /*0xB1*/ BattleFrontierLvlModeOptional lvlMode:2;  //0: Unassigned, 1: Lv 50, 2: Open Lv
     /*0xB1*/ u8 questionsAnswered:4;
     /*0xB1*/ u8 leadMonId:2;
     /*0xB2*/ u8 party:3;
@@ -501,8 +501,8 @@ struct RankingHall2P
 
 struct SaveBlock2
 {
-    /*0x00*/ PlayerName playerName;
-    /*0x08*/ u8 playerGender; // MALE, FEMALE
+    /*0x00*/ PlayerName   playerName;
+    /*0x08*/ PlayerGender playerGender; // MALE, FEMALE
     /*0x09*/ u8 specialSaveWarpFlags;
     /*0x0A*/ TrainerID playerTrainerId;
     /*0x0E*/ u16 playTimeHours;
@@ -519,7 +519,7 @@ struct SaveBlock2
              //u16 padding1:4;
              //u16 padding2;
     /*0x18*/ struct Pokedex pokedex;
-    /*0x90*/ u8 filler_90[0x8];
+    /*0x90*/ LU_BP_OMIT u8 filler_90[0x8];
     /*0x98*/ struct Time localTimeOffset;
     /*0xA0*/ struct Time lastBerryTreeUpdate;
     /*0xA8*/ u32 gcnLinkFlags; // Read by Pokémon Colosseum/XD
@@ -539,11 +539,11 @@ extern struct SaveBlock2 *gSaveBlock2Ptr;
 
 struct SecretBaseParty
 {
-    u32 personality[PARTY_SIZE];
-    MoveID           moves[PARTY_SIZE * MAX_MON_MOVES];
-    PokemonSpeciesID species[PARTY_SIZE];
-    ItemIDGlobal     heldItems[PARTY_SIZE];
-    PokemonLevel     levels[PARTY_SIZE];
+    PokemonPersonality personality[PARTY_SIZE];
+    MoveID             moves[PARTY_SIZE * MAX_MON_MOVES];
+    PokemonSpeciesID   species[PARTY_SIZE];
+    ItemIDGlobal       heldItems[PARTY_SIZE];
+    PokemonLevel       levels[PARTY_SIZE];
     u8 EVs[PARTY_SIZE];
 };
 
@@ -551,7 +551,7 @@ struct SecretBase
 {
     /*0x1A9C*/ u8 secretBaseId;
     /*0x1A9D*/ bool8 toRegister:4;
-    /*0x1A9D*/ u8 gender:1;
+    /*0x1A9D*/ PlayerGender gender:1;
     /*0x1A9D*/ u8 battledOwnerToday:1;
     /*0x1A9D*/ u8 registryStatus:2;
     /*0x1A9E*/ PlayerNameNoTerminator trainerName;
@@ -574,8 +574,8 @@ struct SecretBase
 
 struct WarpData
 {
-    s8 mapGroup;
-    s8 mapNum;
+    MapGroupIndexOptional   mapGroup;
+    MapIndexInGroupOptional mapNum;
     s8 warpId;
     //u8 padding;
     s16 x, y;
@@ -601,8 +601,8 @@ struct Pokeblock
 struct Roamer
 {
     /*0x00*/ u32 ivs;
-    /*0x04*/ u32 personality;
-    /*0x08*/ PokemonSpeciesID species;
+    /*0x04*/ PokemonPersonality personality;
+    /*0x08*/ PokemonSpeciesID   species;
     /*0x0A*/ u16 hp;
     /*0x0C*/ PokemonLevel level;
     /*0x0D*/ u8 status;
@@ -618,8 +618,8 @@ struct Roamer
 struct RamScriptData
 {
     u8 magic;
-    u8 mapGroup;
-    u8 mapNum;
+    MapGroupIndex   mapGroup;
+    MapIndexInGroup mapNum;
     u8 objectId;
     u8 script[995];
     //u8 padding;
@@ -654,7 +654,7 @@ struct MauvilleManBard
     /*0x02*/ EasyChatWordID songLyrics[NUM_BARD_SONG_WORDS];
     /*0x0E*/ EasyChatWordID newSongLyrics[NUM_BARD_SONG_WORDS];
     /*0x1A*/ PlayerName     playerName;
-    /*0x22*/ u8 filler_2DB6[0x3];
+    /*0x22*/ LU_BP_OMIT LU_BP_DEFAULT(0) u8 filler_2DB6[0x3];
     /*0x25*/ TrainerID playerTrainerId;
     /*0x29*/ bool8 hasChangedSong;
     /*0x2A*/ LanguageID language;
@@ -665,7 +665,7 @@ struct MauvilleManStoryteller
 {
     u8 id;
     bool8 alreadyRecorded;
-    u8 filler2[2];
+    LU_BP_OMIT LU_BP_DEFAULT(0) u8 filler2[2];
     u8 gameStatIDs[NUM_STORYTELLER_TALES];
     PlayerName trainerNames[NUM_STORYTELLER_TALES];
     u8 statValues[NUM_STORYTELLER_TALES][4];
@@ -708,7 +708,7 @@ LU_BP_AS_OPAQUE_BUFFER typedef union OldMan
     struct MauvilleManHipster hipster;
     struct MauvilleOldManTrader trader;
     struct MauvilleManStoryteller storyteller;
-    u8 filler[0x40];
+    LU_BP_OMIT u8 filler[0x40];
 } OldMan;
 
 #define LINK_B_RECORDS_COUNT 5
@@ -745,12 +745,12 @@ struct RecordMixingGift
 
 struct ContestWinner
 {
-    u32 personality;
+    PokemonPersonality personality;
     LU_BP_CATEGORY("trainer-id") u32 trainerId;
-    PokemonSpeciesID species;
-    ContestCategory  contestCategory;
-    PokemonName      monName;
-    PlayerName       trainerName;
+    PokemonSpeciesID   species;
+    ContestCategory    contestCategory;
+    PokemonName        monName;
+    PlayerName         trainerName;
     u8 contestRank;
     //u8 padding;
 };
@@ -990,7 +990,7 @@ struct SaveBlock1
     /*0x31*/ //u8 padding1;
     /*0x32*/ u16 mapLayoutId;
     /*0x34*/ u16 mapView[0x100];
-    /*0x234*/ u8 playerPartyCount;
+    /*0x234*/ LU_BP_MINMAX(0, PARTY_SIZE) u8 playerPartyCount;
     /*0x235*/ //u8 padding2[3];
     /*0x238*/ struct Pokemon playerParty[PARTY_SIZE];
     /*0x490*/ u32 money;
@@ -1005,7 +1005,7 @@ struct SaveBlock1
     /*0x848*/ struct Pokeblock pokeblocks[POKEBLOCKS_COUNT];
     /*0x988*/ u8 seen1[NUM_DEX_FLAG_BYTES];
     /*0x9BC*/ u16 berryBlenderRecords[3];
-    /*0x9C2*/ u8 unused_9C2[6];
+    /*0x9C2*/ LU_BP_OMIT LU_BP_DEFAULT(0) u8 unused_9C2[6];
     /*0x9C8*/ u16 trainerRematchStepCounter;
     /*0x9CA*/ u8 trainerRematches[MAX_REMATCH_ENTRIES];
     /*0xA2E*/ //u8 padding3[2];
@@ -1030,15 +1030,15 @@ struct SaveBlock1
     /*0x27CC*/ TVShow tvShows[TV_SHOWS_COUNT];
     /*0x2B50*/ PokeNews pokeNews[POKE_NEWS_COUNT];
     /*0x2B90*/ PokemonSpeciesID outbreakPokemonSpecies;
-    /*0x2B92*/ u8 outbreakLocationMapNum;
-    /*0x2B93*/ u8 outbreakLocationMapGroup;
-    /*0x2B94*/ PokemonLevel outbreakPokemonLevel;
-    /*0x2B95*/ u8 outbreakUnused1;
-    /*0x2B96*/ u16 outbreakUnused2;
-    /*0x2B98*/ MoveID outbreakPokemonMoves[MAX_MON_MOVES];
-    /*0x2BA0*/ u8 outbreakUnused3;
-    /*0x2BA1*/ u8 outbreakPokemonProbability;
-    /*0x2BA2*/ u16 outbreakDaysLeft;
+    /*0x2B92*/ MapIndexInGroup  outbreakLocationMapNum;
+    /*0x2B93*/ MapGroupIndex    outbreakLocationMapGroup;
+    /*0x2B94*/ PokemonLevel     outbreakPokemonLevel;
+    /*0x2B95*/ u8               outbreakUnused1;
+    /*0x2B96*/ u16              outbreakUnused2;
+    /*0x2B98*/ MoveID           outbreakPokemonMoves[MAX_MON_MOVES];
+    /*0x2BA0*/ u8               outbreakUnused3;
+    /*0x2BA1*/ u8               outbreakPokemonProbability;
+    /*0x2BA2*/ u16              outbreakDaysLeft;
     /*0x2BA4*/ struct GabbyAndTyData gabbyAndTyData;
     /*0x2BB0*/ EasyChatWordID easyChatProfile[EASY_CHAT_BATTLE_WORDS_COUNT];
     /*0x2BBC*/ EasyChatWordID easyChatBattleStart[EASY_CHAT_BATTLE_WORDS_COUNT];
@@ -1058,7 +1058,7 @@ struct SaveBlock1
     /*0x31DC*/ struct Roamer roamer;
     /*0x31F8*/ struct EnigmaBerry enigmaBerry;
     /*0x322C*/ struct MysteryGiftSave mysteryGift;
-    /*0x3598*/ u8 unused_3598[0x180];
+    /*0x3598*/ LU_BP_OMIT LU_BP_DEFAULT(0) u8 unused_3598[0x180];
     /*0x3718*/ u32 trainerHillTimes[NUM_TRAINER_HILL_MODES];
     /*0x3728*/ struct RamScript ramScript;
     /*0x3B14*/ struct RecordMixingGift recordMixingGift;
@@ -1066,7 +1066,7 @@ struct SaveBlock1
     /*0x3B58*/ LilycoveLady lilycoveLady;
     /*0x3B98*/ struct TrainerNameRecord trainerNameRecords[20];
     /*0x3C88*/ LU_BP_STRING_WT u8 registeredTexts[UNION_ROOM_KB_ROW_COUNT][21];
-    /*0x3D5A*/ u8 unused_3D5A[10];
+    /*0x3D5A*/ LU_BP_OMIT LU_BP_DEFAULT(0) u8 unused_3D5A[10];
     /*0x3D64*/ struct TrainerHillSave trainerHill;
     /*0x3D70*/ struct WaldaPhrase waldaPhrase;
     // sizeof: 0x3D88

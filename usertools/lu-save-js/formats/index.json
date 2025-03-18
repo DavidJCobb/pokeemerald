@@ -19,17 +19,21 @@
             "flags-1.dat",
             "flags-2.dat",
             "flags-3.dat",
+            "flags-4.dat",
+            "flags-5.dat",
+            "flags-6.dat",
+            "flags-7.dat",
             "maps.dat",
             "misc.dat",
-            "trainers.dat",
-            "vars.dat"
+            "trainers.dat"
          ],
          "shared": {
             "game-stats.dat": 1,
             "items.dat": 1,
             "moves.dat": 1,
             "natures.dat": 1,
-            "species.dat": 1
+            "species.dat": 1,
+            "vars.dat": 1
          }
       }
    ],

@@ -53,39 +53,6 @@ const EMERALD_DISPLAY_OVERRIDES = (function() {
          "FACILITY_MULTI_OR_EREADER",
       ]
    );
-   make_enum( // Battle Tower level mode
-      [
-         new CInstanceDisplayOverrideCriteria({
-            type: "Apprentice",
-            path: "lvlMode",
-         }),
-         new CInstanceDisplayOverrideCriteria({
-            type: "BattleFrontier",
-            path: "lvlMode",
-         }),
-         new CInstanceDisplayOverrideCriteria({
-            type: "BattleFrontier",
-            path: "towerLvlMode",
-         }),
-         new CInstanceDisplayOverrideCriteria({
-            type: "BattleFrontier",
-            path: "domeLvlMode",
-         }),
-         new CInstanceDisplayOverrideCriteria({
-            type: "EmeraldBattleTowerRecord",
-            path: "lvlMode",
-         }),
-         new CInstanceDisplayOverrideCriteria({
-            type: "PlayersApprentice",
-            path: "lvlMode",
-         }),
-      ],
-      [  // include/constants/global.h
-         "FRONTIER_LVL_50",
-         "FRONTIER_LVL_OPEN",
-         "FRONTIER_LVL_TENT",
-      ]
-   );
    make_enum( // PokeNews kind
       [
          new CInstanceDisplayOverrideCriteria({

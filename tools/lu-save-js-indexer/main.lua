@@ -88,6 +88,8 @@ local goals = {
       vars = {
          "SHINY_ODDS",
          
+         "FRONTIER_LVL_MODE_COUNT",
+         
          -- gender
          "MALE",
          "FEMALE",

@@ -26,6 +26,36 @@ class ExtraDataCollection {
             path: "contestRank",
          }),
       ],
+      "OPTIONS_BATTLE_STYLE": [
+         new CInstanceDisplayOverrideCriteria({
+            type: "SaveBlock2",
+            path: "optionsBattleStyle",
+         }),
+      ],
+      "OPTIONS_BUTTON_MODE": [
+         new CInstanceDisplayOverrideCriteria({
+            type: "SaveBlock2",
+            path: "optionsButtonMode",
+         }),
+      ],
+      "OPTIONS_SOUND": [
+         new CInstanceDisplayOverrideCriteria({
+            type: "SaveBlock2",
+            path: "optionsSound",
+         }),
+      ],
+      "OPTIONS_TEXT_SPEED": [
+         new CInstanceDisplayOverrideCriteria({
+            type: "SaveBlock2",
+            path: "optionsTextSpeed",
+         }),
+      ],
+      "VERSION": [
+         new CInstanceDisplayOverrideCriteria({
+            type: "PokemonSubstruct3",
+            path: "metGame",
+         }),
+      ],
    };
    
    finalize(/*Map<String filename, ExtraDataFile>*/ files) {
@@ -60,7 +90,13 @@ class ExtraDataCollection {
             "misc.dat": [
                "CONTEST_CATEGORY",
                "CONTEST_RANK",
+               "FRONTIER_LVL",
                "GROWTH",
+               "OPTIONS_BATTLE_STYLE",
+               "OPTIONS_BUTTON_MODE",
+               "OPTIONS_SOUND",
+               "OPTIONS_TEXT_SPEED",
+               "VERSION",
             ],
             "items.dat": [
                "ITEM",
@@ -123,9 +159,10 @@ class ExtraDataCollection {
          if (ed)
             format.enums.set(typename, ed.members.by_name);
       }).bind(this);
-      _set_enum_type("ContestCategory",  "CONTEST_CATEGORY");
-      _set_enum_type("ItemIDGlobal",     "ITEM");
-      _set_enum_type("MoveID",           "MOVE");
-      _set_enum_type("PokemonSpeciesID", "SPECIES");
+      _set_enum_type("ContestCategory",       "CONTEST_CATEGORY");
+      _set_enum_type("BattleFacilityLvlMode", "FRONTIER_LVL");
+      _set_enum_type("ItemIDGlobal",          "ITEM");
+      _set_enum_type("MoveID",                "MOVE");
+      _set_enum_type("PokemonSpeciesID",      "SPECIES");
    }
 };

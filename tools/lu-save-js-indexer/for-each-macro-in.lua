@@ -20,7 +20,7 @@ require "c-parser"
 require "c-exec-integer-constant-expression"
 
 -- The `name` and `line` arguments are just here to aid with debugging.
-local function parse_macro_value(value, name, line)
+local function parse_macro_value(value, all_found_macros, name, line)
    local n = tonumber(value)
    if n then
       return n
@@ -75,7 +75,7 @@ function for_each_macro_in(path, functor)
             end
          end
          if name and value then
-            value = parse_macro_value(value, name, line)
+            value = parse_macro_value(value, all_found_macros, name, line)
             if value then
                all_found_macros[name] = value
                functor(name, value)

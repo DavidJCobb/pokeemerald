@@ -108,17 +108,12 @@ namespace xmlgen {
                } else {
                   field_bitcount = type_bitcount;
                }
-               if ((type_bitcount || field_bitcount) && type_bitcount == field_bitcount) {
-                  //
-                  // We use these comparisons because if the type specifies a 
-                  // bitcount option, and the FIELD_DECL is a bitfield of a 
-                  // different width, then removing the attribute would be 
-                  // ambiguous: we wouldn't know which of those widths the 
-                  // bitcount is equal to.
-                  //
-                  if (casted_a.bitcount == type_bitcount) {
+               if (field_bitcount) {
+                  if (casted_a.bitcount == field_bitcount)
                      child.remove_attribute("bitcount");
-                  }
+               } else if (type_bitcount) {
+                  if (casted_a.bitcount == type_bitcount)
+                     child.remove_attribute("bitcount");
                }
             }
             //
@@ -162,7 +157,7 @@ namespace xmlgen {
             }
          }
          if (is_bespoke_struct_type) {
-            auto members_ptr = referenceable_struct_members_to_xml(field.value_type().as_container());
+            auto members_ptr = referenceable_struct_members_to_xml(field.value_type().as_container(), known_integral_types);
             child.append_child(std::move(members_ptr));
          }
          node.append_child(std::move(child_ptr));

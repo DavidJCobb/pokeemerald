@@ -100,6 +100,79 @@ class TranslationOperation {
       throw new Error(`Failed to translate destination union ${dst.build_path_string()}: tag value ${dst.external_tag.build_path_string()} had value ${+tag} which does not correspond to any union member.`);
    }
    
+   #should_zero_fill_if_new(/*CInstance*/ dst) {
+      for(let anno of dst.decl.annotations)
+         if (anno == "zero-fill-if-new")
+            return true;
+      let type = dst.serialized_type;
+      if (type && type.annotations) {
+         for(let anno of type.annotations)
+            if (anno == "zero-fill-if-new")
+               return true;
+      }
+      return false;
+   }
+   
+   // Zero-fills `dst` (and any members/elements therein) that don't have 
+   // default values. You should generally also call `#default_init_dst` 
+   // after this.
+   #zero_fill_new_inst(/*CInstance*/ dst) {
+      if (dst instanceof CArrayInstance) {
+         for(let v of dst.values)
+            this.#zero_fill_new_inst(v);
+      } else if (dst instanceof CValueInstance) {
+         const PASS = AbstractDataFormatTranslator.RESULTS.PASS;
+         if (dst.value !== null && dst.value !== PASS) {
+            return;
+         }
+         if (dst.decl.default_value !== null) {
+            return;
+         }
+         switch (dst.decl.type) {
+            case "omitted":
+               dst.value = null;
+               break;
+            case "boolean":
+               dst.value = false;
+               break;
+            case "buffer":
+               {
+                  let buffer = new ArrayBuffer(dst.decl.options.bytecount);
+                  dst.value = new DataView(buffer);
+               }
+               break;
+            case "integral":
+            case "pointer":
+               dst.value = 0;
+               break;
+            case "string":
+               {
+                  dst.value = new PokeString();
+                  for(let i = 0; i < dst.decl.options.length; ++i)
+                     dst.value.bytes[i] = 0x00;
+               }
+               break;
+         }
+      } else if (dst instanceof CUnionInstance) {
+         if (!dst.value) {
+            if (dst.external_tag) {
+               this.#emplace_appropriate_externally_tagged_union_member(dst);
+            } else {
+               let decl = dst.type.member_by_tag_value(0);
+               if (!decl) {
+                  throw new Error(`Failed to translate destination union ${dst.build_path_string()}: the union was marked as "zero-fill-if-empty", but it's internally tagged, and tag value 0 doesn't correspond to any of the union's elements.`);
+               }
+               dst.get_or_emplace(decl);
+            }
+         }
+         this.#zero_fill_new_inst(dst.value);
+      } else if (dst instanceof CStructInstance) {
+         for(let name in dst.members) {
+            this.#zero_fill_new_inst(dst.members[name]);
+         }
+      }
+   }
+   
    // Default-initialize all data in `dst` that we are capable of defaulting. 
    // Returns false if any data fails to initialize.
    //
@@ -186,7 +259,7 @@ class TranslationOperation {
    
    /*[[noreturn]]*/ #report_failure_to_translate(src, dst, dst_member) /*const*/ {
       if (!src) {
-         throw new Error(`Failed to translate destination value ${dst.build_path_string()}: no value with the same path exists in the source format.`);
+         throw new Error(`Failed to translate destination value ${dst.build_path_string()}: no value with the same path exists in the source format, and the destination value could not be fully defaulted.`);
       }
       if (dst_member) {
          throw new Error(`Failed to translate destination value ${dst.build_path_string()} member ${dst_member} given source value ${src.build_path_string()}.`);
@@ -395,7 +468,15 @@ class TranslationOperation {
          //
          return;
       }
-      if (!src || src.constructor != dst.constructor) {
+      if (!src) {
+         let zero_fill = this.#should_zero_fill_if_new(dst);
+         if (zero_fill) {
+            this.#zero_fill_new_inst(dst);
+         }
+         if (!this.#default_init_dst(dst) && !zero_fill) {
+            this.#report_failure_to_translate(src, dst);
+         }
+      } else if (src.constructor != dst.constructor) {
          //
          // We don't currently support interconverting across types as 
          // a default translation; for example, there's no way to turn 
@@ -427,7 +508,11 @@ class TranslationOperation {
                // The destination array is longer than the source array. Default 
                // the element if we can, and fail otherwise.
                //
-               if (!this.#default_init_dst(dst_e)) {
+               let zero_fill = this.#should_zero_fill_if_new(dst_e);
+               if (zero_fill) {
+                  this.#zero_fill_new_inst(dst_e);
+               }
+               if (!this.#default_init_dst(dst_e) && !zero_fill) {
                   throw new Error(`Failed to translate destination value ${dst.build_path_string()} element ${i} given source value ${src.build_path_string()}. The source array is only length ${src.values.length}, and the destination value could not be fully defaulted.`);
                }
                continue;
@@ -513,7 +598,11 @@ class TranslationOperation {
                // `dst_e` represents a newly-added member in this type, not 
                // present in the source save format.
                //
-               if (!this.#default_init_dst(dst_e)) {
+               let zero_fill = this.#should_zero_fill_if_new(dst_e);
+               if (zero_fill) {
+                  this.#zero_fill_new_inst(dst_e);
+               }
+               if (!this.#default_init_dst(dst_e) && !zero_fill) {
                   throw new Error(`Failed to translate destination value ${dst_e.build_path_string()}. There was no corresponding value ${src.build_path_string()}.${member_name} to translate anything from.`);
                }
                continue;

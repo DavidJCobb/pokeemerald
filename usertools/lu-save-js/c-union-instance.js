@@ -64,6 +64,17 @@ class CUnionInstance extends CTypeInstance {
             throw new Error("This union is internally tagged. You must request a specific active member.");
       }
       this._emplace_for_load(member);
+      if (!this.external_tag) {
+         let tag_value = null;
+         for(const [k, v] of Object.entries(this.type.members_by_tag_value)) {
+            if (v === member) {
+               tag_value = k;
+               break;
+            }
+         }
+         if (tag_value !== null)
+            this.value.members[this.type.internal_tag_name].value = tag_value;
+      }
    }
    
    //
@@ -101,6 +112,7 @@ class CUnionInstance extends CTypeInstance {
          }
       }
       let common_members = null;
+      let tag_value      = null;
       if (this.type.internal_tag_name) {
          //
          // Keep the internal tag (and all other shared members-of-members).

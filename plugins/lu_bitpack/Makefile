@@ -95,6 +95,8 @@ SOURCES=\
         src/pragma_handlers/set_options.cpp \
         src/xmlgen/bitpacking_default_value_to_xml.cpp \
         src/xmlgen/bitpacking_x_options_to_xml.cpp \
+        src/xmlgen/container_type_index.cpp \
+        src/xmlgen/instruction_tree_xml_generator.cpp \
         src/xmlgen/integral_type_index.cpp \
         src/xmlgen/is_valid_name.cpp \
         src/xmlgen/referenceable_struct_members_to_xml.cpp \

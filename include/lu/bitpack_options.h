@@ -66,4 +66,18 @@
 // member is active. Must be an integral value.
 #define LU_BP_TAGGED_ID(n) __attribute__((lu_bitpack_union_member_id(n)))
 
+// Recognized by our save editor when converting savegames between different 
+// save file formats. If a structure annotated with this tag is present in 
+// the destination format but not in the source format, then its data will 
+// be defaulted to all-zeroes (except for fields that have their own default 
+// values).
+//
+// As an example: We apply this to SerializedBoxPokemon so that if a hack 
+// increases the number of Pokemon the player can store in a PC box, then 
+// the save editor can convert pre-increase saves to the post-increase format 
+// without the need for custom conversion code AND without the need to 
+// explicitly set a default value for every individual field within the 
+// SerializedBoxPokemon struct.
+#define LU_BP_ZERO_FILL_IF_NEW LU_BP_ANNOTATION("zero-fill-if-new")
+
 #endif

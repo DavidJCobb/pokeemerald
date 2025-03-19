@@ -107,5 +107,9 @@ namespace bitpacking {
          // Compare only options that affect the serialization format (i.e. ignore 
          // things like default values and similar).
          bool same_format_as(const data_options&) const;
+         
+         // Convenience checks.
+         bool has_stat_category(const std::string_view) const;
+         bool has_misc_annotation(const std::string_view) const;
    };
 }

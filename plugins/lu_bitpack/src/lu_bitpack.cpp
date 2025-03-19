@@ -127,10 +127,10 @@ namespace _attributes {
       .name = "lu_bitpack_misc_annotation",
       .min_length = 1, // min argcount
       .max_length = 1, // max argcount
-      .decl_required = true,
+      .decl_required = false,
       .type_required = false,
       .function_type_required = false,
-      .affects_type_identity  = false,
+      .affects_type_identity  = true,
       .handler = &attribute_handlers::bitpack_misc_annotation,
       .exclude = NULL
    };
@@ -160,10 +160,10 @@ namespace _attributes {
       .name = "lu_bitpack_stat_category",
       .min_length = 1, // min argcount
       .max_length = 1, // max argcount
-      .decl_required = true,
+      .decl_required = false,
       .type_required = false,
       .function_type_required = false,
-      .affects_type_identity  = false,
+      .affects_type_identity  = true,
       .handler = &attribute_handlers::bitpack_stat_category,
       .exclude = NULL
    };

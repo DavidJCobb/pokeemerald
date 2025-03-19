@@ -1013,6 +1013,7 @@
             </counts>
          </stats>
          <transform-options transformed-type="SerializedBoxPokemon" pack-function="PackBoxPokemonForSave" unpack-function="UnpackBoxPokemonForSave" />
+         <annotation text="zero-fill-if-new" />
          <members>
             <integer name="personality" type="PokemonPersonality" />
             <integer name="otId" type="u32" />
@@ -2066,10 +2067,10 @@
             <integer name="unownPersonality" type="u32" />
             <integer name="spindaPersonality" type="u32" />
             <integer name="unknown3" type="u32" />
-            <integer name="owned" type="u8[52]">
+            <integer name="owned" type="u8[52]" default-value="0">
                <array-rank extent="52" />
             </integer>
-            <integer name="seen" type="u8[52]">
+            <integer name="seen" type="u8[52]" default-value="0">
                <array-rank extent="52" />
             </integer>
          </members>
@@ -2082,10 +2083,10 @@
             <integer value="spindaPersonality" type="u32" bitcount="32" />
             <integer value="unknown3" type="u32" bitcount="32" />
             <loop array="owned" start="0" count="52" counter-var="__a">
-               <integer value="owned[__a]" type="u8" bitcount="8" />
+               <integer value="owned[__a]" type="u8" bitcount="8" default-value="0" />
             </loop>
             <loop array="seen" start="0" count="52" counter-var="__b">
-               <integer value="seen[__b]" type="u8" bitcount="8" />
+               <integer value="seen[__b]" type="u8" bitcount="8" default-value="0" />
             </loop>
          </instructions>
       </struct>
@@ -2101,7 +2102,7 @@
             <transformed name="box" type="BoxPokemon" transformed-type="SerializedBoxPokemon" pack-function="PackBoxPokemonForSave" unpack-function="UnpackBoxPokemonForSave" />
             <integer name="status" type="u32" />
             <integer name="level" type="PokemonLevel" />
-            <integer name="mail" type="u8" />
+            <integer name="mail" type="u8" default-value="-1" />
             <integer name="hp" type="u16" />
             <integer name="maxHP" type="u16" />
             <integer name="attack" type="u16" />
@@ -2116,7 +2117,7 @@
             </transform>
             <integer value="status" type="u32" bitcount="32" />
             <integer value="level" type="PokemonLevel" bitcount="7" min="0" max="100" />
-            <integer value="mail" type="u8" bitcount="8" />
+            <integer value="mail" type="u8" bitcount="8" default-value="-1" />
             <integer value="hp" type="u16" bitcount="16" />
             <integer value="maxHP" type="u16" bitcount="16" />
             <integer value="attack" type="u16" bitcount="16" />
@@ -2704,7 +2705,7 @@
             <struct name="pokeblocks" type="Pokeblock[40]">
                <array-rank extent="40" />
             </struct>
-            <integer name="seen1" type="u8[52]">
+            <integer name="seen1" type="u8[52]" default-value="0">
                <array-rank extent="52" />
             </integer>
             <integer name="berryBlenderRecords" type="u16[3]">
@@ -4064,7 +4065,7 @@
                <struct value="(*gSaveBlock1Ptr).pokeblocks[__i]" type="Pokeblock" />
             </loop>
             <loop array="(*gSaveBlock1Ptr).seen1" start="0" count="52" counter-var="__j">
-               <integer value="(*gSaveBlock1Ptr).seen1[__j]" type="u8" bitcount="8" />
+               <integer value="(*gSaveBlock1Ptr).seen1[__j]" type="u8" bitcount="8" default-value="0" />
             </loop>
             <loop array="(*gSaveBlock1Ptr).berryBlenderRecords" start="0" count="3" counter-var="__k">
                <integer value="(*gSaveBlock1Ptr).berryBlenderRecords[__k]" type="u16" bitcount="16" />

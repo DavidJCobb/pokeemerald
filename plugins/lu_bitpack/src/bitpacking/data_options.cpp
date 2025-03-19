@@ -498,4 +498,17 @@ namespace bitpacking {
          return false;
       return this->typed == other.typed;
    }
+   
+   bool data_options::has_stat_category(const std::string_view name) const {
+      for(const auto& item : this->stat_categories)
+         if (item == name)
+            return true;
+      return false;
+   }
+   bool data_options::has_misc_annotation(const std::string_view text) const {
+      for(const auto& item : this->misc_annotations)
+         if (item == text)
+            return true;
+      return false;
+   }
 }

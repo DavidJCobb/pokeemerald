@@ -11,11 +11,6 @@
 #include "codegen/stats_gatherer.h"
 #include "codegen/whole_struct_function_dictionary.h"
 #include "codegen/whole_struct_function_info.h"
-#include "gcc_wrappers/constant/floating_point.h"
-#include "gcc_wrappers/constant/integer.h"
-#include "gcc_wrappers/constant/string.h"
-#include "gcc_wrappers/decl/param.h"
-#include "gcc_wrappers/decl/type_def.h"
 #include "gcc_wrappers/type/array.h"
 #include "gcc_wrappers/type/record.h"
 #include "gcc_wrappers/type/untagged_union.h"
@@ -28,17 +23,9 @@ namespace typed_options {
    using namespace bitpacking::typed_data_options::computed;
 }
 
-#include "codegen/instructions/base.h"
-#include "codegen/instructions/array_slice.h"
-#include "codegen/instructions/padding.h"
-#include "codegen/instructions/single.h"
-#include "codegen/instructions/transform.h"
-#include "codegen/instructions/union_switch.h"
-#include "codegen/instructions/utils/walk.h"
-
 #include "xmlgen/bitpacking_default_value_to_xml.h"
 #include "xmlgen/bitpacking_x_options_to_xml.h"
-#include "xmlgen/referenceable_struct_members_to_xml.h"
+#include "xmlgen/instruction_tree_xml_generator.h"
 
 namespace {
    using owned_element = xmlgen::report_generator::owned_element;
@@ -53,228 +40,215 @@ namespace xmlgen {
       info.name = name;
       return info;
    }
-   report_generator::type_info& report_generator::_get_or_create_type_info(gw::type::base type) {
-      for(auto& info : this->_types)
-         if (info.stats.type.unwrap() == type.unwrap())
-            return info;
-      auto& info = this->_types.emplace_back(type);
-      return info;
+   
+   const bitpacking::data_options* report_generator::_get_serialized_type_options(gw::type::base type) {
+      while (type.is_array())
+         type = type.as_array().value_type();
+      if (type.is_integral()) {
+         const auto* info = this->_integral_types.lookup_type_info(type.as_integral());
+         if (info)
+            return &info->options;
+      } else if (type.is_container()) {
+         const auto* info = this->_container_types.lookup_type_info(type.as_container());
+         if (info)
+            return &info->options;
+      }
+      return nullptr;
    }
    
-   std::string report_generator::_loop_variable_to_string(codegen::decl_descriptor_pair pair) const {
-      const auto& list = this->_loop_variables;
-      if (list.size() <= 26) {
-         for(size_t i = 0; i < list.size(); ++i) {
-            if (list[i] != pair)
-               continue;
-            std::string name = "__a";
-            name[2] += i;
-            return name;
-         }
-      } else {
-         for(size_t i = 0; i < list.size(); ++i)
-            if (list[i] == pair)
-               return lu::stringf("__loop_var_%u", (int)i);
+   void report_generator::_member_options_to_xml(
+      xml_element& node,
+      const bitpacking::data_options& member_options,
+      const bitpacking::data_options* type_options,
+      size_t member_bitfield_width
+   ) {
+      if (member_options.union_member_id.has_value()) {
+         //
+         // For members of a tagged union.
+         //
+         node.set_attribute_i("union-tag-value", *member_options.union_member_id);
       }
-      return "__unknown_var";
-   }
-   std::string report_generator::_variable_to_string(codegen::decl_descriptor_pair pair) const {
-      for(size_t i = 0; i < this->_transformed_values.size(); ++i)
-         if (pair == this->_transformed_values[i])
-            return lu::stringf("__transformed_var_%u", (int)i);
-         
-      size_t deref = pair.read->variable.dereference_count;
-      if (deref) {
-         std::string out = "(";
-         for(size_t i = 0; i < deref; ++i)
-            out += '*';
-         out += pair.read->decl.name();
-         out += ')';
-         return out;
-      }
-      
-      return std::string(pair.read->decl.name());
-   }
-   std::string report_generator::_value_path_to_string(const codegen::value_path& path) const {
-      std::string out;
-      bool first = true;
-      for(size_t i = 0; i < path.segments.size(); ++i) {
-         const auto& segm = path.segments[i];
-         const auto  pair = segm.descriptor();
-         
-         if (i == 0) {
-            assert(!segm.is_array_access());
-            auto decl = pair.read->decl;
-            if (decl.is<gw::decl::param>()) {
-               //
-               // This is a whole-struct serialization function. Do not emit 
-               // the name of the struct pointer parameter.
-               //
-               continue;
+      bitpacking_default_value_to_xml(node, member_options);
+      //
+      // Handle bitpacking options.
+      //
+      {
+         //
+         // Node name.
+         //
+         if (member_options.is_omitted) {
+            node.node_name = "omitted";
+         } else {
+            node.node_name = "unknown";
+            if (member_options.is<typed_options::boolean>()) {
+               node.node_name = "boolean";
+            } else if (member_options.is<typed_options::buffer>()) {
+               node.node_name = "buffer";
+            } else if (member_options.is<typed_options::integral>()) {
+               node.node_name = "integer";
+            } else if (member_options.is<typed_options::pointer>()) {
+               node.node_name = "pointer";
+            } else if (member_options.is<typed_options::string>()) {
+               node.node_name = "string";
+            } else if (member_options.is<typed_options::structure>()) {
+               node.node_name = "struct";
+            } else if (member_options.is<typed_options::tagged_union>()) {
+               auto& casted = member_options.as<typed_options::tagged_union>();
+               if (casted.is_internal)
+                  node.node_name = "union-internal-tag";
+               else
+                  node.node_name = "union-external-tag";
+            } else if (member_options.is<typed_options::transformed>()) {
+               node.node_name = "transformed";
+            } else {
+               node.node_name = "unknown";
             }
          }
-         
-         if (segm.is_array_access()) {
-            if (std::holds_alternative<size_t>(segm.data)) {
-               out += lu::stringf("[%u]", (int)std::get<size_t>(segm.data));
-               continue;
+         //
+         // Options as attributes.
+         //
+         if (member_options.is<typed_options::buffer>()) {
+            const auto& casted = member_options.as<typed_options::buffer>();
+            node.set_attribute_i("bytecount", casted.bytecount);
+         } else if (member_options.is<typed_options::integral>()) {
+            const auto& casted = member_options.as<typed_options::integral>();
+            //
+            // We generate a c-type node for integral types, listing the 
+            // integral options on the type as appropriate. We don't want 
+            // to list those options for each individual value if they do 
+            // not differ from the type.
+            //
+            bool serialize_bitcount = true;
+            bool serialize_min      = true;
+            bool serialize_max      = true;
+            if (type_options && type_options->is<typed_options::integral>()) {
+               const auto& inherit = type_options->as<typed_options::integral>();
+               if (!member_bitfield_width && casted.bitcount == inherit.bitcount)
+                  serialize_bitcount = false;
+               if (casted.min == inherit.min)
+                  serialize_min = false;
+               if (casted.max == inherit.max)
+                  serialize_max = false;
             }
-            out += '[';
-            out += this->_loop_variable_to_string(pair);
-            out += ']';
+            if (member_bitfield_width && casted.bitcount == member_bitfield_width)
+               serialize_bitcount = false;
+            
+            if (serialize_bitcount) {
+               node.set_attribute_i("bitcount", casted.bitcount);
+            }
+            if (serialize_min && casted.min != typed_options::integral::no_minimum) {
+               node.set_attribute_i("min", casted.min);
+            }
+            if (serialize_max && casted.max != typed_options::integral::no_maximum) {
+               node.set_attribute_i("max", casted.max);
+            }
+         } else if (member_options.is<typed_options::pointer>()) {
+            ;
+         } else if (member_options.is<typed_options::string>()) {
+            const auto& casted = member_options.as<typed_options::string>();
+            node.set_attribute_i("length",    casted.length);
+            node.set_attribute_b("nonstring", casted.nonstring);
+         } else if (member_options.is<typed_options::structure>()) {
+            ;
+         } else if (member_options.is<typed_options::tagged_union>()) {
+            const auto& casted = member_options.as<typed_options::tagged_union>();
+            node.set_attribute("tag", casted.tag_identifier);
+         } else if (member_options.is<typed_options::transformed>()) {
+            const auto& casted = member_options.as<typed_options::transformed>();
+            if (auto opt = casted.transformed_type)
+               node.set_attribute("transformed-type", opt->pretty_print());
+            if (auto opt = casted.pre_pack)
+               node.set_attribute("pack-function",    opt->name());
+            if (auto opt = casted.post_unpack)
+               node.set_attribute("unpack-function",  opt->name());
+         }
+      }
+      //
+      // Bitpacking categories and annotations.
+      //
+      for(const auto& category : member_options.stat_categories) {
+         if (type_options && type_options->has_stat_category(category)) {
             continue;
          }
-         
-         if (!first)
-            out += '.';
-         first = false;
-         out += this->_variable_to_string(pair);
+         auto  elem_ptr = std::make_unique<xml_element>();
+         auto& elem     = *elem_ptr;
+         elem.node_name = "category";
+         elem.set_attribute("name", category);
+         node.append_child(std::move(elem_ptr));
       }
-      return out;
-   }
-   
-   owned_element report_generator::_generate(const codegen::instructions::array_slice& instr) {
-      auto  node_ptr = std::make_unique<xml_element>();
-      auto& node     = *node_ptr;
-      
-      node.node_name = "loop";
-      node.set_attribute("array", this->_value_path_to_string(instr.array.value));
-      node.set_attribute_i("start", instr.array.start);
-      node.set_attribute_i("count", instr.array.count);
-      node.set_attribute("counter-var", this->_loop_variable_to_string(instr.loop_index.descriptors));
-      
-      for(auto& child_ptr : instr.instructions) {
-         node.append_child(this->_generate(*child_ptr));
-      }
-      
-      return node_ptr;
-   }
-   owned_element report_generator::_generate(const codegen::instructions::padding& instr) {
-      auto  node_ptr = std::make_unique<xml_element>();
-      auto& node     = *node_ptr;
-      
-      node.node_name = "padding";
-      node.set_attribute_i("bitcount", instr.bitcount);
-      
-      return node_ptr;
-   }
-   owned_element report_generator::_generate(const codegen::instructions::single& instr) {
-      auto  node_ptr = std::make_unique<xml_element>();
-      auto& node     = *node_ptr;
-      
-      node.set_attribute("value", this->_value_path_to_string(instr.value));
-      
-      codegen::decl_descriptor_pair desc_pair;
-      for(auto& segm : instr.value.segments) {
-         if (segm.is_array_access())
+      for(const auto& text : member_options.misc_annotations) {
+         if (type_options && type_options->has_misc_annotation(text)) {
             continue;
-         desc_pair = segm.member_descriptor();
-      }
-      assert(desc_pair.read != nullptr);
-      auto value_type = *desc_pair.read->types.serialized;
-      node.set_attribute("type", value_type.pretty_print());
-      
-      const auto& options = instr.value.bitpacking_options();
-      bitpacking_default_value_to_xml(node, options);
-      bitpacking_x_options_to_xml(node, options, false);
-      
-      return node_ptr;
-   }
-   owned_element report_generator::_generate(const codegen::instructions::transform& instr) {
-      auto  node_ptr = std::make_unique<xml_element>();
-      auto& node     = *node_ptr;
-      
-      node.node_name = "transform";
-      node.set_attribute("value", this->_value_path_to_string(instr.to_be_transformed_value));
-      node.set_attribute("transformed-type", instr.types.back().name());
-      node.set_attribute("transformed-value", this->_variable_to_string(instr.transformed.descriptors));
-      if (instr.types.size() > 1) {
-         std::string through;
-         for(size_t i = 0; i < instr.types.size() - 1; ++i) {
-            if (i > 0)
-               through += ' ';
-            through += instr.types[i].name();
          }
-         node.set_attribute("transform-through", through);
+         auto  elem_ptr = std::make_unique<xml_element>();
+         auto& elem     = *elem_ptr;
+         elem.node_name = "annotation";
+         elem.set_attribute("text", text);
+         node.append_child(std::move(elem_ptr));
       }
-      
-      for(auto& child_ptr : instr.instructions) {
-         node.append_child(this->_generate(*child_ptr));
-      }
-      
-      return node_ptr;
-   }
-   owned_element report_generator::_generate(const codegen::instructions::union_switch& instr) {
-      auto  node_ptr = std::make_unique<xml_element>();
-      auto& node     = *node_ptr;
-      
-      node.node_name = "switch";
-      node.set_attribute("operand", this->_value_path_to_string(instr.condition_operand));
-      
-      for(const auto& pair : instr.cases) {
-         auto  child_ptr = std::make_unique<xml_element>();
-         auto& child     = *child_ptr;
-         child.node_name = "case";
-         child.set_attribute_i("value", pair.first);
-         node.append_child(std::move(child_ptr));
-         
-         for(auto& nested : pair.second->instructions) {
-            child.append_child(this->_generate(*nested));
-         }
-      }
-      if (instr.else_case) {
-         auto  child_ptr = std::make_unique<xml_element>();
-         auto& child     = *child_ptr;
-         child.node_name = "fallback-case";
-         node.append_child(std::move(child_ptr));
-         
-         for(auto& nested : instr.else_case->instructions) {
-            child.append_child(this->_generate(*nested));
-         }
-      }
-      
-      return node_ptr;
    }
    
-   owned_element report_generator::_generate(const codegen::instructions::base& instr) {
-      if (auto* casted = instr.as<codegen::instructions::array_slice>())
-         return this->_generate(*casted);
-      if (auto* casted = instr.as<codegen::instructions::padding>())
-         return this->_generate(*casted);
-      if (auto* casted = instr.as<codegen::instructions::single>())
-         return this->_generate(*casted);
-      if (auto* casted = instr.as<codegen::instructions::transform>())
-         return this->_generate(*casted);
-      if (auto* casted = instr.as<codegen::instructions::union_switch>())
-         return this->_generate(*casted);
+   owned_element report_generator::_make_member_element(gw::decl::field field) {
+      auto  type = field.value_type();
+      auto& desc = codegen::decl_dictionary::get().describe(field);
       
-      assert(false && "unreachable");
-   }
-   
-   owned_element report_generator::_generate_root(const codegen::instructions::container& root) {
-      this->_loop_variables.clear();
-      this->_transformed_values.clear();
+      bool is_bespoke_struct_type = false;
+      const bitpacking::data_options* type_options = this->_get_serialized_type_options(type);
       
-      codegen::instructions::utils::walk(
-         [this](const codegen::instructions::base& node) {
-            if (auto* casted = node.as<codegen::instructions::array_slice>()) {
-               this->_loop_variables.push_back(casted->loop_index.descriptors);
-               return;
+      auto  node_ptr = std::make_unique<xml_element>();
+      auto& node     = *node_ptr;
+      node.node_name = "field";
+      node.set_attribute("name", field.name());
+      {
+         auto type = field.value_type();
+         auto pp   = type.pretty_print();
+         if (pp != "<unnamed>") {
+            node.set_attribute("type", pp);
+         } else {
+            if (type.is_container()) {
+               is_bespoke_struct_type = true;
             }
-            if (auto* casted = node.as<codegen::instructions::transform>()) {
-               this->_transformed_values.push_back(casted->transformed.descriptors);
-               return;
-            }
-         },
-         root
+         }
+      }
+      std::optional<size_t> bitfield_width;
+      {  // Field info
+         size_t offset = field.offset_in_bits();
+         size_t width  = field.size_in_bits();
+         if (field.is_bitfield()) {
+            bitfield_width = width;
+            node.set_attribute_i("c-bitfield-offset", offset);
+            node.set_attribute_i("c-bitfield-width",  width);
+         }
+      }
+      for(auto size : desc.array.extents) {
+         auto  elem_ptr = std::make_unique<xml_element>();
+         auto& elem     = *elem_ptr;
+         elem.node_name = "array-rank";
+         elem.set_attribute_i("extent", size);
+         node.append_child(std::move(elem_ptr));
+      }
+      this->_member_options_to_xml(
+         node,
+         desc.options,
+         type_options,
+         bitfield_width.has_value() ? *bitfield_width : 0
       );
+      if (is_bespoke_struct_type) {
+         auto members_ptr = this->_referenceable_aggregate_members_to_xml(type.as_container());
+         node.append_child(std::move(members_ptr));
+      }
       
+      return node_ptr;
+   }
+   owned_element report_generator::_referenceable_aggregate_members_to_xml(gw::type::container type) {
       auto  node_ptr = std::make_unique<xml_element>();
       auto& node     = *node_ptr;
-      node.node_name = "instructions";
-      for(auto& child_ptr : root.instructions) {
-         node.append_child(_generate(*child_ptr));
-      }
+      node.node_name = "members";
+      
+      type.for_each_referenceable_field([this, &node](gw::decl::field field) {
+         node.append_child(this->_make_member_element(field));
+      });
+      
       return node_ptr;
    }
    
@@ -285,80 +259,6 @@ namespace xmlgen {
          list.end(),
          [](const auto& info_a, const auto& info_b) {
             return info_a.name.compare(info_b.name) < 0;
-         }
-      );
-   }
-   void report_generator::_sort_type_list() {
-      auto& list = this->_types;
-      std::sort(
-         list.begin(),
-         list.end(),
-         [](const auto& info_a, const auto& info_b) {
-            auto type_a = info_a.stats.type;
-            auto type_b = info_b.stats.type;
-            
-            bool a_is_tag = true;
-            bool b_is_tag = true;
-            auto name_a = type_a.tag_name();
-            auto name_b = type_b.tag_name();
-            if (name_a.empty()) {
-               auto decl = type_a.declaration();
-               if (decl) {
-                  name_a = decl->name();
-                  a_is_tag = false;
-               }
-            }
-            if (name_b.empty()) {
-               auto decl = type_b.declaration();
-               if (decl) {
-                  name_b = decl->name();
-                  b_is_tag = false;
-               }
-            }
-            //
-            // Compare the names according to the following criteria, in 
-            // order of descending priority:
-            //
-            //  - ASCII-case-insensitive comparison
-            //  - Length comparison (shorter first)
-            //  - ASCII-case-sensitive comparison (uppercase first)
-            //  - Sort tag names before symbol names
-            //  - Sort by GCC type-node pointer (last-resort fallback)
-            //
-            size_t end = name_a.size();
-            if (end > name_b.size())
-               end = name_b.size();
-            
-            for(size_t i = 0; i < end; ++i) { // case-insensitive
-               char c = name_a[i];
-               char d = name_b[i];
-               if (c >= 'a' && c <= 'z')
-                  c -= 0x20;
-               if (d >= 'a' && d <= 'z')
-                  d -= 0x20;
-               if (c == d)
-                  continue;
-               return (c < d);
-            }
-            {
-               size_t size_a = name_a.size();
-               size_t size_b = name_b.size();
-               if (size_a < size_b)
-                  return true;
-               if (size_a > size_b)
-                  return false;
-            }
-            for(size_t i = 0; i < end; ++i) {
-               char c = name_a[i];
-               char d = name_b[i];
-               if (c == d)
-                  continue;
-               return (c & 0x20) == 0; // whether a is uppercase
-            }
-            if (a_is_tag != b_is_tag) {
-               return a_is_tag; // tag names before symbol names
-            }
-            return type_a.unwrap() < type_b.unwrap(); // fallback
          }
       );
    }
@@ -397,15 +297,22 @@ namespace xmlgen {
    }
    void report_generator::process(const codegen::instructions::container& root) {
       auto& info = this->_sectors.emplace_back();
-      info.instructions = _generate_root(root);
+      {
+         instruction_tree_xml_generator gen;
+         info.instructions = gen.generate(root);
+      }
    }
    void report_generator::process(const codegen::whole_struct_function_dictionary& dict) {
       dict.for_each([this](gw::type::base type, const codegen::whole_struct_function_info& ws_info) {
-         auto& info = this->_get_or_create_type_info(type);
-         info.instructions = _generate_root(*ws_info.instructions_root->as<codegen::instructions::container>());
+         assert(type.is_container() && "We shouldn't be generating whole-struct functions for non-container types.");
+         auto& info = this->_container_types.index_type(type.as_container());
+         {
+            const auto& root = *ws_info.instructions_root->as<codegen::instructions::container>();
+            instruction_tree_xml_generator gen;
+            info.instructions = gen.generate(root);
+         }
          
-         if (type.is_container())
-            this->_integral_types.index_types_in(type.as_container());
+         this->_integral_types.index_types_in(type.as_container());
       });
    }
    void report_generator::process(const codegen::stats_gatherer& gatherer) {
@@ -422,11 +329,11 @@ namespace xmlgen {
       for(const auto& pair : gatherer.types) {
          auto         type  = pair.first;
          const auto&  stats = pair.second;
-         
-         auto& info = this->_get_or_create_type_info(type);
-         info.stats = stats;
-         if (type.is_container())
+         if (type.is_container()) {
+            auto& info = this->_container_types.index_type(type.as_container());
+            info.stats = stats;
             this->_integral_types.index_types_in(type.as_container());
+         }
       }
       
       // Category stats.
@@ -491,37 +398,42 @@ namespace xmlgen {
             });
          }
          {  // struct/union types
-            auto& list = this->_types;
-            this->_sort_type_list();
-            for(auto& info : list) {
+            this->_container_types.sort_all();
+            this->_container_types.for_each_type_info([this, &out](auto& info) {
                auto  node_ptr = info.stats.to_xml();
-               {
-                  bitpacking::data_options options;
-                  options.load(info.stats.type);
-                  //
-                  bitpacking_x_options_to_xml(
-                     *node_ptr,
-                     options,
-                     true
-                  );
+               auto& node     = *node_ptr;
+               bitpacking_x_options_to_xml(node, info.options, true);
+               for(const auto& category : info.options.stat_categories) {
+                  auto  elem_ptr = std::make_unique<xml_element>();
+                  auto& elem     = *elem_ptr;
+                  elem.node_name = "category";
+                  elem.set_attribute("name", category);
+                  node.append_child(std::move(elem_ptr));
+               }
+               for(const auto& text : info.options.misc_annotations) {
+                  auto  elem_ptr = std::make_unique<xml_element>();
+                  auto& elem     = *elem_ptr;
+                  elem.node_name = "annotation";
+                  elem.set_attribute("text", text);
+                  node.append_child(std::move(elem_ptr));
                }
                if (info.stats.type.is_container()) {
                   auto cont      = info.stats.type.as_container();
-                  auto child_ptr = referenceable_struct_members_to_xml(cont, &this->_integral_types);
-                  node_ptr->append_child(std::move(child_ptr));
+                  auto child_ptr = this->_referenceable_aggregate_members_to_xml(cont);
+                  node.append_child(std::move(child_ptr));
                }
                
                xml_element* instr = nullptr;
                if (info.instructions) {
                   instr = info.instructions.get();
-                  node_ptr->append_child(std::move(info.instructions));
+                  node.append_child(std::move(info.instructions));
                }
-               out += node_ptr->to_string(2);
+               out += node.to_string(2);
                out += '\n';
                if (instr) {
-                  info.instructions = node_ptr->take_child(*instr);
+                  info.instructions = node.take_child(*instr);
                }
-            }
+            });
          }
          out += "   </c-types>\n";
       }
@@ -531,6 +443,7 @@ namespace xmlgen {
             auto& ident = this->_top_level_identifiers[i];
             auto  node_ptr = std::make_unique<xml_element>();
             auto& node     = *node_ptr;
+            
             node.set_attribute("name", ident.identifier);
             if (ident.dereference_count > 0)
                node.set_attribute_i("dereference-count", ident.dereference_count);
@@ -548,25 +461,16 @@ namespace xmlgen {
                   node.set_attribute("serialized-type", pp);
             }
             
-            bitpacking_x_options_to_xml(node, ident.options, false);
-            bitpacking_default_value_to_xml(node, ident.options);
-            //
-            // Categories:
-            //
-            for(const auto& category : ident.options.stat_categories) {
-               auto  elem_ptr = std::make_unique<xml_element>();
-               auto& elem     = *elem_ptr;
-               elem.node_name = "category";
-               elem.set_attribute("name", category);
-               node.append_child(std::move(elem_ptr));
+            const bitpacking::data_options* type_options = nullptr;
+            if (ident.serialized_type) {
+               type_options = this->_get_serialized_type_options(*ident.serialized_type);
             }
-            for(const auto& text : ident.options.misc_annotations) {
-               auto  elem_ptr = std::make_unique<xml_element>();
-               auto& elem     = *elem_ptr;
-               elem.node_name = "annotation";
-               elem.set_attribute("text", text);
-               node.append_child(std::move(elem_ptr));
-            }
+            this->_member_options_to_xml(
+               node,
+               ident.options,
+               type_options,
+               0
+            );
             
             out += node.to_string(2);
             out += '\n';

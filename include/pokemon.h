@@ -196,7 +196,7 @@ union PokemonSubstruct
     u16 raw[NUM_SUBSTRUCT_BYTES / 2]; // /2 because it's u16, not u8
 };
 
-struct LU_BP_TRANSFORM_AND_NEVER_SPLIT(PackBoxPokemonForSave,UnpackBoxPokemonForSave) BoxPokemon
+struct LU_BP_TRANSFORM_AND_NEVER_SPLIT(PackBoxPokemonForSave,UnpackBoxPokemonForSave) LU_BP_ZERO_FILL_IF_NEW BoxPokemon
 {
     PokemonPersonality personality;
     u32 otId;
@@ -224,7 +224,7 @@ struct Pokemon
     struct BoxPokemon box;
     u32 status;
     PokemonLevel level;
-    u8 mail;
+    LU_BP_DEFAULT(-1) u8 mail;
     u16 hp;
     u16 maxHP;
     u16 attack;

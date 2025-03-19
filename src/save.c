@@ -10,6 +10,7 @@
 #include "gba/flash_internal.h"
 #include "fieldmap.h"
 #include "save.h"
+#include "save_encryption.h"
 #include "task.h"
 #include "decompress.h"
 #include "load_save.h"
@@ -400,6 +401,9 @@ static u8 CopySaveSlotData() {
          }
       }
    }
+   
+   // encrypt post-load:
+   EncryptForSave();
 
    return SAVE_STATUS_OK;
 }
@@ -526,10 +530,10 @@ static u8 SerializeToSlotOwnedSector(u8 sectorId, bool8 eraseFlashFirst) {
    return TryWriteSectorFooter(sectorIndex, gReadWriteSector);
 }
 
-
 static u8 WriteSlot(bool8 cycleSectors, bool8 savePokemonStorage, bool8 eraseFlashFirst) {
    u8  i;
    u32 status;
+   u32 encryptionKeyBackup;
    
    DebugPrintf("[Savedata] Performing full save...", 0);
    
@@ -537,6 +541,9 @@ static u8 WriteSlot(bool8 cycleSectors, bool8 savePokemonStorage, bool8 eraseFla
       OnBeginFullSlotSave(FALSE);
    }
    status = SAVE_STATUS_OK;
+   
+   // decrypt pre-save:
+   DecryptForSave();
    
    if (savePokemonStorage) {
       // SaveBlock1, SaveBlock2, and PokemonStorage
@@ -572,6 +579,9 @@ static u8 WriteSlot(bool8 cycleSectors, bool8 savePokemonStorage, bool8 eraseFla
       }
       #endif
    }
+   
+   // re-encrypt post-save:
+   EncryptForSave();
    
    if (gDamagedSaveSectors) {
       if (cycleSectors) {

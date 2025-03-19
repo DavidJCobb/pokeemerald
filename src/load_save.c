@@ -13,8 +13,7 @@
 #include "gba/flash_internal.h"
 #include "decoration_inventory.h"
 #include "agb_flash.h"
-
-static void ApplyNewEncryptionKeyToAllEncryptedData(u32 encryptionKey);
+#include "save_encryption.h"
 
 #define SAVEBLOCK_MOVE_RANGE    128
 
@@ -281,13 +280,4 @@ void ApplyNewEncryptionKeyToWord(u32 *word, u32 newKey)
 {
     *word ^= gSaveBlock2Ptr->encryptionKey;
     *word ^= newKey;
-}
-
-static void ApplyNewEncryptionKeyToAllEncryptedData(u32 encryptionKey)
-{
-    ApplyNewEncryptionKeyToGameStats(encryptionKey);
-    ApplyNewEncryptionKeyToBagItems_(encryptionKey);
-    ApplyNewEncryptionKeyToBerryPowder(encryptionKey);
-    ApplyNewEncryptionKeyToWord(&gSaveBlock1Ptr->money, encryptionKey);
-    ApplyNewEncryptionKeyToHword(&gSaveBlock1Ptr->coins, encryptionKey);
 }

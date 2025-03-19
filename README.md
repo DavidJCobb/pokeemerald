@@ -44,6 +44,8 @@ This fork uses a custom compiler plug-in to generate code that can pack Emerald'
     
     * `include/lu/game_typedefs.h`: Defines several `typedef`s which have bitpacking options set on them, e.g. `PokemonLevel` and `MoveID`, so that these options don't have to be set in every individual place where a Pokemon level (and various other common types) may appear.
     
+    * `include/save_encryption.h` and `src/save_encryption.c`: Contains functions originally in `src/load_save.c`, so we can access them from within our modified savegame code.
+    
     * `src/save-codegen.h`: Included by `save.c` at the appropriate time in order to trigger generation of the bitpacking code.
     
     * `src/save-codegen-options.h`: Included by `save.c` at the appropriate time in order to set options that apply to the overall code generation process, such as which variables to generate bitpacking code for.
@@ -55,6 +57,8 @@ This fork uses a custom compiler plug-in to generate code that can pack Emerald'
     * `include/global.berry.h`: Edited to set bitpacking options on Enigma Berry savedata fields.
   
     * `include/global.tv.h`: Edited to set bitpacking options on various fields, including by using the typedefs defined in `include/lu/game_typedefs.h`.
+    
+    * `src/load_save.c`: Edited to move `ApplyNewEncryptionKeyToBagItems` to `include/save_encryption.h`.
   
     * `include/pokemon.h`: Edited to set bitpacking options on various fields, including by using the typedefs defined in `include/lu/game_typedefs.h`.
   

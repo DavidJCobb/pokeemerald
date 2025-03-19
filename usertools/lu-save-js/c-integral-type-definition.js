@@ -8,6 +8,18 @@ class CIntegralTypeDefinition extends CTypeDefinition {
       this.typedefs      = [];   // Array<CIntegralTypeDefinition>
    }
    
+   get packed_bitcount() {
+      switch (this.options?.type) {
+         case "boolean":
+            return 1;
+         case "integer":
+            return this.options.bitcount;
+      }
+      if (!this.c_info?.size)
+         throw new Error("unable to determine packed bitcount of integral type");
+      return this.c_info.size * 8;
+   }
+   
    begin_load(node) {
       super.begin_load(node);
       this.symbol = node.getAttribute("name");

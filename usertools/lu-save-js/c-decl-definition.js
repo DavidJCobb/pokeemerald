@@ -133,10 +133,48 @@ class CDeclDefinition extends CDefinition {
             this.default_value = dvs.textContent;
       }
       
-      this.options.from_xml(node, true, null, this.serialized_type?.options);
-      if (this.bitfield_info) { // HACK
-         if (!node.hasAttribute("bitcount"))
-            this.options.bitcount = this.bitfield_info.size;
+      {
+         let inherit_from = this.serialized_type?.options;
+         if (!inherit_from && this.bitfield_info) {
+            //
+            // HACK: This accounts for the case where the following criteria are 
+            // met:
+            //
+            //  - A codebase's global bitpacking options specify that some integral 
+            //    typedef should be treated as a boolean type.
+            //
+            //  - There exists a FIELD_DECL whose declared type is that integral 
+            //    typedef, but with a bitfield width greater than 1.
+            //
+            //  - The FIELD_DECL either does not specify integer bitpacking options, 
+            //    or does not specify a bitcount that differs from the bitfield width.
+            //
+            // In these scenarios, our serialized type has a CIntegralTypeDefinition 
+            // loaded (on the JS end of things) which lacks any CBitpackOptions to 
+            // inherit from; but the FIELD_DECL's XML element also lacks a bitcount, 
+            // so absent *something* to inherit from, CBitpackOptions.from_xml will 
+            // choke and die.
+            //
+            inherit_from = {
+               type:     "integer",
+               bitcount: this.bitfield_info.size,
+            };
+         }
+         this.options.from_xml(
+            node,
+            true,
+            null,
+            inherit_from
+         );
+         if (this.bitfield_info) {
+            //
+            // HACK: This accounts for the case where we have an integral type definition 
+            // to inherit bitpacking options from, and that definition has CBitpackOptions, 
+            // but we are also a bitfield and so our bitfield width may override those.
+            //
+            if (!node.hasAttribute("bitcount"))
+               this.options.bitcount = this.bitfield_info.size;
+         }
       }
       
       for(let child of node.children) {

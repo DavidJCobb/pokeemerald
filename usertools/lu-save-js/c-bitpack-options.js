@@ -3,7 +3,7 @@ class CBitpackOptions {
    constructor() {
       this.type = null;
    }
-   from_xml(node, is_value_node, /*Optional<String>*/ override_type, /*Optional<CBitpackOptions>*/ inherit_from) {
+   from_xml(node, is_value_node, /*Optional<String>*/ override_type, /*Optional<Variant<CBitpackOptions, Object>>*/ inherit_from) {
       if (is_value_node) {
          this.type = override_type || node.nodeName;
       } else {
@@ -38,10 +38,11 @@ class CBitpackOptions {
          case "integer":
             this.bitcount = node.getAttribute("bitcount");
             if (this.bitcount === null) {
-               if (inherit_from)
+               if (inherit_from) {
                   this.bitcount = inherit_from.bitcount;
-               else
+               } else {
                   assert_xml_validity(false, "A set of integer CBitpackOptions neither defines nor inherits a bitcount.");
+               }
             } else {
                this.bitcount = +this.bitcount;
             }

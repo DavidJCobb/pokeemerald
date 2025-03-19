@@ -350,7 +350,10 @@ namespace bitpacking {
       //
       if (!this->_failed) {
          if (auto* casted = std::get_if<typed_data_options::computed::integral>(&dst_var)) {
-            if (casted->min == 0) {
+            if (
+               (casted->min == 0 || casted->min == typed_data_options::computed::integral::no_minimum) &&
+               (casted->max == 1 || casted->max == typed_data_options::computed::integral::no_maximum)
+            ) {
                //
                // This integral value looks like a boolean.
                //

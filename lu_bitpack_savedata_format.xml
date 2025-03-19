@@ -245,7 +245,7 @@
       <integral name="unsigned char" alignment="1" is-signed="false" size="1">
          <typedef name="BattleFacilityLvlMode" bitcount="2" min="0" max="2" />
          <typedef name="BattleFrontierLvlModeOptional" bitcount="2" min="0" max="2" />
-         <typedef name="bool8" bitcount="8" />
+         <typedef name="bool8" />
          <typedef name="ContestCategory" bitcount="3" min="0" max="4" />
          <typedef name="LanguageID" bitcount="4" min="0" max="7">
             <category name="language" />
@@ -1473,7 +1473,7 @@
       </struct>
       <union name="LilycoveLady" c-alignment="4" c-sizeof="64">
          <stats>
-            <bitcounts total-unpacked="512" total-packed="324" />
+            <bitcounts total-unpacked="512" total-packed="317" />
             <counts total="1">
                <in-sector index="4" count="1" />
                <in-top-level-value name="gSaveBlock1Ptr" count="1" />
@@ -1492,7 +1492,7 @@
       </union>
       <struct tag="LilycoveLadyContest" c-alignment="4" c-sizeof="16">
          <stats>
-            <bitcounts total-unpacked="128" total-packed="103" />
+            <bitcounts total-unpacked="128" total-packed="96" />
             <counts total="1">
                <in-sector index="4" count="1" />
                <in-top-level-value name="gSaveBlock1Ptr" count="1" />
@@ -1500,7 +1500,7 @@
          </stats>
          <members>
             <integer name="id" type="u8" />
-            <integer name="givenPokeblock" type="bool8" />
+            <boolean name="givenPokeblock" type="bool8" />
             <integer name="numGoodPokeblocksGiven" type="u8" />
             <integer name="numOtherPokeblocksGiven" type="u8" />
             <string name="playerName" type="u8[8]" length="7" nonstring="false">
@@ -1513,7 +1513,7 @@
       </struct>
       <struct tag="LilycoveLadyFavor" c-alignment="4" c-sizeof="20">
          <stats>
-            <bitcounts total-unpacked="160" total-packed="132" />
+            <bitcounts total-unpacked="160" total-packed="125" />
             <counts total="1">
                <in-sector index="4" count="1" />
                <in-top-level-value name="gSaveBlock1Ptr" count="1" />
@@ -1522,7 +1522,7 @@
          <members>
             <integer name="id" type="u8" />
             <integer name="state" type="u8" />
-            <integer name="likedItem" type="bool8" />
+            <boolean name="likedItem" type="bool8" />
             <integer name="numItemsGiven" type="u8" />
             <string name="playerName" type="u8[8]" length="7" nonstring="false">
                <category name="player-name" />
@@ -1535,7 +1535,7 @@
       </struct>
       <struct tag="LilycoveLadyQuiz" c-alignment="4" c-sizeof="44">
          <stats>
-            <bitcounts total-unpacked="352" total-packed="324" />
+            <bitcounts total-unpacked="352" total-packed="317" />
             <counts total="1">
                <in-sector index="4" count="1" />
                <in-top-level-value name="gSaveBlock1Ptr" count="1" />
@@ -1557,7 +1557,7 @@
                <category name="trainer-id" />
             </integer>
             <integer name="prize" type="ItemIDGlobal" />
-            <integer name="waitingForChallenger" type="bool8" />
+            <boolean name="waitingForChallenger" type="bool8" />
             <integer name="questionId" type="u8" />
             <integer name="prevQuestionId" type="u8" />
             <integer name="language" type="LanguageID" />
@@ -1651,7 +1651,7 @@
       </struct>
       <struct tag="MauvilleManBard" c-alignment="4" c-sizeof="44">
          <stats>
-            <bitcounts total-unpacked="352" total-packed="300" />
+            <bitcounts total-unpacked="352" total-packed="293" />
             <counts total="1">
                <in-sector index="3" count="1" />
                <in-top-level-value name="gSaveBlock1Ptr" count="1" />
@@ -1675,7 +1675,7 @@
                <array-rank extent="4" />
                <category name="trainer-id" />
             </integer>
-            <integer name="hasChangedSong" type="bool8" />
+            <boolean name="hasChangedSong" type="bool8" />
             <integer name="language" type="LanguageID" />
          </members>
       </struct>
@@ -1714,7 +1714,7 @@
       </struct>
       <struct tag="MauvilleManHipster" c-alignment="4" c-sizeof="4">
          <stats>
-            <bitcounts total-unpacked="32" total-packed="20" />
+            <bitcounts total-unpacked="32" total-packed="13" />
             <counts total="1">
                <in-sector index="3" count="1" />
                <in-top-level-value name="gSaveBlock1Ptr" count="1" />
@@ -1722,13 +1722,13 @@
          </stats>
          <members>
             <integer name="id" type="u8" />
-            <integer name="taughtWord" type="bool8" />
+            <boolean name="taughtWord" type="bool8" />
             <integer name="language" type="LanguageID" />
          </members>
       </struct>
       <struct tag="MauvilleManStoryteller" c-alignment="4" c-sizeof="60">
          <stats>
-            <bitcounts total-unpacked="480" total-packed="416" />
+            <bitcounts total-unpacked="480" total-packed="409" />
             <counts total="1">
                <in-sector index="3" count="1" />
                <in-top-level-value name="gSaveBlock1Ptr" count="1" />
@@ -1736,7 +1736,7 @@
          </stats>
          <members>
             <integer name="id" type="u8" />
-            <integer name="alreadyRecorded" type="bool8" />
+            <boolean name="alreadyRecorded" type="bool8" />
             <omitted name="filler2" type="u8[2]" default-value="0">
                <array-rank extent="2" />
             </omitted>
@@ -2612,7 +2612,7 @@
       </struct>
       <struct tag="Roamer" c-alignment="4" c-sizeof="28">
          <stats>
-            <bitcounts total-unpacked="224" total-packed="154" />
+            <bitcounts total-unpacked="224" total-packed="147" />
             <counts total="1">
                <in-sector index="3" count="1" />
                <in-top-level-value name="gSaveBlock1Ptr" count="1" />
@@ -2630,7 +2630,7 @@
             <integer name="cute" type="u8" />
             <integer name="smart" type="u8" />
             <integer name="tough" type="u8" />
-            <integer name="active" type="bool8" />
+            <boolean name="active" type="bool8" />
             <omitted name="filler" type="u8[8]" default-value="0">
                <array-rank extent="8" />
             </omitted>
@@ -2647,7 +2647,7 @@
             <integer value="cute" type="u8" bitcount="8" />
             <integer value="smart" type="u8" bitcount="8" />
             <integer value="tough" type="u8" bitcount="8" />
-            <integer value="active" type="bool8" bitcount="8" />
+            <boolean value="active" type="bool8" />
             <loop array="filler" start="0" count="8" counter-var="__a">
                <omitted value="filler[__a]" type="u8" default-value="0" />
             </loop>
@@ -2655,7 +2655,7 @@
       </struct>
       <struct tag="SaveBlock1" c-alignment="4" c-sizeof="15752">
          <stats>
-            <bitcounts total-unpacked="126016" total-packed="111372" />
+            <bitcounts total-unpacked="126016" total-packed="111351" />
             <counts total="1">
                <in-sector index="1" count="1" />
                <in-top-level-value name="gSaveBlock1Ptr" count="1" />
@@ -3219,7 +3219,7 @@
             <struct name="common">
                <members>
                   <integer name="kind" type="u8" />
-                  <integer name="active" type="bool8" />
+                  <boolean name="active" type="bool8" />
                   <integer name="data" type="u8[26]">
                      <array-rank extent="26" />
                   </integer>
@@ -3236,7 +3236,7 @@
             <struct name="commonInit">
                <members>
                   <integer name="kind" type="u8" />
-                  <integer name="active" type="bool8" />
+                  <boolean name="active" type="bool8" />
                   <integer name="data" type="u8[34]">
                      <array-rank extent="34" />
                   </integer>
@@ -3245,7 +3245,7 @@
             <struct name="fanclubLetter">
                <members>
                   <integer name="kind" type="u8" />
-                  <integer name="active" type="bool8" />
+                  <boolean name="active" type="bool8" />
                   <integer name="species" type="PokemonSpeciesID" />
                   <integer name="words" type="EasyChatWordID[6]">
                      <array-rank extent="6" />
@@ -3259,7 +3259,7 @@
             <struct name="recentHappenings">
                <members>
                   <integer name="kind" type="u8" />
-                  <integer name="active" type="bool8" />
+                  <boolean name="active" type="bool8" />
                   <integer name="species" type="PokemonSpeciesID" />
                   <integer name="words" type="EasyChatWordID[6]">
                      <array-rank extent="6" />
@@ -3273,7 +3273,7 @@
             <struct name="fanclubOpinions">
                <members>
                   <integer name="kind" type="u8" />
-                  <integer name="active" type="bool8" />
+                  <boolean name="active" type="bool8" />
                   <integer name="species" type="PokemonSpeciesID" />
                   <integer name="friendshipHighNybble" type="u8" c-bitfield-offset="32" c-bitfield-width="4" />
                   <integer name="questionAsked" type="u8" c-bitfield-offset="36" c-bitfield-width="4" />
@@ -3299,7 +3299,7 @@
             <struct name="dummy">
                <members>
                   <integer name="kind" type="u8" />
-                  <integer name="active" type="bool8" />
+                  <boolean name="active" type="bool8" />
                   <integer name="words" type="EasyChatWordID[2]">
                      <array-rank extent="2" />
                   </integer>
@@ -3314,7 +3314,7 @@
             <struct name="nameRaterShow">
                <members>
                   <integer name="kind" type="u8" />
-                  <integer name="active" type="bool8" />
+                  <boolean name="active" type="bool8" />
                   <integer name="species" type="PokemonSpeciesID" />
                   <string name="pokemonName" type="u8[11]" length="10" nonstring="false">
                      <category name="pokemon-name" />
@@ -3335,7 +3335,7 @@
             <struct name="bravoTrainer">
                <members>
                   <integer name="kind" type="u8" />
-                  <integer name="active" type="bool8" />
+                  <boolean name="active" type="bool8" />
                   <integer name="species" type="PokemonSpeciesID" />
                   <integer name="words" type="EasyChatWordID[2]">
                      <array-rank extent="2" />
@@ -3357,7 +3357,7 @@
             <struct name="bravoTrainerTower">
                <members>
                   <integer name="kind" type="u8" />
-                  <integer name="active" type="bool8" />
+                  <boolean name="active" type="bool8" />
                   <string name="playerName" type="u8[8]" length="7" nonstring="false">
                      <category name="player-name" />
                   </string>
@@ -3372,7 +3372,7 @@
                   </integer>
                   <integer name="btLevel" type="PokemonLevel" />
                   <integer name="interviewResponse" type="u8" />
-                  <integer name="wonTheChallenge" type="bool8" />
+                  <boolean name="wonTheChallenge" type="bool8" />
                   <integer name="playerLanguage" type="LanguageID" />
                   <integer name="opponentLanguage" type="LanguageID" />
                </members>
@@ -3380,7 +3380,7 @@
             <struct name="contestLiveUpdates">
                <members>
                   <integer name="kind" type="u8" />
-                  <integer name="active" type="bool8" />
+                  <boolean name="active" type="bool8" />
                   <integer name="losingSpecies" type="PokemonSpeciesID" />
                   <string name="losingTrainerName" type="u8[8]" length="7" nonstring="false">
                      <category name="player-name" />
@@ -3402,7 +3402,7 @@
             <struct name="threeCheers">
                <members>
                   <integer name="kind" type="u8" />
-                  <integer name="active" type="bool8" />
+                  <boolean name="active" type="bool8" />
                   <integer name="sheen" type="u8" />
                   <integer name="flavor" type="u8" c-bitfield-offset="24" c-bitfield-width="3" />
                   <integer name="color" type="u8" c-bitfield-offset="27" c-bitfield-width="2" />
@@ -3419,7 +3419,7 @@
             <struct name="battleUpdate">
                <members>
                   <integer name="kind" type="u8" />
-                  <integer name="active" type="bool8" />
+                  <boolean name="active" type="bool8" />
                   <integer name="speciesOpponent" type="PokemonSpeciesID" />
                   <string name="playerName" type="u8[8]" length="7" nonstring="false">
                      <category name="player-name" />
@@ -3437,7 +3437,7 @@
             <struct name="fanClubSpecial">
                <members>
                   <integer name="kind" type="u8" />
-                  <integer name="active" type="bool8" />
+                  <boolean name="active" type="bool8" />
                   <string name="playerName" type="u8[8]" length="7" nonstring="false">
                      <category name="player-name" />
                   </string>
@@ -3457,7 +3457,7 @@
             <struct name="contestLady">
                <members>
                   <integer name="kind" type="u8" />
-                  <integer name="active" type="bool8" />
+                  <boolean name="active" type="bool8" />
                   <string name="playerName" type="u8[8]" length="7" nonstring="false">
                      <category name="player-name" />
                   </string>
@@ -3473,7 +3473,7 @@
             <struct name="pokemonToday">
                <members>
                   <integer name="kind" type="u8" />
-                  <integer name="active" type="bool8" />
+                  <boolean name="active" type="bool8" />
                   <integer name="language" type="LanguageID" />
                   <integer name="language2" type="LanguageID" />
                   <string name="nickname" type="u8[11]" length="10" nonstring="false">
@@ -3490,7 +3490,7 @@
             <struct name="smartshopperShow">
                <members>
                   <integer name="kind" type="u8" />
-                  <integer name="active" type="bool8" />
+                  <boolean name="active" type="bool8" />
                   <integer name="priceReduced" type="u8" />
                   <integer name="language" type="LanguageID" />
                   <omitted name="filler_04" type="u8[2]">
@@ -3511,7 +3511,7 @@
             <struct name="pokemonTodayFailed">
                <members>
                   <integer name="kind" type="u8" />
-                  <integer name="active" type="bool8" />
+                  <boolean name="active" type="bool8" />
                   <integer name="language" type="LanguageID" />
                   <omitted name="filler_03" type="u8[9]">
                      <array-rank extent="9" />
@@ -3529,7 +3529,7 @@
             <struct name="pokemonAngler">
                <members>
                   <integer name="kind" type="u8" />
-                  <integer name="active" type="bool8" />
+                  <boolean name="active" type="bool8" />
                   <integer name="nBites" type="u8" />
                   <integer name="nFails" type="u8" />
                   <integer name="species" type="PokemonSpeciesID" />
@@ -3545,7 +3545,7 @@
             <struct name="worldOfMasters">
                <members>
                   <integer name="kind" type="u8" />
-                  <integer name="active" type="bool8" />
+                  <boolean name="active" type="bool8" />
                   <integer name="numPokeCaught" type="u16" />
                   <integer name="caughtPoke" type="PokemonSpeciesID" />
                   <integer name="steps" type="u16" />
@@ -3563,7 +3563,7 @@
             <struct name="rivalTrainer">
                <members>
                   <integer name="kind" type="u8" />
-                  <integer name="active" type="bool8" />
+                  <boolean name="active" type="bool8" />
                   <integer name="dexCount" type="u16" />
                   <integer name="badgeCount" type="u8" />
                   <integer name="nSilverSymbols" type="u8" />
@@ -3583,7 +3583,7 @@
             <struct name="trendWatcher">
                <members>
                   <integer name="kind" type="u8" />
-                  <integer name="active" type="bool8" />
+                  <boolean name="active" type="bool8" />
                   <omitted name="filler_02" type="u8[2]">
                      <array-rank extent="2" />
                   </omitted>
@@ -3603,7 +3603,7 @@
             <struct name="treasureInvestigators">
                <members>
                   <integer name="kind" type="u8" />
-                  <integer name="active" type="bool8" />
+                  <boolean name="active" type="bool8" />
                   <integer name="item" type="ItemIDGlobal" />
                   <integer name="location" type="MapSectionID" />
                   <integer name="language" type="LanguageID" />
@@ -3619,7 +3619,7 @@
             <struct name="findThatGamer">
                <members>
                   <integer name="kind" type="u8" />
-                  <integer name="active" type="bool8" />
+                  <boolean name="active" type="bool8" />
                   <integer name="won" type="u8" />
                   <integer name="whichGame" type="u8" />
                   <integer name="nCoins" type="u16" />
@@ -3638,7 +3638,7 @@
             <struct name="breakingNews">
                <members>
                   <integer name="kind" type="u8" />
-                  <integer name="active" type="bool8" />
+                  <boolean name="active" type="bool8" />
                   <integer name="lastOpponentSpecies" type="PokemonSpeciesID" />
                   <integer name="location" type="MapSectionID" />
                   <integer name="outcome" type="u8" />
@@ -3658,7 +3658,7 @@
             <struct name="secretBaseVisit">
                <members>
                   <integer name="kind" type="u8" />
-                  <integer name="active" type="bool8" />
+                  <boolean name="active" type="bool8" />
                   <integer name="avgLevel" type="PokemonLevel" />
                   <integer name="numDecorations" type="u8" />
                   <integer name="decorations" type="u8[4]">
@@ -3678,7 +3678,7 @@
             <struct name="lottoWinner">
                <members>
                   <integer name="kind" type="u8" />
-                  <integer name="active" type="bool8" />
+                  <boolean name="active" type="bool8" />
                   <integer name="item" type="ItemIDGlobal" />
                   <integer name="whichPrize" type="u8" />
                   <integer name="language" type="LanguageID" />
@@ -3693,7 +3693,7 @@
             <struct name="battleSeminar">
                <members>
                   <integer name="kind" type="u8" />
-                  <integer name="active" type="bool8" />
+                  <boolean name="active" type="bool8" />
                   <integer name="move" type="MoveID" />
                   <integer name="foeSpecies" type="PokemonSpeciesID" />
                   <integer name="species" type="PokemonSpeciesID" />
@@ -3714,7 +3714,7 @@
             <struct name="trainerFanClub">
                <members>
                   <integer name="kind" type="u8" />
-                  <integer name="active" type="bool8" />
+                  <boolean name="active" type="bool8" />
                   <omitted name="filler_02" type="u8[2]">
                      <array-rank extent="2" />
                   </omitted>
@@ -3733,7 +3733,7 @@
             <struct name="cuties">
                <members>
                   <integer name="kind" type="u8" />
-                  <integer name="active" type="bool8" />
+                  <boolean name="active" type="bool8" />
                   <integer name="nRibbons" type="u8" />
                   <integer name="selectedRibbon" type="u8" />
                   <string name="nickname" type="u8[11]" length="10" nonstring="false">
@@ -3752,7 +3752,7 @@
             <struct name="frontier">
                <members>
                   <integer name="kind" type="u8" />
-                  <integer name="active" type="bool8" />
+                  <boolean name="active" type="bool8" />
                   <integer name="winStreak" type="u16" />
                   <integer name="species1" type="PokemonSpeciesID" />
                   <integer name="species2" type="PokemonSpeciesID" />
@@ -3771,7 +3771,7 @@
             <struct name="numberOne">
                <members>
                   <integer name="kind" type="u8" />
-                  <integer name="active" type="bool8" />
+                  <boolean name="active" type="bool8" />
                   <integer name="count" type="u16" />
                   <integer name="actionIdx" type="u8" />
                   <integer name="language" type="LanguageID" />
@@ -3786,7 +3786,7 @@
             <struct name="secretBaseSecrets">
                <members>
                   <integer name="kind" type="u8" />
-                  <integer name="active" type="bool8" />
+                  <boolean name="active" type="bool8" />
                   <integer name="stepsInBase" type="u16" />
                   <string name="baseOwnersName" type="u8[8]" length="7" nonstring="false">
                      <category name="player-name" />
@@ -3804,7 +3804,7 @@
             <struct name="safariFanClub">
                <members>
                   <integer name="kind" type="u8" />
-                  <integer name="active" type="bool8" />
+                  <boolean name="active" type="bool8" />
                   <integer name="monsCaught" type="u8" />
                   <integer name="pokeblocksUsed" type="u8" />
                   <integer name="language" type="LanguageID" />
@@ -3819,7 +3819,7 @@
             <struct name="massOutbreak">
                <members>
                   <integer name="kind" type="u8" />
-                  <integer name="active" type="bool8" />
+                  <boolean name="active" type="bool8" />
                   <omitted name="unused1" type="u8" />
                   <omitted name="unused3" type="u8" />
                   <integer name="moves" type="MoveID[4]">
@@ -3841,7 +3841,7 @@
       </union>
       <struct tag="WaldaPhrase" c-alignment="4" c-sizeof="24">
          <stats>
-            <bitcounts total-unpacked="192" total-packed="176" />
+            <bitcounts total-unpacked="192" total-packed="169" />
             <counts total="1">
                <in-sector index="4" count="1" />
                <in-top-level-value name="gSaveBlock1Ptr" count="1" />
@@ -3854,7 +3854,7 @@
             <string name="text" type="u8[16]" length="15" nonstring="false" />
             <integer name="iconId" type="u8" />
             <integer name="patternId" type="u8" />
-            <integer name="patternUnlocked" type="bool8" />
+            <boolean name="patternUnlocked" type="bool8" />
          </members>
          <instructions>
             <loop array="colors" start="0" count="2" counter-var="__a">
@@ -3863,7 +3863,7 @@
             <string value="text" type="u8[16]" length="15" nonstring="false" />
             <integer value="iconId" type="u8" bitcount="8" />
             <integer value="patternId" type="u8" bitcount="8" />
-            <integer value="patternUnlocked" type="bool8" bitcount="8" />
+            <boolean value="patternUnlocked" type="bool8" />
          </instructions>
       </struct>
       <struct tag="WarpData" c-alignment="4" c-sizeof="8">
@@ -4141,7 +4141,7 @@
       </sector>
       <sector>
          <stats>
-            <bitcounts total-packed="31551" />
+            <bitcounts total-packed="31544" />
          </stats>
          <instructions>
             <loop array="(*gSaveBlock1Ptr).secretBases[13].decorationPositions" start="11" count="5" counter-var="__a">
@@ -4246,7 +4246,7 @@
       </sector>
       <sector>
          <stats>
-            <bitcounts total-packed="16338" />
+            <bitcounts total-packed="16324" />
          </stats>
          <instructions>
             <string value="(*gSaveBlock1Ptr).mysteryGift.news.bodyText[9]" type="u8[40]" length="40" nonstring="true" />
@@ -4277,7 +4277,7 @@
             <integer value="(*gSaveBlock1Ptr).lilycoveLady.quiz.id" type="u8" bitcount="8" />
             <switch operand="(*gSaveBlock1Ptr).lilycoveLady.quiz.id">
                <case value="2">
-                  <integer value="(*gSaveBlock1Ptr).lilycoveLady.contest.givenPokeblock" type="bool8" bitcount="8" />
+                  <boolean value="(*gSaveBlock1Ptr).lilycoveLady.contest.givenPokeblock" type="bool8" />
                   <integer value="(*gSaveBlock1Ptr).lilycoveLady.contest.numGoodPokeblocksGiven" type="u8" bitcount="8" />
                   <integer value="(*gSaveBlock1Ptr).lilycoveLady.contest.numOtherPokeblocksGiven" type="u8" bitcount="8" />
                   <string value="(*gSaveBlock1Ptr).lilycoveLady.contest.playerName" type="u8[8]" length="7" nonstring="false" />
@@ -4288,7 +4288,7 @@
                </case>
                <case value="1">
                   <integer value="(*gSaveBlock1Ptr).lilycoveLady.favor.state" type="u8" bitcount="8" />
-                  <integer value="(*gSaveBlock1Ptr).lilycoveLady.favor.likedItem" type="bool8" bitcount="8" />
+                  <boolean value="(*gSaveBlock1Ptr).lilycoveLady.favor.likedItem" type="bool8" />
                   <integer value="(*gSaveBlock1Ptr).lilycoveLady.favor.numItemsGiven" type="u8" bitcount="8" />
                   <string value="(*gSaveBlock1Ptr).lilycoveLady.favor.playerName" type="u8[8]" length="7" nonstring="false" />
                   <integer value="(*gSaveBlock1Ptr).lilycoveLady.favor.favorId" type="u8" bitcount="8" />
@@ -4309,13 +4309,13 @@
                      <integer value="(*gSaveBlock1Ptr).lilycoveLady.quiz.playerTrainerId[__h]" type="u8" bitcount="8" />
                   </loop>
                   <integer value="(*gSaveBlock1Ptr).lilycoveLady.quiz.prize" type="ItemIDGlobal" bitcount="16" />
-                  <integer value="(*gSaveBlock1Ptr).lilycoveLady.quiz.waitingForChallenger" type="bool8" bitcount="8" />
+                  <boolean value="(*gSaveBlock1Ptr).lilycoveLady.quiz.waitingForChallenger" type="bool8" />
                   <integer value="(*gSaveBlock1Ptr).lilycoveLady.quiz.questionId" type="u8" bitcount="8" />
                   <integer value="(*gSaveBlock1Ptr).lilycoveLady.quiz.prevQuestionId" type="u8" bitcount="8" />
                   <integer value="(*gSaveBlock1Ptr).lilycoveLady.quiz.language" type="LanguageID" bitcount="4" min="0" max="7" />
                </case>
                <fallback-case>
-                  <padding bitcount="316" />
+                  <padding bitcount="309" />
                </fallback-case>
             </switch>
             <loop array="(*gSaveBlock1Ptr).trainerNameRecords" start="0" count="20" counter-var="__i">

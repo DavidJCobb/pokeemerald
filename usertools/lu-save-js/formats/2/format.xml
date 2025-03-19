@@ -2775,7 +2775,9 @@
                <array-rank extent="16" />
             </struct>
             <integer name="outbreakPokemonSpecies" type="PokemonSpeciesID" />
-            <integer name="outbreakLocationMapNum" type="MapIndexInGroup" />
+            <integer name="outbreakLocationMapNum" type="MapIndexInGroup">
+               <annotation text="map-group(outbreakLocationMapGroup)" />
+            </integer>
             <integer name="outbreakLocationMapGroup" type="MapGroupIndex" />
             <integer name="outbreakPokemonLevel" type="PokemonLevel" />
             <integer name="outbreakUnused1" type="u8" />

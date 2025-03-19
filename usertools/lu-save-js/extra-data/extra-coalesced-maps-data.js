@@ -151,11 +151,41 @@ class ExtraCoalescedMapsData extends CInstanceDisplayOverrides {
             return null;
          let v;
          {
-            let memb = inside.members["mapGroup"] || inside.members["outbreakLocationMapGroup"];
-            if (memb)
+            let desired = null;
+            for(let annotation of map_num_inst.decl.annotations) {
+               let match = annotation.match(/^map-group\(([^\)]+)\)$/);
+               if (match) {
+                  desired = match[1];
+                  break;
+               }
+            }
+            let memb;
+            if (desired) {
+               memb = inside.members[desired];
+            } else {
+               let multiple = false;
+               for(let name in inside.members) {
+                  let here = inside.members[name];
+                  let tn   = here.serialized_type?.symbol;
+                  if (tn == "MapGroupIndex" || tn == "MapGroupIndexOptional") {
+                     if (memb) {
+                        multiple = true;
+                        break;
+                     } else {
+                        memb = here;
+                     }
+                  }
+               }
+               if (multiple)
+                  memb = null;
+            }
+            if (memb) {
                v = memb.value;
-            else
+               if (v === null)
+                  return null;
+            } else {
                return null;
+            }
          }
          return this.#owner.map_groups[v];
       }

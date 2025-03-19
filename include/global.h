@@ -695,7 +695,7 @@ struct MauvilleOldManTrader
 {
     u8 id;
     u8 decorations[NUM_TRADER_ITEMS];
-    LU_BP_CATEGORY("player-name-mauville-old-man") LU_BP_STRING_WT u8 playerNames[NUM_TRADER_ITEMS][11];
+    LU_BP_CATEGORY("player-name-mauville-old-man") LU_BP_STRING_WT u8 playerNames[NUM_TRADER_ITEMS][PLAYER_NAME_LENGTH + 4];
     u8 alreadyTraded;
     LanguageID language[NUM_TRADER_ITEMS];
 };
@@ -1030,7 +1030,7 @@ struct SaveBlock1
     /*0x27CC*/ TVShow tvShows[TV_SHOWS_COUNT];
     /*0x2B50*/ PokeNews pokeNews[POKE_NEWS_COUNT];
     /*0x2B90*/ PokemonSpeciesID outbreakPokemonSpecies;
-    /*0x2B92*/ MapIndexInGroup  outbreakLocationMapNum;
+    /*0x2B92*/ LU_BP_ANNOTATION("map-group(outbreakLocationMapGroup)") MapIndexInGroup  outbreakLocationMapNum;
     /*0x2B93*/ MapGroupIndex    outbreakLocationMapGroup;
     /*0x2B94*/ PokemonLevel     outbreakPokemonLevel;
     /*0x2B95*/ u8               outbreakUnused1;

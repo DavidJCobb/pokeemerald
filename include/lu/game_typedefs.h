@@ -9,6 +9,8 @@
 // - PLAYER_NAME_LENGTH
 // - POKEMON_NAME_LENGTH
 // - TRAINER_ID_LENGTH
+#include "constants/pokemon.h"
+// - MAX_LEVEL
 
 //
 // Typedefs, to make some things (e.g. bitpacking options and stats) easier.
@@ -32,6 +34,7 @@ LU_BP_CATEGORY("easy-chat-word") typedef u16 EasyChatWordID;
 LU_BP_CATEGORY("language") LU_BP_BITCOUNT(4) LU_BP_MINMAX(0, NUM_LANGUAGES) typedef u8 LanguageID;
 LU_BP_CATEGORY("global-item-id") typedef u16 ItemIDGlobal;
 
+// Typedefs for map groups, map nums, and map sections.
 typedef s8 MapGroupIndexOptional;
 typedef u8 MapGroupIndex;
 //
@@ -47,7 +50,7 @@ LU_BP_CATEGORY("move-id") LU_BP_BITCOUNT(9) typedef u16 MoveID;
 LU_BP_CATEGORY("player-gender") LU_BP_MINMAX(0, GENDER_COUNT - 1) typedef u8 PlayerGender;
 LU_BP_CATEGORY("player-name")  LU_BP_STRING_WT typedef u8 PlayerName[PLAYER_NAME_LENGTH + 1];
 LU_BP_CATEGORY("player-name")  LU_BP_STRING_UT typedef u8 PlayerNameNoTerminator[PLAYER_NAME_LENGTH];
-LU_BP_CATEGORY("pokemon-level") LU_BP_MINMAX(0,100) typedef u8 PokemonLevel;
+LU_BP_CATEGORY("pokemon-level") LU_BP_MINMAX(0,MAX_LEVEL) typedef u8 PokemonLevel;
 LU_BP_CATEGORY("pokemon-name") LU_BP_STRING_WT typedef u8 PokemonName[POKEMON_NAME_LENGTH + 1];
 LU_BP_CATEGORY("pokemon-name") LU_BP_STRING_UT typedef u8 PokemonNameNoTerminator[POKEMON_NAME_LENGTH];
 typedef u32 PokemonPersonality;

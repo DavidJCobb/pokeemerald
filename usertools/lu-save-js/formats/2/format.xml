@@ -2648,14 +2648,9 @@
             <integer value="smart" type="u8" bitcount="8" />
             <integer value="tough" type="u8" bitcount="8" />
             <integer value="active" type="bool8" bitcount="8" />
-            <omitted value="filler[0]" type="u8" default-value="0" />
-            <omitted value="filler[1]" type="u8" default-value="0" />
-            <omitted value="filler[2]" type="u8" default-value="0" />
-            <omitted value="filler[3]" type="u8" default-value="0" />
-            <omitted value="filler[4]" type="u8" default-value="0" />
-            <omitted value="filler[5]" type="u8" default-value="0" />
-            <omitted value="filler[6]" type="u8" default-value="0" />
-            <omitted value="filler[7]" type="u8" default-value="0" />
+            <loop array="filler" start="0" count="8" counter-var="__a">
+               <omitted value="filler[__a]" type="u8" default-value="0" />
+            </loop>
          </instructions>
       </struct>
       <struct tag="SaveBlock1" c-alignment="4" c-sizeof="15752">
@@ -4263,21 +4258,18 @@
             <loop array="(*gSaveBlock1Ptr).berryBlenderRecords" start="0" count="3" counter-var="__k">
                <integer value="(*gSaveBlock1Ptr).berryBlenderRecords[__k]" type="u16" bitcount="16" />
             </loop>
-            <omitted value="(*gSaveBlock1Ptr).unused_9C2[0]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_9C2[1]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_9C2[2]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_9C2[3]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_9C2[4]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_9C2[5]" type="u8" default-value="0" />
+            <loop array="(*gSaveBlock1Ptr).unused_9C2" start="0" count="6" counter-var="__l">
+               <omitted value="(*gSaveBlock1Ptr).unused_9C2[__l]" type="u8" default-value="0" />
+            </loop>
             <integer value="(*gSaveBlock1Ptr).trainerRematchStepCounter" type="u16" bitcount="16" />
-            <loop array="(*gSaveBlock1Ptr).trainerRematches" start="0" count="100" counter-var="__l">
-               <integer value="(*gSaveBlock1Ptr).trainerRematches[__l]" type="u8" bitcount="8" />
+            <loop array="(*gSaveBlock1Ptr).trainerRematches" start="0" count="100" counter-var="__m">
+               <integer value="(*gSaveBlock1Ptr).trainerRematches[__m]" type="u8" bitcount="8" />
             </loop>
-            <loop array="(*gSaveBlock1Ptr).objectEvents" start="0" count="16" counter-var="__m">
-               <struct value="(*gSaveBlock1Ptr).objectEvents[__m]" type="ObjectEvent" />
+            <loop array="(*gSaveBlock1Ptr).objectEvents" start="0" count="16" counter-var="__n">
+               <struct value="(*gSaveBlock1Ptr).objectEvents[__n]" type="ObjectEvent" />
             </loop>
-            <loop array="(*gSaveBlock1Ptr).objectEventTemplates" start="0" count="45" counter-var="__n">
-               <struct value="(*gSaveBlock1Ptr).objectEventTemplates[__n]" type="ObjectEventTemplate" />
+            <loop array="(*gSaveBlock1Ptr).objectEventTemplates" start="0" count="45" counter-var="__o">
+               <struct value="(*gSaveBlock1Ptr).objectEventTemplates[__o]" type="ObjectEventTemplate" />
             </loop>
             <integer value="(*gSaveBlock1Ptr).objectEventTemplates[45].localId" type="u8" bitcount="8" />
             <integer value="(*gSaveBlock1Ptr).objectEventTemplates[45].graphicsId" type="u8" bitcount="8" />
@@ -4462,397 +4454,16 @@
                   <integer value="(*gSaveBlock1Ptr).mysteryGift.trainerIds[__b][__c]" type="u32" bitcount="32" />
                </loop>
             </loop>
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[0]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[1]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[2]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[3]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[4]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[5]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[6]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[7]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[8]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[9]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[10]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[11]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[12]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[13]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[14]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[15]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[16]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[17]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[18]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[19]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[20]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[21]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[22]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[23]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[24]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[25]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[26]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[27]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[28]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[29]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[30]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[31]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[32]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[33]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[34]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[35]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[36]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[37]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[38]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[39]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[40]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[41]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[42]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[43]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[44]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[45]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[46]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[47]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[48]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[49]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[50]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[51]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[52]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[53]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[54]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[55]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[56]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[57]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[58]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[59]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[60]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[61]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[62]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[63]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[64]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[65]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[66]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[67]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[68]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[69]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[70]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[71]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[72]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[73]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[74]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[75]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[76]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[77]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[78]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[79]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[80]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[81]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[82]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[83]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[84]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[85]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[86]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[87]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[88]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[89]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[90]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[91]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[92]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[93]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[94]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[95]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[96]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[97]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[98]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[99]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[100]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[101]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[102]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[103]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[104]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[105]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[106]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[107]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[108]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[109]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[110]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[111]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[112]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[113]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[114]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[115]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[116]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[117]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[118]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[119]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[120]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[121]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[122]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[123]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[124]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[125]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[126]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[127]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[128]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[129]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[130]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[131]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[132]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[133]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[134]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[135]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[136]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[137]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[138]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[139]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[140]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[141]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[142]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[143]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[144]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[145]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[146]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[147]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[148]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[149]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[150]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[151]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[152]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[153]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[154]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[155]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[156]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[157]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[158]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[159]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[160]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[161]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[162]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[163]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[164]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[165]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[166]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[167]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[168]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[169]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[170]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[171]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[172]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[173]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[174]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[175]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[176]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[177]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[178]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[179]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[180]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[181]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[182]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[183]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[184]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[185]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[186]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[187]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[188]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[189]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[190]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[191]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[192]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[193]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[194]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[195]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[196]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[197]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[198]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[199]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[200]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[201]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[202]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[203]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[204]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[205]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[206]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[207]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[208]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[209]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[210]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[211]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[212]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[213]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[214]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[215]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[216]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[217]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[218]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[219]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[220]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[221]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[222]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[223]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[224]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[225]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[226]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[227]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[228]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[229]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[230]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[231]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[232]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[233]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[234]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[235]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[236]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[237]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[238]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[239]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[240]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[241]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[242]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[243]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[244]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[245]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[246]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[247]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[248]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[249]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[250]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[251]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[252]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[253]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[254]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[255]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[256]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[257]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[258]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[259]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[260]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[261]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[262]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[263]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[264]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[265]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[266]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[267]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[268]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[269]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[270]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[271]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[272]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[273]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[274]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[275]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[276]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[277]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[278]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[279]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[280]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[281]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[282]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[283]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[284]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[285]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[286]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[287]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[288]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[289]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[290]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[291]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[292]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[293]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[294]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[295]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[296]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[297]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[298]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[299]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[300]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[301]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[302]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[303]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[304]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[305]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[306]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[307]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[308]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[309]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[310]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[311]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[312]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[313]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[314]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[315]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[316]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[317]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[318]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[319]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[320]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[321]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[322]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[323]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[324]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[325]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[326]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[327]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[328]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[329]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[330]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[331]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[332]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[333]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[334]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[335]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[336]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[337]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[338]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[339]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[340]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[341]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[342]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[343]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[344]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[345]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[346]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[347]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[348]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[349]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[350]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[351]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[352]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[353]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[354]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[355]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[356]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[357]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[358]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[359]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[360]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[361]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[362]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[363]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[364]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[365]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[366]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[367]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[368]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[369]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[370]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[371]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[372]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[373]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[374]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[375]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[376]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[377]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[378]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[379]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[380]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[381]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[382]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3598[383]" type="u8" default-value="0" />
-            <loop array="(*gSaveBlock1Ptr).trainerHillTimes" start="0" count="4" counter-var="__d">
-               <integer value="(*gSaveBlock1Ptr).trainerHillTimes[__d]" type="u32" bitcount="32" />
+            <loop array="(*gSaveBlock1Ptr).unused_3598" start="0" count="384" counter-var="__d">
+               <omitted value="(*gSaveBlock1Ptr).unused_3598[__d]" type="u8" default-value="0" />
+            </loop>
+            <loop array="(*gSaveBlock1Ptr).trainerHillTimes" start="0" count="4" counter-var="__e">
+               <integer value="(*gSaveBlock1Ptr).trainerHillTimes[__e]" type="u32" bitcount="32" />
             </loop>
             <struct value="(*gSaveBlock1Ptr).ramScript" type="RamScript" />
             <struct value="(*gSaveBlock1Ptr).recordMixingGift" type="RecordMixingGift" />
-            <loop array="(*gSaveBlock1Ptr).seen2" start="0" count="52" counter-var="__e">
-               <integer value="(*gSaveBlock1Ptr).seen2[__e]" type="u8" bitcount="8" />
+            <loop array="(*gSaveBlock1Ptr).seen2" start="0" count="52" counter-var="__f">
+               <integer value="(*gSaveBlock1Ptr).seen2[__f]" type="u8" bitcount="8" />
             </loop>
             <integer value="(*gSaveBlock1Ptr).lilycoveLady.quiz.id" type="u8" bitcount="8" />
             <switch operand="(*gSaveBlock1Ptr).lilycoveLady.quiz.id">
@@ -4879,14 +4490,14 @@
                </case>
                <case value="0">
                   <integer value="(*gSaveBlock1Ptr).lilycoveLady.quiz.state" type="u8" bitcount="8" />
-                  <loop array="(*gSaveBlock1Ptr).lilycoveLady.quiz.question" start="0" count="9" counter-var="__f">
-                     <integer value="(*gSaveBlock1Ptr).lilycoveLady.quiz.question[__f]" type="EasyChatWordID" bitcount="16" />
+                  <loop array="(*gSaveBlock1Ptr).lilycoveLady.quiz.question" start="0" count="9" counter-var="__g">
+                     <integer value="(*gSaveBlock1Ptr).lilycoveLady.quiz.question[__g]" type="EasyChatWordID" bitcount="16" />
                   </loop>
                   <integer value="(*gSaveBlock1Ptr).lilycoveLady.quiz.correctAnswer" type="EasyChatWordID" bitcount="16" />
                   <integer value="(*gSaveBlock1Ptr).lilycoveLady.quiz.playerAnswer" type="EasyChatWordID" bitcount="16" />
                   <string value="(*gSaveBlock1Ptr).lilycoveLady.quiz.playerName" type="u8[8]" length="7" nonstring="false" />
-                  <loop array="(*gSaveBlock1Ptr).lilycoveLady.quiz.playerTrainerId" start="0" count="4" counter-var="__g">
-                     <integer value="(*gSaveBlock1Ptr).lilycoveLady.quiz.playerTrainerId[__g]" type="u8" bitcount="8" />
+                  <loop array="(*gSaveBlock1Ptr).lilycoveLady.quiz.playerTrainerId" start="0" count="4" counter-var="__h">
+                     <integer value="(*gSaveBlock1Ptr).lilycoveLady.quiz.playerTrainerId[__h]" type="u8" bitcount="8" />
                   </loop>
                   <integer value="(*gSaveBlock1Ptr).lilycoveLady.quiz.prize" type="ItemIDGlobal" bitcount="16" />
                   <integer value="(*gSaveBlock1Ptr).lilycoveLady.quiz.waitingForChallenger" type="bool8" bitcount="8" />
@@ -4898,22 +4509,15 @@
                   <padding bitcount="316" />
                </fallback-case>
             </switch>
-            <loop array="(*gSaveBlock1Ptr).trainerNameRecords" start="0" count="20" counter-var="__h">
-               <struct value="(*gSaveBlock1Ptr).trainerNameRecords[__h]" type="TrainerNameRecord" />
+            <loop array="(*gSaveBlock1Ptr).trainerNameRecords" start="0" count="20" counter-var="__i">
+               <struct value="(*gSaveBlock1Ptr).trainerNameRecords[__i]" type="TrainerNameRecord" />
             </loop>
-            <loop array="(*gSaveBlock1Ptr).registeredTexts" start="0" count="10" counter-var="__i">
-               <string value="(*gSaveBlock1Ptr).registeredTexts[__i]" type="u8[21]" length="20" nonstring="false" />
+            <loop array="(*gSaveBlock1Ptr).registeredTexts" start="0" count="10" counter-var="__j">
+               <string value="(*gSaveBlock1Ptr).registeredTexts[__j]" type="u8[21]" length="20" nonstring="false" />
             </loop>
-            <omitted value="(*gSaveBlock1Ptr).unused_3D5A[0]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3D5A[1]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3D5A[2]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3D5A[3]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3D5A[4]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3D5A[5]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3D5A[6]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3D5A[7]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3D5A[8]" type="u8" default-value="0" />
-            <omitted value="(*gSaveBlock1Ptr).unused_3D5A[9]" type="u8" default-value="0" />
+            <loop array="(*gSaveBlock1Ptr).unused_3D5A" start="0" count="10" counter-var="__k">
+               <omitted value="(*gSaveBlock1Ptr).unused_3D5A[__k]" type="u8" default-value="0" />
+            </loop>
             <struct value="(*gSaveBlock1Ptr).trainerHill" type="TrainerHillSave" />
             <struct value="(*gSaveBlock1Ptr).waldaPhrase" type="WaldaPhrase" />
          </instructions>

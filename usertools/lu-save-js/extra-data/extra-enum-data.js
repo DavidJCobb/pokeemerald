@@ -28,9 +28,11 @@ class ExtraEnumData {
          let n = this.#enumeration.members.by_value.get(v);
          if (n)
             return "[style=value-text]" + n + "[/style]";
-         for(let range of this.unused_ranges) {
-            if (n >= range.first && n <= range.last) {
-               return "[style=value-text]__UNUSED_" + n + "[/style]";
+         if (this.unused_ranges) {
+            for(let range of this.unused_ranges) {
+               if (n >= range.first && n <= range.last) {
+                  return "[style=value-text]__UNUSED_" + n + "[/style]";
+               }
             }
          }
          return null;

@@ -25,6 +25,10 @@ namespace codegen::serialization_item_list_ops {
             if (!desc.is_or_contains_defaulted())
                continue;
             
+            // Don't force-expand a wholly-omitted array.
+            if (!desc.array.extents.empty())
+               continue;
+            
             const auto expanded = item.expanded();
             lu::vectors::replace_item_with_vector(list, i, expanded);
             size = list.size();

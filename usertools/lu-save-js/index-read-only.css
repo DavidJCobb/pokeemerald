@@ -1,0 +1,238 @@
+*:first-child { margin-top: 0 }
+*:last-child { margin-bottom: 0 }
+
+html {
+   font-family: Calibri, "Segoe UI", Verdana, sans-serif;
+   
+   background: #333;
+   color: #DDD;
+   
+   scrollbar-gutter: stable;
+}
+
+body {
+   max-width: 960px;
+   margin:    0 auto;
+   padding:   1em;
+}
+
+a:link {
+   color: #88D8FF;
+}
+a:visited {
+   color: #D060FF;
+}
+
+/*
+   Disgusting hacks for list item numbers
+*/
+ol {
+   /*
+      ::marker apparently doesn't support, like, 90% of CSS, so ditch it: 
+      use a custom counter and a pseudo-element.
+   */
+   list-style:    none;
+   counter-reset: list-number 0;
+   &>li {
+      counter-increment: list-number;
+   }
+   
+   --expected-number-size: 6em;
+   
+   position:     relative;
+   padding-left: calc(var(--expected-number-size,0) + 2em);
+   &>li::before {
+      content: counter(list-number);
+      
+      display:  inline-block;
+      position: absolute;
+      left:     0;
+      
+      width:       1em;
+      height:      1em;
+      padding:     .25em;
+      font-size:   4em;
+      line-height: 95%;
+      
+      background: #000;
+      color: #FF7400;
+      border-radius: 50%;
+      font-weight: bold;
+      text-align: center;
+   }
+   
+   &>li:not([hidden]) {
+      min-height: var(--expected-number-size,0);
+   }
+   
+   /*
+      Elements that are display:none can't contribute to counters. Switch 
+      that out for content-visibility:hidden.
+   */
+   &>li[hidden] {
+      display: block;
+      content-visibility: hidden;
+   }
+}
+
+ol {
+   margin: 0;
+   
+   &>li {
+   }
+   &>li:not([hidden]) ~ li:not([hidden]) {
+      padding-top: 2em;
+      margin-top:  2em;
+      border-top:  1px solid #222;
+   }
+   &>li:not([hidden]):last-child {
+      padding-bottom: 2em;
+   }
+}
+
+.filepicker {
+   display:   flex;
+   flex-flow: row nowrap;
+   max-width: 20em;
+   
+   input {
+      flex: 1 1 auto;
+   }
+   button {
+      flex: 0 0 auto;
+   }
+}
+
+.buttons {
+   display: flex;
+   flex-flow: row nowrap;
+   justify-content: start;
+   gap: 1em;
+   
+   :where(&) {
+      margin: 1em 0;
+   }
+}
+.buttons button {
+   --button-back-base:     #674;
+   --button-back-hover:    #796;
+   --button-back-disabled: #777;
+   
+   all:           unset;
+   appearance:    none;
+   background:    var(--button-back-base,#666);
+   min-width:     2ch;
+   padding:       1em 2em;
+   color:         #FFF;
+   font:          inherit;
+   font-weight:   bold;
+   text-align:    center;
+   border-radius: 5em;
+   cursor:        pointer;
+   
+   -webkit-text-stroke: .2em #000;
+   paint-order: stroke fill;
+   
+   &[disabled] {
+      background: var(--button-back-disabled,#777);
+      color:      #DDD;
+      cursor:     not-allowed;
+      -webkit-text-stroke: .2em #444;
+   }
+   &:not([disabled]) {
+      &:hover {
+         background: var(--button-back-hover,#777);
+      }
+      &:active {
+         background: #222;
+      }
+   }
+   
+   &[data-action='deny'] {
+      --button-back-base:  #744;
+      --button-back-hover: #966;
+   }
+}
+
+#loaded-save-info {
+   padding:    1em;
+   margin:     1em 0;
+   background: #222;
+   border-radius: 1em;
+   
+   li {
+      list-style: none;
+   }
+   li:not(:has(ul)) {
+      display:   flex;
+      flex-flow: row nowrap;
+      
+      dt {
+         flex: 0 0 5em;
+      }
+      dd {
+         flex: 1 1 auto;
+      }
+   }
+   
+   dt {
+      font-weight: bold;
+   }
+   dd {
+      margin: 0;
+   }
+   
+   ul[data-show="player party"] {
+      padding: 0 0 0 1.5em;
+      margin:  0;
+      
+      &.empty {
+         list-style: none;
+         padding:    0;
+      }
+   }
+}
+
+dialog.error {
+   background: #511;
+   color: #FFF;
+   
+   border:  0;
+   padding: 1em 2em;
+   margin:  auto;
+   
+   .body {
+      white-space: pre;
+   }
+   
+   .buttons {
+      justify-content: center;
+   }
+   .buttons button {
+      --button-back-base:  #877;
+      --button-back-hover: #A77;
+   }
+}
+dialog {
+   border-radius: 1em;
+   box-shadow:
+      0px 3px 5px 3px rgba(0, 0, 0, 0.3), 
+      0px 6px 7px 4px rgba(0, 0, 0, 0.15)
+   ;
+}
+dialog::backdrop {
+   background:
+      repeating-linear-gradient(135deg,
+         #00000000 1em,
+         #00000020 1em,
+         #00000020 2em,
+         #00000000 2em,
+         #00000000 3em,
+         #00000020 3em,
+         #00000020 4em,
+         #00000000 4em,
+         #00000000 5em,
+         #00000020 5em
+      ),
+      rgba(0, 0, 0, 0.2)
+}

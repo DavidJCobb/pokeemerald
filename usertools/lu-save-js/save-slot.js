@@ -31,12 +31,11 @@ class SaveSlot extends CStructInstance {
       return this.#save_file.save_format;
    }
    
-   loadSectorMetadata(/*const DataView*/ sector_view) {
+   loadSectorMetadata(which, /*const DataView*/ sector_view) {
       console.assert(sector_view.byteLength == SAVE_SECTOR_FULL_SIZE);
       
       let offset = SAVE_SECTOR_FULL_SIZE - 16;
-      let header = {};
-      this.sectors.push(header);
+      let header = this.sectors[which];
       
       function read(bits) {
          let v = sector_view[`getUint${bits}`](offset, true);

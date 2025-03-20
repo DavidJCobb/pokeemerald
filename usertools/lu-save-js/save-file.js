@@ -19,6 +19,12 @@ class SaveFile {
    
    get save_format() { return this.#save_format; }
    get version() {
+      let slot = this.current_slot;
+      if (slot)
+         return slot.version;
+   }
+   
+   get current_slot() {
       let counter = -1;
       let slot    = null;
       for(let s of this.slots) {
@@ -28,8 +34,6 @@ class SaveFile {
             slot    = s;
          }
       }
-      if (slot) {
-         return slot.version;
-      }
+      return slot;
    }
 };

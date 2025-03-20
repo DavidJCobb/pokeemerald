@@ -170,6 +170,8 @@ document.body.addEventListener("click", function(e) {
          }
          let dst_file = new SaveFile(dst_format);
          dst_file.special_sectors = structuredClone(src_file.special_sectors);
+         if (src_file.rtc)
+            dst_file.rtc = structuredClone(src_file.rtc);
          for(let i = 0; i < src_file.slots.length; ++i) {
             const src_slot = src_file.slots[i];
             const dst_slot = dst_file.slots[i];

@@ -144,7 +144,7 @@ class SaveFormat {
             let pos  = FLASH_SECTOR_SIZE * (SAVE_SECTORS_PER_SLOT * i + j);
             let blob = new DataView(sav.buffer, pos, FLASH_SECTOR_SIZE);
             
-            let sector_header = slot.loadSectorMetadata(blob);
+            let sector_header = slot.loadSectorMetadata(j, blob);
             let sector_data   = new DataView(sav.buffer, pos, SAVE_SECTOR_DATA_SIZE);
             
             let id = sector_header.sector_id;

@@ -221,18 +221,22 @@ dialog {
    ;
 }
 dialog::backdrop {
+   --stripe-color:     #00000018;
+   --stripe-thickness: 3em;
+   
    background:
       repeating-linear-gradient(135deg,
-         #00000000 1em,
-         #00000020 1em,
-         #00000020 2em,
-         #00000000 2em,
-         #00000000 3em,
-         #00000020 3em,
-         #00000020 4em,
-         #00000000 4em,
-         #00000000 5em,
-         #00000020 5em
+         #00000000           var(--stripe-thickness),
+         var(--stripe-color) var(--stripe-thickness),
+         var(--stripe-color) calc(var(--stripe-thickness)*2),
+         #00000000           calc(var(--stripe-thickness)*2),
+         #00000000           calc(var(--stripe-thickness)*3),
+         var(--stripe-color) calc(var(--stripe-thickness)*3),
+         var(--stripe-color) calc(var(--stripe-thickness)*4),
+         #00000000           calc(var(--stripe-thickness)*4),
+         #00000000           calc(var(--stripe-thickness)*5),
+         var(--stripe-color) calc(var(--stripe-thickness)*5)
       ),
       rgba(0, 0, 0, 0.2)
+   ;
 }

@@ -166,7 +166,7 @@ class ExtraCoalescedMapsData extends CInstanceDisplayOverrides {
                let multiple = false;
                for(let name in inside.members) {
                   let here = inside.members[name];
-                  let tn   = here.serialized_type?.symbol;
+                  let tn   = here.decl.serialized_type?.symbol;
                   if (tn == "MapGroupIndex" || tn == "MapGroupIndexOptional") {
                      if (memb) {
                         multiple = true;

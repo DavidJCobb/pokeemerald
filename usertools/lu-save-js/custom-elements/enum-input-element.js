@@ -56,6 +56,10 @@ class EnumInputElement extends HTMLElement {
       
       this.#shape_button = this.#shadow.querySelector("button");
       this.#shape_button.addEventListener("click", this.#on_user_change_shape.bind(this));
+      
+      // Push initial value to these form controls.
+      this.#input.value  = 0;
+      this.#select.value = 0;
    }
    
    // So outside code can listen for a consistent event name.

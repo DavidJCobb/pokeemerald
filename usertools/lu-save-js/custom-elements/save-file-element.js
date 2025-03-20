@@ -74,7 +74,19 @@ class SaveFileElement extends HTMLElement {
          }
       }
       if (version !== null) {
-         this.setAttribute("data-title", name + " [version " + version + "]");
+         let version_name = (function() {
+            let SFI;
+            try {
+               SFI = SaveFormatIndex;
+            } catch (e) {
+               return null; // missing global
+            }
+            let info = SFI.get_format_info_immediate(version);
+            if (!info || !info.name)
+               return null;
+            return info.name;
+         }).call(this);
+         this.setAttribute("data-title", name + " [version " + (version_name || version) + "]");
       } else {
          this.setAttribute("data-title", name);
       }

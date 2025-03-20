@@ -32,4 +32,7 @@ const SaveFormatIndex = new (class SaveFormatIndex {
       await this.load();
       return this.info.get(+version)
    }
+   /*Optional<IndexedSaveFormatInfo>*/ get_format_info_immediate(/*int*/ version) {
+      return this.info.get(+version)
+   }
 })();

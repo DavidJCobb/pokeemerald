@@ -27,6 +27,7 @@
             "misc.dat",
             "trainers.dat"
          ],
+         "name": "Test Name",
          "shared": {
             "game-stats.dat": 1,
             "items.dat": 1,

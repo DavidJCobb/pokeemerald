@@ -142,7 +142,22 @@ class SaveSlotElement extends HTMLElement {
       
       let version = v.version;
       if (version !== null) {
-         this.#field_nodes.version.textContent = version;
+         let success = (function() {
+            let SFI;
+            try {
+               SFI = SaveFormatIndex;
+            } catch (e) {
+               return false; // missing global
+            }
+            let info = SFI.get_format_info_immediate(version);
+            if (!info || !info.name)
+               return false;
+            this.#field_nodes.version.textContent = info.name;
+            return true;
+         }).call(this);
+         if (!success) {
+            this.#field_nodes.version.textContent = version;
+         }
       } else {
          this.#field_nodes.version.innerHTML = "&mdash;";
       }

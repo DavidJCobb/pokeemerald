@@ -6,10 +6,7 @@ SaveFormatIndex.load().then(function() {
       empty = false;
       let opt = document.createElement("option");
       opt.value = version;
-      
-      // TODO: Look into a way to display human-readable savedata version numbers.
-      opt.textContent = version;
-      
+      opt.textContent = info.name || version;
       frag.append(opt);
    }
    node.replaceChildren(frag);

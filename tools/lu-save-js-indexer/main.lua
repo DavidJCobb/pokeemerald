@@ -11,6 +11,24 @@ this_dir = (function()
 end)()
 package.path = package.path .. ";" .. this_dir .. "/?.lua;" .. this_dir .. "../lu-lua-lib/?.lua"
 
+local build_options = {
+   build_name = nil,
+}
+if arg then
+   local i     = 1
+   local count = #arg
+   while i <= count do
+      local chunk = arg[i]
+      i = i + 1
+      
+      if chunk == "--build-name" then
+         local value = arg[i]
+         build_options.build_name = value
+         i = i + 1
+      end
+   end
+end
+
 require "stringify-table"
 require "classes"
 require "filesystem"
@@ -490,6 +508,9 @@ do
       files  = {},
       shared = {},
    }
+   if build_options.build_name then
+      new_format.name = tostring(build_options.build_name)
+   end
    index_data.formats[format_version] = new_format
    
    local function do_goal(filename, info)

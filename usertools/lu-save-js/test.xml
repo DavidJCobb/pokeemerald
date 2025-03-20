@@ -2098,6 +2098,7 @@
                <in-top-level-value name="gSaveBlock1Ptr" count="6" />
             </counts>
          </stats>
+         <annotation text="zero-fill-if-new" />
          <members>
             <transformed name="box" type="BoxPokemon" transformed-type="SerializedBoxPokemon" pack-function="PackBoxPokemonForSave" unpack-function="UnpackBoxPokemonForSave" />
             <integer name="status" type="u32" />
@@ -2162,16 +2163,16 @@
          </stats>
          <members>
             <integer name="currentBox" type="u8" bitcount="4" min="0" max="13" />
-            <transformed name="boxes" type="BoxPokemon[30][14]" transformed-type="SerializedBoxPokemon" pack-function="PackBoxPokemonForSave" unpack-function="UnpackBoxPokemonForSave">
-               <array-rank extent="14" />
+            <transformed name="boxes" type="BoxPokemon[30][20]" transformed-type="SerializedBoxPokemon" pack-function="PackBoxPokemonForSave" unpack-function="UnpackBoxPokemonForSave">
+               <array-rank extent="20" />
                <array-rank extent="30" />
             </transformed>
-            <string name="boxNames" type="u8[9][14]" length="8" nonstring="false">
-               <array-rank extent="14" />
+            <string name="boxNames" type="u8[9][20]" length="8" nonstring="false">
+               <array-rank extent="20" />
                <default-value-string>Unnamed</default-value-string>
             </string>
-            <integer name="boxWallpapers" type="u8[14]" default-value="0">
-               <array-rank extent="14" />
+            <integer name="boxWallpapers" type="u8[20]" default-value="0">
+               <array-rank extent="20" />
             </integer>
          </members>
       </struct>
@@ -2678,9 +2679,9 @@
             <integer name="mapView" type="u16[256]">
                <array-rank extent="256" />
             </integer>
-            <integer name="playerPartyCount" type="u8" bitcount="3" min="0" max="6" />
-            <struct name="playerParty" type="Pokemon[6]">
-               <array-rank extent="6" />
+            <integer name="playerPartyCount" type="u8" bitcount="3" min="0" max="8" />
+            <struct name="playerParty" type="Pokemon[8]">
+               <array-rank extent="8" />
             </struct>
             <integer name="money" type="u32" />
             <integer name="coins" type="u16" />
@@ -3068,7 +3069,6 @@
          </instructions>
       </struct>
       <struct tag="SerializedBoxPokemon" c-alignment="4" c-sizeof="84">
-         <annotation text="zero-fill-if-new" />
          <members>
             <integer name="personality" type="PokemonPersonality" />
             <integer name="otId" type="u32" />
@@ -3087,6 +3087,7 @@
             <integer name="unknown" type="u16" />
             <struct name="substructs" type="SerializedBoxPokemonSubstructs" />
          </members>
+         <annotation text="zero-fill-if-new" />
          <instructions>
             <integer value="personality" type="PokemonPersonality" bitcount="32" />
             <integer value="otId" type="u32" bitcount="32" />
@@ -4492,12 +4493,10 @@
                </transform>
             </loop>
             <loop array="(*gPokemonStoragePtr).boxNames" start="0" count="14" counter-var="__c">
-               <string value="(*gPokemonStoragePtr).boxNames[__c]" type="u8[9]" length="8" nonstring="false">
-                  <default-value-string>Unnamed</default-value-string>
-               </string>
+               <string value="(*gPokemonStoragePtr).boxNames[__c]" type="u8[9]" length="8" nonstring="false" />
             </loop>
             <loop array="(*gPokemonStoragePtr).boxWallpapers" start="0" count="14" counter-var="__d">
-               <integer value="(*gPokemonStoragePtr).boxWallpapers[__d]" type="u8" bitcount="8" default-value="0" />
+               <integer value="(*gPokemonStoragePtr).boxWallpapers[__d]" type="u8" bitcount="8" />
             </loop>
          </instructions>
       </sector>

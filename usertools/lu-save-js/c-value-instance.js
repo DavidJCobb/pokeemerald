@@ -4,11 +4,24 @@ class CValueInstance extends CDeclInstance {
       
       this.value = null;
       
-      let dv = decl.default_value;
-      if (dv !== undefined && dv !== null)
-         this.value = dv;
-      
       this.is_tag_of_unions = []; // Array<CUnionInstance>
+   }
+   
+   set_to_default() {
+      let dv = this.decl.default_value;
+      if (dv === undefined || dv === null)
+         return false;
+      
+      this.value = dv;
+      //
+      // Objects need to be cloned.
+      //
+      if (dv instanceof PokeString) {
+         this.value = new PokeString();
+         this.value.bytes = ([]).concat(dv.bytes);
+      }
+      //
+      return true;
    }
    
    copy_contents_of(/*const CValueInstance*/ other) {

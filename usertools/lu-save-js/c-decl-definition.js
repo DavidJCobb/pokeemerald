@@ -129,8 +129,15 @@ class CDeclDefinition extends CDefinition {
          }
       } else {
          let dvs = node.querySelector("default-value-string");
-         if (dvs)
-            this.default_value = dvs.textContent;
+         if (dvs) {
+            //this.default_value = dvs.textContent;
+            let src = dvs.textContent;
+            try {
+               this.default_value = PokeString.from_text(src, "latin");
+            } catch (e) {
+               this.default_value = PokeString.from_text(src, "japanese");
+            }
+         }
       }
       
       {

@@ -2168,8 +2168,9 @@
             </transformed>
             <string name="boxNames" type="u8[9][14]" length="8" nonstring="false">
                <array-rank extent="14" />
+               <default-value-string>Unnamed</default-value-string>
             </string>
-            <integer name="boxWallpapers" type="u8[14]">
+            <integer name="boxWallpapers" type="u8[14]" default-value="0">
                <array-rank extent="14" />
             </integer>
          </members>
@@ -3067,6 +3068,7 @@
          </instructions>
       </struct>
       <struct tag="SerializedBoxPokemon" c-alignment="4" c-sizeof="84">
+         <annotation text="zero-fill-if-new" />
          <members>
             <integer name="personality" type="PokemonPersonality" />
             <integer name="otId" type="u32" />
@@ -4490,10 +4492,12 @@
                </transform>
             </loop>
             <loop array="(*gPokemonStoragePtr).boxNames" start="0" count="14" counter-var="__c">
-               <string value="(*gPokemonStoragePtr).boxNames[__c]" type="u8[9]" length="8" nonstring="false" />
+               <string value="(*gPokemonStoragePtr).boxNames[__c]" type="u8[9]" length="8" nonstring="false">
+                  <default-value-string>Unnamed</default-value-string>
+               </string>
             </loop>
             <loop array="(*gPokemonStoragePtr).boxWallpapers" start="0" count="14" counter-var="__d">
-               <integer value="(*gPokemonStoragePtr).boxWallpapers[__d]" type="u8" bitcount="8" />
+               <integer value="(*gPokemonStoragePtr).boxWallpapers[__d]" type="u8" bitcount="8" default-value="0" />
             </loop>
          </instructions>
       </sector>

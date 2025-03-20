@@ -101,10 +101,18 @@ class TranslationOperation {
    }
    
    #should_zero_fill_if_new(/*CInstance*/ dst) {
+      if (dst instanceof SaveSlot) { // SaveSlot subclasses CStructInstance as a dirty HACK, but lacks a `decl`
+         return false;
+      }
       for(let anno of dst.decl.annotations)
          if (anno == "zero-fill-if-new")
             return true;
-      let type = dst.serialized_type;
+      let type;
+      if (dst instanceof CDeclInstance) {
+         type = dst.type || dst.decl.serialized_type;
+      } else if (dst instanceof CStructInstance || dst instanceof CUnionInstance) {
+         type = dst.type;
+      }
       if (type && type.annotations) {
          for(let anno of type.annotations)
             if (anno == "zero-fill-if-new")
@@ -141,7 +149,7 @@ class TranslationOperation {
                   dst.value = new DataView(buffer);
                }
                break;
-            case "integral":
+            case "integer":
             case "pointer":
                dst.value = 0;
                break;
@@ -183,12 +191,10 @@ class TranslationOperation {
          if (dst.decl.type == "omitted") {
             return true; // skip omitted values
          }
-         let dv = dst.decl.default_value;
-         if (dv !== null) {
-            dst.value = dv;
+         if (dst.value !== null) {
             return true;
          }
-         return false;
+         return dst.set_to_default();
       }
       if (dst instanceof CArrayInstance) {
          let all_present = true;
@@ -500,6 +506,7 @@ class TranslationOperation {
          }
          return;
       } else if (dst instanceof CArrayInstance) {
+         let zero_fill_dst = this.#should_zero_fill_if_new(dst);
          for(let i = 0; i < dst.values.length; ++i) {
             let src_e = src.values[i];
             let dst_e = dst.values[i];
@@ -508,7 +515,7 @@ class TranslationOperation {
                // The destination array is longer than the source array. Default 
                // the element if we can, and fail otherwise.
                //
-               let zero_fill = this.#should_zero_fill_if_new(dst_e);
+               let zero_fill = zero_fill_dst || this.#should_zero_fill_if_new(dst_e);
                if (zero_fill) {
                   this.#zero_fill_new_inst(dst_e);
                }
@@ -583,6 +590,7 @@ class TranslationOperation {
          this.#translate_impl(src.value, dst.value);
          return;
       } else if (dst instanceof CStructInstance) {
+         let zero_fill_dst = this.#should_zero_fill_if_new(dst);
          for(let member_name in dst.members) {
             let src_e = src.members[member_name];
             let dst_e = dst.members[member_name];
@@ -598,7 +606,7 @@ class TranslationOperation {
                // `dst_e` represents a newly-added member in this type, not 
                // present in the source save format.
                //
-               let zero_fill = this.#should_zero_fill_if_new(dst_e);
+               let zero_fill = zero_fill_dst || this.#should_zero_fill_if_new(dst_e);
                if (zero_fill) {
                   this.#zero_fill_new_inst(dst_e);
                }
@@ -617,11 +625,8 @@ class TranslationOperation {
       console.assert(src instanceof CValueInstance);
       console.assert(dst instanceof CValueInstance);
       if (src.decl.type == "omitted" || src.value === null || dst.decl.type == "omitted") {
-         let dv = dst.decl.default_value;
-         if (dv !== null && dv !== undefined) {
-            dst.value = dv;
-         }
-         return;
+         if (this.#default_init_dst(dst))
+            return;
       }
       const src_options = src.decl.options;
       const dst_options = dst.decl.options;
@@ -649,6 +654,7 @@ class TranslationOperation {
                   break;
                dst.value = src_value;
             }
+            break;
          
          // Allow implicit conversion between booleans and integers.
          case "integer":
@@ -731,10 +737,7 @@ class TranslationOperation {
       }
       
       if (dst.value === null) {
-         let dv = dst.decl.default_value;
-         if (dv !== null && dv !== undefined) {
-            dst.value = dv;
-         }
+         this.#default_init_dst(dst);
       }
    }
    
@@ -803,6 +806,23 @@ class TranslationOperation {
                valid = (value || value === 0) && !isNaN(+value);
                if (valid) {
                   let v = +value;
+                  if (v < 0) {
+                     let type = inst.decl.serialized_type;
+                     if (type && type instanceof CIntegralTypeDefinition) {
+                        if (!type.is_signed) {
+                           //
+                           // Simulate integer underflow for unsigned types.
+                           //
+                           let size = type.c_info?.size;
+                           if (size == 4) {
+                              v += 0xFFFFFFFF + 1;
+                           } else if (size < 4) {
+                              v += 1 << (size * 8);
+                           }
+                           inst.value = v;
+                        }
+                     }
+                  }
                   let bounds = inst.decl.compute_integer_bounds();
                   if (v < bounds.min || v > bounds.max) {
                      valid = false;

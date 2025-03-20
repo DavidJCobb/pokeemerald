@@ -17,7 +17,7 @@ struct SerializedBoxPokemonSubstructs {
    u16 checksum;
 };
 
-struct SerializedBoxPokemon {
+struct LU_BP_ZERO_FILL_IF_NEW SerializedBoxPokemon {
    PokemonPersonality personality;
    u32   otId;
    PokemonNameNoTerminator nickname;

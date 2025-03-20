@@ -61,60 +61,6 @@
       dialog.showModal();
    }
    
-   function pokemon_info(/*CStructInstance<Pokemon>*/ inst) {
-      let box = inst.members["box"];
-      if (!box)
-         return null;
-      if (!box.members.hasSpecies?.value)
-         return null;
-      let species = box.members.substructs?.members.substruct0?.members.species;
-      if (!species || species.value === null || species.value === 0)
-         return null;
-      
-      let out = {
-         name: {
-            data:    null, // PokeString
-            charset: "latin",
-         },
-         level:  null,
-         is_egg: null,
-         species: {
-            id:   species.value,
-            name: null,
-         },
-      };
-      
-      {
-         let name = box.members.nickname?.value;
-         if (name) {
-            out.name.data = name;
-            
-            let lang = box.members.language?.value;
-            out.name.charset = (lang == 1) ? "japanese" : "latin";
-         }
-      }
-      
-      out.level = inst.members.level?.value;
-      if (out.level === undefined)
-         out.level = null;
-      
-      out.is_egg = box.members.isEgg?.value || false;
-      
-      {
-         let extra = state.save_format_info.extra_data;
-         if (extra) {
-            let enumeration = extra.enums.SPECIES;
-            if (enumeration) {
-               name = enumeration.members.by_value.get(species.value);
-               if (name)
-                  out.species.name = name;
-            }
-         }
-      }
-      
-      return out;
-   }
-   
    const sav_picker    = steps[0].querySelector("input[type='file' i]");
    const target_picker = document.getElementById("target-version");
    
@@ -160,67 +106,55 @@
       
       {
          let container = document.getElementById("loaded-save-info");
-         container.querySelectorAll("[data-field]").forEach(function(node) {
-            let inst = slot.lookupCInstanceByPath(node.getAttribute("data-field"));
-            if (!inst || !inst.decl) {
+         let summary   = new SaveSlotSummary(info, slot);
+         
+         {  // player name
+            let node = container.querySelector("[data-field='player-name']");
+            let data = summary.player.name;
+            if (data.empty) {
                node.textContent = "???";
-               return;
-            }
-            if (inst.value instanceof PokeString) {
-               let printer = new DOMPokeStringPrinter();
-               printer.print(inst.value);
-               node.replaceChildren(printer.result);
             } else {
-               let format = node.getAttribute("data-format");
-               if (format) {
-                  format = document.querySelector("datalist[id='format-" + format + "']");
-                  if (format) {
-                     let v    = +inst.value;
-                     let name = format.querySelector("option[value='" + v + "']");
-                     if (name) {
-                        name = name.textContent;
-                        if (name) {
-                           node.textContent = name;
-                           return;
-                        }
-                     }
-                  }
-               }
-               switch (inst.decl.type) {
-                  case "boolean":
-                     node.textContent = inst.value ? "yes" : "no";
-                     break;
-                  case "integer":
-                     node.textContent = inst.value;
-                     break;
-                  case "pointer":
-                     node.textContent = "0x" + inst.value.toString(16).toUpperCase().padStart(8, "0");
-                     break;
-                  default:
-                     node.textContent = "...";
-                     break;
+               node.append(data.to_dom());
+            }
+         }
+         {  // player gender
+            let node = container.querySelector("[data-field='player-gender']");
+            let data = summary.player.gender;
+            if (data === null) {
+               node.textContent = "?";
+            } else {
+               let datalist = document.getElementById("format-gender");
+               let option   = datalist.querySelector("option[value='" + data + "']");
+               if (option) {
+                  node.textContent = option.textContent;
+               } else {
+                  node.textContent = data;
                }
             }
-         });
-         let party = container.querySelector("[data-show='player party']");
-         if (party) {
+         }
+         {
+            let list = container.querySelector("[data-field='player-party']");
             let frag = new DocumentFragment();
-            let base = slot.lookupCInstanceByPath("gSaveBlock1Ptr->playerParty");
-            if (base instanceof CArrayInstance && base.values) {
-               let any = false;
-               for(let inst of base.values) {
-                  let pokemon = pokemon_info(inst);
-                  if (!pokemon)
-                     continue;
-                  any = true;
-                  
+            if (!summary.party.length) {
+               list.classList.add("empty");
+               let item = document.createElement("li");
+               frag.append(item);
+               item.textContent = "None. Your adventure is just beginning!";
+            } else {
+               for(let pokemon of summary.party) {
                   let item = document.createElement("li");
                   frag.append(item);
-                  if (pokemon.name.data) {
-                     let printer = new DOMPokeStringPrinter();
-                     printer.charset = pokemon.name.charset || "latin";
-                     printer.print(pokemon.name.data);
-                     item.append(printer.result);
+                  if (pokemon.species.id) {
+                     item.setAttribute("data-species-id", pokemon.species.id);
+                  }
+                  if (pokemon.name.empty) {
+                     if (pokemon.species.name) {
+                        item.append(pokemon.species.name);
+                     } else {
+                        item.append("?");
+                     }
+                  } else {
+                     item.append(pokemon.name.to_dom());
                   }
                   if (pokemon.is_egg) {
                      item.append(" (egg)");
@@ -228,18 +162,8 @@
                      item.append(" (Lv. " + pokemon.level + ")");
                   }
                }
-               if (any) {
-                  party.classList.remove("empty");
-               } else {
-                  party.classList.add("empty");
-                  let item = document.createElement("li");
-                  frag.append(item);
-                  item.textContent = "None. Your adventure is just beginning!";
-               }
-            } else {
-               frag.append("???");
             }
-            party.replaceChildren(frag);
+            list.replaceChildren(frag);
          }
       }
       

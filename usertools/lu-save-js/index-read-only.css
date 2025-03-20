@@ -182,7 +182,7 @@ ol {
       margin: 0;
    }
    
-   ul[data-show="player party"] {
+   ul[data-field="player-party"] {
       padding: 0 0 0 1.5em;
       margin:  0;
       

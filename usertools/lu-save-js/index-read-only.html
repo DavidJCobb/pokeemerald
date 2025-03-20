@@ -66,6 +66,9 @@
       <script src="emerald-display-overrides.js"></script>
       
       <script src="data-format-translator.js"></script>
+      
+      <!-- app-specific -->
+      <script src="upgrader/save-slot-summary.js"></script>
    </head>
    <body>
       <datalist id="format-gender">
@@ -92,15 +95,15 @@
             <dl id="loaded-save-info">
                <li>
                   <dt>Name:</dt>
-                  <dd data-field="gSaveBlock2Ptr->playerName"></dd>
+                  <dd data-field="player-name"></dd>
                </li>
                <li>
                   <dt>Gender:</dt>
-                  <dd data-field="gSaveBlock2Ptr->playerGender" data-format="gender"></dd>
+                  <dd data-field="player-gender" data-format="gender"></dd>
                </li>
                <li>
                   <dt>Pokemon:</dt>
-                  <dd><ul data-show="player party"></ul></dd>
+                  <dd><ul data-field="player-party"></ul></dd>
                </li>
             </dl>
             <div class="buttons">

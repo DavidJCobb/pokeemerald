@@ -38,6 +38,10 @@ body {
       position:     relative;
       padding-left: calc(var(--expected-number-size,0) + 2em);
    }
+   /*
+      Use both pseudo-elements so we can have a multi-layered 
+      text stroke.
+   */
    &>section::before,
    &>section::after {
       content: var(--list-number-override, counter(list-number));
@@ -121,13 +125,57 @@ body>section:not([hidden]):last-child {
 .filepicker {
    display:   flex;
    flex-flow: row nowrap;
-   max-width: 20em;
+   align-items: center;
+   max-width: 24em;
    
    input {
       flex: 1 1 auto;
    }
    button {
-      flex: 0 0 auto;
+      all:        unset;
+      appearance: none;
+      
+      display:  block;
+      width:    1em;
+      height:   1em;
+      text-indent: -100vw;
+      overflow: hidden;
+      border-color:  #200 #100 #000 #100;
+      border-style:  solid;
+      border-width:  1px;
+      border-radius: 3px;
+      background: #B44;
+      box-shadow: inset 0 -2px 3px 2px #822, inset 0 -1px 1px 0 #611;
+      
+      &:hover {
+         background: #C44;
+         box-shadow: inset 0 -2px 3px 2px #933, inset 0 -1px 1px 0 #822;
+      }
+      &:not([disabled]):active {
+         background:   #933;
+         box-shadow:   inset 0 2px 3px 2px #822, inset 0 2px 0 0 #611;
+         border-color: #000 #100 #200 #100;
+      }
+      &:not([disabled]) {
+         cursor: pointer;
+      }
+      &[disabled] {
+         background: #787878;
+         box-shadow: inset 0 -2px 3px 2px #686868, inset 0 -1px 1px 0 #707070;
+      }
+      
+      position: relative;
+      &::before {
+         content: "\00D7";
+         position: absolute;
+         left: 50%;
+         top:  50%;
+         transform: translate(-50%, -50%);
+         color: #FFF;
+         font-weight: bold;
+         font-size:   1.3em;
+         text-indent: 0;
+      }
    }
 }
 
@@ -142,6 +190,7 @@ body>section:not([hidden]):last-child {
    }
 }
 .buttons button,
+.filepicker input[type="file" i]::file-selector-button,
 #download-link {
    --button-back-base:     #674;
    --button-back-hover:    #796;
@@ -182,6 +231,20 @@ body>section:not([hidden]):last-child {
       --button-back-base:  #744;
       --button-back-hover: #966;
    }
+}
+.filepicker input[type="file" i]::file-selector-button {
+   margin-right: 1em;
+}
+.filepicker input[type="file" i]:not([disabled])::file-selector-button {
+   --button-back-base:     #666;
+   --button-back-hover:    #777;
+   --button-back-disabled: #777;
+}
+.filepicker input[type="file" i]:not([disabled])::file-selector-button:hover {
+   background: var(--button-back-hover,#777);
+}
+.filepicker input[type="file" i]:not([disabled])::file-selector-button:active {
+   background: #222;
 }
 
 #loaded-save-info {

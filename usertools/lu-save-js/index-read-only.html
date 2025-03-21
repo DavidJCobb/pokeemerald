@@ -112,12 +112,18 @@
       </section>
       <section hidden id="step-translate">
          <header>Let's upgrade!</header>
-         <p>
-            <span class="if-version-named">Your save file was made on version <span></span>.</span>
-            Which version would you like to upgrade to?
-         </p>
-         <select id="target-version"></select>
-         <div class="buttons">
+         <div class="body" data-condition="can-upgrade">
+            <p>
+               <span class="if-version-named">Your save file was made on version <span></span>.</span>
+               Which version would you like to upgrade to?
+            </p>
+            <select id="target-version"></select>
+         </div>
+         <div class="body" data-condition="already-upgraded">
+            <p>It doesn't look like the save file format has changed since you last saved the game. There's nothing to upgrade to.</p>
+            <p>If the game can't load your save file, then this page may be out of date, or there may be some other problem. Contact the hack author.</p>
+         </div>
+         <div class="buttons" data-condition="can-upgrade">
             <button data-action="confirm">Upgrade!</button>
          </div>
       </section>

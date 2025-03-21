@@ -42,8 +42,11 @@ document.querySelectorAll(".filepicker").forEach(function(wrap) {
          frag.append(opt);
       }
       node.replaceChildren(frag);
-      if (!empty)
-         steps[0].querySelector("button[data-action='confirm']").removeAttribute("disabled");
+      if (!empty) {
+         let section = document.getElementById("step-upload");
+         let advance = section.querySelector("button[data-action='confirm']");
+         advance.removeAttribute("disabled");
+      }
    });
    
    function back_to_step_one() {
@@ -77,7 +80,7 @@ document.querySelectorAll(".filepicker").forEach(function(wrap) {
       return pi.promise;
    }
    
-   const sav_picker    = steps[0].querySelector("input[type='file' i]");
+   const sav_picker    = document.getElementById("step-upload").querySelector("input[type='file' i]");
    const target_picker = document.getElementById("target-version");
    
    async function to_step_two() {
@@ -214,19 +217,41 @@ document.querySelectorAll(".filepicker").forEach(function(wrap) {
          }
       }
       
-      steps[1].removeAttribute("hidden");
-      //steps[0].setAttribute("hidden", "hidden");
+      document.getElementById("step-verify").removeAttribute("hidden");
    }
    
    function to_step_three() {
-      let named_span = steps[2].querySelector(".if-version-named");
-      if (state.save_format_info.name) {
-         named_span.querySelector("span").textContent = state.save_format_info.name;
-         named_span.removeAttribute("hidden");
-      } else {
-         named_span.setAttribute("hidden", "hidden");
+      let section = document.getElementById("step-translate");
+      {  // Show version we're upgrading from.
+         let named_span = section.querySelector(".if-version-named");
+         if (state.save_format_info.name) {
+            named_span.querySelector("span").textContent = state.save_format_info.name;
+            named_span.removeAttribute("hidden");
+         } else {
+            named_span.setAttribute("hidden", "hidden");
+         }
       }
-      steps[2].removeAttribute("hidden");
+      {  // Hide current and previous versions from picker
+         let any_future = false;
+         for(let option of target_picker.children) {
+            if (option.nodeName != "option")
+               continue;
+            let version = +option.value;
+            if (version <= state.save_format_info.version) {
+               option.setAttribute("hidden", "hidden");
+            } else {
+               option.removeAttribute("hidden");
+               any_future = true;
+            }
+         }
+         if (any_future) {
+            section.setAttribute("data-condition", "can-upgrade");
+         } else {
+            section.setAttribute("data-condition", "already-upgraded");
+         }
+      }
+      
+      section.removeAttribute("hidden");
    }
    
    async function to_step_four() {
@@ -299,22 +324,25 @@ document.querySelectorAll(".filepicker").forEach(function(wrap) {
       link.href = uri;
       link.setAttribute("download", "converted-save-file.sav");
       
-      steps[3].removeAttribute("hidden");
+      document.getElementById("step-download").removeAttribute("hidden");
    }
    
    (function() { // step 0: upload
-      steps[0].querySelector("[data-action='confirm']").addEventListener("click", to_step_two);
+      let section = document.getElementById("step-upload");
+      section.querySelector("[data-action='confirm']").addEventListener("click", to_step_two);
    })();
    
    (function() { // step 1: verify
-      steps[1].querySelector("[data-action='confirm']").addEventListener("click", to_step_three);
-      steps[1].querySelector("[data-action='deny']").addEventListener("click", function() {
+      let section = document.getElementById("step-verify");
+      section.querySelector("[data-action='confirm']").addEventListener("click", to_step_three);
+      section.querySelector("[data-action='deny']").addEventListener("click", function() {
          show_error("Oh no! If your save file isn't showing up properly, then please contact the hack author, and be ready to send them your save file so they can inspect it.").then(back_to_step_one);
       });
    })();
    
    (function() { // step 2: pick version
-      steps[2].querySelector("[data-action='confirm']").addEventListener("click", to_step_four);
+      let section = document.getElementById("step-translate");
+      section.querySelector("[data-action='confirm']").addEventListener("click", to_step_four);
    })();
    
 })();

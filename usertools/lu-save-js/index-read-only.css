@@ -324,6 +324,25 @@ body>section:not([hidden]):last-child {
    }
 }
 
+#step-translate {
+   [data-condition] {
+      display: none;
+   }
+   
+   &[data-condition="can-upgrade"] [data-condition="can-upgrade"],
+   &[data-condition="already-upgraded"] [data-condition="already-upgraded"] {
+      display: block;
+   }
+}
+#step-translate[data-condition="already-upgraded"] {
+   /* Show a checkmark as the step number. */
+   --list-number-override: "\2714";
+   &::before,
+   &::after {
+      line-height: 105%;
+   }
+}
+
 dialog.error {
    background: #511;
    color: #FFF;

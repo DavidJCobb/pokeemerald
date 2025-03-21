@@ -24,6 +24,63 @@ a:visited {
 }
 
 /*
+   game header
+*/
+body > header {
+   display: grid;
+   grid-template:
+      "logo header"
+      "logo tagline"
+   ;
+   align-items: center;
+   gap: 0 3em;
+   
+   margin-bottom: 4em;
+   h1 {
+      grid-area: logo;
+      margin: 0;
+      text-align: center;
+   }
+   h2 {
+      grid-area: header;
+      margin: 0;
+      font-size: 4em;
+   }
+   .tagline {
+      grid-area: tagline;
+      margin: 0;
+      
+      font-size: 1.25em;
+      text-wrap: balance;
+   }
+   
+   .series,
+   .title {
+      display: block;
+      margin: 0 auto;
+      line-height: 1em;
+   }
+   .series {
+      font-size: 3.5rem;
+      
+      color: #f4c308;
+      -webkit-text-stroke: .15em #335087;
+      paint-order: stroke fill;
+   }
+   .title {
+      width: min-content;
+      font-size: 1.75rem;
+      line-height: .8em;
+      text-transform: uppercase;
+      
+      transform: scale(1.2, 0.95);
+      
+      -webkit-text-stroke: .15em #000;
+      paint-order: stroke fill;
+   }
+}
+
+/*
    section numbers
 */
 body {

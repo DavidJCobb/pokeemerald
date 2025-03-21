@@ -1,6 +1,20 @@
 //
 // ugly quick-and-dirty JS
 //
+document.querySelectorAll(".filepicker").forEach(function(wrap) {
+   let input = wrap.querySelector("input[type='file' i]");
+   let clear = wrap.querySelector("button[data-action='clear']");
+   clear.addEventListener("click", function() {
+      input.value = null;
+      clear.setAttribute("disabled", "disabled");
+   });
+   input.addEventListener("change", function() {
+      clear.removeAttribute("disabled");
+   });
+   if (!input.value) {
+      clear.setAttribute("disabled", "disabled");
+   }
+});
 (function() {
    
    const steps = [
@@ -284,9 +298,6 @@
    }
    
    (function() { // step 0: upload
-      steps[0].querySelector("[data-action='clear']").addEventListener("click", function() {
-         sav_picker.value = null;
-      });
       steps[0].querySelector("[data-action='confirm']").addEventListener("click", to_step_two);
    })();
    

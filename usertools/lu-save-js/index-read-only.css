@@ -95,6 +95,13 @@ body {
 }
 
 body>section {
+   @media not (prefers-reduced-motion: reduce) {
+      transition: opacity 0.15s;
+   }
+   &[hidden] {
+      opacity: 0;
+   }
+   
    header {
       font-size:     2.25em;
       font-weight:   bold;
@@ -134,13 +141,15 @@ body>section:not([hidden]):last-child {
       margin: 1em 0;
    }
 }
-.buttons button {
+.buttons button,
+#download-link {
    --button-back-base:     #674;
    --button-back-hover:    #796;
    --button-back-disabled: #777;
    
    all:           unset;
    appearance:    none;
+   display:       inline-block;
    background:    var(--button-back-base,#666);
    min-width:     2ch;
    padding:       1em 2em;

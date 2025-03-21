@@ -145,6 +145,11 @@ document.querySelectorAll(".filepicker").forEach(function(wrap) {
                node.textContent = text;
             }
          }
+         {  // player trainer ID
+            let node = container.querySelector("[data-field='trainer-id']");
+            let data = summary.player.trainer_id;
+            node.textContent = data.visible || "?????";
+         }
          {
             let list = container.querySelector("[data-field='player-party']");
             let frag = new DocumentFragment();

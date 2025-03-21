@@ -161,9 +161,13 @@ let SaveSlotSummary;
       constructor(/*IndexedSaveFormatInfo*/ sfi, /*const SaveSlot*/ slot) {
          this.#slot = slot;
          this.player = {
-            name:     new StringSummary(),
-            gender:   null, // Optional<int>
-            badges:   null,
+            name:   new StringSummary(),
+            gender: null, // Optional<int>
+            badges: null,
+            trainer_id: {
+               full:    null, // Optional<int>
+               visible: null, // Optional<String>
+            },
             location: {
                map_group: this.#extract_integer_field("gSaveBlock1Ptr->location.mapGroup"),
                map_num:   this.#extract_integer_field("gSaveBlock1Ptr->location.mapNum"),
@@ -189,6 +193,47 @@ let SaveSlotSummary;
          //
          this.player.name.data = this.#extract_string_field("gSaveBlock2Ptr->playerName");
          this.player.gender    = this.#extract_integer_field("gSaveBlock2Ptr->playerGender");
+         {  // trainer ID
+            let inst = this.#find_value("gSaveBlock2Ptr->playerTrainerId");
+            if (inst instanceof CArrayInstance) {
+               let bits_per_unit;
+               {
+                  let unit = inst.values[0];
+                  if (unit)
+                     bits_per_unit = unit.decl?.options.bitcount;
+               }
+               if (bits_per_unit) {
+                  let merged = 0;
+                  for(let i = 0; i < inst.values.length; ++i) {
+                     let v = inst.values[i].value;
+                     if (!v || +v !== v)
+                        break;
+                     merged |= v << (i * 8);
+                  }
+                  if (merged < 0) {
+                     //
+                     // JavaScript bitwise operations coerce to int32_t; we 
+                     // need it unsigned.
+                     //
+                     merged += 0xFFFFFFFF + 1;
+                  }
+                  this.player.trainer_id.full = merged;
+               }
+            } else if (inst instanceof CValueInstance) {
+               //
+               // Preemptively handle hacks that may refactor the trainer ID to 
+               // a single uint32_t.
+               //
+               let v = inst.value;
+               if (+v === v)
+                  this.player.trainer_id.full = v;
+            }
+            if (this.player.trainer_id.full !== null) {
+               let s = (this.player.trainer_id.full & 0xFFFF).toString().padStart(5, '0');
+               s = s.substring(s.length - 5);
+               this.player.trainer_id.visible = s;
+            }
+         }
          {  // player badges
             let any  = false;
             let list = [];

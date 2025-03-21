@@ -10,6 +10,8 @@ class CharmapSubset {
       };
    }
    define_entity(name, /*Array*/ bytes) {
+      if (+bytes === bytes)
+         bytes = [bytes];
       this.entities.canonical[name] = bytes;
       this.entities.lowercase[name.toLowerCase()] = bytes;
    }
@@ -78,6 +80,7 @@ class Charmap {
          charset.define_glyph(0xFA, "\v"); // \l // Scroll the text upward.
          charset.define_glyph(0xFB, "\f"); // \p // Start a new paragraph.
          charset.define_glyph(0xFE, "\n"); // \n
+         charset.define_glyph(0xFF, "\0");
          
          // Extended characters.
          charset.define_glyph_run(0x0100, "🡅🡇🡄🡆＋");
@@ -173,7 +176,7 @@ class Charmap {
          //charset.define_glyph(0x01CC, "×"); // R button
          charset.define_glyph_run(0x01CD, "大小゛");
       }
-      this.string_terminator = this.common.glyphs.by_byte['\0'];
+      this.string_terminator = this.common.glyphs.by_char['\0'];
       
       this.simple_escape_sequences = new Map();
    }
@@ -195,15 +198,21 @@ class Charmap {
    }
    character_to_codepoint(ch, charset) {
       let cc = this.common.glyphs.by_char[ch];
-      if (cc)
+      if (cc || cc === 0)
          return cc;
       cc = this.get_character_set(charset).glyphs.by_char[ch];
-      return cc || null;
+      if (cc || cc === 0)
+         return cc;
+      return null;
    }
    lookup_entity(name, charset) {
       let bytes = this.common.lookup_entity(name);
+      if (bytes === 0)
+         return bytes;
       if (!bytes)
          bytes = this.get_character_set(charset).lookup_entity(name);
+      if (bytes === 0)
+         return bytes;
       return bytes || null;
    }
 };

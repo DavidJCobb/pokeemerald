@@ -73,7 +73,7 @@ class DOMPokeStringPrinter extends AbstractPokeStringPrinter {
       this.container.append(node);
    }
    #handle_pokeblock_entity(name) {
-      name = name.substring(("Pokeblock").length);
+      let ch   = name.substring(("Pokeblock").length);
       let node = document.createElement("span");
       node.classList.add("ligature");
       node.classList.add("skinny");

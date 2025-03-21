@@ -24,7 +24,11 @@ let SaveSlotSummary;
          let printer = new DOMPokeStringPrinter();
          printer.charset = this.charset || "latin";
          printer.print(this.data);
-         return printer.result;
+         
+         let node = document.createElement("span");
+         node.classList.add("pokestring");
+         node.append(printer.result);
+         return node;
       }
    };
    

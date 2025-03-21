@@ -59,6 +59,8 @@
          pi.resolve();
       });
       dialog.showModal();
+      
+      return pi.promise;
    }
    
    const sav_picker    = steps[0].querySelector("input[type='file' i]");

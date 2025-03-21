@@ -71,63 +71,56 @@
       <script src="upgrader/save-slot-summary.js"></script>
    </head>
    <body>
-      <ol>
-         <li id="step-upload">
-            <p>
-               Upload your save file here:
-            </p>
-            <div class="filepicker">
-               <input type="file" id="pick-save-file" />
-               <button data-action="clear">Clear</button>
-            </div>
-            <div class="buttons">
-               <button data-action="confirm" disabled>Load!</button>
-            </div>
-         </li>
-         <li hidden id="step-verify">
-            <p>
-               Is this you?
-            </p>
-            <dl id="loaded-save-info">
-               <li>
-                  <dt>Name:</dt>
-                  <dd data-field="player-name"></dd>
-               </li>
-               <li>
-                  <dt>Gender:</dt>
-                  <dd data-field="player-gender"></dd>
-               </li>
-               <li class="block-content">
-                  <dt>Pokemon:</dt>
-                  <dd><ul data-field="player-party"></ul></dd>
-               </li>
-               <li data-field="player-badges">
-                  <dt>Badges:</dt>
-                  <dd><ul></ul></dd>
-               </li>
-            </dl>
-            <div class="buttons">
-               <button data-action="confirm">Yes!</button>
-               <button data-action="deny">No!</button>
-            </div>
-         </li>
-         <li hidden id="step-translate">
-            <p>
-               <span class="if-version-named">Your save file was made on version <span></span>.</span>
-               Which version would you like to upgrade to?
-            </p>
-            <select id="target-version"></select>
-            <div class="buttons">
-               <button data-action="confirm">Upgrade!</button>
-            </div>
-         </li>
-         <li hidden id="step-download">
-            <p>
-               Your save file has been upgraded!
-            </p>
-            <a id="download-link">Click here to download it.</a>
-         </li>
-      </ol>
+      <section id="step-upload">
+         <header>Upload your save file here.</header>
+         <div class="filepicker">
+            <input type="file" id="pick-save-file" />
+            <button data-action="clear">Clear</button>
+         </div>
+         <div class="buttons">
+            <button data-action="confirm" disabled>Load!</button>
+         </div>
+      </section>
+      <section hidden id="step-verify">
+         <header>Is this you?</header>
+         <dl id="loaded-save-info">
+            <li>
+               <dt>Name:</dt>
+               <dd data-field="player-name"></dd>
+            </li>
+            <li>
+               <dt>Gender:</dt>
+               <dd data-field="player-gender"></dd>
+            </li>
+            <li class="block-content">
+               <dt>Pokemon:</dt>
+               <dd><ul data-field="player-party"></ul></dd>
+            </li>
+            <li data-field="player-badges">
+               <dt>Badges:</dt>
+               <dd><ul></ul></dd>
+            </li>
+         </dl>
+         <div class="buttons">
+            <button data-action="confirm">Yes!</button>
+            <button data-action="deny">No!</button>
+         </div>
+      </section>
+      <section hidden id="step-translate">
+         <header>Let's upgrade!</header>
+         <p>
+            <span class="if-version-named">Your save file was made on version <span></span>.</span>
+            Which version would you like to upgrade to?
+         </p>
+         <select id="target-version"></select>
+         <div class="buttons">
+            <button data-action="confirm">Upgrade!</button>
+         </div>
+      </section>
+      <section hidden id="step-download">
+         <header>Your save file has been upgraded.</header>
+         <a id="download-link">Click here to download it.</a>
+      </section>
       <script src="index-read-only.js"></script>
    </body>
 </html>

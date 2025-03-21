@@ -24,29 +24,28 @@ a:visited {
 }
 
 /*
-   Disgusting hacks for list item numbers
+   section numbers
 */
-ol {
-   /*
-      ::marker apparently doesn't support, like, 90% of CSS, so ditch it: 
-      use a custom counter and a pseudo-element.
-   */
-   list-style:    none;
+body {
    counter-reset: list-number 0;
-   &>li {
+   &>section {
       counter-increment: list-number;
    }
    
    --expected-number-size: 6em;
    
-   position:     relative;
-   padding-left: calc(var(--expected-number-size,0) + 2em);
-   &>li::before {
-      content: counter(list-number);
+   &>section {
+      position:     relative;
+      padding-left: calc(var(--expected-number-size,0) + 2em);
+   }
+   &>section::before,
+   &>section::after {
+      content: var(--list-number-override, counter(list-number));
       
       display:  inline-block;
       position: absolute;
       left:     0;
+      top:      calc(0.5rem + var(--padding-top,0em));
       
       width:       1em;
       height:      1em;
@@ -54,14 +53,27 @@ ol {
       font-size:   4em;
       line-height: 95%;
       
-      background: #000;
-      color: #FF7400;
-      border-radius: 50%;
       font-weight: bold;
       text-align: center;
+      
+      color: #FF7400;
+   }
+   &>section::before {
+      background: #151515;
+      color: #FF7400;
+      border-radius: 50%;
+      
+      -webkit-text-stroke: .18em #ECE7E0;
+      paint-order: stroke fill;
+   }
+   &>section::after {
+      color: #FF7400;
+      
+      -webkit-text-stroke: .1em #221611;
+      paint-order: stroke fill;
    }
    
-   &>li:not([hidden]) {
+   &>section:not([hidden]) {
       min-height: var(--expected-number-size,0);
    }
    
@@ -69,25 +81,34 @@ ol {
       Elements that are display:none can't contribute to counters. Switch 
       that out for content-visibility:hidden.
    */
-   &>li[hidden] {
+   &>section[hidden] {
       display: block;
       content-visibility: hidden;
    }
 }
+#step-download {
+   --list-number-override: "\2714";
+   &::before,
+   &::after {
+      line-height: 105%;
+   }
+}
 
-ol {
-   margin: 0;
-   
-   &>li {
+body>section {
+   header {
+      font-size:     2.25em;
+      font-weight:   bold;
+      margin-bottom: 1rem;
    }
-   &>li:not([hidden]) ~ li:not([hidden]) {
-      padding-top: 2em;
-      margin-top:  2em;
-      border-top:  1px solid #222;
-   }
-   &>li:not([hidden]):last-child {
-      padding-bottom: 2em;
-   }
+}
+body>section:not([hidden]) ~ section:not([hidden]) {
+   --padding-top: 2rem;
+   padding-top: var(--padding-top);
+   margin-top:  2em;
+   border-top:  1px solid #222;
+}
+body>section:not([hidden]):last-child {
+   padding-bottom: 2em;
 }
 
 .filepicker {
@@ -254,7 +275,7 @@ dialog.error {
 dialog {
    border:  0;
    padding: 1em 2em;
-   margin:  auto;
+   margin:  auto !important;
    
    border-radius: 1em;
    box-shadow:

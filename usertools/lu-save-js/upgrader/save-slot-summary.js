@@ -28,6 +28,43 @@ let SaveSlotSummary;
       }
    };
    
+   function get_sfi_enum(/*IndexedSaveFormatInfo*/ sfi, name) {
+      return sfi?.extra_data?.enums.get(name);
+   }
+   function get_save_script_flag(/*SaveSlot*/ slot, /*IndexedSaveFormatInfo*/ format, /*String*/ name) {
+      if (name.startsWith("FLAG_"))
+         name = name.substring(5);
+      if (!format)
+         return null;
+      let flag_index;
+      {
+         flag_index = format.extra_data?.script_flags?.flag_values.get(name)
+         if (!flag_index && flag_index !== 0)
+            return null;
+      }
+      let inst = slot.lookupCInstanceByPath("gSaveBlock1Ptr->flags");
+      if (!(inst instanceof CArrayInstance))
+         return null;
+      
+      let bits_per_unit;
+      {
+         let unit = inst.values[0];
+         if (!unit)
+            return null;
+         bits_per_unit = unit.decl.options.bitcount;
+         if (!bits_per_unit)
+            return null;
+      }
+      
+      let unit_index = Math.floor(flag_index / bits_per_unit);
+      let bit_index  = flag_index % bits_per_unit;
+      
+      let u = inst.values[unit_index];
+      if (!u || typeof u.value !== "number")
+         return null;
+      return (u.value & (1 << bit_index)) != 0;
+   }
+   
    class PokemonSummary {
       constructor(/*CStructInstance<Variant<Pokemon, BoxPokemon>>*/ inst, /*IndexedSaveFormatInfo*/ sfi) {
          this.is_egg   = null; // Optional<bool>
@@ -73,7 +110,7 @@ let SaveSlotSummary;
             this.nickname.set_charset_by_language(box.members.language?.value);
          }
          {  // species
-            let memb = box.members.substructs?.members.substruct0?.members.species;
+            let memb = box.members.substructs?.members.type0?.members.species;
             if (memb) {
                let v = memb.value;
                if (v || v === 0) {
@@ -81,16 +118,11 @@ let SaveSlotSummary;
                   //
                   // Query the name.
                   //
-                  if (sfi) {
-                     let extra = sfi.extra_data;
-                     if (extra) {
-                        let enumeration = extra.enums.SPECIES;
-                        if (enumeration) {
-                           let name = enumeration.members.by_value.get(this.species.id);
-                           if (name)
-                              this.species.name = name;
-                        }
-                     }
+                  let enumeration = get_sfi_enum(sfi, "SPECIES");
+                  if (enumeration) {
+                     let name = enumeration.members.by_value.get(this.species.id);
+                     if (name)
+                        this.species.name = name;
                   }
                }
             }
@@ -110,7 +142,7 @@ let SaveSlotSummary;
             return false;
          let names = [ inst.type.symbol, inst.type.tag ];
          for(let name of names) {
-            if (name == "BoxPokemon")
+            if (name == "SerializedBoxPokemon")
                return true;
             if (name == "Pokemon") {
                let memb = inst.members["box"];
@@ -129,8 +161,9 @@ let SaveSlotSummary;
       constructor(/*IndexedSaveFormatInfo*/ sfi, /*const SaveSlot*/ slot) {
          this.#slot = slot;
          this.player = {
-            name:   new StringSummary(),
-            gender: null, // Optional<int>
+            name:     new StringSummary(),
+            gender:   null, // Optional<int>
+            badges:   null,
             location: {
                map_group: this.#extract_integer_field("gSaveBlock1Ptr->location.mapGroup"),
                map_num:   this.#extract_integer_field("gSaveBlock1Ptr->location.mapNum"),
@@ -156,6 +189,19 @@ let SaveSlotSummary;
          //
          this.player.name.data = this.#extract_string_field("gSaveBlock2Ptr->playerName");
          this.player.gender    = this.#extract_integer_field("gSaveBlock2Ptr->playerGender");
+         {  // player badges
+            let any  = false;
+            let list = [];
+            for(let i = 0; i < 8; ++i) {
+               let name = `FLAG_BADGE${(i + 1).toString().padStart(2, '0')}_GET`;
+               let flag = get_save_script_flag(slot, sfi, name);
+               list.push(flag);
+               if (flag !== null)
+                  any = true;
+            }
+            if (any)
+               this.player.badges = list;
+         }
          {  // player party
             let inst = this.#find_value("gSaveBlock1Ptr->playerParty");
             if (inst instanceof CArrayInstance && inst.values) {

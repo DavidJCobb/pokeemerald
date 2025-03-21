@@ -114,7 +114,7 @@
             if (data.empty) {
                node.textContent = "???";
             } else {
-               node.append(data.to_dom());
+               node.replaceChildren(data.to_dom());
             }
          }
          {  // player gender
@@ -123,13 +123,10 @@
             if (data === null) {
                node.textContent = "?";
             } else {
-               let datalist = document.getElementById("format-gender");
-               let option   = datalist.querySelector("option[value='" + data + "']");
-               if (option) {
-                  node.textContent = option.textContent;
-               } else {
-                  node.textContent = data;
-               }
+               let text = ["♂", "♀"][data];
+               if (!text)
+                  text = data+"";
+               node.textContent = text;
             }
          }
          {
@@ -147,28 +144,57 @@
                   if (pokemon.species.id) {
                      item.setAttribute("data-species-id", pokemon.species.id);
                   }
-                  if (pokemon.name.empty) {
+                  if (pokemon.nickname.empty) {
                      if (pokemon.species.name) {
                         item.append(pokemon.species.name);
                      } else {
                         item.append("?");
                      }
                   } else {
-                     item.append(pokemon.name.to_dom());
+                     item.append(pokemon.nickname.to_dom());
                   }
                   if (pokemon.is_egg) {
                      item.append(" (egg)");
                   } else if (pokemon.level !== null) {
-                     item.append(" (Lv. " + pokemon.level + ")");
+                     item.append(" (Lv. " + pokemon.level);
+                     if (pokemon.species.name && !pokemon.nickname.empty) {
+                        item.append(" " + pokemon.species.name);
+                     }
+                     item.append(")");
                   }
                }
             }
             list.replaceChildren(frag);
          }
+         {  // player badges
+            let node = container.querySelector("[data-field='player-badges']");
+            let list = node.querySelector("ul");
+            let data = summary.player.badges;
+            if (data === null) {
+               list.replaceChildren();
+               node.setAttribute("hidden", "hidden");
+            } else {
+               let frag = new DocumentFragment();
+               for(let b of data) {
+                  let item = document.createElement("li");
+                  item.setAttribute("data-status", b);
+                  if (b === null) {
+                     item.textContent = "[unknown]";
+                  } else if (b) {
+                     item.textContent = "[obtained]";
+                  } else {
+                     item.textContent = "[not obtained]";
+                  }
+                  frag.append(item);
+               }
+               list.replaceChildren(frag);
+               node.removeAttribute("hidden");
+            }
+         }
       }
       
       steps[1].removeAttribute("hidden");
-      steps[0].setAttribute("hidden", "hidden");
+      //steps[0].setAttribute("hidden", "hidden");
    }
    
    function to_step_three() {

@@ -71,10 +71,6 @@
       <script src="upgrader/save-slot-summary.js"></script>
    </head>
    <body>
-      <datalist id="format-gender">
-         <option value="0">♂</option>
-         <option value="1">♀</option>
-      </datalist>
       <ol>
          <li id="step-upload">
             <p>
@@ -99,11 +95,15 @@
                </li>
                <li>
                   <dt>Gender:</dt>
-                  <dd data-field="player-gender" data-format="gender"></dd>
+                  <dd data-field="player-gender"></dd>
                </li>
-               <li>
+               <li class="block-content">
                   <dt>Pokemon:</dt>
                   <dd><ul data-field="player-party"></ul></dd>
+               </li>
+               <li data-field="player-badges">
+                  <dt>Badges:</dt>
+                  <dd><ul></ul></dd>
                </li>
             </dl>
             <div class="buttons">

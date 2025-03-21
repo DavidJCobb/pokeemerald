@@ -160,10 +160,10 @@ ol {
    background: #222;
    border-radius: 1em;
    
-   li {
+   &>li {
       list-style: none;
    }
-   li:not(:has(ul)) {
+   &>li:not(.block-content) {
       display:   flex;
       flex-flow: row nowrap;
       
@@ -173,6 +173,9 @@ ol {
       dd {
          flex: 1 1 auto;
       }
+   }
+   &>li[hidden] {
+      display: none !important; /* -sigh- */
    }
    
    dt {
@@ -191,34 +194,78 @@ ol {
          padding:    0;
       }
    }
+   
+   li[data-field="player-badges"] ul {
+      list-style: none;
+      display:    flex;
+      flex-flow:  row nowrap;
+      gap:        0.5ch;
+      padding:    0;
+      margin:     0;
+      
+      li {
+         width:       1rem;
+         height:      1rem;
+         border:      1px solid currentColor;
+         line-height: 1rem;
+         text-align:  center;
+         text-indent: -100vw;
+         overflow:    hidden;
+         
+         border-radius: 4px;
+         
+         position: relative;
+         &::before {
+            position:  absolute;
+            left:      50%;
+            top:       50%;
+            transform: translate(-50%, -50%);
+            text-indent: 0;
+         }
+         
+         &[data-status="?"]::before {
+            content:  "?";
+         }
+         &[data-status="true"]::before {
+            content:  "\2713";
+         }
+         &[data-status="false"]::before {
+            content: "\2717";
+            color: #777;
+            color: color-mix(in srgb, currentColor 20%, transparent);
+         }
+      }
+   }
 }
 
 dialog.error {
    background: #511;
    color: #FFF;
    
-   border:  0;
-   padding: 1em 2em;
-   margin:  auto;
-   
    .body {
-      white-space: pre;
+      white-space: pre-wrap;
    }
    
-   .buttons {
-      justify-content: center;
-   }
    .buttons button {
       --button-back-base:  #877;
       --button-back-hover: #A77;
    }
 }
 dialog {
+   border:  0;
+   padding: 1em 2em;
+   margin:  auto;
+   
    border-radius: 1em;
    box-shadow:
       0px 3px 5px 3px rgba(0, 0, 0, 0.3), 
       0px 6px 7px 4px rgba(0, 0, 0, 0.15)
    ;
+   max-width: 30em;
+   
+   .buttons {
+      justify-content: center;
+   }
 }
 dialog::backdrop {
    --stripe-color:     #00000018;

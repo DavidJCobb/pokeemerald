@@ -1,5 +1,13 @@
+import Bitstream from "./bitstream.js";
+import CDeclDefinition from "./c-decl-definition.js";
+import CIntegralTypeDefinition from "./c-integral-type-definition.js";
+import CStructDefinition from "./c-struct-definition.js";
+import CUnionDefinition from "./c-union-definition.js";
+import InstructionsApplier from "./instructions-applier.js";
+import { RootInstructionNode } from "./instructions.js";
+import SaveFile from "./save-file.js";
 
-class SaveSector {
+export class SaveSector {
    constructor() {
       this.node = null;
       this.instructions = null; // Optional<RootInstructionNode>
@@ -15,7 +23,7 @@ class SaveSector {
    }
 };
 
-class SaveFormat {
+export default class SaveFormat {
    constructor() {
       this.enums   = new Map(); // Map<String, Map<String, int>>
       this.sectors = []; // Array<SaveSector>

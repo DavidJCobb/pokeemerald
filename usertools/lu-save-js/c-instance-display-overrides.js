@@ -1,4 +1,7 @@
-class CInstanceDisplayOverrideCriteria {
+import CValuePath from "./c-value-path.js";
+import CTypeInstance from "./c-type-instance.js";
+
+export class CInstanceDisplayOverrideCriteria {
    constructor(o) {
       this.decl = o?.decl || null; // Optional<CDeclInstance>
       this.path = o?.path || null; // Optional<String>
@@ -63,7 +66,7 @@ class CInstanceDisplayOverrideCriteria {
 
 // Control how certain CInstances are displayed. Specify criteria 
 // that a CInstance must match, and then overrides for their display.
-class CInstanceDisplayOverrides {
+export class CInstanceDisplayOverrides {
    constructor(o) {
       this.criteria  = o?.criteria || []; // Array<CInstanceDisplayOverrideCriteria>
       this.overrides = {

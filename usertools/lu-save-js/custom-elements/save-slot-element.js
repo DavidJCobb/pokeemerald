@@ -1,3 +1,10 @@
+import CValueInstance from "../c-value-instance.js";
+import SaveFormatIndex from "../save-format-index.js";
+import SaveSlot from "../save-slot.js";
+import {
+   get_enclosing_SerializedBoxPokemon,
+   recalc_SerializedBoxPokemon_checksum
+} from "../emerald.js";
 
 class SaveSlotElement extends HTMLElement {
    #shadow;
@@ -34,10 +41,11 @@ class SaveSlotElement extends HTMLElement {
    
    static #base_path = "";
    static {
-      if (document.currentScript) {
+      let this_url = import.meta.url;
+      if (this_url) {
          let src = (function() {
             try {
-               return new URL(".", document.currentScript.src);
+               return new URL(".", this_url);
             } catch (e) {
                return "";
             }
@@ -143,13 +151,7 @@ class SaveSlotElement extends HTMLElement {
       let version = v.version;
       if (version !== null) {
          let success = (function() {
-            let SFI;
-            try {
-               SFI = SaveFormatIndex;
-            } catch (e) {
-               return false; // missing global
-            }
-            let info = SFI.get_format_info_immediate(version);
+            let info = SaveFormatIndex.get_format_info_immediate(version);
             if (!info || !info.name)
                return false;
             this.#field_nodes.version.textContent = info.name;

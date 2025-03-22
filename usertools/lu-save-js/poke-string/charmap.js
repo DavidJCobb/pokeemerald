@@ -217,3 +217,4 @@ class Charmap {
    }
 };
 const CHARMAP = new Charmap();
+export default CHARMAP;

@@ -1,3 +1,8 @@
+import SaveFormat from "./save-format.js";
+import SaveFormatIndex from "./save-format-index.js";
+import { TranslationOperation } from "./data-format-translator.js";
+import EMERALD_DISPLAY_OVERRIDES from "./emerald-display-overrides.js";
+
 SaveFormatIndex.load().then(function() {
    let node  = document.getElementById("translate-to-version");
    let frag  = new DocumentFragment();

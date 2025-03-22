@@ -1,3 +1,8 @@
+import SaveFile from "./save-file.js";
+import SaveFormatIndex from "./save-format-index.js";
+import SaveSlotSummary from "./upgrader/save-slot-summary.js";
+import { TranslationOperation } from "./data-format-translator.js";
+
 //
 // ugly quick-and-dirty JS
 //

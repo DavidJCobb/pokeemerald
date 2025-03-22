@@ -1,4 +1,7 @@
-class CIntegralTypeDefinition extends CTypeDefinition {
+import CBitpackOptions from "./c-bitpack-options.js";
+import CTypeDefinition from "./c-type-definition.js";
+
+export default class CIntegralTypeDefinition extends CTypeDefinition {
    constructor(format) {
       super(format);
       this.is_signed = null;

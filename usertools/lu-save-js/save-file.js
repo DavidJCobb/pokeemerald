@@ -1,5 +1,6 @@
+import SaveSlot from "./save-slot.js";
 
-class SaveFile {
+export default class SaveFile {
    #save_format;
    
    constructor(save_format) {

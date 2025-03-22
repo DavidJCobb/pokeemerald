@@ -1,9 +1,11 @@
+import CHARMAP from "./charmap.js";
+
 //
 // A class that does the work of processing string formatting and substitution 
 // codes for you. Subclass it and override the various handlers in order to 
 // format a PokeString however you please.
 //
-class AbstractPokeStringPrinter {
+export class AbstractPokeStringPrinter {
    constructor() {
    }
    
@@ -238,7 +240,7 @@ class AbstractPokeStringPrinter {
    post_print_handler() {}
 };
 
-class LiteralPokeStringPrinter extends AbstractPokeStringPrinter {
+export class LiteralPokeStringPrinter extends AbstractPokeStringPrinter {
    #current_charset;
    constructor() {
       super();

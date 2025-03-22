@@ -1,5 +1,4 @@
-
-class CBitpackOptions {
+export default class CBitpackOptions {
    constructor() {
       this.type = null;
    }

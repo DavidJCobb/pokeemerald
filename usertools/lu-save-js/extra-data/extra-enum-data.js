@@ -1,4 +1,6 @@
-class ExtraEnumData {
+import { CInstanceDisplayOverrides} from "../c-instance-display-overrides.js";
+
+export default class ExtraEnumData {
    constructor() {
       this.prefix  = null;
       this.members = {

@@ -1,5 +1,9 @@
+import ExtraDataFile from "./extra-data-file.js";
+import EMERALD_DISPLAY_OVERRIDES from "./emerald-display-overrides.js";
+import ExtraDataCollection from "./extra-data/extra-data-collection.js";
+import SaveFormat from "./save-format.js";
 
-class IndexedSaveFormatInfo {
+export default class IndexedSaveFormatInfo {
    #extra_data  = null; // Optional<ExtraDataCollection>
    #save_format = null; // Optional<SaveFormat>
    

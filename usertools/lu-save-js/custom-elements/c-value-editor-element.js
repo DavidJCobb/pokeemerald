@@ -1,3 +1,10 @@
+import ChecksumRecalcHelper from "../checksum-recalc-helper.js";
+import CUnionInstance from "../c-union-instance.js";
+import CValueInstance from "../c-value-instance.js";
+
+import PokeString from "../poke-string/poke-string.js";
+import { LiteralPokeStringPrinter } from "../poke-string/poke-string-printer.js";
+import DOMPokeStringPrinter from "../poke-string/poke-string-dom-printer.js";
 
 class CValueEditorElement extends HTMLElement {
    #body;
@@ -13,10 +20,11 @@ class CValueEditorElement extends HTMLElement {
    
    static #base_path = "";
    static {
-      if (document.currentScript) {
+      let this_url = import.meta.url;
+      if (this_url) {
          let src = (function() {
             try {
-               return new URL(".", document.currentScript.src);
+               return new URL(".", this_url);
             } catch (e) {
                return "";
             }
@@ -41,15 +49,7 @@ class CValueEditorElement extends HTMLElement {
       this.#body.addEventListener("input", this.#on_change.bind(this));
       //this.#body.addEventListener("change", this.#on_change.bind(this));
       
-      {
-         let exists = false;
-         try {
-            if (ChecksumRecalcHelper)
-               exists = true;
-         } catch (e) {}
-         if (exists)
-            this.#checksum_recalc_helper = new ChecksumRecalcHelper();
-      }
+      this.#checksum_recalc_helper = new ChecksumRecalcHelper();
    }
    
    get target() { return this.#target; }

@@ -1,3 +1,8 @@
+import { LiteralPokeStringPrinter } from "../poke-string/poke-string-printer.js";
+import PokeString from "../poke-string/poke-string.js";
+import SaveFile from "../save-file.js";
+import SaveFormatIndex from "../save-format-index.js";
+
 class SaveFileElement extends HTMLElement {
    #save_file = null;
    #save_slot_elements;
@@ -75,13 +80,7 @@ class SaveFileElement extends HTMLElement {
       }
       if (version !== null) {
          let version_name = (function() {
-            let SFI;
-            try {
-               SFI = SaveFormatIndex;
-            } catch (e) {
-               return null; // missing global
-            }
-            let info = SFI.get_format_info_immediate(version);
+            let info = SaveFormatIndex.get_format_info_immediate(version);
             if (!info || !info.name)
                return null;
             return info.name;

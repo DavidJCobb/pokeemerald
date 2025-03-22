@@ -1,4 +1,6 @@
-class ExtraGameStats extends CInstanceDisplayOverrides {
+import { CInstanceDisplayOverrides, CInstanceDisplayOverrideCriteria } from "../c-instance-display-overrides.js";
+
+export default class ExtraGameStats extends CInstanceDisplayOverrides {
    constructor() {
       super();
       this.criteria.push(new CInstanceDisplayOverrideCriteria("gSaveBlock1Ptr->gameStats[*]"));

@@ -1,5 +1,11 @@
+import ExtraGameStats from "./extra-game-stats.js";
+import ExtraCoalescedMapsData from "./extra-coalesced-maps-data.js";
+import ExtraScriptFlags from "./extra-script-flags.js";
+import ExtraScriptVars from "./extra-script-vars.js";
+import { CInstanceDisplayOverrideCriteria } from "../c-instance-display-overrides.js";
+
 // Extra data pertaining to a given savedata serialization version.
-class ExtraDataCollection {
+export default class ExtraDataCollection {
    #enum_overrides;
    #ready_promise;
    

@@ -1,4 +1,6 @@
-class PokeString {
+import CHARMAP from "./charmap.js";
+
+export default class PokeString {
    constructor() {
       this.bytes = [];
    }

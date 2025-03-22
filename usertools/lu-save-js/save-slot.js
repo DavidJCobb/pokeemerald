@@ -1,10 +1,13 @@
+import CArrayInstance from "./c-array-instance.js";
+import CStructInstance from "./c-struct-instance.js";
+import CUnionInstance from "./c-union-instance.js";
 
 // For a loaded save slot.
-class SaveSlot extends CStructInstance {
+export default class SaveSlot extends CStructInstance {
    #save_file;
    
    constructor(/*SaveFile*/ save_file) {
-      assert_type(save_file instanceof SaveFile);
+      //assert_type(save_file instanceof SaveFile);
       super(/*CStructDefinition*/ null);
       this.sectors    = [];
       this.#save_file = save_file;

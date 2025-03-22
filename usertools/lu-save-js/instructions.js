@@ -1,10 +1,12 @@
+import CBitpackOptions from "./c-bitpack-options.js";
+import { InstructionNodeValuePath } from "./c-value-path.js";
 
-class InstructionNode {
+export class InstructionNode {
    constructor() {
    }
 };
 
-class ParentInstructionNode extends InstructionNode {
+export class ParentInstructionNode extends InstructionNode {
    constructor() {
       super();
       this.instructions = [];
@@ -42,13 +44,13 @@ class ParentInstructionNode extends InstructionNode {
    }
 };
 
-class RootInstructionNode extends ParentInstructionNode {
+export class RootInstructionNode extends ParentInstructionNode {
    constructor() {
       super();
    }
 };
 
-class LoopInstructionNode extends ParentInstructionNode {
+export class LoopInstructionNode extends ParentInstructionNode {
    constructor() {
       super();
       this.array = new InstructionNodeValuePath();
@@ -69,7 +71,7 @@ class LoopInstructionNode extends ParentInstructionNode {
    }
 };
 
-class TransformInstructionNode extends ParentInstructionNode {
+export class TransformInstructionNode extends ParentInstructionNode {
    constructor() {
       super();
       this.to_be_transformed = new InstructionNodeValuePath();
@@ -86,7 +88,7 @@ class TransformInstructionNode extends ParentInstructionNode {
    }
 };
 
-class UnionSwitchInstructionNode extends InstructionNode {
+export class UnionSwitchInstructionNode extends InstructionNode {
    constructor() {
       super();
       this.tag       = new InstructionNodeValuePath();
@@ -112,7 +114,7 @@ class UnionSwitchInstructionNode extends InstructionNode {
    }
 };
 
-class PaddingInstructionNode extends InstructionNode {
+export class PaddingInstructionNode extends InstructionNode {
    constructor() {
       super();
       this.bitcount = 0;
@@ -122,7 +124,7 @@ class PaddingInstructionNode extends InstructionNode {
    }
 };
 
-class SingleInstructionNode extends InstructionNode {
+export class SingleInstructionNode extends InstructionNode {
    constructor() {
       super();
       this.type    = null;

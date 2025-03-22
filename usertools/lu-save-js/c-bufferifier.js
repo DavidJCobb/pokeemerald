@@ -1,3 +1,10 @@
+import CArrayInstance from "./c-array-instance.js";
+import CDeclInstance from "./c-decl-instance.js";
+import CInstance from "./c-instance.js";
+import CStructInstance from "./c-struct-instance.js";
+import CTypeInstance from "./c-type-instance.js";
+import CValueInstance from "./c-value-instance.js";
+import CUnionInstance from "./c-union-instance.js";
 
 // Given an aggregate CInstance, construct a DataView that mimics how its 
 // data would be laid out in memory, accounting for nested aggregates. 
@@ -13,7 +20,7 @@
 //
 //  - Size/offset information is illegal (e.g.an  array of bitfields).
 //
-class CBufferifier {
+export default class CBufferifier {
    static InstanceInfo = class InstanceInfo {
       constructor(/*CInstance*/ inst) {
          assert_type(inst instanceof CInstance);

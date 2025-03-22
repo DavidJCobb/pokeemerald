@@ -1,5 +1,4 @@
-
-class Bytestream {
+export default class Bytestream {
    #endianness = true; // little-endian
    #offset = 0;
    #view;

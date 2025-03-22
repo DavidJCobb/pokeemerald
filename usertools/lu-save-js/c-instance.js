@@ -1,4 +1,4 @@
-class CInstance {
+export default class CInstance {
    #cached_owner_save_slot = null;
    
    constructor(decl, type) {
@@ -23,7 +23,8 @@ class CInstance {
       let inst = this.is_member_of;
       if (!inst)
          return null;
-      if (inst instanceof SaveSlot) {
+      //if (inst instanceof SaveSlot) {
+      if (inst?.constructor?.name == "SaveSlot") { // avoid cyclical imports
          this.#cached_owner_save_slot = inst;
          return inst;
       }
@@ -40,17 +41,22 @@ class CInstance {
       for(let i = 0; i < parts.length; ++i) {
          const inst = parts[i];
          const prev = parts[i - 1];
-         if (inst instanceof SaveSlot)
+         //if (inst instanceof SaveSlot)
+         if (inst?.constructor?.name === "SaveSlot") // avoid cyclical imports
             continue;
          
-         const is_array_element = prev instanceof CArrayInstance;
+         //const is_array_element = prev instanceof CArrayInstance;
+         // JavaScript doesn't offer a good way to deal with circular dependencies, 
+         // so we have to do this terribleness. (I miss C++.)
+         const is_array_element = prev?.constructor?.name === "CArrayInstance";
          if (is_array_element) {
             let index = prev.values.indexOf(inst);
             console.assert(index >= 0);
             path += `[${index}]`;
             continue;
          }
-         if (prev && !(prev instanceof SaveSlot)) {
+         //if (prev && !(prev instanceof SaveSlot)) {
+         if (prev && prev.constructor?.name != "SaveSlot") { // avoid cyclical imports
             path += '.';
          }
          let segm = inst.identifier || "__unnamed";

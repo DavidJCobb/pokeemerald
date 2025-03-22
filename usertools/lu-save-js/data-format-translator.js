@@ -1,7 +1,17 @@
+import CInstance from "./c-instance.js";
+import CArrayInstance from "./c-array-instance.js";
+import CDeclInstance from "./c-decl-instance.js";
+import CStructInstance from "./c-struct-instance.js";
+import CUnionInstance from "./c-union-instance.js";
+import CValueInstance from "./c-value-instance.js";
+
+import PokeString from "./poke-string/poke-string.js";
+import SaveSlot from "./save-slot.js";
+
 //
 // Base class for user-defined translators.
 //
-class AbstractDataFormatTranslator {
+export class AbstractDataFormatTranslator {
    static RESULTS = {
       // This translator is opting not to handle a given destination value, 
       // preferring instead to defer to the default behavior (which may be 
@@ -65,7 +75,7 @@ class AbstractDataFormatTranslator {
    }
 };
 
-class TranslationOperation {
+export class TranslationOperation {
    static TranslatorMapPair = class TranslatorMapPair {
       constructor() {
          this.src = new Map(); // Map<String typename, Array<AbstractDataFormatTranslator>>

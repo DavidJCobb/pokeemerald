@@ -1,4 +1,6 @@
-class ExtraScriptVars extends CInstanceDisplayOverrides {
+import { CInstanceDisplayOverrides, CInstanceDisplayOverrideCriteria } from "../c-instance-display-overrides.js";
+
+export default class ExtraScriptVars extends CInstanceDisplayOverrides {
    constructor() {
       super();
       this.criteria.push(new CInstanceDisplayOverrideCriteria("gSaveBlock1Ptr->vars[*]"));

@@ -1,4 +1,8 @@
-class CStructDefinition extends CContainerTypeDefinition {
+import CContainerTypeDefinition from "./c-container-type-definition.js";
+import CDeclDefinition from "./c-decl-definition.js";
+import { RootInstructionNode } from "./instructions.js";
+
+export default class CStructDefinition extends CContainerTypeDefinition {
    constructor(format) {
       super(format);
       

@@ -1,5 +1,11 @@
+import CArrayInstance from "./c-array-instance.js";
+import CDeclDefinition from "./c-decl-definition.js";
+import CInstance from "./c-instance.js";
+import CStructInstance from "./c-struct-instance.js";
+import CTypeDefinition from "./c-type-definition.js";
+import CUnionInstance from "./c-union-instance.js";
 
-class CValuePathSegment {
+export class CValuePathSegment {
    constructor() {
       this.type     = null; // null (root segment), "array-access", "member-access"
       this.what     = null; // member name; array element index; array index var name
@@ -9,7 +15,7 @@ class CValuePathSegment {
 
 // Value paths for instruction nodes. These assert that the paths are 
 // well-formed.
-class InstructionNodeValuePath {
+export class InstructionNodeValuePath {
    constructor() {
       this.segments = [];   // Array<CValuePathSegment>
       
@@ -85,7 +91,7 @@ class InstructionNodeValuePath {
 };
 
 // Value paths for use on loaded data. These just exist as a convenience.
-class CValuePath {
+export default class CValuePath {
    static ANY_ARRAY_ELEMENT = Symbol("ANY ARRAY ELEMENT");
    
    constructor(/*Optional<String>*/ path) {

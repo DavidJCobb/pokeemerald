@@ -1,4 +1,4 @@
-class ExtraVariables {
+export default class ExtraVariables {
    constructor() {
       this.variables = new Map(); // Map<String, int>
    }

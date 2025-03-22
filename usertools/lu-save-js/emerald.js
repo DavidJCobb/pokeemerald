@@ -1,5 +1,10 @@
+import CBufferifier from "./c-bufferifier.js";
+import CArrayInstance from "./c-array-instance.js";
+import CStructInstance from "./c-struct-instance.js";
+import PokeString from "./poke-string/poke-string.js";
+import SaveSlot from "./save-slot.js";
 
-/*Optional<CStructInstance>*/ function get_enclosing_SerializedBoxPokemon(/*CInstance*/ inst) {
+export /*Optional<CStructInstance>*/ function get_enclosing_SerializedBoxPokemon(/*CInstance*/ inst) {
    for(; inst; inst = inst.is_member_of) {
       if (!(inst instanceof CStructInstance))
          continue;
@@ -12,7 +17,7 @@
    return null;
 }
 
-/*uint16_t*/ function recalc_SerializedBoxPokemon_checksum(/*CStructInstance*/ inst) {
+export /*uint16_t*/ function recalc_SerializedBoxPokemon_checksum(/*CStructInstance*/ inst) {
    //
    // The checksum is computed based on the padded substructs, not 
    // just the serialized ones.
@@ -86,7 +91,7 @@
 }
 
 // TODO: Find a clean way to show this stuff in the UI
-function get_pokemon_info(/*CStructInstance<SerializedBoxPokemon>*/ inst) {
+export function get_pokemon_info(/*CStructInstance<SerializedBoxPokemon>*/ inst) {
    let data = {
       gender:    undefined,
       is_shiny:  undefined,

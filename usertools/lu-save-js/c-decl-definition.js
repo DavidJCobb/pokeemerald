@@ -1,8 +1,19 @@
+import CArrayInstance from "./c-array-instance.js";
+import CBitpackOptions from "./c-bitpack-options.js";
+import CDefinition from "./c-definition.js";
+import CIntegralTypeDefinition from "./c-integral-type-definition.js";
+import CStructDefinition from "./c-struct-definition.js";
+import CStructInstance from "./c-struct-instance.js";
+import CUnionDefinition from "./c-union-definition.js";
+import CUnionInstance from "./c-union-instance.js";
+import CValueInstance from "./c-value-instance.js";
+import PokeString from "./poke-string/poke-string.js";
+
 // FIELD_DECL or VAR_DECL.
 // Created for declarations of both single values and arrays. For an 
 // array, all type information refers to the innermost element type 
 // (e.g. for a `int[4][3][2]` field, the type info is for `int`).
-class CDeclDefinition extends CDefinition {
+export default class CDeclDefinition extends CDefinition {
    static strip_c_typename(str) {
       if (str === null)
          return null;

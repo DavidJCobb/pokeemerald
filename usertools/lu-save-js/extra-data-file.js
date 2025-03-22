@@ -1,6 +1,10 @@
+import Bytestream from "./bytestream.js";
+import ExtraEnumData from "./extra-data/extra-enum-data.js";
+import ExtraMapsData from "./extra-data/extra-maps-data.js";
+import ExtraVariables from "./extra-data/extra-variables.js";
 
 // Parser for our *.dat files.
-class ExtraDataFile {
+export default class ExtraDataFile {
    #bytestream;
    
    constructor(buffer) {

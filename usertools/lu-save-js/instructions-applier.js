@@ -1,5 +1,22 @@
+import Bitstream from "./bitstream.js";
+import CHARMAP from "./poke-string/charmap.js";
+import PokeString from "./poke-string/poke-string.js";
 
-class InstructionsApplier {
+import CInstance from "./c-instance.js";
+import CArrayInstance from "./c-array-instance.js";
+import CStructInstance from "./c-struct-instance.js";
+import CUnionInstance from "./c-union-instance.js";
+import CValueInstance from "./c-value-instance.js";
+import { InstructionNodeValuePath } from "./c-value-path.js";
+import {
+   LoopInstructionNode,
+   PaddingInstructionNode,
+   SingleInstructionNode,
+   TransformInstructionNode,
+   UnionSwitchInstructionNode
+} from "./instructions.js";
+
+export default class InstructionsApplier {
    constructor() {
       this.save_format = null; // SaveFormat
       this.root_data   = null; // CStructInstance

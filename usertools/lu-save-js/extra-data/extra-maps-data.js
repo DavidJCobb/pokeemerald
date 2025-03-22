@@ -1,4 +1,4 @@
-class ExtraMapsData {
+export default class ExtraMapsData {
    constructor() {
       this.map_sections = {
          by_name:  new Map(), // Map<String, int>

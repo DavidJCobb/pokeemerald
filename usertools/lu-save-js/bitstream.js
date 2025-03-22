@@ -1,5 +1,4 @@
-
-class Bitstream {
+export default class Bitstream {
    constructor(dataview) {
       this.dataview = dataview;
       this.target   = 0; // bytes

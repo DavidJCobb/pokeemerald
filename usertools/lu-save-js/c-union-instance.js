@@ -1,4 +1,9 @@
-class CUnionInstance extends CTypeInstance {
+import CDeclDefinition from "./c-decl-definition.js";
+import CStructInstance from "./c-struct-instance.js";
+import CTypeInstance from "./c-type-instance.js";
+import CUnionDefinition from "./c-union-definition.js";
+
+export default class CUnionInstance extends CTypeInstance {
    constructor(decl) {
       if (decl) {
          assert_type(decl instanceof CDeclDefinition);

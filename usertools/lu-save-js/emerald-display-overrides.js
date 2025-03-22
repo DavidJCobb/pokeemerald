@@ -1,3 +1,5 @@
+import { CInstanceDisplayOverrideCriteria, CInstanceDisplayOverrides } from "./c-instance-display-overrides.js";
+import CArrayInstance from "./c-array-instance.js";
 
 const EMERALD_DISPLAY_OVERRIDES = (function() {
    let overrides = [];
@@ -150,3 +152,4 @@ const EMERALD_DISPLAY_OVERRIDES = (function() {
    
    return overrides;
 })();
+export default EMERALD_DISPLAY_OVERRIDES;

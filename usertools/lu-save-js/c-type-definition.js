@@ -1,4 +1,6 @@
-class CTypeDefinition extends CDefinition {
+import CDefinition from "./c-definition.js";
+
+export default class CTypeDefinition extends CDefinition {
    constructor(format) {
       refuse_abstract_instantiation(CTypeDefinition);
       super(format);

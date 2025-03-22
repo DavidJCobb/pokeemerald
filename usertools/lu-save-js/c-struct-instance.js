@@ -1,4 +1,8 @@
-class CStructInstance extends CTypeInstance {
+import CDeclDefinition from "./c-decl-definition.js";
+import CStructDefinition from "./c-struct-definition.js";
+import CTypeInstance from "./c-type-instance.js";
+
+export default class CStructInstance extends CTypeInstance {
    constructor(decl) {
       if (decl) {
          assert_type(decl instanceof CDeclDefinition);

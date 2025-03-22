@@ -1,3 +1,4 @@
+import IndexedSaveFormatInfo from "./indexed-save-format-info.js";
 
 const SaveFormatIndex = new (class SaveFormatIndex {
    #load_promise = null;
@@ -36,3 +37,4 @@ const SaveFormatIndex = new (class SaveFormatIndex {
       return this.info.get(+version)
    }
 })();
+export default SaveFormatIndex;

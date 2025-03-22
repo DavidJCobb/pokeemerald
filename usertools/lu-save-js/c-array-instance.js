@@ -1,4 +1,7 @@
-class CArrayInstance extends CDeclInstance {
+import CInstance from "./c-instance.js";
+import CDeclInstance from "./c-decl-instance.js";
+
+export default class CArrayInstance extends CDeclInstance {
    constructor(/*CDeclDefinition*/ decl, /*size_t*/ rank = 0) {
       super(decl);
       this.values = null;

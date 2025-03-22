@@ -1,4 +1,8 @@
-class CUnionDefinition extends CContainerTypeDefinition {
+import CContainerTypeDefinition from "./c-container-type-definition.js";
+import CDeclDefinition from "./c-decl-definition.js";
+//import CValueInstance from "./c-value-instance.js"; // cyclical import
+
+export default class CUnionDefinition extends CContainerTypeDefinition {
    constructor(/*SaveFormat*/ format) {
       super(format);
       
@@ -36,7 +40,8 @@ class CUnionDefinition extends CContainerTypeDefinition {
    }
    
    /*Optional<CDeclDefinition>*/ member_by_tag_value(/*Variant<int, CValueInstance>*/ tag) {
-      if (tag instanceof CValueInstance) {
+      //if (tag instanceof CValueInstance) {
+      if (tag?.constructor?.name === "CValueInstance") { // avoid cyclical imports
          tag = tag.value;
       }
       tag = +tag;

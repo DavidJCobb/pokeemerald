@@ -1,3 +1,5 @@
+import { AbstractDataFormatTranslator } from "../data-format-translator.js";
+import PokeString from "../poke-string/poke-string.js";
 
 //
 // Created to test format changes made during development. I had a 

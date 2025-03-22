@@ -1,4 +1,7 @@
-class ChecksumRecalcHelper {
+import CBufferifier from "./c-bufferifier.js";
+import CInstance from "./c-instance.js";
+
+export default class ChecksumRecalcHelper {
    static ChecksumInfo = class ChecksumInfo {
       static is_relevant_checksum(/*CInstance*/ inst) {
          if (!inst.is_member_of)

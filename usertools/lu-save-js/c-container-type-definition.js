@@ -1,4 +1,6 @@
-class CContainerTypeDefinition extends CTypeDefinition {
+import CTypeDefinition from "./c-type-definition.js";
+
+export default class CContainerTypeDefinition extends CTypeDefinition {
    constructor(format) {
       refuse_abstract_instantiation(CContainerTypeDefinition);
       super(format);

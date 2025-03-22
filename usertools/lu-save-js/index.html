@@ -49,73 +49,20 @@ console.assert = function(condition, ...args) {
       <script src="common.js"></script>
       <script src="assess-sav-version.js"></script>
       
-      <script src="poke-string/charmap.js" charset="utf-8"></script>
-      <script src="poke-string/poke-string.js"></script>
-      <script src="poke-string/poke-string-printer.js"></script>
-      <script src="poke-string/poke-string-dom-printer.js"></script>
-      
-      <script src="c-definition.js"></script>
-      <script src="c-instance.js"></script>
-      <script src="c-decl-definition.js"></script>
-      <script src="c-type-definition.js"></script>
-      <script src="c-decl-instance.js"></script>
-      <script src="c-array-instance.js"></script>
-      <script src="c-value-instance.js"></script>
-      <script src="c-container-type-definition.js"></script>
-      <script src="c-integral-type-definition.js"></script>
-      <script src="c-struct-definition.js"></script>
-      <script src="c-union-definition.js"></script>
-      <script src="c-type-instance.js"></script>
-      <script src="c-struct-instance.js"></script>
-      <script src="c-union-instance.js"></script>
-      
-      <script src="c-value-path.js"></script>
-      <script src="c-instance-display-overrides.js"></script>
-      
-      <script src="bytestream.js"></script>
-      <!-- extra-data subrecords: -->
-      <script src="extra-data/extra-enum-data.js"></script>
-      <script src="extra-data/extra-maps-data.js"></script>
-      <script src="extra-data/extra-variables.js"></script>
-      <!-- extra-data synthetic types: -->
-      <script src="extra-data/extra-coalesced-maps-data.js"></script>
-      <script src="extra-data/extra-game-stats.js"></script>
-      <script src="extra-data/extra-script-flags.js"></script>
-      <script src="extra-data/extra-script-vars.js"></script>
-      <!-- extra-data infrastructure: -->
-      <script src="extra-data-file.js"></script>
-      <script src="extra-data/extra-data-collection.js"></script>
-      <script src="indexed-save-format-info.js"></script>
-      <script src="save-format-index.js"></script>
-      
-      <script src="c-bitpack-options.js"></script>
-      <script src="instructions.js"></script>
-      <script src="save-slot.js"></script>
-      <script src="save-file.js"></script>
-      <script src="save-format.js"></script>
-      
-      <script src="bitstream.js"></script>
-      <script src="instructions-applier.js"></script>
-      
-      <script src="emerald.js"></script>
-      <script src="emerald-display-overrides.js"></script>
-      
       <script src="parse-bbcode.js"></script>
       <script src="custom-elements/bitset-input-element.js"></script>
       <script src="custom-elements/enum-input-element.js"></script>
       <script src="custom-elements/tree-row-view-element.js"></script>
       <script src="custom-elements/tab-view-element.js"></script>
-      <script src="custom-elements/c-view-element.js"></script>
-      <script src="checksum-recalc-helper.js"></script>
-      <script src="custom-elements/c-value-editor-element.js"></script>
-      <script src="custom-elements/save-slot-element.js"></script>
-      <script src="custom-elements/save-file-element.js"></script>
-      
-      <script src="data-format-translator.js"></script>
-      <script src="c-bufferifier.js"></script>
+      <script type="module" src="custom-elements/c-view-element.js"></script>
+      <script type="module" src="custom-elements/c-value-editor-element.js"></script>
+      <script type="module" src="custom-elements/save-slot-element.js"></script>
+      <script type="module" src="custom-elements/save-file-element.js"></script>
       
       <script src="editor-enums.js"></script>
-      <script src="translators/debugging-translator-1-to-2.js"></script>
+      <script type="module" src="translators/debugging-translator-1-to-2.js"></script>
+      
+      <script type="module" src="index.js"></script>
    </head>
    <body>
       <h1>Bitpacked save dumper</h1>
@@ -195,6 +142,5 @@ console.assert = function(condition, ...args) {
       
       <section class="slots">
       </section>
-      <script src="index.js"></script>
    </body>
 </html>

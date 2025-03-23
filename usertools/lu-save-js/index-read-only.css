@@ -80,18 +80,52 @@ body > header {
    }
 }
 
+body:not(.loaded) .step {
+   display: none !important;
+}
+body.loaded {
+   #loading {
+      display: none;
+   }
+}
+
+#loading {
+   padding:   1em;
+   margin-bottom: 1em;
+   
+   background: #222;
+   border-radius: 1em;
+   font-size: 2em;
+   text-align: center;
+   
+   .script {
+      display:   flex;
+      flex-flow: row nowrap;
+      gap:       1ch;
+      
+      svg {
+         display: inline-block;
+         width: 1em;
+         height: 1em;
+      }
+      p {
+         margin: 0;
+      }
+   }
+}
+
 /*
    section numbers
 */
 body {
    counter-reset: list-number 0;
-   &>section {
+   .step {
       counter-increment: list-number;
    }
    
    --expected-number-size: 6em;
    
-   &>section {
+   .step {
       position:     relative;
       padding-left: calc(var(--expected-number-size,0) + 2em);
    }
@@ -99,8 +133,8 @@ body {
       Use both pseudo-elements so we can have a multi-layered 
       text stroke.
    */
-   &>section::before,
-   &>section::after {
+   .step::before,
+   .step::after {
       content: var(--list-number-override, counter(list-number));
       
       display:  inline-block;
@@ -119,7 +153,7 @@ body {
       
       color: #FF7400;
    }
-   &>section::before {
+   .step::before {
       background: #151515;
       color: #FF7400;
       border-radius: 50%;
@@ -127,14 +161,14 @@ body {
       -webkit-text-stroke: .18em #ECE7E0;
       paint-order: stroke fill;
    }
-   &>section::after {
+   .step::after {
       color: #FF7400;
       
       -webkit-text-stroke: .1em #221611;
       paint-order: stroke fill;
    }
    
-   &>section:not([hidden]) {
+   .step:not([hidden]) {
       min-height: var(--expected-number-size,0);
    }
    
@@ -142,12 +176,12 @@ body {
       Elements that are display:none can't contribute to counters. Switch 
       that out for content-visibility:hidden.
    */
-   &>section[hidden] {
+   .step[hidden] {
       display: block;
       content-visibility: hidden;
    }
 }
-#step-download {
+.step.final {
    --list-number-override: "\2714";
    &::before,
    &::after {
@@ -155,7 +189,7 @@ body {
    }
 }
 
-body>section {
+.step {
    @media not (prefers-reduced-motion: reduce) {
       transition: opacity 0.15s;
    }
@@ -169,13 +203,13 @@ body>section {
       margin-bottom: 1rem;
    }
 }
-body>section:not([hidden]) ~ section:not([hidden]) {
+.step:not([hidden]) ~ .step:not([hidden]) {
    --padding-top: 2rem;
    padding-top: var(--padding-top);
    margin-top:  2em;
    border-top:  1px solid #222;
 }
-body>section:not([hidden]):last-child {
+.step:not([hidden]):last-child {
    padding-bottom: 2em;
 }
 
@@ -441,14 +475,6 @@ body>section:not([hidden]):last-child {
    &[data-condition="can-upgrade"] [data-condition="can-upgrade"],
    &[data-condition="already-upgraded"] [data-condition="already-upgraded"] {
       display: block;
-   }
-}
-#step-translate[data-condition="already-upgraded"] {
-   /* Show a checkmark as the step number. */
-   --list-number-override: "\2714";
-   &::before,
-   &::after {
-      line-height: 105%;
    }
 }
 

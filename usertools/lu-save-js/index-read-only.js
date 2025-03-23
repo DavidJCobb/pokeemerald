@@ -3,6 +3,8 @@ import SaveFormatIndex from "./save-format-index.js";
 import SaveSlotSummary from "./upgrader/save-slot-summary.js";
 import { TranslationOperation } from "./data-format-translator.js";
 
+document.body.classList.add("loaded");
+
 //
 // ugly quick-and-dirty JS
 //
@@ -251,8 +253,10 @@ document.querySelectorAll(".filepicker").forEach(function(wrap) {
          }
          if (any_future) {
             section.setAttribute("data-condition", "can-upgrade");
+            section.classList.remove("final");
          } else {
             section.setAttribute("data-condition", "already-upgraded");
+            section.classList.add("final");
          }
       }
       

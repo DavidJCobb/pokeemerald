@@ -29,8 +29,64 @@
          </h2>
          <p class="tagline">Take a save file made on an older version of the hack, and upgrade it to work with a newer version of the hack.</p>
       </header>
+      
+      <section id="loading" hidden>
+         <noscript>
+            <style>
+               .script { display: none !important; }
+               #loading {
+                  display: block !important;
+               }
+            </style>
+            This tool requires JavaScript.
+         </noscript>
+         <div class="script">
+            <svg viewBox="0 0 120 120" width="32" height="32">
+               <g
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="20"
+                  stroke-linecap="round"
+                  style="transform-box: view-box; transform-origin: center;"
+               >
+                  <path d="M 60 60 m -50 0 a 50 50 0 0 1 50 -50" />
+                  <g stroke="none" fill="currentColor">
+                     <circle r="10" cx="18.43" cy="87.78" />
+                     <circle r="8"  cx="40.87" cy="106.19" />
+                     <circle r="7"  cx="68.03" cy="109.35" />
+                  </g>
+                  <animateTransform
+                     attributeName="transform"
+                     attributeType="XML"
+                     type="rotate"
+                     from="0"
+                     to="360"
+                     dur="2.5s"
+                     repeatCount="indefinite"
+                  />
+               </g>
+            </svg>
+            <p>
+               Loading... Please wait...
+            </p>
+         </div>
+      </section>
+      <script>
+//
+// Prevent the "loading" animation from being visible as an incredibly 
+// brief flicker, should we end up loading very quickly. Specifically: 
+// have it be initially hidden, and un-hide it after a tenth of a second 
+// if we're still loading by then.
+//
+window.setTimeout(function() {
+   let node = document.getElementById("loading");
+   if (!document.body.classList.has("loading")) {
+      node.removeAttribute("hidden");
+   }
+}, 100);
+      </script>
    
-      <section id="step-upload">
+      <section class="step" id="step-upload">
          <header>Upload your save file here.</header>
          <div class="filepicker">
             <input type="file" id="pick-save-file" />
@@ -40,7 +96,7 @@
             <button data-action="confirm" disabled>Load!</button>
          </div>
       </section>
-      <section hidden id="step-verify">
+      <section class="step" hidden id="step-verify">
          <header>Is this you?</header>
          <dl id="loaded-save-info">
             <li>
@@ -69,7 +125,7 @@
             <button data-action="deny">No!</button>
          </div>
       </section>
-      <section hidden id="step-translate">
+      <section class="step" hidden id="step-translate">
          <header>Let's upgrade!</header>
          <div class="body" data-condition="can-upgrade">
             <p>
@@ -86,7 +142,7 @@
             <button data-action="confirm">Upgrade!</button>
          </div>
       </section>
-      <section hidden id="step-download">
+      <section class="step final" hidden id="step-download">
          <header>Your save file has been upgraded.</header>
          <a id="download-link">Click here to download it.</a>
       </section>

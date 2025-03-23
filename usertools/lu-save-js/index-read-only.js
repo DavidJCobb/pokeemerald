@@ -3,7 +3,59 @@ import SaveFormatIndex from "./save-format-index.js";
 import SaveSlotSummary from "./upgrader/save-slot-summary.js";
 import { TranslationOperation } from "./data-format-translator.js";
 
-document.body.classList.add("loaded");
+function show_error(text) {
+   let pi = Promise.withResolvers();
+   
+   let dialog = document.createElement("dialog");
+   dialog.classList.add("error");
+   dialog.innerHTML = `
+      <header>
+         <h1>Error</h1>
+      </header>
+      <div class="body"></div>
+      <div class="buttons">
+         <button data-action="dismiss">OK</button>
+      </div>
+   `.trim();
+   dialog.querySelector(".body").textContent = text;
+   document.body.append(dialog);
+   dialog.querySelector("button[data-action='dismiss']").addEventListener("click", function(e) {
+      dialog.remove();
+      pi.resolve();
+   });
+   dialog.showModal();
+   
+   return pi.promise;
+}
+
+function friendly_save_version(/*IndexedSaveFormatInfo*/ info) {
+   return info.name || `Unnamed savedata version ${info.version}`;
+}
+
+SaveFormatIndex.load().then(
+   function done() {
+      let node  = document.getElementById("target-version");
+      let frag  = new DocumentFragment();
+      let empty = true;
+      for(const [version, info] of SaveFormatIndex.info) {
+         empty = false;
+         let opt = document.createElement("option");
+         opt.value = version;
+         opt.textContent = friendly_save_version(info);
+         frag.append(opt);
+      }
+      node.replaceChildren(frag);
+      if (!empty) {
+         let section = document.getElementById("step-upload");
+         let advance = section.querySelector("button[data-action='confirm']");
+         advance.removeAttribute("disabled");
+      }
+      document.body.classList.add("loaded");
+   },
+   function fail() {
+      show_error("Failed to load information about save file formats. Please check your Internet connection and refresh the page.");
+   }
+);
 
 //
 // ugly quick-and-dirty JS
@@ -37,24 +89,6 @@ document.querySelectorAll(".filepicker").forEach(function(wrap) {
       save_file:        null,
    };
    
-   SaveFormatIndex.load().then(function() {
-      let node  = document.getElementById("target-version");
-      let frag  = new DocumentFragment();
-      let empty = true;
-      for(const [version, info] of SaveFormatIndex.info) {
-         empty = false;
-         let opt = document.createElement("option");
-         opt.value = version;
-         opt.textContent = info.name || `Unnamed savedata version ${version}`;
-         frag.append(opt);
-      }
-      node.replaceChildren(frag);
-      if (!empty) {
-         let section = document.getElementById("step-upload");
-         let advance = section.querySelector("button[data-action='confirm']");
-         advance.removeAttribute("disabled");
-      }
-   });
    
    function back_to_step_one() {
       steps[0].removeAttribute("hidden");
@@ -62,33 +96,41 @@ document.querySelectorAll(".filepicker").forEach(function(wrap) {
          steps[i].setAttribute("hidden", "hidden");
    }
    
-   function show_error(text) {
-      let pi = Promise.withResolvers();
-      
-      let dialog = document.createElement("dialog");
-      dialog.classList.add("error");
-      dialog.innerHTML = `
-         <header>
-            <h1>Error</h1>
-         </header>
-         <div class="body"></div>
-         <div class="buttons">
-            <button data-action="dismiss">OK</button>
-         </div>
-      `.trim();
-      dialog.querySelector(".body").textContent = text;
-      document.body.append(dialog);
-      dialog.querySelector("button[data-action='dismiss']").addEventListener("click", function(e) {
-         dialog.remove();
-         pi.resolve();
-      });
-      dialog.showModal();
-      
-      return pi.promise;
-   }
    
    const sav_picker    = document.getElementById("step-upload").querySelector("input[type='file' i]");
    const target_picker = document.getElementById("target-version");
+   
+   function show_loading_modal(text) {
+      const MODAL_TIME_THRESHOLD = 100;
+      
+      let controller = new AbortController();
+      let signal = controller.signal;
+      window.setTimeout(function() {
+         if (signal.aborted)
+            return;
+         let dialog = document.createElement("dialog");
+         dialog.classList.add("loading");
+         dialog.innerHTML = `
+            <header>
+               <h1>Loading...</h1>
+            </header>
+            <div class="body"></div>
+         `.trim();
+         dialog.querySelector(".body").textContent = text;
+         document.body.append(dialog);
+         dialog.showModal();
+         signal.addEventListener("abort", function(e) {
+            dialog.remove();
+         });
+      }, MODAL_TIME_THRESHOLD);
+      return controller;
+   }
+   async function load_format_info(/*IndexedSaveFormatInfo*/ info) {
+      let signal  = show_loading_modal("Loading information for save file version " + friendly_save_version(info) + "...");
+      let promise = info.load();
+      promise.then(signal.abort.bind(signal), signal.abort.bind(signal));
+      await promise;
+   }
    
    async function to_step_two() {
       if (!sav_picker.files.length) {
@@ -112,9 +154,9 @@ document.querySelectorAll(".filepicker").forEach(function(wrap) {
          return;
       }
       try {
-         await info.load();
+         await load_format_info(info);
       } catch (e) {
-         show_error("We were unable to load information about this save file version. Please check your Internet connection.");
+         show_error("We were unable to load information about this save file version. Please check your Internet connection and try again.");
          return;
       }
       format = info.save_format;
@@ -130,7 +172,7 @@ document.querySelectorAll(".filepicker").forEach(function(wrap) {
          return;
       }
       
-      {
+      {  // display loaded save summary
          let container = document.getElementById("loaded-save-info");
          let summary   = new SaveSlotSummary(info, slot);
          
@@ -270,7 +312,12 @@ document.querySelectorAll(".filepicker").forEach(function(wrap) {
          show_error("Somehow, we were unable to load information for the desired version.");
          return;
       }
-      await dst_format_info.load();
+      try {
+         await load_format_info(dst_format_info);
+      } catch (e) {
+         show_error("We were unable to load information about the save file version you want to convert to. Please check your Internet connection and try again.");
+         return;
+      }
       
       let dst_file = new SaveFile(dst_format_info.save_format);
       dst_file.special_sectors = structuredClone(state.save_file.special_sectors);

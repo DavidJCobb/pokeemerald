@@ -103,7 +103,7 @@ body.loaded {
       flex-flow: row nowrap;
       gap:       1ch;
       
-      svg {
+      img {
          display: inline-block;
          width: 1em;
          height: 1em;
@@ -478,19 +478,6 @@ body {
    }
 }
 
-dialog.error {
-   background: #511;
-   color: #FFF;
-   
-   .body {
-      white-space: pre-wrap;
-   }
-   
-   .buttons button {
-      --button-back-base:  #877;
-      --button-back-hover: #A77;
-   }
-}
 dialog {
    border:  0;
    padding: 1em 2em;
@@ -526,4 +513,21 @@ dialog::backdrop {
       ),
       rgba(0, 0, 0, 0.2)
    ;
+}
+dialog.error {
+   background: #511;
+   color: #FFF;
+   
+   .body {
+      white-space: pre-wrap;
+   }
+   
+   .buttons button {
+      --button-back-base:  #877;
+      --button-back-hover: #A77;
+   }
+}
+dialog.loading {
+   background: #555;
+   color: #FFF;
 }

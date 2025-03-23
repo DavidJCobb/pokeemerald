@@ -1,6 +1,7 @@
 <!doctype html>
 <html>
    <head>
+      <meta charset="utf-8" />
       <title>Upgrade Your Save</title>
       
       <!--
@@ -41,31 +42,7 @@
             This tool requires JavaScript.
          </noscript>
          <div class="script">
-            <svg viewBox="0 0 120 120" width="32" height="32">
-               <g
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="20"
-                  stroke-linecap="round"
-                  style="transform-box: view-box; transform-origin: center;"
-               >
-                  <path d="M 60 60 m -50 0 a 50 50 0 0 1 50 -50" />
-                  <g stroke="none" fill="currentColor">
-                     <circle r="10" cx="18.43" cy="87.78" />
-                     <circle r="8"  cx="40.87" cy="106.19" />
-                     <circle r="7"  cx="68.03" cy="109.35" />
-                  </g>
-                  <animateTransform
-                     attributeName="transform"
-                     attributeType="XML"
-                     type="rotate"
-                     from="0"
-                     to="360"
-                     dur="2.5s"
-                     repeatCount="indefinite"
-                  />
-               </g>
-            </svg>
+            <img src="upgrader/spinner.svg" width="32" height="32" />
             <p>
                Loading... Please wait...
             </p>
@@ -80,7 +57,7 @@
 //
 window.setTimeout(function() {
    let node = document.getElementById("loading");
-   if (!document.body.classList.has("loading")) {
+   if (!document.body.classList.contains("loading")) {
       node.removeAttribute("hidden");
    }
 }, 100);

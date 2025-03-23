@@ -3,51 +3,10 @@
    <head>
       <title>Bitpacked save dumper</title>
       <link rel="stylesheet" href="index.css" />
-      <script>
-console.assert = function(condition, ...args) {
-   if (condition)
-      return;
-   console.log(...args);
-   throw new Error("Assertion failed. ", ...args); // actually halt execution
-};
-
-// present-day browsers don't format AggregateError in a usable manner, so 
-// let's do it for them.
-{
-   function handler(event) {
-      let error;
-      if (event.type == "error")
-         error = event.error;
-      else
-         error = event.reason;
-      if (!(error instanceof AggregateError))
-         return;
-      if (error.errors.length > 0) {
-         console.error(error);
-         console.groupCollapsed("Constituent errors");
-         for(let sub of error.errors) {
-            console.error(sub);
-         }
-         console.groupEnd();
-         //
-         // NOTE: For unhandled promise rejections, `preventDefault` is broken 
-         //       in Firefox and will not prevent built-in logging of the 
-         //       error object.
-         //
-         // https://bugzilla.mozilla.org/show_bug.cgi?id=1642147
-         //
-         event.preventDefault();
-         if (navigator.userAgent.toLowerCase().includes('firefox')) {
-            console.log("NOTE: The AggregateError itself will be displayed here twice, just below this message, if Mozilla hasn't fixed some of their screwups yet.");
-         }
-      }
-   }
-   window.addEventListener("error", handler);
-   window.addEventListener("unhandledrejection", handler); // errors in promises
-}
-      </script>
+      <script src="utils/aggregate-error-display-helper.js"></script>
+      <script src="utils/assert-monkeypatch.js"></script>
+      
       <script src="common.js"></script>
-      <script src="assess-sav-version.js"></script>
       
       <script src="parse-bbcode.js"></script>
       <script src="custom-elements/bitset-input-element.js"></script>
@@ -59,7 +18,6 @@ console.assert = function(condition, ...args) {
       <script type="module" src="custom-elements/save-slot-element.js"></script>
       <script type="module" src="custom-elements/save-file-element.js"></script>
       
-      <script src="editor-enums.js"></script>
       <script type="module" src="translators/debugging-translator-1-to-2.js"></script>
       
       <script type="module" src="index.js"></script>

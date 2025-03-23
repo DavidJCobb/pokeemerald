@@ -1,10 +1,10 @@
-import Bitstream from "./bitstream.js";
-import CDeclDefinition from "./c-decl-definition.js";
-import CIntegralTypeDefinition from "./c-integral-type-definition.js";
-import CStructDefinition from "./c-struct-definition.js";
-import CUnionDefinition from "./c-union-definition.js";
-import InstructionsApplier from "./instructions-applier.js";
-import { RootInstructionNode } from "./instructions.js";
+import Bitstream from "../bitstream.js";
+import CDeclDefinition from "../c/c-decl-definition.js";
+import CIntegralTypeDefinition from "../c/c-integral-type-definition.js";
+import CStructDefinition from "../c/c-struct-definition.js";
+import CUnionDefinition from "../c/c-union-definition.js";
+import InstructionsApplier from "../c/instructions-applier.js";
+import { RootInstructionNode } from "../c/instructions.js";
 import SaveFile from "./save-file.js";
 
 export class SaveSector {

@@ -1,8 +1,8 @@
-import CArrayInstance from "../c-array-instance.js";
-import CStructInstance from "../c-struct-instance.js";
-import CValueInstance from "../c-value-instance.js";
+import CArrayInstance from "../c/c-array-instance.js";
+import CStructInstance from "../c/c-struct-instance.js";
+import CValueInstance from "../c/c-value-instance.js";
 import PokeString from "../poke-string/poke-string.js";
-import DOMPokeStringPrinter from "../poke-string/poke-string-dom-printer.js";
+import DOMPokeStringPrinter from "../poke-string/dom-printer.js";
 
 let SaveSlotSummary;
 {

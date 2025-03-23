@@ -1,7 +1,7 @@
-import { LiteralPokeStringPrinter } from "../poke-string/poke-string-printer.js";
+import LiteralPokeStringPrinter from "../poke-string/literal-printer.js";
 import PokeString from "../poke-string/poke-string.js";
-import SaveFile from "../save-file.js";
-import SaveFormatIndex from "../save-format-index.js";
+import SaveFile from "../savedata-classes/save-file.js";
+import SaveFormatIndex from "../savedata-classes/save-format-index.js";
 
 class SaveFileElement extends HTMLElement {
    #save_file = null;

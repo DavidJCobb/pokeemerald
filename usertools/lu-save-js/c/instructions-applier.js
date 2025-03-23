@@ -1,6 +1,6 @@
-import Bitstream from "./bitstream.js";
-import CHARMAP from "./poke-string/charmap.js";
-import PokeString from "./poke-string/poke-string.js";
+import Bitstream from "../bitstream.js";
+import CHARMAP from "../poke-string/charmap.js";
+import PokeString from "../poke-string/poke-string.js";
 
 import CInstance from "./c-instance.js";
 import CArrayInstance from "./c-array-instance.js";

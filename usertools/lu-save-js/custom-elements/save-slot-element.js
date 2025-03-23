@@ -1,6 +1,6 @@
-import CValueInstance from "../c-value-instance.js";
-import SaveFormatIndex from "../save-format-index.js";
-import SaveSlot from "../save-slot.js";
+import CValueInstance from "../c/c-value-instance.js";
+import SaveFormatIndex from "../savedata-classes/save-format-index.js";
+import SaveSlot from "../savedata-classes/save-slot.js";
 import {
    get_enclosing_SerializedBoxPokemon,
    recalc_SerializedBoxPokemon_checksum

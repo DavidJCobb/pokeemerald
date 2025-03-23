@@ -1,4 +1,4 @@
-import { CInstanceDisplayOverrides} from "../c-instance-display-overrides.js";
+import { CInstanceDisplayOverrides} from "../c/c-instance-display-overrides.js";
 
 export default class ExtraEnumData {
    constructor() {

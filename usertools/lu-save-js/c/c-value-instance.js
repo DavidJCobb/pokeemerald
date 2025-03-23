@@ -1,5 +1,5 @@
 import CDeclInstance from "./c-decl-instance.js";
-import PokeString from "./poke-string/poke-string.js";
+import PokeString from "../poke-string/poke-string.js";
 
 export default class CValueInstance extends CDeclInstance {
    constructor(decl) {

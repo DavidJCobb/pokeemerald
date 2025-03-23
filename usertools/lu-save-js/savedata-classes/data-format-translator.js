@@ -1,11 +1,11 @@
-import CInstance from "./c-instance.js";
-import CArrayInstance from "./c-array-instance.js";
-import CDeclInstance from "./c-decl-instance.js";
-import CStructInstance from "./c-struct-instance.js";
-import CUnionInstance from "./c-union-instance.js";
-import CValueInstance from "./c-value-instance.js";
+import CInstance from "../c/c-instance.js";
+import CArrayInstance from "../c/c-array-instance.js";
+import CDeclInstance from "../c/c-decl-instance.js";
+import CStructInstance from "../c/c-struct-instance.js";
+import CUnionInstance from "../c/c-union-instance.js";
+import CValueInstance from "../c/c-value-instance.js";
 
-import PokeString from "./poke-string/poke-string.js";
+import PokeString from "../poke-string/poke-string.js";
 import SaveSlot from "./save-slot.js";
 
 //

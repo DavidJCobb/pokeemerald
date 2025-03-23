@@ -2,7 +2,7 @@ import ExtraGameStats from "./extra-game-stats.js";
 import ExtraCoalescedMapsData from "./extra-coalesced-maps-data.js";
 import ExtraScriptFlags from "./extra-script-flags.js";
 import ExtraScriptVars from "./extra-script-vars.js";
-import { CInstanceDisplayOverrideCriteria } from "../c-instance-display-overrides.js";
+import { CInstanceDisplayOverrideCriteria } from "../c/c-instance-display-overrides.js";
 
 // Extra data pertaining to a given savedata serialization version.
 export default class ExtraDataCollection {

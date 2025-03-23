@@ -1,7 +1,9 @@
-import SaveFile from "./save-file.js";
-import SaveFormatIndex from "./save-format-index.js";
+import SaveFile from "./savedata-classes/save-file.js";
+import SaveFormatIndex from "./savedata-classes/save-format-index.js";
 import SaveSlotSummary from "./upgrader/save-slot-summary.js";
-import { TranslationOperation } from "./data-format-translator.js";
+import { TranslationOperation } from "./savedata-classes/data-format-translator.js";
+
+import assess_sav_version from "./savedata-classes/assess-sav-version.js";
 
 function show_error(text) {
    let pi = Promise.withResolvers();

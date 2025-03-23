@@ -1,10 +1,10 @@
-import CArrayInstance from "../c-array-instance.js";
-import CInstance from "../c-instance.js";
-import CStructInstance from "../c-struct-instance.js";
-import CTypeInstance from "../c-type-instance.js";
-import CUnionInstance from "../c-union-instance.js";
-import CValueInstance from "../c-value-instance.js";
-import { LiteralPokeStringPrinter } from "../poke-string/poke-string-printer.js";
+import CArrayInstance from "../c/c-array-instance.js";
+import CInstance from "../c/c-instance.js";
+import CStructInstance from "../c/c-struct-instance.js";
+import CTypeInstance from "../c/c-type-instance.js";
+import CUnionInstance from "../c/c-union-instance.js";
+import CValueInstance from "../c/c-value-instance.js";
+import LiteralPokeStringPrinte from "../poke-string/literal-printer.js";
 import PokeString from "../poke-string/poke-string.js";
 
 class CViewElement extends TreeRowViewElement {

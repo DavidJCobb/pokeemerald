@@ -1,7 +1,9 @@
-import SaveFormat from "./save-format.js";
-import SaveFormatIndex from "./save-format-index.js";
-import { TranslationOperation } from "./data-format-translator.js";
+import SaveFormat from "./savedata-classes/save-format.js";
+import SaveFormatIndex from "./savedata-classes/save-format-index.js";
+import { TranslationOperation } from "./savedata-classes/data-format-translator.js";
 import EMERALD_DISPLAY_OVERRIDES from "./emerald-display-overrides.js";
+
+import assess_sav_version from "./savedata-classes/assess-sav-version.js";
 
 SaveFormatIndex.load().then(function() {
    let node  = document.getElementById("translate-to-version");

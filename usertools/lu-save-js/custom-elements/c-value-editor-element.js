@@ -1,10 +1,10 @@
 import ChecksumRecalcHelper from "../checksum-recalc-helper.js";
-import CUnionInstance from "../c-union-instance.js";
-import CValueInstance from "../c-value-instance.js";
+import CUnionInstance from "../c/c-union-instance.js";
+import CValueInstance from "../c/c-value-instance.js";
 
 import PokeString from "../poke-string/poke-string.js";
-import { LiteralPokeStringPrinter } from "../poke-string/poke-string-printer.js";
-import DOMPokeStringPrinter from "../poke-string/poke-string-dom-printer.js";
+import LiteralPokeStringPrinter from "../poke-string/literal-printer.js";
+import DOMPokeStringPrinter from "../poke-string/dom-printer.js";
 
 class CValueEditorElement extends HTMLElement {
    #body;

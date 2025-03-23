@@ -1,5 +1,5 @@
-import CBufferifier from "./c-bufferifier.js";
-import CInstance from "./c-instance.js";
+import CBufferifier from "./c/c-bufferifier.js";
+import CInstance from "./c/c-instance.js";
 
 export default class ChecksumRecalcHelper {
    static ChecksumInfo = class ChecksumInfo {

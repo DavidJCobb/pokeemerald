@@ -1,4 +1,4 @@
-import { AbstractPokeStringPrinter } from "./poke-string-printer.js";
+import AbstractPokeStringPrinter from "./printer.js";
 import CHARMAP from "./charmap.js";
 
 export default class DOMPokeStringPrinter extends AbstractPokeStringPrinter {

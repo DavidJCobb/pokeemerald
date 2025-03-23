@@ -1,6 +1,6 @@
-import CArrayInstance from "./c-array-instance.js";
-import CStructInstance from "./c-struct-instance.js";
-import CUnionInstance from "./c-union-instance.js";
+import CArrayInstance from "../c/c-array-instance.js";
+import CStructInstance from "../c/c-struct-instance.js";
+import CUnionInstance from "../c/c-union-instance.js";
 
 // For a loaded save slot.
 export default class SaveSlot extends CStructInstance {

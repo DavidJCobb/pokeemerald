@@ -1,4 +1,4 @@
-import { AbstractDataFormatTranslator } from "../data-format-translator.js";
+import { AbstractDataFormatTranslator } from "../savedata-classes/data-format-translator.js";
 import PokeString from "../poke-string/poke-string.js";
 
 //

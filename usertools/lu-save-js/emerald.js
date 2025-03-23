@@ -1,8 +1,8 @@
-import CBufferifier from "./c-bufferifier.js";
-import CArrayInstance from "./c-array-instance.js";
-import CStructInstance from "./c-struct-instance.js";
+import CBufferifier from "./c/c-bufferifier.js";
+import CArrayInstance from "./c/c-array-instance.js";
+import CStructInstance from "./c/c-struct-instance.js";
 import PokeString from "./poke-string/poke-string.js";
-import SaveSlot from "./save-slot.js";
+import SaveSlot from "./savedata-classes/save-slot.js";
 
 export /*Optional<CStructInstance>*/ function get_enclosing_SerializedBoxPokemon(/*CInstance*/ inst) {
    for(; inst; inst = inst.is_member_of) {

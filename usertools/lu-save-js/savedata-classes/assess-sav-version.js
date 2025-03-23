@@ -1,4 +1,4 @@
-/*Optional<int>*/ function assess_sav_version(/*DataView*/ sav) {
+export default /*Optional<int>*/ function assess_sav_version(/*DataView*/ sav) {
    if (sav.byteLength < FLASH_MEMORY_SIZE) {
       return null;
    }

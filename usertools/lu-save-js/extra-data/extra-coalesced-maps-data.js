@@ -1,4 +1,4 @@
-import { CInstanceDisplayOverrides, CInstanceDisplayOverrideCriteria } from "../c-instance-display-overrides.js";
+import { CInstanceDisplayOverrides, CInstanceDisplayOverrideCriteria } from "../c/c-instance-display-overrides.js";
 
 export default class ExtraCoalescedMapsData extends CInstanceDisplayOverrides {
    constructor() {

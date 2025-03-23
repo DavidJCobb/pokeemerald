@@ -7,7 +7,7 @@ import CStructInstance from "./c-struct-instance.js";
 import CUnionDefinition from "./c-union-definition.js";
 import CUnionInstance from "./c-union-instance.js";
 import CValueInstance from "./c-value-instance.js";
-import PokeString from "./poke-string/poke-string.js";
+import PokeString from "../poke-string/poke-string.js";
 
 // FIELD_DECL or VAR_DECL.
 // Created for declarations of both single values and arrays. For an 

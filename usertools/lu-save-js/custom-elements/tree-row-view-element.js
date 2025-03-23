@@ -1287,7 +1287,9 @@ class TreeRowViewElement extends HTMLElement {
       const CH = context.measureText("0").width;
       const EM = (function() {
          let metrics = context.measureText("X");
-         return metrics.emHeightAscent + metrics.emHeightDescent;
+         let ascent  = metrics.emHeightAscent  || metrics.actualBoundingBoxAscent;
+         let descent = metrics.emHeightDescent || metrics.actualBoundingBoxDescent;
+         return ascent + descent;
       })();
       
       let base_width = canvas.width;

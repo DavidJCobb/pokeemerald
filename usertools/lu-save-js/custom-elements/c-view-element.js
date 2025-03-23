@@ -4,7 +4,7 @@ import CStructInstance from "../c/c-struct-instance.js";
 import CTypeInstance from "../c/c-type-instance.js";
 import CUnionInstance from "../c/c-union-instance.js";
 import CValueInstance from "../c/c-value-instance.js";
-import LiteralPokeStringPrinte from "../poke-string/literal-printer.js";
+import LiteralPokeStringPrinter from "../poke-string/literal-printer.js";
 import PokeString from "../poke-string/poke-string.js";
 
 class CViewElement extends TreeRowViewElement {

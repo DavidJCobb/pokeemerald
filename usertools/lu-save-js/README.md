@@ -17,7 +17,7 @@ The architecture is as follows:
 * Elements of an actual save file, as represented in JS
   * `CStructInstance` and `CUnionInstance` are instances of structs and unions.
   * `CValueInstance` is a serialized value. `CArrayInstance` is an array (whether of values, struct/union instances, or other arrays).
-  * ~~As a lazy hack~~ For convenience, save slots subclass `CStructInstance`, with top-level to-be-serialized variables treated as members of this imaginary struct.
+  * ~~As a lazy hack~~ For expediency's sake, save slots subclass `CStructInstance`, with top-level to-be-serialized variables treated as members of this imaginary struct.
 
 Loading data from a bitpacked save works by: spawning an `InstructionsApplier`; feeding it an appropriate `SaveFormat`, root data object (the "target"), bitstream; and applying it to an `<instructions />` node:
 

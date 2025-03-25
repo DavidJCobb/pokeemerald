@@ -17,8 +17,24 @@ SaveFormatIndex.load().then(function() {
       frag.append(opt);
    }
    node.replaceChildren(frag);
-   if (!empty)
+   if (!empty) {
       node.removeAttribute("disabled");
+      //
+      // Wait until all custom element scripts have loaded. (They're 
+      // already referenced via <script/> tags, so the browser will 
+      // be able to fetch them without waiting for us to reach this 
+      // point; but we do want to make sure they're loaded before we 
+      // proceed.)
+      //
+      Promise.allSettled([
+         import("./custom-elements/c-view-element.js"),
+         import("./custom-elements/c-value-editor-element.js"),
+         import("./custom-elements/save-file-element.js"),
+         import("./custom-elements/save-slot-element.js")
+      ]).then(function() {
+         document.querySelector("menu [data-action='import']").removeAttribute("disabled");
+      });
+   }
 });
 
 document.body.addEventListener("click", function(e) {
@@ -38,9 +54,6 @@ document.body.addEventListener("click", function(e) {
       document.querySelectorAll("menu [data-acts-on-save-file]").forEach(function(node) {
          node[disable ? "setAttribute" : "removeAttribute"]("disabled", "disabled");
       });
-   });
-   document.querySelectorAll("menu [data-acts-on-save-file]").forEach(function(node) {
-      node.setAttribute("disabled", "disabled");
    });
    
    // Define editor enums as necessary. This is a HACK for bespoke 

@@ -479,6 +479,12 @@ body {
 }
 
 dialog {
+   --inset:     2em;
+   --max-width: 30em;
+   
+   box-sizing: border-box;
+   max-width:  calc(min(var(--max-width,100vw), 100vw - var(--inset,0em)*2));
+   max-height: calc(100vh - var(--inset,0em)*2);
    border:  0;
    padding: 1em 2em;
    margin:  auto !important;
@@ -488,7 +494,6 @@ dialog {
       0px 3px 5px 3px rgba(0, 0, 0, 0.3), 
       0px 6px 7px 4px rgba(0, 0, 0, 0.15)
    ;
-   max-width: 30em;
    
    .buttons {
       justify-content: center;
@@ -530,4 +535,56 @@ dialog.error {
 dialog.loading {
    background: #555;
    color: #FFF;
+}
+
+/*
+   mobile
+*/
+@media (min-resolution: 2dppx) {
+   body > header {
+      display: flex;
+      flex-flow: column nowrap;
+      
+      h2 {
+         font-size: 3em;
+         line-height: 80%;
+         margin: 1rem 0;
+      }
+      h2,
+      .tagline {
+         text-align: center;
+      }
+   }
+   
+   body>.step {
+      display: grid;
+      grid-template:
+         "number  header"
+         "body    body"
+         "buttons buttons"
+         /
+         auto 1fr
+      ;
+      gap: 1em .5em;
+      padding-left: 0;
+      align-items: center;
+      
+      &::before,
+      &::after {
+         position:  static;
+         grid-area: number;
+         justify-self: start;
+      }
+      &>header {
+         grid-area: header;
+         margin:    0;
+      }
+      &>.body {
+         grid-area: body;
+      }
+      &>.buttons {
+         grid-area: buttons;
+         margin:    0;
+      }
+   }
 }

@@ -2,6 +2,7 @@
 <html>
    <head>
       <meta charset="utf-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1" />
       <title>Upgrade Your Save</title>
       
       <!--
@@ -64,9 +65,11 @@ window.setTimeout(function() {
    
       <section class="step" id="step-upload">
          <header>Upload your save file here.</header>
-         <div class="filepicker">
-            <input type="file" id="pick-save-file" />
-            <button data-action="clear" title="Clear current file"></button>
+         <div class="body">
+            <div class="filepicker">
+               <input type="file" id="pick-save-file" />
+               <button data-action="clear" title="Clear current file"></button>
+            </div>
          </div>
          <div class="buttons">
             <button data-action="confirm" disabled>Load!</button>
@@ -74,28 +77,30 @@ window.setTimeout(function() {
       </section>
       <section class="step" hidden id="step-verify">
          <header>Is this you?</header>
-         <dl id="loaded-save-info">
-            <li>
-               <dt>Name:</dt>
-               <dd data-field="player-name"></dd>
-            </li>
-            <li>
-               <dt>Gender:</dt>
-               <dd data-field="player-gender"></dd>
-            </li>
-            <li>
-               <dt>Trainer ID:</dt>
-               <dd data-field="trainer-id"></dd>
-            </li>
-            <li class="block-content">
-               <dt>Pokémon:</dt>
-               <dd><ul data-field="player-party"></ul></dd>
-            </li>
-            <li data-field="player-badges">
-               <dt>Badges:</dt>
-               <dd><ul></ul></dd>
-            </li>
-         </dl>
+         <div class="body">
+            <dl id="loaded-save-info">
+               <li>
+                  <dt>Name:</dt>
+                  <dd data-field="player-name"></dd>
+               </li>
+               <li>
+                  <dt>Gender:</dt>
+                  <dd data-field="player-gender"></dd>
+               </li>
+               <li>
+                  <dt>Trainer ID:</dt>
+                  <dd data-field="trainer-id"></dd>
+               </li>
+               <li class="block-content">
+                  <dt>Pokémon:</dt>
+                  <dd><ul data-field="player-party"></ul></dd>
+               </li>
+               <li data-field="player-badges">
+                  <dt>Badges:</dt>
+                  <dd><ul></ul></dd>
+               </li>
+            </dl>
+         </div>
          <div class="buttons">
             <button data-action="confirm">Yes!</button>
             <button data-action="deny">No!</button>
@@ -120,7 +125,9 @@ window.setTimeout(function() {
       </section>
       <section class="step final" hidden id="step-download">
          <header>Your save file has been upgraded.</header>
-         <a id="download-link">Click here to download it.</a>
+         <div class="buttons">
+            <a id="download-link">Click here to download it.</a>
+         </div>
       </section>
    </body>
 </html>

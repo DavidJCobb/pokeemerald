@@ -1,5 +1,5 @@
 import SaveFormat from "./savedata-classes/save-format.js";
-import SaveFormatIndex from "./savedata-classes/save-format-index.js";
+import SaveFormatIndex from "./savedata-classes/save-format-index.js"
 import { TranslationOperation } from "./savedata-classes/data-format-translator.js";
 import EMERALD_DISPLAY_OVERRIDES from "./emerald-display-overrides.js";
 
@@ -244,6 +244,48 @@ SaveFormatIndex.load().then(function() {
          modal.close();
       });
    }
+   {  // Retcon version number
+      let trigger = document.querySelector("menu [data-action='retcon']");
+      let modal   = document.getElementById("dialog-retcon");
+      trigger.addEventListener("click", function(e) {
+         if (e.target.hasAttribute("disabled"))
+            return;
+         let src_node = tab_view.selectedTabBody;
+         if (!src_node)
+            return;
+         let src_file = src_node.saveFile;
+         if (!src_file)
+            return;
+         
+         modal.showModal();
+      });
+      modal.querySelector("button[data-action='activate']").addEventListener("click", async function() {
+         let src_node = tab_view.selectedTabBody;
+         if (!src_node)
+            return;
+         let src_file = src_node.saveFile;
+         if (!src_file)
+            return;
+         
+         let v = +modal.querySelector("[name='retcon']").value;
+         if (isNaN(v) || v < 0) {
+            alert("Invalid version number to retcon to.");
+         }
+         
+         for(let slot of src_file.slots) {
+            slot.version = v;
+         }
+         src_node.saveFile = src_file; // force repaint of version numbers
+         
+         modal.close();
+      });
+      
+      
+      modal.querySelector("button[data-action='cancel']").addEventListener("click", function() {
+         modal.close();
+      });
+      
+   }
    {  // Export save file
       let trigger = document.querySelector("menu [data-action='export']");
       let modal   = document.getElementById("dialog-export");
@@ -251,7 +293,7 @@ SaveFormatIndex.load().then(function() {
          if (e.target.hasAttribute("disabled"))
             return;
          let src_node = tab_view.selectedTabBody;
-         if (!src_node || !(src_node instanceof SaveFileElement))
+         if (!src_node)
             return;
          let src_file = src_node.saveFile;
          if (!src_file)

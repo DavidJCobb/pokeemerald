@@ -117,8 +117,6 @@ class SaveSlotElement extends HTMLElement {
       return this.#slot_data;
    }
    set slotData(v) {
-      if (this.#slot_data === v)
-         return;
       if (v) {
          if (!(v instanceof SaveSlot))
             throw new TypeError("SaveSlot instance or falsy expected");

@@ -83,6 +83,16 @@ export default class SaveSlot extends CStructInstance {
             version = Math.max(version, sector.version);
       return version >= 0 ? version : null;
    }
+   set version(v) {
+      v = +v;
+      if (isNaN(v))
+         throw new TypeError("version must be a number");
+      if (v < 0 || v > 0xFFFFFFFF)
+         throw new Error("version out of bounds");
+      for(let sector of this.sectors)
+         if (sector.signature == SAVE_SECTOR_SIGNATURE)
+            sector.version = v;
+   }
    
    /*Optional<CInstance>*/ lookupCInstanceByPath(/*String*/ path) {
       if (!path)

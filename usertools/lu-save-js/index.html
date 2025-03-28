@@ -36,6 +36,9 @@
          <li data-action="translate" disabled data-acts-on-save-file="true">
             Translate current save file
          </li>
+         <li data-action="retcon" disabled data-acts-on-save-file="true">
+            Retcon current save file version
+         </li>
          <li data-action="export" disabled data-acts-on-save-file="true">
             Export save file
          </li>
@@ -84,6 +87,29 @@
          </div>
          <div class="buttons">
             <button data-action="activate">Translate</button>
+            <button data-action="cancel">Cancel</button>
+         </div>
+      </dialog>
+      <dialog id="dialog-retcon">
+         <div class="body">
+            <p>
+               Every save file has an internal <dfn>savedata serialization version</dfn> number, which tools like this save editor use to know what savedata format the file was saved with.
+            </p>
+            <p>
+               <strong>Only use this if you are developing an Emerald hack. If you are an end user wishing to convert or modify your save file, "retconning" it will destroy it. You should "translate" it instead.</strong>
+            </p>
+            <p>
+               For development purposes, you may want to change that version number without actually changing any of the data inside. For example, while developing an update for your hack, you may have a long-term test save, where you bump the serialization version number as you work on the hack; and then, when it comes time to ship to the public, you may want to "collapse" all of those intermediate development-only serialization versions. In order to keep your test save usable after that, you'd have to update its internal version number to match.
+            </p>
+            <div class="form">
+               <label>
+                  Retcon to:
+                  <input type="number" name="retcon" />
+               </label>
+            </div>
+         </div>
+         <div class="buttons">
+            <button data-action="activate">Retcon</button>
             <button data-action="cancel">Cancel</button>
          </div>
       </dialog>

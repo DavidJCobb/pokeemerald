@@ -36,8 +36,6 @@ class SaveFileElement extends HTMLElement {
    set saveFile(v) {
       if (v && !(v instanceof SaveFile))
          throw new TypeError("Must be a SaveFile.");
-      if (this.#save_file === v)
-         return;
       this.#save_file = v;
       if (v) {
          for(let i = 0; i < this.#save_slot_elements.length; ++i) {

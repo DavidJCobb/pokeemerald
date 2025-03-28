@@ -213,16 +213,14 @@ body {
    padding-bottom: 2em;
 }
 
-.filepicker {
-   display:   flex;
-   flex-flow: row nowrap;
-   align-items: center;
+file-picker {
+   display: block;
    max-width: 24em;
    
    input {
       flex: 1 1 auto;
    }
-   button {
+   &::part(clear-button) {
       all:        unset;
       appearance: none;
       
@@ -235,31 +233,30 @@ body {
       padding: .4em;
       background: #B44;
       
-      &:hover {
-         background: #C44;
-      }
-      &:not([disabled]):active {
-         background: #933;
-      }
-      &:not([disabled]) {
-         cursor: pointer;
-      }
-      &[disabled] {
-         background: #787878;
-      }
-      
       position: relative;
-      &::before {
-         content: "\00D7";
-         position: absolute;
-         left: 50%;
-         top:  50%;
-         transform: translate(-50%, -50%);
-         color: #FFF;
-         font-weight: bold;
-         font-size:   1.3em;
-         text-indent: 0;
-      }
+   }
+   &::part(clear-button)::before {
+      content: "\00D7";
+      position: absolute;
+      left: 50%;
+      top:  50%;
+      transform: translate(-50%, -50%);
+      color: #FFF;
+      font-weight: bold;
+      font-size:   1.3em;
+      text-indent: 0;
+   }
+   &::part(clear-button):hover {
+      background: #C44;
+   }
+   &::part(clear-button):not(:disabled):active {
+      background: #933;
+   }
+   &::part(clear-button):not(:disabled) {
+      cursor: pointer;
+   }
+   &::part(clear-button):disabled {
+      background: #787878;
    }
 }
 
@@ -274,7 +271,7 @@ body {
    }
 }
 .buttons button,
-.filepicker input[type="file" i]::file-selector-button,
+file-picker input::file-selector-button,
 #download-link {
    --button-back-base:     #674;
    --button-back-hover:    #796;
@@ -316,18 +313,18 @@ body {
       --button-back-hover: #966;
    }
 }
-.filepicker input[type="file" i]::file-selector-button {
+file-picker input::file-selector-button {
    margin-right: 1em;
 }
-.filepicker input[type="file" i]:not([disabled])::file-selector-button {
+file-picker input:not([disabled])::file-selector-button {
    --button-back-base:     #666;
    --button-back-hover:    #777;
    --button-back-disabled: #777;
 }
-.filepicker input[type="file" i]:not([disabled])::file-selector-button:hover {
+file-picker input:not([disabled])::file-selector-button:hover {
    background: var(--button-back-hover,#777);
 }
-.filepicker input[type="file" i]:not([disabled])::file-selector-button:active {
+file-picker input:not([disabled])::file-selector-button:active {
    background: #222;
 }
 

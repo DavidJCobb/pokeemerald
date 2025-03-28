@@ -1,0 +1,77 @@
+<!doctype html>
+<html>
+   <head>
+      <title>FilePickerWrapElement tests</title>
+   </head>
+   <body>
+      <script src="file-picker-wrap-element.min.js"></script>
+      
+      <file-picker><input type="file" id="test" accept=".sav"></file-picker>
+      <style>
+body {
+   font-family: Arial;
+}
+
+file-picker {
+}
+#test::file-selector-button {
+   all:        unset;
+   appearance: none;
+   display:    inline-block;
+   
+   border-radius: 100vw; /* capsule; 50% would give us an oval */
+   background:    #666;
+   color:         #FFF;
+   font-weight:   bold;
+   padding:       .25em .5em;
+   margin-right:  1ch;
+}
+#test::file-selector-button:hover {
+   background: #888;
+}
+#test::file-selector-button:active {
+   background: #000;
+}
+#test::file-selector-button:disabled {
+   background: #999;
+   color:      #EEE;
+}
+file-picker::part(clear-button) {
+   all:        unset;
+   appearance: none;
+   display:    block;
+   
+   text-indent: -1000vw;
+   overflow:    hidden;
+   
+   border-radius: 50%;
+   background:    #C44;
+   color:         #FFF;
+   width:         1em;
+   height:        1em;
+   font-weight:   bold;
+   padding:       .125em;
+   
+   position: relative;
+}
+file-picker::part(clear-button)::before {
+   content: "X";
+   text-indent: 0;
+   
+   position: absolute;
+   left: 50%;
+   top:  50%;
+   transform: translate(-50%, -50%);
+}
+file-picker::part(clear-button):hover {
+   background: #F44;
+}
+file-picker::part(clear-button):active {
+   background: #822;
+}
+file-picker::part(clear-button):disabled {
+   background: #C77;
+}
+      </style>
+   </body>
+</html>

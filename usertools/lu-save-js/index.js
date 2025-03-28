@@ -37,16 +37,6 @@ SaveFormatIndex.load().then(function() {
    }
 });
 
-document.body.addEventListener("click", function(e) {
-   if (!e.target.matches(".file-input button.clear"))
-      return;
-   let wrap = e.target.closest(".file-input");
-   let node = wrap.querySelector("input[type='file' i]");
-   if (!node)
-      return;
-   node.value = "";
-});
-
 {
    const tab_view = document.getElementById("save-files");
    tab_view.addEventListener("tabchange", function(e) {

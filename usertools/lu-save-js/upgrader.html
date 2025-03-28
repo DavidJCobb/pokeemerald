@@ -14,6 +14,7 @@
       <link rel="stylesheet" href="upgrader.css" />
       
       <script src="common.js"></script>
+      <script src="custom-elements/file-picker-wrap-element.min.js"></script>
       
       <!-- app-specific -->
       <script type="module" src="upgrader/save-slot-summary.js"></script>
@@ -66,10 +67,9 @@ window.setTimeout(function() {
       <section class="step" id="step-upload">
          <header>Upload your save file here.</header>
          <div class="body">
-            <div class="filepicker">
+            <file-picker>
                <input type="file" id="pick-save-file" />
-               <button data-action="clear" title="Clear current file"></button>
-            </div>
+            </file-picker>
          </div>
          <div class="buttons">
             <button data-action="confirm" disabled>Load!</button>

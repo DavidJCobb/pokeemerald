@@ -11,6 +11,7 @@
       <script src="parse-bbcode.js"></script>
       <script src="custom-elements/bitset-input-element.js"></script>
       <script src="custom-elements/enum-input-element.js"></script>
+      <script src="custom-elements/file-picker-wrap-element.min.js"></script>
       <script src="custom-elements/tree-row-view-element.js"></script>
       <script src="custom-elements/tab-view-element.js"></script>
       <script type="module" src="custom-elements/c-view-element.js"></script>
@@ -48,16 +49,14 @@
             <hr/>
             <div class="form">
                <label for="file-sav">Save file (SAV):</label>
-               <div class="file-input">
-                  <input type="file" class="sav" />
-                  <button class="clear">Clear</button>
-               </div>
+               <file-picker>
+                  <input type="file" class="sav" accept=".sav" />
+               </file-picker>
                
                <label for="file-xml">Override save file format (XML, optional):</label>
-               <div class="file-input">
-                  <input type="file" class="xml" />
-                  <button class="clear">Clear</button>
-               </div>
+               <file-picker>
+                  <input type="file" class="xml" accept=".xml" />
+               </file-picker>
             </div>
          </div>
          <div class="buttons">
@@ -78,10 +77,9 @@
                   <input name="translate-to-target" type="radio" value="xml-file" />
                   Translate to format (XML):
                </label>
-               <div class="file-input">
-                  <input type="file" class="xml" />
-                  <button class="clear">Clear</button>
-               </div>
+               <file-picker>
+                  <input type="file" class="xml" accept=".xml" />
+               </file-picker>
             </div>
          </div>
          <div class="buttons">

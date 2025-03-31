@@ -129,6 +129,21 @@ do -- std::filesystem::path
                return filesystem.path(a):append(b)
             end
          end,
+         __eq = function(a, b)
+            if a.root_name ~= b.root_name then return false end
+            if a.root_dir ~= b.root_dir then return false end
+            if type(a.filenames) ~= "table" then return false end
+            if type(b.filenames) ~= "table" then return false end
+            local as = #a.filenames
+            local bs = #b.filenames
+            if as ~= bs then return false end
+            for i = 1, as do
+               if a.filenames[i] ~= b.filenames[i] then
+                  return false
+               end
+            end
+            return true
+         end,
       },
       __tostring = function(self)
          local s = ""

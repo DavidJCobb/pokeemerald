@@ -140,6 +140,9 @@ do
                   end
                end
                size = type_nodes[tn].attributes["c-sizeof"]
+               if not size then
+                  size = 0 -- likely an empty struct
+               end
             end
             
             if tlv.force_to_next_sector and not tlv_forced then

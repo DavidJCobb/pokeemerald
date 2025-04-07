@@ -12,7 +12,7 @@ For contacts and other pret projects, see [pret.github.io](https://pret.github.i
 
 ## This fork
 
-This fork uses a custom compiler plug-in to generate code that can pack Emerald's save files in a format which is optimized for space. This format is generated at build time based on what data is actually being saved; as you add or remove things in the savedata definitions (i.e. `SaveBlock1`, `SaveBlock2`, `PokemonStorage`), the compiler plug-in will automatically update the savedata format.
+This fork uses a custom compiler plug-in to generate code that can pack Emerald's save files in a format which is optimized for space. This format is generated at build time based on what data is actually being saved; as you add or remove things in the savedata definitions (i.e. `SaveBlock1`, `SaveBlock2`, `PokemonStorage`), the compiler plug-in will automatically update the savedata format. The compiler plug-in is designed for modern versions of GCC, so this branch requires `MODERN` builds.
 
 There is a `SAVEDATA_SERIALIZATION_VERSION` macro which uniquely identifies save file format versions ("serialization versions"). You should only increase the value of this macro whenever you make a change that affects the contents of the save file. This value is written into the player's savegame and can be auto-detected by external tools.
 

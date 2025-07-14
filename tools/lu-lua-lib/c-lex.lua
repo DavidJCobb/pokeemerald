@@ -72,7 +72,7 @@ do
       local tokens = {}
    
       local data      = ""
-      local str_delim = ""
+      local str_delim = "" -- delimiter of the string we're currently in, or an empty string
       local escaped   = false
       local skip      = 0
       
@@ -118,7 +118,7 @@ do
                else
                   local matched = nil
                   for _, v in ipairs(TOKENS) do
-                     if c == v[1] and str:sub(i, i + #v) == v then
+                     if c == v:sub(1, 1) and str:sub(i, i + #v - 1) == v then
                         matched = v
                         break
                      end

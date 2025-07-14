@@ -16,47 +16,47 @@ function try_execute_c_constant_integer_expression(
             if iv then
                return iv
             end
-            error("missing identifier")
+            error("missing identifier", 0)
          end
          if ast_node.case == "parenthetical" then
             return _exec(ast_node.data.expression)
          end
          if ast_node.case == "string-literal" then
-            error("string literal (not an integral constant)")
+            error("string literal (not an integral constant)", 0)
          end
          error("unhandled primary-expression case")
       end
       do -- postfix-expression
          if c_ast.compound_literal.is(ast_node) then
-            error("not a valid constant expression (bare compound literal)")
+            error("not a valid constant expression (bare compound literal)", 0)
          end
          if c_ast.array_subscript_expression.is(ast_node) then
-            error("not a valid constant expression (array subscript)")
+            error("not a valid constant expression (array subscript)", 0)
          end
          if c_ast.call_expression.is(ast_node) then
-            error("not a valid constant expression (function call)")
+            error("not a valid constant expression (function call)", 0)
          end
          if c_ast.postfix_expression.is(ast_node) then
             if ast_node.case == "dereferencing-member-access" then
-               error("not a valid constant expression (dereference and member access)")
+               error("not a valid constant expression (dereference and member access)", 0)
             end
             if ast_node.case == "member-access" then
-               error("not a valid constant expression (member access)")
+               error("not a valid constant expression (member access)", 0)
             end
             if ast_node.case == "operator" then
-               error("not a valid constant expression (increment/decrement operator)")
+               error("not a valid constant expression (increment/decrement operator)", 0)
             end
             error("unhandled postfix-expression case")
          end
       end
       do -- unary-expression
          if c_ast.sizeof_expression.is(ast_node) then
-            error("not a computable constant expression (we can't process sizeof here)")
+            error("not a computable constant expression (we can't process sizeof here)", 0)
          end
          if c_ast.unary_operator_expression.is(ast_node) then
             local op = ast_node.operator
             if op == "&" or op == "*" or op == "++" or op == "--" then
-               error("not a valid constant expression (unary/prefix operator " .. op .. ")")
+               error("not a valid constant expression (unary/prefix operator " .. op .. ")", 0)
             end
             if op == "!" or op == "-" or op == "+" or op == "~" then
                local subject = _exec(ast_node.subject)
@@ -77,7 +77,7 @@ function try_execute_c_constant_integer_expression(
          end
       end
       if c_ast.cast_expression.is(ast_node) then
-         error("not a valid constant expression (static cast)")
+         error("not a valid constant expression (static cast)", 0)
       end
       if c_ast.operator_tree_expression.is(ast_node) then
          local function _operate(node)
@@ -100,6 +100,12 @@ function try_execute_c_constant_integer_expression(
                   accum = accum + term
                elseif node.operator == "-" then
                   accum = accum - term
+               elseif node.operator == "&" then
+                  accum = accum & term
+               elseif node.operator == "|" then
+                  accum = accum | term
+               elseif node.operator == "^" then
+                  accum = accum ~ term
                elseif node.operator == "*" then
                   accum = accum * term
                elseif node.operator == "/" then
@@ -153,7 +159,7 @@ function try_execute_c_constant_integer_expression(
          end
       end
       if c_ast.assignment_expression.is(ast_node) then
-         error("not a valid constant expression (assignment)")
+         error("not a valid constant expression (assignment)", 0)
       end
       if c_ast.comma_expression.is(ast_node) then
          return _exec(ast_node.retained)

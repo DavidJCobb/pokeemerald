@@ -40,8 +40,8 @@ c_ast.array_subscript_expression = make_class({
 c_ast.call_expression = make_class({
    superclass  = c_ast.expression,
    constructor = function(func, args)
-      self.callable  = func
-      self.arguments = args
+      self.callable  = func -- node
+      self.arguments = args -- node[]
    end,
 })
 
@@ -83,8 +83,8 @@ c_ast.cast_expression = make_class({
       if not subject then
          error("cast expression requires a subject")
       end
-      self.typename = typename
-      self.subject  = subject
+      self.typename = typename -- string
+      self.subject  = subject  -- node
    end,
 })
 
@@ -110,11 +110,11 @@ c_ast.assignment_expression = make_class({
    superclass  = c_ast.expression,
    constructor = function(self, a, b, c)
       if c then
-         self.operator = a
-         self.lhs      = b
-         self.rhs      = c
+         self.operator = a -- string
+         self.lhs      = b -- node
+         self.rhs      = c -- node
       else
-         self.operator = "=="
+         self.operator = "="
          self.lhs      = a
          self.rhs      = b
       end

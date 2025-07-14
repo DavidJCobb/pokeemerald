@@ -36,5 +36,15 @@ const SaveFormatIndex = new (class SaveFormatIndex {
    /*Optional<IndexedSaveFormatInfo>*/ get_format_info_immediate(/*int*/ version) {
       return this.info.get(+version)
    }
+   
+   /*Optional<IndexedSaveFormatInfo>*/ find_by_format(/*SaveFormat*/ format) {
+      let match = null;
+      this.info.forEach(function(v, k) {
+         if (v.save_format === format) {
+            match = v;
+         }
+      });
+      return match;
+   }
 })();
 export default SaveFormatIndex;

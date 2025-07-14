@@ -50,6 +50,15 @@ require "enumeration"
 -- Here, we specify what extra-data files should contain what 
 -- information of interest.
 local goals = {
+   ["easy-chat.dat"] = {
+      enums = {
+         "EC_GROUP",
+         "EC_WORD"
+      },
+      vars  = {
+         "EC_MASK_BITS",
+      }
+   },
    ["flags.dat"] = {
       enums = { "FLAG" },
       vars = {

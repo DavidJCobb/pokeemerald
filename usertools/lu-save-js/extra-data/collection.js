@@ -1,3 +1,4 @@
+import ExtraEasyChat from "./extra-easy-chat.js";
 import ExtraGameStats from "./extra-game-stats.js";
 import ExtraCoalescedMapsData from "./extra-coalesced-maps-data.js";
 import ExtraScriptFlags from "./extra-script-flags.js";
@@ -12,6 +13,7 @@ export default class ExtraDataCollection {
    constructor(ready_promise) {
       this.constants    = new Map();
       this.enums        = new Map();
+      this.easy_chat    = new ExtraEasyChat(this);
       this.game_stats   = new ExtraGameStats();
       this.map_data     = new ExtraCoalescedMapsData();
       this.script_flags = new ExtraScriptFlags();
@@ -65,6 +67,7 @@ export default class ExtraDataCollection {
    };
    
    finalize(/*Map<String filename, ExtraDataFile>*/ files) {
+      this.easy_chat.finalize(files.get("easy-chat.dat"));
       this.game_stats.finalize(files.get("game-stats.dat"));
       this.script_flags.finalize(files.get("flags-#.dat"), files.get("trainers.dat"));
       this.script_vars.finalize(files.get("vars.dat"));
@@ -93,6 +96,9 @@ export default class ExtraDataCollection {
       }
       {
          let desired_enums = {
+            "easy-chat.dat": [
+               "EC_WORD",
+            ],
             "misc.dat": [
                "CONTEST_CATEGORY",
                "CONTEST_RANK",
@@ -153,6 +159,7 @@ export default class ExtraDataCollection {
    apply(/*SaveFormat*/ format) {
       format.display_overrides = format.display_overrides.concat(
          [
+            this.easy_chat,
             this.game_stats,
             this.script_flags,
             this.script_vars,

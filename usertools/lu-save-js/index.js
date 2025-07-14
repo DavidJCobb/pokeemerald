@@ -5,6 +5,9 @@ import EMERALD_DISPLAY_OVERRIDES from "./emerald-display-overrides.js";
 
 import assess_sav_version from "./savedata-classes/assess-sav-version.js";
 
+// user-defined translators
+import EasyChatWordIndexBitcountTranslator from "./translators/easy-chat-word-index-bitcount-translator.js";
+
 SaveFormatIndex.load().then(function() {
    let node  = document.getElementById("translate-to-version");
    let frag  = new DocumentFragment();
@@ -214,10 +217,7 @@ SaveFormatIndex.load().then(function() {
                // translators, to handle any savedata format changes that can't be 
                // handled automatically.
                //
-               if (src_version == 1 && dst_version == 2) {
-                  let tran = new DebuggingTranslator1To2();
-                  tran.install(operation);
-               }
+               (new EasyChatWordIndexBitcountTranslator()).install(operation);
                //
                // And with the translators installed, the operation can now proceed.
                //

@@ -111,6 +111,9 @@ do
       end
       return nil
    end
+   function instance_methods:_parse_initializer_list()
+      error("Not yet implemented!")
+   end
    function instance_methods:_parse_compound_literal()
       if not self:_consume_symbol("(") then
          return nil
@@ -295,6 +298,7 @@ do
       { "==", "!=" },
       { "&" },
       { "^" },
+      { "|" },
       { "&&" },
       { "||" },
    }

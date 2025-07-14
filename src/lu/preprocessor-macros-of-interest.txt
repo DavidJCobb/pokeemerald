@@ -10,6 +10,7 @@
 #include "constants/opponents.h" // dependency of: constants/flags.h
 #include "constants/rematches.h" // dependency of: constants/flags.h
 #include "constants/contest.h"
+#include "constants/easy_chat.h"
 #include "constants/flags.h"
 #include "constants/game_stat.h"
 #include "constants/global.h"

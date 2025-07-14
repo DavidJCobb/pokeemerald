@@ -21,6 +21,7 @@ export default class IndexedSaveFormatInfo {
    get save_format() { return this.#save_format; }
    
    static #extra_data_files = [
+      "easy-chat.dat",
       "game-stats.dat",
       "items.dat",
       "maps.dat",
